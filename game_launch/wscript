@@ -41,7 +41,7 @@ def build(bld):
 
 	bld(
 		source   = source,
-		target   = 'game', # hl.exe
+		target   = 'bond', # hl.exe
 		features = 'c cprogram',
 		includes = includes,
 		use      = libs,
