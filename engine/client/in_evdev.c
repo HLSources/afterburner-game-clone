@@ -287,7 +287,7 @@ void IN_EvdevFrame ()
 
 		if( m_ignore->integer )
 			continue;
-		
+
 		evdev.x += -dx * m_yaw->value;
 		evdev.y += dy * m_pitch->value;
 	}

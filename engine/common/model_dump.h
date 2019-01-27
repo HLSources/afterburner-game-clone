@@ -66,7 +66,6 @@ static const char* DumpModelDataFlagStrings[] =
 
 // Not re-entrant!!
 void DumpModelData(const char* fileName, const model_t* model, unsigned int flags);
-void DumpLightmaps(const char* path, const model_t* model);
 void DumpFaceAsWavefrontObj(const char* fileName, const model_t* model, const msurface_t* surface);
 void DumpLeafBoundsAsWavefrontObj(const char* fileName, const model_t* model, const mleaf_t* leaf, qboolean nodeBounds);
 

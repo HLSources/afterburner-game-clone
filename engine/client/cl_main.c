@@ -264,10 +264,10 @@ msurface_t* CL_GetSurfaceUnderCrosshair(void)
 	pmtrace_t traceResult;
 	const float* worldPos = NULL;
 
-	AngleVectors(cl.frame.playerstate[cl.playernum].angles, dir, NULL, NULL);
+	AngleVectors(cl.frames[cl.parsecountmod].playerstate[cl.playernum].angles, dir, NULL, NULL);
 
-	VectorCopy(cl.frame.client.origin, startPos);
-	VectorAdd(startPos, cl.frame.client.view_ofs, startPos);
+	VectorCopy(cl.frames[cl.parsecountmod].clientdata.origin, startPos);
+	VectorAdd(startPos, cl.frames[cl.parsecountmod].clientdata.view_ofs, startPos);
 
 	VectorMA(startPos, 1024.0f, dir, endPos);
 
@@ -358,23 +358,6 @@ void CL_Debug_DumpWorldModel(void)
 	}
 
 	DumpModelData(fileName, cl.worldmodel, flags);
-}
-
-void CL_Debug_DumpLightmaps(void)
-{
-	if (!Cvar_VariableInteger("sv_cheats"))
-	{
-		Msg("Requires sv_cheats to be 1.\n");
-		return;
-	}
-
-	if (!cl.worldmodel)
-	{
-		Msg("No world currently loaded.\n");
-		return;
-	}
-
-	DumpLightmaps("lightmaps", cl.worldmodel);
 }
 
 void CL_Debug_DumpSurface(void)
@@ -509,11 +492,13 @@ void CL_Debug_DumpLeafBounds(void)
 		return;
 	}
 
-	leaf = FindLeafForPointRecursive(cl.worldmodel->nodes, cl.frame.client.origin);
+	leaf = FindLeafForPointRecursive(cl.worldmodel->nodes, cl.frames[cl.parsecountmod].clientdata.origin);
 	if ( !leaf )
 	{
 		Msg("Could not determine leaf for current player position %f %f %f.\n",
-			cl.frame.client.origin[0], cl.frame.client.origin[1], cl.frame.client.origin[2]);
+			cl.frames[cl.parsecountmod].clientdata.origin[0],
+			cl.frames[cl.parsecountmod].clientdata.origin[1],
+			cl.frames[cl.parsecountmod].clientdata.origin[2]);
 
 		return;
 	}
@@ -584,19 +569,7 @@ static void FindSurfaceInTreeRecursive(mnode_t* node, uint16_t surfaceIndex)
 
 		for ( index = node->firstsurface; index < node->firstsurface + node->numsurfaces; ++index )
 		{
-			qboolean match = false;
-
-			if ( node->usesmarksurfaces )
-			{
-				msurface_t* surface = cl.worldmodel->nodemarksurfaces[index];
-				match = (uint32_t)(surface - cl.worldmodel->surfaces) == surfaceIndex;
-			}
-			else
-			{
-				match = index == surfaceIndex;
-			}
-
-			if ( match )
+			if ( index == surfaceIndex )
 			{
 				Msg("Surface %u referenced by node %u\n", surfaceIndex, (uint32_t)(node - cl.worldmodel->nodes));
 			}
@@ -684,9 +657,12 @@ void CL_Debug_LeafInfo(void)
 	argc = Cmd_Argc();
 	if ( argc < 2 )
 	{
-		Msg("Player position (%f %f %f):\n", cl.frame.client.origin[0], cl.frame.client.origin[1], cl.frame.client.origin[2]);
+		Msg("Player position (%f %f %f):\n",
+			cl.frames[cl.parsecountmod].clientdata.origin[0],
+			cl.frames[cl.parsecountmod].clientdata.origin[1],
+			cl.frames[cl.parsecountmod].clientdata.origin[2]);
 
-		leaf = FindLeafForPointRecursive(cl.worldmodel->nodes, cl.frame.client.origin);
+		leaf = FindLeafForPointRecursive(cl.worldmodel->nodes, cl.frames[cl.parsecountmod].clientdata.origin);
 		if ( !leaf )
 		{
 			Msg("Could not determine valid leaf.\n");
@@ -727,7 +703,7 @@ static void PrintLeafPVS(const mleaf_t* leaf)
 		return;
 	}
 
-	uncompressed = (byte*)Mem_Alloc(cl.worldmodel->mempool, uncompressedMaxBytes);
+	uncompressed = (byte*)Mem_Malloc(cl.worldmodel->mempool, uncompressedMaxBytes);
 	if ( !uncompressed )
 	{
 		Msg("Could not decompress leaf vis record: could not allocate memory.\n");
@@ -786,9 +762,12 @@ void CL_Debug_LeafPVS(void)
 	argc = Cmd_Argc();
 	if ( argc < 2 )
 	{
-		Msg("Player position (%f %f %f):\n", cl.frame.client.origin[0], cl.frame.client.origin[1], cl.frame.client.origin[2]);
+		Msg("Player position (%f %f %f):\n",
+			cl.frames[cl.parsecountmod].clientdata.origin[0],
+			cl.frames[cl.parsecountmod].clientdata.origin[1],
+			cl.frames[cl.parsecountmod].clientdata.origin[2]);
 
-		leaf = FindLeafForPointRecursive(cl.worldmodel->nodes, cl.frame.client.origin);
+		leaf = FindLeafForPointRecursive(cl.worldmodel->nodes, cl.frames[cl.parsecountmod].clientdata.origin);
 		if ( !leaf )
 		{
 			Msg("Could not determine valid leaf.\n");
@@ -3381,7 +3360,6 @@ void CL_InitLocal( void )
 	Cmd_AddCommand ("precache", CL_LegacyPrecache_f, "legacy server compatibility" );
 
 	Cmd_AddCommand("debug_dumpworldmodel", CL_Debug_DumpWorldModel, "Dumps internal information about the currently loaded world to the specified file.");
-	Cmd_AddCommand("debug_dumplightmaps", CL_Debug_DumpLightmaps, "Dumps lightmaps from the currently loaded world into the \"lightmaps\" folder.");
 	Cmd_AddCommand("debug_dumpsurface", CL_Debug_DumpSurface, "Dumps a surface to the specified file, formatted as Wavefront OBJ.");
 	Cmd_AddCommand("debug_dumpleafbounds", CL_Debug_DumpLeafBounds, "Dumps current leaf bounds to the specified file, formatted as Wavefront OBJ.");
 	Cmd_AddCommand("debug_surfaceinfo", CL_Debug_SurfaceInfo,

@@ -23,15 +23,15 @@ def options(opt):
 
 	opt.add_option(
 		'--build-type', action='store', type='string', dest='BUILD_TYPE', default = None,
-		help = 'build type: debug, release or none(custom flags)')
+		help = 'Build type: debug, release or none (custom flags)')
 
 	opt.add_option(
 		'--dedicated', action = 'store_true', dest = 'DEDICATED', default = False,
-		help = 'build Xash Dedicated Server(XashDS)')
+		help = 'Build Dedicated Server')
 
 	opt.add_option(
 		'--64bits', action = 'store_true', dest = 'ALLOW64', default = False,
-		help = 'allow targetting 64-bit engine')
+		help = 'Allow targeting 64-bit engine')
 
 	opt.add_option(
 		'--win-style-install', action = 'store_true', dest = 'WIN_INSTALL', default = False,
@@ -123,8 +123,8 @@ def configure(conf):
 
 
 	# indicate if we are packaging for Linux/BSD
-	if(not conf.options.WIN_INSTALL and 
-		conf.env.DEST_OS != 'win32' and 
+	if(not conf.options.WIN_INSTALL and
+		conf.env.DEST_OS != 'win32' and
 		conf.env.DEST_OS != 'darwin'):
 		conf.env.LIBDIR = conf.env.BINDIR = '${PREFIX}/lib/xash3d'
 	else:

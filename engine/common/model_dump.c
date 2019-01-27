@@ -15,10 +15,10 @@ GNU General Public License for more details.
 
 #include "model_dump.h"
 #include "common.h"
-#include "surface_lightmaps.h"
 #include "imagelib.h"
 #include "viscompress.h"
 #include "mathlib.h"
+#include <stdint.h>
 
 // For utility:
 #define MAX_INDENT 31
@@ -288,7 +288,7 @@ static inline void PrintItems(const model_t* model, const void* items, const int
 
 static inline void ResetIndent()
 {
-	Q_memset(currentIndent, 0, sizeof(currentIndent));
+	memset(currentIndent, 0, sizeof(currentIndent));
 	currentIndentSize = 0;
 }
 
@@ -396,7 +396,6 @@ static void DumpLeaf(int index, const void* data, const model_t* model)
 
 	// Might want to expand pointers into actual data at some point.
 	WRITELF("Compressed vis offset: " FMT_POINTER_INDEX, ARG_POINTER_INDEX(leaf->compressed_vis, model->visdata, sizeof(byte)));
-	WRITELF("Compressed pas: %p", leaf->compressed_pas);
 
 	// TODO: Output properly.
 	WRITELF("Efrags: %p", leaf->efrags);
@@ -490,35 +489,20 @@ static void DumpNode(int index, const void* data, const model_t* model)
 						  childPointer->contents == 0 ? sizeof(mnode_t) : sizeof(mleaf_t)));
 	}
 
-	WRITELF("Uses marksurfaces: %s", node->usesmarksurfaces ? "true" : "false");
 	WRITELF("First surface: %u", node->firstsurface);
 	WRITELF("Num surfaces: %u", node->numsurfaces);
 
 	IncrementIndent();
 	for ( surfaceIndex = node->firstsurface; surfaceIndex < node->firstsurface + node->numsurfaces; ++surfaceIndex )
 	{
-		if ( node->usesmarksurfaces )
-		{
-			msurface_t* surface = model->nodemarksurfaces[surfaceIndex];
-			WRITELF("Marksurface %u (surface " FMT_POINTER_INDEX "): plane " FMT_PLANE " texture: %s",
-					surfaceIndex,
-					ARG_POINTER_INDEX(surface, model->surfaces, sizeof(msurface_t)),
-					ARG_PLANE(surface->plane),
-					(surface->texinfo && surface->texinfo->texture)
-						? surface->texinfo->texture->name
-						: "NONE");
-		}
-		else
-		{
-			msurface_t* surface = &model->surfaces[surfaceIndex];
+		msurface_t* surface = &model->surfaces[surfaceIndex];
 
-			WRITELF("Surface %u: plane " FMT_PLANE " texture: %s",
-					surfaceIndex,
-					ARG_PLANE(surface->plane),
-					(surface->texinfo && surface->texinfo->texture)
-						? surface->texinfo->texture->name
-						: "NONE");
-		}
+		WRITELF("Surface %u: plane " FMT_PLANE " texture: %s",
+				surfaceIndex,
+				ARG_PLANE(surface->plane),
+				(surface->texinfo && surface->texinfo->texture)
+					? surface->texinfo->texture->name
+					: "NONE");
 	}
 	DecrementIndent();
 
@@ -539,7 +523,6 @@ static void DumpTexInfo(int index, const void* data, const model_t* model)
 
 	WRITELF("S vector: " FMT_VEC4, ARG_VEC4(&texInfo->vecs[0][0]));
 	WRITELF("T vector: " FMT_VEC4, ARG_VEC4(&texInfo->vecs[1][0]));
-	WRITELF("Mipadjust: %f", texInfo->mipadjust);
 	WRITELF("Texture: %s", texInfo->texture ? texInfo->texture->name : "NULL");
 	WRITELF("Flags: " FMT_HEX_INT, texInfo->flags);
 	WRITEL("");
@@ -548,7 +531,6 @@ static void DumpTexInfo(int index, const void* data, const model_t* model)
 static void DumpSurface(int index, const void* data, const model_t* model)
 {
 	const msurface_t* surface;
-	SurfaceVec2_16_t lightmapSize;
 
 	if (!data)
 	{
@@ -578,14 +560,6 @@ static void DumpSurface(int index, const void* data, const model_t* model)
 	WRITELF("Lightmap texture num: %d", surface->lightmaptexturenum);
 	WRITELF("Lightmap styles: %s", ArrayString_Int(surface->styles, UnsignedChar, ARRCOUNT(surface->styles, byte)));
 	WRITELF("Cached light: %s", ArrayString_Int(surface->cached_light, SignedInt, ARRCOUNT(surface->cached_light, int)));
-	WRITELF("Lightmap chain: " FMT_POINTER_INDEX, ARG_POINTER_INDEX(surface->lightmapchain, model->surfaces, sizeof(msurface_t)));
-	WRITELF("Lightmap samples: " FMT_POINTER_INDEX, ARG_POINTER_INDEX(surface->samples, model->lightdata, sizeof(byte)));
-
-	Surface_GetLightmapSize(surface, lightmapSize);
-	WRITELF("Lightmap size: %dx%d (%d samples)", lightmapSize[0], lightmapSize[1], lightmapSize[0] * lightmapSize[1]);
-
-	// TODO: Output properly. Is a linked list.
-	WRITELF("Decals: %p", surface->pdecals);
 	WRITEL("");
 }
 
@@ -752,17 +726,17 @@ static void DumpVisibilityData(const model_t* model)
 
 	size_t bytesPerRow = VisUncompressedRowBytesRequired(totalLeaves);
 	size_t uncompressedBytes = bytesPerRow * totalLeaves;
-	byte* buffer = (byte*)Mem_Alloc(model->mempool, uncompressedBytes);
+	byte* buffer = (byte*)Mem_Malloc(model->mempool, uncompressedBytes);
 
 	// 2 chars per original row byte, plus indent and 1 newline per row, plus terminator.
 	size_t stringBufferLength = (2 * uncompressedBytes) + ((currentIndentSize + 1) * totalLeaves) + 1;
-	byte* stringBuffer = (byte*)Mem_Alloc(model->mempool, stringBufferLength);
+	byte* stringBuffer = (byte*)Mem_Malloc(model->mempool, stringBufferLength);
 
 	size_t index;
 	size_t stringIndex = 0;
 
 	VisDecompressToKnownSize(visData, buffer, uncompressedBytes);
-	Q_memset(stringBuffer, 0, (2 * uncompressedBytes) + 1);
+	memset(stringBuffer, 0, (2 * uncompressedBytes) + 1);
 
 	for ( index = 0; index < uncompressedBytes; ++index )
 	{
@@ -867,46 +841,6 @@ void DumpModelData(const char* fileName, const model_t* model, unsigned int flag
 	FS_Close(outFile);
 	outFile = NULL;
 	Msg("Model '%s' dumped to file '%s' successfully.\n", model->name, fileName);
-}
-
-void DumpLightmaps(const char* path, const model_t* model)
-{
-	int surfaceIndex;
-
-	if (!path || !model)
-	{
-		return;
-	}
-
-	for (surfaceIndex = 0; surfaceIndex < model->numsurfaces; ++surfaceIndex)
-	{
-		char filePathForSurface[MAX_SYSPATH];
-		file_t* file = NULL;
-		msurface_t* surface = NULL;
-		byte* lightmapOffset = NULL;
-		rgbdata_t rgbData;
-		SurfaceVec2_16_t lightmapSize;
-
-		surface = &model->surfaces[surfaceIndex];
-		lightmapOffset = (byte*)surface->samples;
-		Surface_GetLightmapSize(surface, lightmapSize);
-
-		snprintf(filePathForSurface, MAX_SYSPATH - 1, "%s/lightmap_%d.tga", path, surfaceIndex);
-		filePathForSurface[MAX_SYSPATH - 1] = '\0';
-
-		memset(&rgbData, 0, sizeof(rgbdata_t));
-		rgbData.width = lightmapSize[0];
-		rgbData.height = lightmapSize[1];
-		rgbData.depth = sizeof(color24);
-		rgbData.buffer = lightmapOffset;
-		rgbData.flags = IMAGE_HAS_COLOR;
-		rgbData.size = lightmapSize[0] * lightmapSize[1] * sizeof(color24);
-		rgbData.type = PF_RGB_24;
-
-		Image_SaveTGA(filePathForSurface, &rgbData);
-	}
-
-	Msg("Lightmaps for model '%s' dumped.\n", model->name);
 }
 
 static void WriteSurfaceToFile(file_t* file, const model_t* model, const msurface_t* surface)

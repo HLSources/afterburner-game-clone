@@ -29,6 +29,7 @@ GNU General Public License for more details.
 #include "library.h"
 #include "mathlib.h"
 #include "protocol.h"
+#include "crtlib.h"
 
 #define FILE_COPY_SIZE		(1024 * 1024)
 #define FILE_BUFF_SIZE		(2048)
@@ -50,9 +51,6 @@ GNU General Public License for more details.
 #define WAD_LOAD_TOO_MANY_FILES	4
 #define WAD_LOAD_NO_FILES		5
 #define WAD_LOAD_CORRUPTED		6
-
-typedef char path_string[MAX_SYSPATH];
-static texdir_t* currentSortingDir = NULL;
 
 typedef struct stringlist_s
 {
@@ -115,6 +113,7 @@ typedef struct searchpath_s
 	string		filename;
 	pack_t		*pack;
 	wfile_t		*wad;
+	texdir_t 	*texDir;
 	int		flags;
 	struct searchpath_s *next;
 } searchpath_t;
@@ -130,6 +129,9 @@ qboolean		fs_ext_path = false;	// attempt to read\write from ./ or ../ pathes
 #ifndef _WIN32
 qboolean		fs_caseinsensitive = true; // try to search missing files
 #endif
+
+typedef char path_string[MAX_SYSPATH];
+static texdir_t* currentSortingDir = NULL;
 
 
 static void FS_InitMemory( void );
@@ -147,7 +149,7 @@ static qboolean AddTextureDirectoriesInternal(const char* directory, const char*
 static void SortFilesCaseInsensitive(texdir_t* texDir);
 static file_t* TexDir_LoadFile(const char* path, qboolean gameDirOnly);
 
-typedef int(*StringComparisonFunc)(const char*, const char*);
+typedef int(*StringComparisonFunc)(const char*, const char*, int);
 static int BinarySearchFiles(const char* searchTerm, string* fileList, int fileCount, StringComparisonFunc comparison);
 
 /*
@@ -530,8 +532,8 @@ static void FS_Exists_f( void )
 		return;
 	}
 
-	Q_memset(fsType, 0, sizeof(fsType));
-	Q_memset(info, 0, MAX_STRING);
+	memset(fsType, 0, sizeof(fsType));
+	memset(info, 0, MAX_STRING);
 
 	if (search->pack)
 	{
@@ -552,12 +554,10 @@ static void FS_Exists_f( void )
 		Q_snprintf(info, MAX_STRING - 1,
 				   "File name: %s\n"
 				   "Handle: %d\n"
-				   "Total lumps: %d\n"
-				   "Mode: %d\n",
+				   "Total lumps: %d\n",
 				   search->wad->filename,
 				   search->wad->handle,
-				   search->wad->numlumps,
-				   search->wad->mode);
+				   search->wad->numlumps);
 	}
 	else if (search->texDir)
 	{
@@ -2127,7 +2127,7 @@ static searchpath_t *FS_FindFile( const char *name, int *index, qboolean gamedir
 
 			texDir = search->texDir;
 
-			FS_ExtractFilePath(name, fullPathToFolder);
+			COM_ExtractFilePath(name, fullPathToFolder);
 			if (Q_strcmp(fullPathToFolder, texDir->subDirName) != 0)
 			{
 				continue;
@@ -2142,11 +2142,11 @@ static searchpath_t *FS_FindFile( const char *name, int *index, qboolean gamedir
 				fileName = name;
 			}
 
-			foundIndex = BinarySearchFiles(fileName, texDir->files, texDir->numFiles, &Q_strcmp);
+			foundIndex = BinarySearchFiles(fileName, texDir->files, texDir->numFiles, &Q_strncmp);
 			if (foundIndex < 0)
 			{
 				// Try case-insensitive.
-				foundIndex = BinarySearchFiles(fileName, texDir->filesCaseInsensitive, texDir->numFiles, &Q_stricmp);
+				foundIndex = BinarySearchFiles(fileName, texDir->filesCaseInsensitive, texDir->numFiles, &Q_strnicmp);
 			}
 
 			if (foundIndex >= 0)
@@ -3635,7 +3635,7 @@ static file_t* TexDir_LoadFile(const char* path, qboolean gameDirOnly)
 {
 	path_string fullPath;
 
-	if (Q_stricmp(FS_FileExtension(path), "png") != 0)
+	if (Q_stricmp(COM_FileExtension(path), "png") != 0)
 	{
 		return NULL;
 	}
@@ -3716,7 +3716,7 @@ static void CountFilesAndFolders(stringlist_t* list, const char* rootFolder, con
 			}
 			else
 			{
-				const char* thisExtension = FS_FileExtension(entry);
+				const char* thisExtension = COM_FileExtension(entry);
 				if (!thisExtension || Q_stricmp(thisExtension, fileExt) != 0 || !FS_SysFileExists(fullPath, false))
 				{
 					continue;
@@ -3743,14 +3743,14 @@ static void InitSearchPathForDirectory(searchpath_t** search, const char* rootDi
 		return;
 	}
 
-	*search = (searchpath_t*)Mem_Alloc(fs_mempool, sizeof(searchpath_t));
-	Q_memset(*search, 0, sizeof(searchpath_t));
+	*search = (searchpath_t*)Mem_Malloc(fs_mempool, sizeof(searchpath_t));
+	memset(*search, 0, sizeof(searchpath_t));
 
-	(*search)->texDir = (texdir_t*)Mem_Alloc(fs_mempool, sizeof(texdir_t));
+	(*search)->texDir = (texdir_t*)Mem_Malloc(fs_mempool, sizeof(texdir_t));
 	Q_strncpy((*search)->filename, rootDirectory, PATH_MAX);
 	(*search)->next = NULL;
 
-	Q_memset((*search)->texDir, 0, sizeof(texdir_t));
+	memset((*search)->texDir, 0, sizeof(texdir_t));
 	Q_strncpy((*search)->texDir->filePath, dirWithoutSlash, MAX_SYSPATH - 1);
 	(*search)->texDir->filePath[MAX_SYSPATH - 1] = '\0';
 }
@@ -3809,8 +3809,8 @@ qboolean AddTextureDirectoriesInternal(const char* directory, const char* subDir
 	if (filesInDirectory > 0)
 	{
 		// Allocate space for all the file paths.
-		texDir->files = (string*)Mem_Alloc(fs_mempool, filesInDirectory * sizeof(string));
-		texDir->filesCaseInsensitive = (string*)Mem_Alloc(fs_mempool, filesInDirectory * sizeof(string));
+		texDir->files = (string*)Mem_Malloc(fs_mempool, filesInDirectory * sizeof(string));
+		texDir->filesCaseInsensitive = (string*)Mem_Malloc(fs_mempool, filesInDirectory * sizeof(string));
 
 		// This gets updated as files are added.
 		texDir->numFiles = 0;
@@ -3836,7 +3836,7 @@ qboolean AddTextureDirectoriesInternal(const char* directory, const char* subDir
 		if (FS_SysFileExists(fullPathToEntry, false))
 		{
 			// Make sure it's a PNG.
-			const char* extension = FS_FileExtension(entry);
+			const char* extension = COM_FileExtension(entry);
 			if (!extension || Q_stricmp(extension, "png") != 0)
 			{
 				continue;
@@ -3908,7 +3908,7 @@ void SortFilesCaseInsensitive(texdir_t* texDir)
 		return;
 	}
 
-	map = (int*)Mem_Alloc(fs_mempool, texDir->numFiles * sizeof(int));
+	map = (int*)Mem_Malloc(fs_mempool, texDir->numFiles * sizeof(int));
 
 	for (index = 0; index < texDir->numFiles; ++index)
 	{
@@ -3932,18 +3932,21 @@ static int BinarySearchFiles(const char* searchTerm, string* fileList, int fileC
 {
 	int left = 0;
 	int right = fileCount - 1;
+	int searchTermLength = 0;
 
 	if (!comparison || !searchTerm || !fileList || fileCount < 1)
 	{
 		return -1;
 	}
 
+	searchTermLength = Q_strlen(searchTerm);
+
 	while (left <= right)
 	{
 		int diff = 0;
 		int middle = (left + right) / 2;
 
-		diff = comparison(fileList[middle], searchTerm);
+		diff = comparison(fileList[middle], searchTerm, searchTermLength);
 
 		if (diff == 0)
 		{

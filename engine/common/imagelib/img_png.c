@@ -60,13 +60,13 @@ qboolean Image_LoadPNG(const char *fileName, const byte *rawImageData, size_t fi
 
 		if (!loadedData)
 		{
-			MsgDev(D_WARN, "Image_LoadPNG: File \"%s\" unable to be loaded. %s\n", fileName, stbi_failure_reason());
+			Con_DPrintf(S_WARN "Image_LoadPNG: File \"%s\" unable to be loaded. %s\n", fileName, stbi_failure_reason());
 			break;
 		}
 
 		if (depth < 3)
 		{
-			MsgDev(D_WARN, "Image_LoadPNG: Only 24-bit and 32-bit PNGs are supported at the current time.\n");
+			Con_DPrintf(S_WARN "Image_LoadPNG: Only 24-bit and 32-bit PNGs are supported at the current time.\n");
 			break;
 		}
 
@@ -77,13 +77,13 @@ qboolean Image_LoadPNG(const char *fileName, const byte *rawImageData, size_t fi
 		image.size = image.width * image.height * 4;
 		image.type = PF_RGBA_32;
 		image.flags |= IMAGE_HAS_COLOR;
-		
+
 		if (depth == 4)
 		{
 			image.flags |= IMAGE_HAS_ALPHA;
 		}
 
-		image.rgba = Mem_Alloc(host.imagepool, image.size);
+		image.rgba = Mem_Malloc(host.imagepool, image.size);
 		CopyImageData(loadedData, width * height * depth);
 		stbi_image_free(loadedData);
 

@@ -16,7 +16,7 @@ def options(opt):
 def configure(conf):
 	if conf.env.SINGLE_BINARY:
 		return
-	
+
 	# check for dedicated server build
 	if not conf.env.DEDICATED:
 		if conf.env.DEST_OS == 'win32':
@@ -41,7 +41,7 @@ def build(bld):
 
 	bld(
 		source   = source,
-		target   = 'xash3d', # hl.exe
+		target   = 'game', # hl.exe
 		features = 'c cprogram',
 		includes = includes,
 		use      = libs,

@@ -989,7 +989,7 @@ float Mod_StudioGetSequenceDuration( model_t* model, int anim)
 		return 0.0f;
 	}
 
-	header = (studiohdr_t*)Mod_Extradata(model);
+	header = (studiohdr_t*)Mod_StudioExtradata(model);
 	if ( !header || anim >= header->numseq )
 	{
 		return 0.0f;

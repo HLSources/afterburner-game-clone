@@ -35,13 +35,13 @@ Then navigate to the `afterburner-engine` directory in a command prompt, and fol
 
 ### Windows (Visual Studio)
 1. Examine which build options are available: `waf --help`
-2. Configure build: `waf configure --disable-vgui=True --build-type=release --sdl2=c:/path/to/SDL2 --prefix=c:/path/to/any/output/directory`
+2. Configure build: `waf configure --disable-vgui --build-type=release --sdl2=c:/path/to/SDL2 --prefix=c:/path/to/any/output/directory`
 3. Compile: `waf build`
 4. Install: `waf install`
 
 ### Linux
 1. Examine which build options are available: `./waf --help`
-2. Configure build: `./waf configure --disable-vgui=True --build-type=release --prefix=build/release`
+2. Configure build: `./waf configure --disable-vgui --build-type=release --win-style-install --prefix=/path/to/any/output/directory`
 3. Compile: `./waf build`
 4. Install (optional): `./waf install`
 

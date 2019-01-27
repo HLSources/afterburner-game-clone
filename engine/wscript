@@ -45,6 +45,7 @@ def build(bld):
 		'common/imagelib/*.c',
 		'common/soundlib/*.c',
 		'common/soundlib/libmpg/*.c',
+		'common/bsp/generic/*.c',
 		'server/*.c'])
 
 	# basic build: dedicated only, no dependencies
@@ -76,7 +77,18 @@ def build(bld):
 		if bld.env.DEST_OS == 'linux':
 			libs.append('RT')
 
-	includes = ['common', 'server', 'client', 'client/vgui', '.', '../common', '../pm_shared' ]
+	includes = \
+	[
+		'common',
+		'common/bsp/generic',
+		'common/imagelib',
+		'server',
+		'client',
+		'client/vgui',
+		'.',
+		'../common',
+		'../pm_shared'
+	]
 
 	if bld.env.SINGLE_BINARY:
 		bld(

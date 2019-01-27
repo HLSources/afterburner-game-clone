@@ -1,6 +1,11 @@
 // basic typedefs
 #ifndef XASH_TYPES_H
 #define XASH_TYPES_H
+
+#ifdef XASH_SDL
+#include "SDL_stdinc.h"
+#endif
+
 typedef unsigned char byte;
 typedef int		sound_t;
 typedef float		vec_t;
