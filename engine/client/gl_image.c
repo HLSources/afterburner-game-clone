@@ -469,7 +469,7 @@ static size_t GL_CalcTextureSize( GLenum format, int width, int height, int dept
 	return size;
 }
 
-static int GL_CalcMipmapCount( gl_texture_t *tex, qboolean haveBuffer ) 
+static int GL_CalcMipmapCount( gl_texture_t *tex, qboolean haveBuffer )
 {
 	int	width, height;
 	int	mipcount;
@@ -482,7 +482,7 @@ static int GL_CalcMipmapCount( gl_texture_t *tex, qboolean haveBuffer )
 	// generate mip-levels by user request
 	if( FBitSet( tex->flags, TF_NOMIPMAP ))
 		return 1;
-		
+
 	// mip-maps can't exceeds 16
 	for( mipcount = 0; mipcount < 16; mipcount++ )
 	{
@@ -701,7 +701,7 @@ static void GL_SetTextureFormat( gl_texture_t *tex, pixformat_t format, int chan
 
 		switch( GL_CalcTextureSamples( channelMask ))
 		{
-		case 1: 
+		case 1:
 			if( FBitSet( tex->flags, TF_ALPHACONTRAST ))
 				tex->format = GL_INTENSITY8;
 			else tex->format = GL_LUMINANCE8;
@@ -714,7 +714,7 @@ static void GL_SetTextureFormat( gl_texture_t *tex, pixformat_t format, int chan
 			case 32: tex->format = GL_RGB8; break;
 			default: tex->format = GL_RGB; break;
 			}
-			break;	
+			break;
 		case 4:
 		default:
 			switch( bits )
@@ -1210,7 +1210,7 @@ do specified actions on pixels
 */
 static void GL_ProcessImage( gl_texture_t *tex, rgbdata_t *pic )
 {
-	uint	img_flags = 0; 
+	uint	img_flags = 0;
 
 	// force upload texture as RGB or RGBA (detail textures requires this)
 	if( tex->flags & TF_FORCE_COLOR ) pic->flags |= IMAGE_HAS_COLOR;
@@ -1444,7 +1444,7 @@ int GL_LoadTexture( const char *name, const byte *buf, size_t size, int flags )
 		SetBits( picFlags, IL_DONTFLIP_TGA );
 
 	if( FBitSet( flags, TF_KEEP_SOURCE ) && !FBitSet( flags, TF_EXPAND_SOURCE ))
-		SetBits( picFlags, IL_KEEP_8BIT );	
+		SetBits( picFlags, IL_KEEP_8BIT );
 
 	// set some image flags
 	Image_SetForceFlags( picFlags );
@@ -1587,7 +1587,7 @@ int GL_LoadTextureArray( const char **names, int flags )
 		Con_Printf( S_ERROR "GL_LoadTextureArray: not all layers were loaded. Texture array is not created\n" );
 		if( pic ) FS_FreeImage( pic );
 		return 0;
-	}	
+	}
 
 	// it's multilayer image!
 	SetBits( pic->flags, IMAGE_MULTILAYER );
@@ -1891,13 +1891,65 @@ void R_InitDlightTexture( void )
 		return; // already initialized
 
 	memset( &r_image, 0, sizeof( r_image ));
-	r_image.width = BLOCK_SIZE; 
+	r_image.width = BLOCK_SIZE;
 	r_image.height = BLOCK_SIZE;
 	r_image.flags = IMAGE_HAS_COLOR;
 	r_image.type = PF_RGBA_32;
 	r_image.size = r_image.width * r_image.height * 4;
 
 	tr.dlightTexture = GL_LoadTextureInternal( "*dlight", &r_image, TF_NOMIPMAP|TF_CLAMP|TF_ATLAS_PAGE );
+}
+
+static int CreateTraceTexture()
+{
+	rgbdata_t* pic = GL_FakeImage( 8, 8, 1, IMAGE_HAS_COLOR|IMAGE_HAS_ALPHA );
+	uint* argbBuffer = (uint)pic->buffer;
+	int x;
+	int y;
+
+	for ( y = 0; y < 8; ++y )
+	{
+		// Alpha of 0 along rows 0 and 7, alpha of 1 everywhere else.
+		const uint pixVal = (y == 0 || y == 7) ? 0x00FFFFFF : 0xFFFFFFFF;
+
+		for ( x = 0; x < 8; ++x )
+		{
+			argbBuffer[(8 * y) + x] = pixVal;
+		}
+	}
+
+	return GL_LoadTextureInternal( "*trace", pic, TF_CLAMP );
+}
+
+static int CreateBulletTraceTexture()
+{
+	static const byte alphaMap[8][8] =
+	{
+		{0,0, 0,  0,  0,  0,  0,  0},
+		{0,64,128,192,255,255,0,  0},
+		{0,64,128,192,255,255,255,0},
+		{0,64,128,192,255,255,255,0},
+		{0,64,128,192,255,255,255,0},
+		{0,64,128,192,255,255,255,0},
+		{0,64,128,192,255,255,0,  0},
+		{0,0, 0,  0,  0,  0,  0,  0},
+	};
+
+	rgbdata_t* pic = GL_FakeImage( 8, 8, 1, IMAGE_HAS_COLOR|IMAGE_HAS_ALPHA );
+	uint* argbBuffer = (uint)pic->buffer;
+	int x;
+	int y;
+
+	for ( y = 0; y < 8; ++y )
+	{
+		for ( x = 0; x < 8; ++x )
+		{
+			const uint alpha = alphaMap[y][x] << 24;
+			argbBuffer[(8 * y) + x] = 0x00FFFFFF | alpha;
+		}
+	}
+
+	return GL_LoadTextureInternal( "*bullettrace", pic, TF_CLAMP );
 }
 
 /*
@@ -1943,6 +1995,8 @@ static void GL_CreateInternalTextures( void )
 	}
 
 	tr.particleTexture = GL_LoadTextureInternal( "*particle", pic, TF_CLAMP );
+	tr.traceTexture = CreateTraceTexture();
+	tr.bulletTraceTexture = CreateBulletTraceTexture();
 
 	// white texture
 	pic = GL_FakeImage( 4, 4, 1, IMAGE_HAS_COLOR );
@@ -2067,7 +2121,7 @@ void R_TextureList_f( void )
 		case GL_DEPTH_COMPONENT:
 		case GL_DEPTH_COMPONENT24:
 			Con_Printf( "DPTH24" );
-			break;			
+			break;
 		case GL_DEPTH_COMPONENT32F:
 			Con_Printf( "DPTH32" );
 			break;

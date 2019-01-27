@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -42,6 +42,8 @@ typedef struct event_args_s
 
 	int		bparam1;
 	int		bparam2;
+
+	void* localUserData;	// Static data passed in on the client.
 } event_args_t;
 
 #endif//EVENT_ARGS_H

@@ -62,7 +62,7 @@ void CL_ParseSoundPacket( sizebuf_t *msg )
 {
 	vec3_t	pos;
 	int 	chan, sound;
-	float 	volume, attn;  
+	float 	volume, attn;
 	int	flags, pitch, entnum;
 	sound_t	handle = 0;
 
@@ -76,14 +76,14 @@ void CL_ParseSoundPacket( sizebuf_t *msg )
 
 	if( FBitSet( flags, SND_ATTENUATION ))
 		attn = (float)MSG_ReadByte( msg ) / 64.0f;
-	else attn = ATTN_NONE;	
+	else attn = ATTN_NONE;
 
 	if( FBitSet( flags, SND_PITCH ))
 		pitch = MSG_ReadByte( msg );
 	else pitch = PITCH_NORM;
 
 	// entity reletive
-	entnum = MSG_ReadUBitLong( msg, MAX_ENTITY_BITS ); 
+	entnum = MSG_ReadUBitLong( msg, MAX_ENTITY_BITS );
 
 	// positioned in space
 	MSG_ReadVec3Coord( msg, pos );
@@ -124,7 +124,7 @@ void CL_ParseRestoreSoundPacket( sizebuf_t *msg )
 {
 	vec3_t	pos;
 	int 	chan, sound;
-	float 	volume, attn;  
+	float 	volume, attn;
 	int	flags, pitch, entnum;
 	double	samplePos, forcedEnd;
 	int	wordIndex;
@@ -140,7 +140,7 @@ void CL_ParseRestoreSoundPacket( sizebuf_t *msg )
 
 	if( flags & SND_ATTENUATION )
 		attn = (float)MSG_ReadByte( msg ) / 64.0f;
-	else attn = ATTN_NONE;	
+	else attn = ATTN_NONE;
 
 	if( flags & SND_PITCH )
 		pitch = MSG_ReadByte( msg );
@@ -270,8 +270,8 @@ void CL_ParseParticles( sizebuf_t *msg )
 	vec3_t		org, dir;
 	int		i, count, color;
 	float		life;
-	
-	MSG_ReadVec3Coord( msg, org );	
+
+	MSG_ReadVec3Coord( msg, org );
 
 	for( i = 0; i < 3; i++ )
 		dir[i] = MSG_ReadChar( msg ) * 0.0625f;
@@ -368,7 +368,11 @@ void CL_WeaponAnim( int iAnim, int body )
 	cl.local.weaponstarttime = 0.0f;
 	cl.local.weaponsequence = iAnim;
 	view->curstate.framerate = 1.0f;
-	view->curstate.body = body;
+
+	if ( body >= 0 )
+	{
+		view->curstate.body = body;
+	}
 
 #if 0	// g-cont. for GlowShell testing
 	view->curstate.renderfx = kRenderFxGlowShell;
@@ -587,7 +591,7 @@ int CL_EstimateNeededResources( void )
 				nTotalSize += p->nDownloadSize;
 			}
 			break;
-		}		
+		}
 	}
 
 	return nTotalSize;
@@ -905,7 +909,7 @@ void CL_ParseServerData( sizebuf_t *msg )
 	}
 
 	// multiplayer game?
-	if( cl.maxclients > 1 )	
+	if( cl.maxclients > 1 )
 	{
 		// allow console in multiplayer games
 		host.allow_console = true;
@@ -931,7 +935,7 @@ void CL_ParseServerData( sizebuf_t *msg )
 		Cvar_FullSet( "cl_background", "1", FCVAR_READ_ONLY );
 	else Cvar_FullSet( "cl_background", "0", FCVAR_READ_ONLY );
 
-	if( !cls.changelevel ) 
+	if( !cls.changelevel )
 	{
 		// continue playing if we are changing level
 		S_StopBackgroundTrack ();
@@ -962,7 +966,7 @@ void CL_ParseServerData( sizebuf_t *msg )
 
 	if(( cl_allow_levelshots->value && !cls.changelevel ) || cl.background )
 	{
-		if( !FS_FileExists( va( "%s.bmp", cl_levelshot_name->string ), true )) 
+		if( !FS_FileExists( va( "%s.bmp", cl_levelshot_name->string ), true ))
 			Cvar_Set( "cl_levelshot_name", "*black" ); // render a black screen
 		cls.scrshot_request = scrshot_plaque; // request levelshot even if exist (check filetime)
 	}
@@ -1017,12 +1021,12 @@ void CL_ParseClientData( sizebuf_t *msg )
 		}
 	}
 
-	cl.parsecount = i;					// ack'd incoming messages.  
-	cl.parsecountmod = cl.parsecount & CL_UPDATE_MASK;	// index into window.     
+	cl.parsecount = i;					// ack'd incoming messages.
+	cl.parsecountmod = cl.parsecount & CL_UPDATE_MASK;	// index into window.
 	frame = &cl.frames[cl.parsecountmod];			// frame at index.
 
 	frame->time = cl.mtime[0];				// mark network received time
-	frame->receivedtime = host.realtime;			// time now that we are parsing.  
+	frame->receivedtime = host.realtime;			// time now that we are parsing.
 
 	memset( &frame->graphdata, 0, sizeof( netbandwidthgraph_t ));
 
@@ -1030,7 +1034,7 @@ void CL_ParseClientData( sizebuf_t *msg )
 	parsecounttime = cl.commands[command_ack & CL_UPDATE_MASK].senttime;
 
 	// current time that we got a response to the command packet.
-	cl.commands[command_ack & CL_UPDATE_MASK].receivedtime = host.realtime;    
+	cl.commands[command_ack & CL_UPDATE_MASK].receivedtime = host.realtime;
 
 	if( cl.last_command_ack != -1 )
 	{
@@ -1086,8 +1090,8 @@ void CL_ParseClientData( sizebuf_t *msg )
 			// otherwise, move in 1 ms steps toward observed channel latency.
 			if( latency < cls.latency )
 				cls.latency = latency;
-			else cls.latency += 0.001f; // drift up, so corrections are needed	
-		}	
+			else cls.latency += 0.001f; // drift up, so corrections are needed
+		}
 	}
 	else
 	{
@@ -1099,7 +1103,7 @@ void CL_ParseClientData( sizebuf_t *msg )
 	{
 		cl.local.health = 1;
 		return;
-	}	
+	}
 
 	to_cd = &frame->clientdata;
 	to_wd = frame->weapondata;
@@ -1226,13 +1230,13 @@ void CL_ParseAddAngle( sizebuf_t *msg )
 {
 	pred_viewangle_t	*a;
 	float		delta_yaw;
-	
+
 	delta_yaw = MSG_ReadBitAngle( msg, 16 );
 #if 0
 	cl.viewangles[YAW] += delta_yaw;
 	return;
 #endif
-	// update running counter	
+	// update running counter
 	cl.addangletotal += delta_yaw;
 
 	// select entry into circular buffer
@@ -1296,7 +1300,7 @@ void CL_RegisterUserMessage( sizebuf_t *msg )
 {
 	char	*pszName;
 	int	svc_num, size, bits;
-	
+
 	svc_num = MSG_ReadByte( msg );
 
 	if( cls.legacymode )
@@ -1420,7 +1424,7 @@ void CL_UpdateUserPings( sizebuf_t *msg )
 {
 	int		i, slot;
 	player_info_t	*player;
-	
+
 	for( i = 0; i < MAX_CLIENTS; i++ )
 	{
 		if( !MSG_ReadOneBit( msg )) break; // end of message
@@ -1879,7 +1883,7 @@ void CL_ParseCvarValue2( sizebuf_t *msg )
 		if( cvar->value != Q_atof( cvar->string ))
 			MSG_WriteString( &cls.netchan.message, va( "%s (%g)", cvar->string, cvar->value ));
 		else MSG_WriteString( &cls.netchan.message, cvar->string );
-	}	
+	}
 	else
 	{
 		MSG_WriteString( &cls.netchan.message, "Not Found" );
@@ -2042,7 +2046,7 @@ void CL_ParseServerMessage( sizebuf_t *msg, qboolean normal_message )
 		// assume no entity/player update this packet
 		if( cls.state == ca_active )
 		{
-			cl.frames[cls.netchan.incoming_sequence & CL_UPDATE_MASK].valid = false;   
+			cl.frames[cls.netchan.incoming_sequence & CL_UPDATE_MASK].valid = false;
 			cl.frames[cls.netchan.incoming_sequence & CL_UPDATE_MASK].choked = false;
 		}
 		else
@@ -2050,7 +2054,7 @@ void CL_ParseServerMessage( sizebuf_t *msg, qboolean normal_message )
 			CL_ResetFrame( &cl.frames[cls.netchan.incoming_sequence & CL_UPDATE_MASK] );
 		}
 	}
-	
+
 	// parse the message
 	while( 1 )
 	{
@@ -2065,7 +2069,7 @@ void CL_ParseServerMessage( sizebuf_t *msg, qboolean normal_message )
 
 		// end of message (align bits)
 		if( MSG_GetNumBitsLeft( msg ) < 8 )
-			break;		
+			break;
 
 		cmd = MSG_ReadServerCmd( msg );
 

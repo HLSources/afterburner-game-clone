@@ -148,13 +148,21 @@ enum
 {
 	D_INFO = 1,	// "-dev 1", shows various system messages
 	D_WARN,		// "-dev 2", shows not critical system warnings
-	D_ERROR,		// "-dev 3", shows critical warnings 
+	D_ERROR,		// "-dev 3", shows critical warnings
 	D_REPORT,		// "-dev 4", special case for game reports
 	D_NOTE		// "-dev 5", show system notifications for engine developers
 };
 
+#define CCOL_RED		"^1"
+#define CCOL_GREEN		"^2"
+#define CCOL_YELLOW		"^3"
+#define CCOL_BLUE		"^4"
+#define CCOL_CYAN		"^5"
+#define CCOL_PINK		"^6"
+#define CCOL_DEFAULT	"^7"
+
 typedef enum
-{	
+{
 	HOST_NORMAL,	// listen server, singleplayer
 	HOST_DEDICATED,
 } instance_t;
@@ -218,6 +226,10 @@ typedef enum
 
 #define FORCE_DRAW_VERSION_TIME 5.0f // draw version for 5 seconds
 
+#if !defined(_WIN32) && !defined(NDEBUG) && !defined(_DEBUG)
+#define _DEBUG
+#endif
+
 #ifdef _DEBUG
 void DBG_AssertFunction( qboolean fExpr, const char* szExpr, const char* szFile, int szLine, const char* szMessage );
 #define Assert( f )		DBG_AssertFunction( f, #f, __FILE__, __LINE__, NULL )
@@ -257,7 +269,7 @@ typedef struct gameinfo_s
 	// filesystem info
 	char		gamefolder[MAX_QPATH];	// used for change game '-game x'
 	char		basedir[MAX_QPATH];	// base game directory (like 'id1' for Quake or 'valve' for Half-Life)
-	char		falldir[MAX_QPATH];	// used as second basedir 
+	char		falldir[MAX_QPATH];	// used as second basedir
 	char		startmap[MAX_QPATH];// map to start singleplayer game
 	char		trainmap[MAX_QPATH];// map to start hazard course (if specified)
 	char		title[64];	// Game Main Title
@@ -323,14 +335,14 @@ typedef enum
 {
 	HOST_INIT = 0,	// initalize operations
 	HOST_FRAME,	// host running
-	HOST_SHUTDOWN,	// shutdown operations	
+	HOST_SHUTDOWN,	// shutdown operations
 	HOST_ERR_FATAL,	// sys error
 	HOST_SLEEP,	// sleeped by different reason, e.g. minimize window
 	HOST_NOFOCUS,	// same as HOST_FRAME, but disable mouse
 	HOST_CRASHED	// an exception handler called
 } host_status_t;
 
-typedef enum 
+typedef enum
 {
 	STATE_RUNFRAME = 0,
 	STATE_LOAD_LEVEL,
@@ -446,7 +458,7 @@ typedef struct host_parm_s
 {
 	HINSTANCE			hInst;
 	HANDLE				hMutex;
-	
+
 	host_status_t	status;		// global host state
 	game_status_t	game;		// game manager
 	uint		type;		// running at
@@ -506,7 +518,7 @@ typedef struct host_parm_s
 
 	char		rootdir[256];	// member root directory
 	char		rodir[256];		// readonly root
-	char		gamefolder[MAX_QPATH];	// it's a default gamefolder	
+	char		gamefolder[MAX_QPATH];	// it's a default gamefolder
 	byte		*imagepool;	// imagelib mempool
 	byte		*soundpool;	// soundlib mempool
 
@@ -598,7 +610,7 @@ typedef enum
 	PF_INDEXED_32,	// deflated palette (1024 bytes)
 	PF_RGBA_32,	// normal rgba buffer
 	PF_BGRA_32,	// big endian RGBA (MacOS)
-	PF_RGB_24,	// uncompressed dds or another 24-bit image 
+	PF_RGB_24,	// uncompressed dds or another 24-bit image
 	PF_BGR_24,	// big-endian RGB (MacOS)
 	PF_DXT1,		// s3tc DXT1 format
 	PF_DXT3,		// s3tc DXT3 format
@@ -660,7 +672,7 @@ typedef enum
 	IMAGE_FLIP_Y	= BIT(17),	// flip the image by height
 	IMAGE_ROT_90	= BIT(18),	// flip from upper left corner to down right corner
 	IMAGE_ROT180	= IMAGE_FLIP_X|IMAGE_FLIP_Y,
-	IMAGE_ROT270	= IMAGE_FLIP_X|IMAGE_FLIP_Y|IMAGE_ROT_90,	
+	IMAGE_ROT270	= IMAGE_FLIP_X|IMAGE_FLIP_Y|IMAGE_ROT_90,
 	IMAGE_EMBOSS	= BIT(19),	// apply emboss mapping
 	IMAGE_RESAMPLE	= BIT(20),	// resample image to specified dims
 // reserved

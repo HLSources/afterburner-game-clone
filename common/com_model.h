@@ -41,9 +41,9 @@ typedef vec_t		vec4_t[4];
 typedef enum
 {
 	mod_bad = -1,
-	mod_brush, 
-	mod_sprite, 
-	mod_alias, 
+	mod_brush,
+	mod_sprite,
+	mod_alias,
 	mod_studio
 } modtype_t;
 
@@ -84,7 +84,7 @@ typedef struct
 
 typedef struct texture_s
 {
-	char		name[16];
+	char		name[64];	// Upped from 16 to 64 for Nightfire support. Keep an eye on this in case it causes problems.
 	unsigned int	width, height;
 	int		gl_texturenum;
 	struct msurface_s	*texturechain;	// for gl_texsort drawing
@@ -94,7 +94,7 @@ typedef struct texture_s
 	struct texture_s	*alternate_anims;	// bmodels in frame 1 use these
 	unsigned short	fb_texturenum;	// auto-luma texturenum
 	unsigned short	dt_texturenum;	// detail-texture binding
-	unsigned int	unused[3];	// reserved 
+	unsigned int	unused[3];	// reserved
 } texture_t;
 
 typedef struct
@@ -139,7 +139,7 @@ typedef struct mnode_s
 
 // node specific
 	mplane_t		*plane;
-	struct mnode_s	*children[2];	
+	struct mnode_s	*children[2];
 #ifdef SUPPORT_BSP2_FORMAT
 	int		firstsurface;
 	int		numsurfaces;
@@ -158,7 +158,7 @@ struct decal_s
 	decal_t		*pnext;		// linked list for each surface
 	msurface_t	*psurface;	// Surface id for persistence / unlinking
 	float		dx;		// local texture coordinates
-	float		dy;		// 
+	float		dy;		//
 	float		scale;		// Pixel scale
 	short		texture;		// Decal texture
 	short		flags;		// Decal flags  FDECAL_*
@@ -291,7 +291,7 @@ typedef struct model_s
 //
 	vec3_t		mins, maxs;	// bounding box at angles '0 0 0'
 	float		radius;
-    
+
 	// brush model
 	int		firstmodelsurface;
 	int		nummodelsurfaces;
@@ -378,7 +378,7 @@ typedef struct player_info_s
 	int		bottomcolor;
 
 	// last frame rendered
-	int		renderframe;	
+	int		renderframe;
 
 	// Gait frame estimation
 	int		gaitsequence;

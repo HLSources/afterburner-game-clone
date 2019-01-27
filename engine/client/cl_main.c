@@ -22,6 +22,8 @@ GNU General Public License for more details.
 #include "kbutton.h"
 #include "vgui_draw.h"
 #include "library.h"
+#include "model_dump.h"
+#include "viscompress.h"
 
 #define MAX_TOTAL_CMDS		32
 #define MAX_CMD_BUFFER		8000
@@ -153,6 +155,662 @@ qboolean CL_IsBackgroundMap( void )
 	return ( cl.background && !cls.demoplayback );
 }
 
+static qboolean PointIsOnSurface(const float* worldPos, const msurface_t* surface)
+{
+	const int* surfEdges = cl.worldmodel->surfedges;
+	const medge_t* edges = cl.worldmodel->edges;
+	const mvertex_t* vertices = cl.worldmodel->vertexes;
+	const mplane_t* plane = NULL;
+	float worldPosOrientation = 0.0f;
+	int surfEdgeIndex;
+
+	if ( !worldPos || !surface || surface->numedges < 1 )
+	{
+		return false;
+	}
+
+	plane = surface->plane;
+
+	// If the world pos is on the plane, projecting it onto the normal should result in a DP of dist.
+	// Otherwise, we can return false.
+	if ( fabs(plane->dist - DotProduct(worldPos, plane->normal)) > 0.05 )
+	{
+		return false;
+	}
+
+	// Now we need to ensure that the world pos is on the same side of each edge.
+	// If this is the case, it's surrounded by the face's edges and so lies in the face.
+	for ( surfEdgeIndex = surface->firstedge; surfEdgeIndex < surface->firstedge + surface->numedges; ++surfEdgeIndex)
+	{
+		vec3_t edgeDir;
+		vec3_t pointDir;
+		vec3_t orientationDir;
+		const float* vertex[2];
+		qboolean backwards = false;
+		int surfEdge = surfEdges[surfEdgeIndex];
+		const medge_t* edge = NULL;
+		float localOrientation = 0.0f;
+
+		if ( surfEdge < 0 )
+		{
+			surfEdge = (-surfEdge) - 1;
+			backwards = true;
+		}
+
+		edge = &edges[surfEdge];
+		vertex[0] = vertices[edge->v[backwards ? 1 : 0]].position;
+		vertex[1] = vertices[edge->v[backwards ? 0 : 1]].position;
+
+		VectorSubtract(vertex[1], vertex[0], edgeDir);
+		VectorSubtract(worldPos, vertex[0], pointDir);
+
+		// Create a vector perpendicular to both the current edge and the normal of the plane.
+		CrossProduct(edgeDir, plane->normal, orientationDir);
+
+		// Dot the world point with this and see which side of the edge it's on.
+		localOrientation = DotProduct(orientationDir, pointDir);
+
+		// If the dot product was zero the point is on the edge, so we count it.
+		if ( localOrientation == 0.0f )
+		{
+			continue;
+		}
+
+		// If the cached DP is zero, we haven't set it yet so can't decide at this point.
+		if ( worldPosOrientation == 0.0f )
+		{
+			worldPosOrientation = localOrientation;
+			continue;
+		}
+
+		// If the sign is different, the point is not inside this edge, so is not on the plane.
+		if ( (worldPosOrientation < 0.0f) != (localOrientation < 0.0f) )
+		{
+			return false;
+		}
+	}
+
+	// We passed all checks.
+	return true;
+}
+
+static msurface_t* GetSurfaceByPoint(const float* worldPos)
+{
+	mleaf_t* leaf = Mod_PointInLeaf(worldPos, cl.worldmodel->nodes);
+	int markSurfaceIndex;
+
+	if ( !leaf )
+	{
+		return NULL;
+	}
+
+	for ( markSurfaceIndex = 0; markSurfaceIndex < leaf->nummarksurfaces; ++markSurfaceIndex )
+	{
+		msurface_t* surface = leaf->firstmarksurface[markSurfaceIndex];
+		if ( PointIsOnSurface(worldPos, surface) )
+		{
+			return surface;
+		}
+	}
+
+	return NULL;
+}
+
+msurface_t* CL_GetSurfaceUnderCrosshair(void)
+{
+	vec3_t dir;
+	vec3_t startPos;
+	vec3_t endPos;
+	pmtrace_t traceResult;
+	const float* worldPos = NULL;
+
+	AngleVectors(cl.frame.playerstate[cl.playernum].angles, dir, NULL, NULL);
+
+	VectorCopy(cl.frame.client.origin, startPos);
+	VectorAdd(startPos, cl.frame.client.view_ofs, startPos);
+
+	VectorMA(startPos, 1024.0f, dir, endPos);
+
+	traceResult = CL_TraceLine(startPos, endPos, PM_WORLD_ONLY);
+
+	if ( traceResult.ent != 0 )
+	{
+		return NULL;
+	}
+
+	worldPos = traceResult.endpos;
+	return GetSurfaceByPoint(worldPos);
+}
+
+static unsigned int GetDumpModelFlagFromString(const char* arg)
+{
+	int index;
+
+	for (index = 0; index < DumpModelDataFlagCount; ++index)
+	{
+		if (Q_stricmp(arg, DumpModelDataFlagStrings[index]) == 0)
+		{
+			return 1 << index;
+		}
+	}
+
+	return 0;
+}
+
+static void PrintAllDumpModelArgs()
+{
+	int index;
+
+	for (index = 0; index < DumpModelDataFlagCount; ++index)
+	{
+		Msg("%s\n", DumpModelDataFlagStrings[index]);
+	}
+}
+
+void CL_Debug_DumpWorldModel(void)
+{
+	string fileName;
+	unsigned int flags = 0;
+	int argc = 0;
+	int argIndex;
+
+	if (!Cvar_VariableInteger("sv_cheats"))
+	{
+		Msg("Requires sv_cheats to be 1.\n");
+		return;
+	}
+
+	argc = Cmd_Argc();
+
+	if (argc < 2)
+	{
+		Msg("Usage: debug_dumpworldmodel <file> [args ...] Allowed arguments are one or more of:\n");
+		PrintAllDumpModelArgs();
+		Msg("Specifying no arguments will dump all data from the world model.\n");
+		return;
+	}
+
+	if (!cl.worldmodel)
+	{
+		Msg("No world currently loaded.\n");
+		return;
+	}
+
+	Q_strncpy(fileName, Cmd_Argv(1), MAX_STRING - 1);
+	fileName[MAX_STRING - 1] = '\0';
+
+	if (strlen(fileName) < 1)
+	{
+		Msg("No output file specified.\n");
+		return;
+	}
+
+	if (argc == 2)
+	{
+		flags = DumpModelAllDataFlags;
+	}
+	else
+	{
+		for (argIndex = 2; argIndex < argc; ++argIndex)
+		{
+			flags |= GetDumpModelFlagFromString(Cmd_Argv(argIndex));
+		}
+	}
+
+	DumpModelData(fileName, cl.worldmodel, flags);
+}
+
+void CL_Debug_DumpLightmaps(void)
+{
+	if (!Cvar_VariableInteger("sv_cheats"))
+	{
+		Msg("Requires sv_cheats to be 1.\n");
+		return;
+	}
+
+	if (!cl.worldmodel)
+	{
+		Msg("No world currently loaded.\n");
+		return;
+	}
+
+	DumpLightmaps("lightmaps", cl.worldmodel);
+}
+
+void CL_Debug_DumpSurface(void)
+{
+	string fileName;
+	int argc = 0;
+	int surfaceIndex = -1;
+
+	if (!Cvar_VariableInteger("sv_cheats"))
+	{
+		Msg("Requires sv_cheats to be 1.\n");
+		return;
+	}
+
+	argc = Cmd_Argc();
+
+	if (argc < 3)
+	{
+		Msg("Usage: debug_dumpsurface <surfaceIndex> <file>\n");
+		return;
+	}
+
+	if (!cl.worldmodel)
+	{
+		Msg("No world currently loaded.\n");
+		return;
+	}
+
+	Q_strncpy(fileName, Cmd_Argv(2), MAX_STRING - 1);
+	fileName[MAX_STRING - 1] = '\0';
+
+	if (strlen(fileName) < 1)
+	{
+		Msg("No output file specified.\n");
+		return;
+	}
+
+	surfaceIndex = Q_atoi(Cmd_Argv(1));
+	if ( surfaceIndex < 0 || surfaceIndex >= cl.worldmodel->numsurfaces )
+	{
+		Msg("Face index %d invalid: must be between 0 and %d.\n", surfaceIndex, cl.worldmodel->numsurfaces - 1);
+		return;
+	}
+
+	DumpFaceAsWavefrontObj(fileName, cl.worldmodel, &cl.worldmodel->surfaces[surfaceIndex]);
+}
+
+static qboolean PointInBounds(const float* min, const float* max, const float* point)
+{
+	size_t axis;
+
+	for ( axis = 0; axis < 3; ++axis )
+	{
+		if ( point[axis] < min[axis] || point[axis] > max[axis] )
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+static mleaf_t* FindLeafForPointRecursive(mnode_t* node, const float* point)
+{
+	size_t childIndex;
+
+	if ( !node || !point )
+	{
+		return NULL;
+	}
+
+	if ( !PointInBounds(&node->minmaxs[0], &node->minmaxs[3], point) )
+	{
+		return NULL;
+	}
+
+	if ( node->contents != 0 )
+	{
+		// We reached a leaf! Return it.
+		return (mleaf_t*)node;
+	}
+
+	// Need to call recursively.
+	for ( childIndex = 0; childIndex < 2; ++childIndex )
+	{
+		mnode_t* child = node->children[childIndex];
+		if ( PointInBounds(&child->minmaxs[0], &child->minmaxs[3], point) )
+		{
+			mleaf_t* leaf = FindLeafForPointRecursive(child, point);
+			if ( leaf )
+			{
+				return leaf;
+			}
+		}
+	}
+
+	return NULL;
+}
+
+void CL_Debug_DumpLeafBounds(void)
+{
+	string fileName;
+	int argc = 0;
+	const mleaf_t* leaf = NULL;
+
+	if (!Cvar_VariableInteger("sv_cheats"))
+	{
+		Msg("Requires sv_cheats to be 1.\n");
+		return;
+	}
+
+	argc = Cmd_Argc();
+
+	if (argc < 2)
+	{
+		Msg("Usage: debug_dumpleafbounds <file>\n");
+		return;
+	}
+
+	if (!cl.worldmodel)
+	{
+		Msg("No world currently loaded.\n");
+		return;
+	}
+
+	Q_strncpy(fileName, Cmd_Argv(1), MAX_STRING - 1);
+	fileName[MAX_STRING - 1] = '\0';
+
+	if (strlen(fileName) < 1)
+	{
+		Msg("No output file specified.\n");
+		return;
+	}
+
+	leaf = FindLeafForPointRecursive(cl.worldmodel->nodes, cl.frame.client.origin);
+	if ( !leaf )
+	{
+		Msg("Could not determine leaf for current player position %f %f %f.\n",
+			cl.frame.client.origin[0], cl.frame.client.origin[1], cl.frame.client.origin[2]);
+
+		return;
+	}
+
+	DumpLeafBoundsAsWavefrontObj(fileName, cl.worldmodel, leaf, true);
+}
+
+void CL_Debug_SurfaceInfo(void)
+{
+	int argc = 0;
+	msurface_t* targetSurface = NULL;
+
+	if (!Cvar_VariableInteger("sv_cheats"))
+	{
+		Msg("Requires sv_cheats to be 1.\n");
+		return;
+	}
+
+	argc = Cmd_Argc();
+
+	if (argc < 1)
+	{
+		Msg("Usage: debug_surfaceinfo [index]. If no index is specified, the surface under the crosshair is used.\n");
+		return;
+	}
+
+	if ( argc == 2 )
+	{
+		int surfaceIndex = Q_atoi(Cmd_Argv(1));
+		if ( surfaceIndex < 0 || surfaceIndex >= cl.worldmodel->numsurfaces )
+		{
+			Msg("Surface index %d invalid: must be between 0 and %d.\n", surfaceIndex, cl.worldmodel->numsurfaces - 1);
+			return;
+		}
+
+		targetSurface = &cl.worldmodel->surfaces[surfaceIndex];
+	}
+	else
+	{
+		targetSurface = CL_GetSurfaceUnderCrosshair();
+
+		if ( !targetSurface )
+		{
+			Msg("No surface detected under crosshair.\n");
+			return;
+		}
+	}
+
+	Msg("Surface %u:\n"
+		"  Plane: %u (%f %f %f, %f)\n"
+		"  %d edges\n"
+		"  Texture: %s\n",
+		(uint32_t)(targetSurface - cl.worldmodel->surfaces),
+		(uint32_t)(targetSurface->plane - cl.worldmodel->planes),
+		targetSurface->plane->normal[0],
+		targetSurface->plane->normal[1],
+		targetSurface->plane->normal[2],
+		targetSurface->plane->dist,
+		targetSurface->numedges,
+		targetSurface->texinfo->texture->name);
+}
+
+static void FindSurfaceInTreeRecursive(mnode_t* node, uint16_t surfaceIndex)
+{
+	if ( node->contents == 0 )
+	{
+		unsigned short index;
+
+		for ( index = node->firstsurface; index < node->firstsurface + node->numsurfaces; ++index )
+		{
+			qboolean match = false;
+
+			if ( node->usesmarksurfaces )
+			{
+				msurface_t* surface = cl.worldmodel->nodemarksurfaces[index];
+				match = (uint32_t)(surface - cl.worldmodel->surfaces) == surfaceIndex;
+			}
+			else
+			{
+				match = index == surfaceIndex;
+			}
+
+			if ( match )
+			{
+				Msg("Surface %u referenced by node %u\n", surfaceIndex, (uint32_t)(node - cl.worldmodel->nodes));
+			}
+		}
+
+		for ( index = 0; index < 2; ++index )
+		{
+			FindSurfaceInTreeRecursive(node->children[index], surfaceIndex);
+		}
+	}
+	else
+	{
+		mleaf_t* leaf = (mleaf_t*)node;
+		int index;
+
+		for ( index = 0; index < leaf->nummarksurfaces; ++index )
+		{
+			msurface_t* surface = leaf->firstmarksurface[index];
+			if ( (uint32_t)(surface - cl.worldmodel->surfaces) == surfaceIndex )
+			{
+				Msg("Surface %u referenced by leaf %u\n", surfaceIndex, (uint32_t)(leaf - cl.worldmodel->leafs));
+			}
+		}
+	}
+}
+
+void CL_Debug_SearchTreeForFace(void)
+{
+	int argc = 0;
+	int surfaceIndex = -1;
+
+	if (!Cvar_VariableInteger("sv_cheats"))
+	{
+		Msg("Requires sv_cheats to be 1.\n");
+		return;
+	}
+
+	argc = Cmd_Argc();
+
+	if (argc < 2)
+	{
+		Msg("Usage: debug_searchtreeforface <index>\n");
+		return;
+	}
+
+	surfaceIndex = Q_atoi(Cmd_Argv(1));
+	if ( surfaceIndex < 0 || surfaceIndex >= cl.worldmodel->numsurfaces )
+	{
+		Msg("Surface index %d invalid: must be between 0 and %d.\n", surfaceIndex, cl.worldmodel->numsurfaces - 1);
+		return;
+	}
+
+	Msg("Performing search for surface %d:\n", surfaceIndex);
+	FindSurfaceInTreeRecursive(cl.worldmodel->nodes, (uint16_t)surfaceIndex);
+}
+
+static void PrintLeafInfo(const mleaf_t* leaf)
+{
+	const mnode_t* node = NULL;
+
+	if ( !leaf )
+	{
+		return;
+	}
+
+	Msg("Leaf: %u\n", (uint32_t)(leaf - cl.worldmodel->leafs));
+
+	for ( node = (const mnode_t*)leaf->parent; node; node = node->parent )
+	{
+		Msg("Contained within node: %u\n", (uint32_t)(node - cl.worldmodel->nodes));
+	}
+}
+
+void CL_Debug_LeafInfo(void)
+{
+	int argc = 0;
+	mleaf_t* leaf = NULL;
+
+	if (!Cvar_VariableInteger("sv_cheats"))
+	{
+		Msg("Requires sv_cheats to be 1.\n");
+		return;
+	}
+
+	argc = Cmd_Argc();
+	if ( argc < 2 )
+	{
+		Msg("Player position (%f %f %f):\n", cl.frame.client.origin[0], cl.frame.client.origin[1], cl.frame.client.origin[2]);
+
+		leaf = FindLeafForPointRecursive(cl.worldmodel->nodes, cl.frame.client.origin);
+		if ( !leaf )
+		{
+			Msg("Could not determine valid leaf.\n");
+			return;
+		}
+	}
+	else
+	{
+		int leafIndex = Q_atoi(Cmd_Argv(1));
+
+		if ( leafIndex < 0 || leafIndex >= cl.worldmodel->numleafs )
+		{
+			Msg("Leaf index %d invalid: must be between 0 and %d.\n", leafIndex, cl.worldmodel->numleafs - 1);
+			return;
+		}
+
+		leaf = &cl.worldmodel->leafs[leafIndex];
+	}
+
+	PrintLeafInfo(leaf);
+}
+
+static void PrintLeafPVS(const mleaf_t* leaf)
+{
+	const mnode_t* node = NULL;
+	byte* uncompressed = NULL;
+	size_t uncompressedMaxBytes = 0;
+
+	if ( !leaf )
+	{
+		return;
+	}
+
+	uncompressedMaxBytes = VisUncompressedRowBytesRequired(cl.worldmodel->numleafs);
+	if ( uncompressedMaxBytes < 1 )
+	{
+		Msg("Could not decompress leaf vis record: invalid leaf count of %d\n", cl.worldmodel->numleafs);
+		return;
+	}
+
+	uncompressed = (byte*)Mem_Alloc(cl.worldmodel->mempool, uncompressedMaxBytes);
+	if ( !uncompressed )
+	{
+		Msg("Could not decompress leaf vis record: could not allocate memory.\n");
+		return;
+	}
+
+	if ( VisDecompressToKnownSize(leaf->compressed_vis, uncompressed, uncompressedMaxBytes) )
+	{
+		const uint32_t currentLeafIndex = (const uint32_t)(leaf - cl.worldmodel->leafs);
+		uint32_t leafIndex;
+
+		Msg("Leaf %u/%d. Note that leaf indices do not include the solid leaf 0.\n",
+			currentLeafIndex,
+			cl.worldmodel->numleafs - 1);
+
+		Msg("Bounds: [%f %f %f - %f %f %f]\n",
+			leaf->minmaxs[0],
+			leaf->minmaxs[1],
+			leaf->minmaxs[2],
+			leaf->minmaxs[3],
+			leaf->minmaxs[4],
+			leaf->minmaxs[5]);
+
+		Msg("PVS:\n");
+
+		for ( leafIndex = 0; leafIndex < cl.worldmodel->numleafs; ++leafIndex )
+		{
+			uint32_t byteIndex = leafIndex / 8;
+			uint32_t bitIndex = leafIndex % 8;
+
+			if ( uncompressed[byteIndex] & (1 << bitIndex) )
+			{
+				Msg("  %u\n", leafIndex);
+			}
+		}
+	}
+	else
+	{
+		Msg("Vis leaf record decompression failed.\n");
+	}
+
+	Mem_Free(uncompressed);
+}
+
+void CL_Debug_LeafPVS(void)
+{
+	int argc = 0;
+	mleaf_t* leaf = NULL;
+
+	if (!Cvar_VariableInteger("sv_cheats"))
+	{
+		Msg("Requires sv_cheats to be 1.\n");
+		return;
+	}
+
+	argc = Cmd_Argc();
+	if ( argc < 2 )
+	{
+		Msg("Player position (%f %f %f):\n", cl.frame.client.origin[0], cl.frame.client.origin[1], cl.frame.client.origin[2]);
+
+		leaf = FindLeafForPointRecursive(cl.worldmodel->nodes, cl.frame.client.origin);
+		if ( !leaf )
+		{
+			Msg("Could not determine valid leaf.\n");
+			return;
+		}
+	}
+	else
+	{
+		int leafIndex = Q_atoi(Cmd_Argv(1));
+
+		if ( leafIndex < 0 || leafIndex >= cl.worldmodel->numleafs )
+		{
+			Msg("Leaf index %d invalid: must be between 0 and %d.\n", leafIndex, cl.worldmodel->numleafs - 1);
+			return;
+		}
+
+		leaf = &cl.worldmodel->leafs[leafIndex];
+	}
+
+	PrintLeafPVS(leaf);
+}
+
 char *CL_Userinfo( void )
 {
 	return cls.userinfo;
@@ -181,17 +839,17 @@ void CL_CheckClientState( void )
 {
 	// first update is the pre-final signon stage
 	if(( cls.state == ca_connected || cls.state == ca_validate ) && ( cls.signon == SIGNONS ))
-	{	
+	{
 		cls.state = ca_active;
 		cls.changelevel = false;		// changelevel is done
 		cls.changedemo = false;		// changedemo is done
 		cl.first_frame = true;		// first rendering frame
 
 		SCR_MakeLevelShot();		// make levelshot if needs
-		Cvar_SetValue( "scr_loading", 0.0f );	// reset progress bar	
+		Cvar_SetValue( "scr_loading", 0.0f );	// reset progress bar
 		Netchan_ReportFlow( &cls.netchan );
 
-		Con_DPrintf( "client connected at %.2f sec\n", Sys_DoubleTime() - cls.timestart ); 
+		Con_DPrintf( "client connected at %.2f sec\n", Sys_DoubleTime() - cls.timestart );
 		if(( cls.demoplayback || cls.disable_servercount != cl.servercount ) && cl.video_prepped )
 			SCR_EndLoadingPlaque(); // get rid of loading plaque
 	}
@@ -245,7 +903,7 @@ static float CL_LerpPoint( void )
 	float	f, frac = 1.0f;
 
 	f = cl_serverframetime();
-	
+
 	if( f == 0.0f || cls.timedemo )
 	{
 		cl.time = cl.mtime[0];
@@ -253,7 +911,7 @@ static float CL_LerpPoint( void )
 	}
 
 	if( f > 0.1f )
-	{	
+	{
 		// dropped packet, or start of demo
 		cl.mtime[1] = cl.mtime[0] - 0.1f;
 		f = 0.1f;
@@ -363,7 +1021,7 @@ void CL_ComputeClientInterpolationAmount( usercmd_t *cmd )
 	}
 
 	if( forced ) Cvar_SetValue( "ex_interp", (float)interpolation_msec * 0.001f );
-	interpolation_msec = bound( min_interp, interpolation_msec, max_interp );	
+	interpolation_msec = bound( min_interp, interpolation_msec, max_interp );
 
 	cmd->lerp_msec = CL_DriftInterpolationAmount( interpolation_msec );
 }
@@ -628,13 +1286,13 @@ void CL_CreateCmd( void )
 	CL_SetSolidPlayers( cl.playernum );
 
 	// message we are constructing.
-	i = cls.netchan.outgoing_sequence & CL_UPDATE_MASK;   
+	i = cls.netchan.outgoing_sequence & CL_UPDATE_MASK;
 	pcmd = &cl.commands[i];
 	pcmd->processedfuncs = false;
 
 	if( !cls.demoplayback )
 	{
-		pcmd->senttime = host.realtime;      
+		pcmd->senttime = host.realtime;
 		memset( &pcmd->cmd, 0, sizeof( pcmd->cmd ));
 		pcmd->receivedtime = -1.0;
 		pcmd->heldback = false;
@@ -712,7 +1370,7 @@ void CL_WritePacket( void )
 	int		numcmds;
 	int		newcmds;
 	int		cmdnumber;
-	
+
 	// don't send anything if playing back a demo
 	if( cls.demoplayback || cls.state < ca_connected || cls.state == ca_cinematic )
 		return;
@@ -767,7 +1425,7 @@ void CL_WritePacket( void )
 	if( send_command )
 	{
 		int	outgoing_sequence;
-	
+
 		if( cl_cmdrate->value > 0 ) // clamped between 10 and 100 fps
 			cls.nextcmdtime = host.realtime + bound( 0.1f, ( 1.0f / cl_cmdrate->value ), 0.01f );
 		else cls.nextcmdtime = host.realtime; // always able to send right away
@@ -798,7 +1456,7 @@ void CL_WritePacket( void )
 		// put an upper/lower bound on this
 		newcmds = bound( 0, newcmds, MAX_TOTAL_CMDS );
 		if( cls.state == ca_connected ) newcmds = 0;
-	
+
 		MSG_WriteByte( &buf, newcmds );
 
 		numcmds = newcmds + numbackup;
@@ -822,7 +1480,7 @@ void CL_WritePacket( void )
 
 		// message we are constructing.
 		i = cls.netchan.outgoing_sequence & CL_UPDATE_MASK;
-	
+
 		// determine if we need to ask for a new set of delta's.
 		if( cl.validsequence && (cls.state == ca_active) && !( cls.demorecording && cls.demowaiting ))
 		{
@@ -1188,7 +1846,7 @@ void CL_Connect_f( void )
 	else if( Cmd_Argc() != 2 )
 	{
 		Con_Printf( S_USAGE "connect <server>\n" );
-		return;	
+		return;
 	}
 
 	Q_strncpy( server, Cmd_Argv( 1 ), sizeof( server ));
@@ -1267,7 +1925,7 @@ void CL_Rcon_f( void )
 		NET_StringToAdr( rcon_address->string, &to );
 		if( to.port == 0 ) to.port = MSG_BigShort( PORT_SERVER );
 	}
-	
+
 	NET_SendPacket( NS_CLIENT, Q_strlen( message ) + 1, message, to );
 }
 
@@ -1769,7 +2427,7 @@ void CL_ConnectionlessPacket( netadr_t from, sizebuf_t *msg )
 	int	len = sizeof( buf );
 	int	dataoffset = 0;
 	netadr_t	servadr;
-	
+
 	MSG_Clear( msg );
 	MSG_ReadLong( msg ); // skip the -1
 
@@ -2037,7 +2695,7 @@ void CL_ReadNetMessage( void )
 			continue;
 		}
 
-		// can't be a valid sequenced packet	
+		// can't be a valid sequenced packet
 		if( cls.state < ca_connected ) continue;
 
 		if( !cls.demoplayback && MSG_GetMaxBytes( &net_message ) < 8 )
@@ -2076,7 +2734,7 @@ void CL_ReadNetMessage( void )
 			MSG_Init( &net_message, "ServerData", net_message_buffer, curSize );
 			CL_ParseServerMessage( &net_message, false );
 		}
-		
+
 		if( Netchan_CopyFileFragments( &cls.netchan, &net_message ))
 		{
 			// remove from resource request stuff.
@@ -2140,7 +2798,7 @@ void CL_ReadPackets( void )
 
 	// if in the debugger last frame, don't timeout
 	if( host.frametime > 5.0f ) cls.netchan.last_received = Sys_DoubleTime();
-          
+
 	// check timeout
 	if( cls.state >= ca_connected && cls.state != ca_cinematic && !cls.demoplayback )
 	{
@@ -2151,7 +2809,7 @@ void CL_ReadPackets( void )
 			return;
 		}
 	}
-	
+
 }
 
 /*
@@ -2278,7 +2936,7 @@ void CL_ProcessFile( qboolean successfully_received, const char *filename )
 				}
 				else
 				{
-					Con_Printf( "Downloaded %i bytes for purported %i byte file, ignoring download\n", 
+					Con_Printf( "Downloaded %i bytes for purported %i byte file, ignoring download\n",
 					cls.netchan.tempbuffersize, p->nDownloadSize );
 				}
 
@@ -2479,7 +3137,7 @@ qboolean CL_PrecacheResources( void )
 				}
 				else
 				{
-					Q_strncpy( cl.sound_precache[pRes->nIndex], pRes->szFileName, sizeof( cl.sound_precache[0] )); 
+					Q_strncpy( cl.sound_precache[pRes->nIndex], pRes->szFileName, sizeof( cl.sound_precache[0] ));
 					cl.sound_index[pRes->nIndex] = S_RegisterSound( pRes->szFileName );
 
 					if( !cl.sound_index[pRes->nIndex] )
@@ -2620,7 +3278,7 @@ void CL_InitLocal( void )
 	cl_nodelta = Cvar_Get ("cl_nodelta", "0", 0, "disable delta-compression for server messages" );
 	cl_idealpitchscale = Cvar_Get( "cl_idealpitchscale", "0.8", 0, "how much to look up/down slopes and stairs when not using freelook" );
 	cl_solid_players = Cvar_Get( "cl_solid_players", "1", 0, "Make all players not solid (can't traceline them)" );
-	cl_interp = Cvar_Get( "ex_interp", "0.1", FCVAR_ARCHIVE, "Interpolate object positions starting this many seconds in past" ); 
+	cl_interp = Cvar_Get( "ex_interp", "0.1", FCVAR_ARCHIVE, "Interpolate object positions starting this many seconds in past" );
 	cl_timeout = Cvar_Get( "cl_timeout", "60", 0, "connect timeout (in-seconds)" );
 	cl_charset = Cvar_Get( "cl_charset", "utf-8", FCVAR_ARCHIVE, "1-byte charset to use (iconv style)" );
 	hud_utf8 = Cvar_Get( "hud_utf8", "0", FCVAR_ARCHIVE, "Use utf-8 encoding for hud text" );
@@ -2678,7 +3336,7 @@ void CL_InitLocal( void )
 	Cmd_AddCommand ("god", NULL, "enable godmode" );
 	Cmd_AddCommand ("fov", NULL, "set client field of view" );
 	Cmd_AddCommand ("log", NULL, "logging server events" );
-		
+
 	// register our commands
 	Cmd_AddCommand ("pause", NULL, "pause the game (if the server allows pausing)" );
 	Cmd_AddCommand ("localservers", CL_LocalServers_f, "collect info about local servers" );
@@ -2705,7 +3363,7 @@ void CL_InitLocal( void )
 	Cmd_AddCommand ("linefile", CL_ReadLineFile_f, "show leaks on a map (if present of course)" );
 	Cmd_AddCommand ("fullserverinfo", CL_FullServerinfo_f, "sent by server when serverinfo changes" );
 	Cmd_AddCommand ("upload", CL_BeginUpload_f, "uploading file to the server" );
-	
+
 	Cmd_AddCommand ("quit", CL_Quit_f, "quit from game" );
 	Cmd_AddCommand ("exit", CL_Quit_f, "quit from game" );
 
@@ -2721,6 +3379,18 @@ void CL_InitLocal( void )
 
 	Cmd_AddCommand ("rcon", CL_Rcon_f, "sends a command to the server console (rcon_password and rcon_address required)" );
 	Cmd_AddCommand ("precache", CL_LegacyPrecache_f, "legacy server compatibility" );
+
+	Cmd_AddCommand("debug_dumpworldmodel", CL_Debug_DumpWorldModel, "Dumps internal information about the currently loaded world to the specified file.");
+	Cmd_AddCommand("debug_dumplightmaps", CL_Debug_DumpLightmaps, "Dumps lightmaps from the currently loaded world into the \"lightmaps\" folder.");
+	Cmd_AddCommand("debug_dumpsurface", CL_Debug_DumpSurface, "Dumps a surface to the specified file, formatted as Wavefront OBJ.");
+	Cmd_AddCommand("debug_dumpleafbounds", CL_Debug_DumpLeafBounds, "Dumps current leaf bounds to the specified file, formatted as Wavefront OBJ.");
+	Cmd_AddCommand("debug_surfaceinfo", CL_Debug_SurfaceInfo,
+				   "Prints info about the specified face to the console. If no face index is provided, uses the face being pointed at.");
+	Cmd_AddCommand("debug_searchtreeforface", CL_Debug_SearchTreeForFace, "Prints which BSP nodes/leaves contain the specified face index.");
+	Cmd_AddCommand("debug_leafinfo", CL_Debug_LeafInfo,
+				   "Prints info about the specified leaf to the console. If no leaf index is provided, uses the leaf in which the player is standing.");
+	Cmd_AddCommand("debug_leafpvs", CL_Debug_LeafPVS,
+				   "Prints the PVS of the specified leaf to the console. If no leaf index is provided, uses the leaf in which the player is standing.");
 
 }
 

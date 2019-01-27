@@ -51,6 +51,9 @@ GNU General Public License for more details.
 #define WAD_LOAD_NO_FILES		5
 #define WAD_LOAD_CORRUPTED		6
 
+typedef char path_string[MAX_SYSPATH];
+static texdir_t* currentSortingDir = NULL;
+
 typedef struct stringlist_s
 {
 	// maxstrings changes as needed, causing reallocation of strings[] array
@@ -98,6 +101,15 @@ typedef struct pack_s
 	dpackfile_t	*files;
 } pack_t;
 
+typedef struct texdir_s
+{
+	char filePath[MAX_SYSPATH];
+	string subDirName;
+	string* files;
+	string* filesCaseInsensitive;	// Only used by texture dirs
+	int numFiles;
+} texdir_t;
+
 typedef struct searchpath_s
 {
 	string		filename;
@@ -131,6 +143,12 @@ static int FS_SysFileTime( const char *filename );
 static char W_TypeFromExt( const char *lumpname );
 static const char *W_ExtFromType( char lumptype );
 static void FS_Purge( file_t* file );
+static qboolean AddTextureDirectoriesInternal(const char* directory, const char* subDirectory, qboolean* alreadyLoaded);
+static void SortFilesCaseInsensitive(texdir_t* texDir);
+static file_t* TexDir_LoadFile(const char* path, qboolean gameDirOnly);
+
+typedef int(*StringComparisonFunc)(const char*, const char*);
+static int BinarySearchFiles(const char* searchTerm, string* fileList, int fileCount, StringComparisonFunc comparison);
 
 /*
 =============================================================================
@@ -466,6 +484,7 @@ void FS_Path_f( void )
 	{
 		if( s->pack ) Con_Printf( "%s (%i files)", s->pack->filename, s->pack->numfiles );
 		else if( s->wad ) Con_Printf( "%s (%i files)", s->wad->filename, s->wad->numlumps );
+		else if ( s->texDir ) Msg("%s (%i textures)", s->texDir->filePath, s->texDir->numFiles);
 		else Con_Printf( "%s", s->filename );
 
 		if( s->flags & FS_GAMERODIR_PATH ) Con_Printf( " ^2rodir^7" );
@@ -488,6 +507,80 @@ only for debug targets
 void FS_ClearPaths_f( void )
 {
 	FS_ClearSearchPath();
+}
+
+static void FS_Exists_f( void )
+{
+	searchpath_t* search = NULL;
+	int fileIndex = -1;
+	char fsType[32];
+	string info;
+
+	if (Cmd_Argc() != 2)
+	{
+		Msg("Use fs_exists <path>\n");
+		return;
+	}
+
+	search = FS_FindFile(Cmd_Argv(1), &fileIndex, false);
+
+	if (!search)
+	{
+		Msg(CCOL_RED "File '%s' was not found." CCOL_DEFAULT "\n", Cmd_Argv(1));
+		return;
+	}
+
+	Q_memset(fsType, 0, sizeof(fsType));
+	Q_memset(info, 0, MAX_STRING);
+
+	if (search->pack)
+	{
+		Q_snprintf(fsType, sizeof(fsType) - 1, "PAK file");
+
+		Q_snprintf(info, MAX_STRING - 1,
+				   "File name: %s\n"
+				   "Handle: %d\n"
+				   "Total files: %d\n",
+				   search->pack->filename,
+				   search->pack->handle,
+				   search->pack->numfiles);
+	}
+	else if (search->wad)
+	{
+		Q_snprintf(fsType, sizeof(fsType) - 1, "WAD file");
+
+		Q_snprintf(info, MAX_STRING - 1,
+				   "File name: %s\n"
+				   "Handle: %d\n"
+				   "Total lumps: %d\n"
+				   "Mode: %d\n",
+				   search->wad->filename,
+				   search->wad->handle,
+				   search->wad->numlumps,
+				   search->wad->mode);
+	}
+	else if (search->texDir)
+	{
+		Q_snprintf(fsType, sizeof(fsType) - 1, "texture directory");
+
+		Q_snprintf(info, MAX_STRING - 1,
+				   "Directory path: %s\n"
+				   "Directory name: %s\n"
+				   "Total files: %d\n",
+				   search->texDir->filePath,
+				   search->texDir->subDirName,
+				   search->texDir->numFiles);
+	}
+	else
+	{
+		Q_snprintf(fsType, sizeof(fsType) - 1, "directory");
+
+		Q_snprintf(info, MAX_STRING - 1,
+				   "File path: %s\n",
+				   search->filename);
+	}
+
+	Msg(CCOL_GREEN "File '%s' found in %s at index %d." CCOL_DEFAULT "\n%s", Cmd_Argv(1), fsType, fileIndex, info);
 }
 
 /*
@@ -611,7 +704,7 @@ static qboolean FS_AddWad_Fullpath( const char *wadfile, qboolean *already_loade
 			return true; // already loaded
 		}
 	}
-          
+
 	if( already_loaded )
 		*already_loaded = false;
 
@@ -657,7 +750,7 @@ static qboolean FS_AddPak_Fullpath( const char *pakfile, qboolean *already_loade
 	pack_t		*pak = NULL;
 	const char	*ext = COM_FileExtension( pakfile );
 	int		i, errorcode = PAK_LOAD_COULDNT_OPEN;
-	
+
 	for( search = fs_searchpaths; search; search = search->next )
 	{
 		if( search->pack && !Q_stricmp( search->pack->filename, pakfile ))
@@ -705,6 +798,11 @@ static qboolean FS_AddPak_Fullpath( const char *pakfile, qboolean *already_loade
 	}
 }
 
+static qboolean FS_AddTextureDirectory(const char* directory, qboolean* alreadyLoaded)
+{
+	return AddTextureDirectoriesInternal(directory, NULL, alreadyLoaded);
+}
+
 /*
 ================
 FS_AddGameDirectory
@@ -732,7 +830,8 @@ void FS_AddGameDirectory( const char *dir, uint flags )
 	{
 		if( !Q_stricmp( COM_FileExtension( list.strings[i] ), "pak" ))
 		{
-			Q_sprintf( fullpath, "%s%s", dir, list.strings[i] );
+			Q_snprintf(fullpath, MAX_STRING - 1, "%s%s", dir, list.strings[i]);
+			fullpath[MAX_STRING - 1] = '\0';
 			FS_AddPak_Fullpath( fullpath, NULL, flags );
 		}
 	}
@@ -744,8 +843,20 @@ void FS_AddGameDirectory( const char *dir, uint flags )
 	{
 		if( !Q_stricmp( COM_FileExtension( list.strings[i] ), "wad" ))
 		{
-			Q_sprintf( fullpath, "%s%s", dir, list.strings[i] );
+			Q_snprintf(fullpath, MAX_STRING - 1, "%s%s", dir, list.strings[i]);
+			fullpath[MAX_STRING - 1] = '\0';
 			FS_AddWad_Fullpath( fullpath, NULL, flags );
+		}
+	}
+
+	for (i = 0; i < list.numstrings; i++)
+	{
+		// Add "textures" directory
+		if (!Q_stricmp(list.strings[i], "textures"))
+		{
+			Q_snprintf(fullpath, MAX_STRING - 1, "%s%s/", dir, list.strings[i]);
+			fullpath[MAX_STRING - 1] = '\0';
+			FS_AddTextureDirectory(fullpath, NULL);
 		}
 	}
 
@@ -837,7 +948,7 @@ void FS_ClearSearchPath( void )
 
 		if( search->pack )
 		{
-			if( search->pack->files ) 
+			if( search->pack->files )
 				Mem_Free( search->pack->files );
 			Mem_Free( search->pack );
 		}
@@ -845,6 +956,12 @@ void FS_ClearSearchPath( void )
 		if( search->wad )
 		{
 			W_Close( search->wad );
+		}
+
+		if (search->texDir)
+		{
+			Z_Free(search->texDir->files);
+			Mem_Free(search->texDir);
 		}
 
 		Mem_Free( search );
@@ -1000,7 +1117,7 @@ static void FS_WriteGameInfo( const char *filepath, gameinfo_t *GameInfo )
 		FS_Printf( f, "date\t\t\"%s\"\n", GameInfo->date );
 
 	if( Q_strlen( GameInfo->dll_path ))
-		FS_Printf( f, "dllpath\t\t\"%s\"\n", GameInfo->dll_path );	
+		FS_Printf( f, "dllpath\t\t\"%s\"\n", GameInfo->dll_path );
 
 	if( Q_strlen( GameInfo->game_dll ))
 		FS_Printf( f, "gamedll\t\t\"%s\"\n", GameInfo->game_dll );
@@ -1341,7 +1458,7 @@ static qboolean FS_ParseLiblistGam( const char *filename, const char *gamedir, g
 {
 	char	*afile;
 
-	if( !GameInfo ) return false;	
+	if( !GameInfo ) return false;
 	afile = FS_LoadFile( filename, NULL, false );
 	if( !afile ) return false;
 
@@ -1550,7 +1667,7 @@ void FS_LoadGameInfo( const char *rootfolder )
 		Q_strncpy( SI.clientlib, GI->client_lib, sizeof( SI.clientlib ) );
 #endif
 	}
-	
+
 	FS_Rescan(); // create new filesystem
 
 	Image_CheckPaletteQ1 ();
@@ -1568,12 +1685,13 @@ void FS_Init( void )
 	qboolean		hasBaseDir = false;
 	qboolean		hasGameDir = false;
 	int		i;
-	
+
 	FS_InitMemory();
 
 	Cmd_AddCommand( "fs_rescan", FS_Rescan_f, "rescan filesystem search pathes" );
 	Cmd_AddCommand( "fs_path", FS_Path_f, "show filesystem search pathes" );
 	Cmd_AddCommand( "fs_clearpaths", FS_ClearPaths_f, "clear filesystem search pathes" );
+	Cmd_AddCommand( "fs_exists", FS_Exists_f, "Return whether the given file exists in the search paths" );
 
 #ifndef _WIN32
 	if( Sys_CheckParm( "-casesensitive" ) )
@@ -1599,7 +1717,7 @@ void FS_Init( void )
 	SI.numgames = 0;
 
 	Q_strncpy( fs_basedir, SI.basedirName, sizeof( fs_basedir )); // default dir
-	
+
 	if( !Sys_GetParmFromCmdLine( "-game", fs_gamedir ))
 		Q_strncpy( fs_gamedir, fs_basedir, sizeof( fs_gamedir )); // gamedir == basedir
 
@@ -1689,6 +1807,11 @@ void FS_Shutdown( void )
 {
 	int	i;
 
+	Cmd_RemoveCommand("fs_rescan");
+	Cmd_RemoveCommand("fs_path");
+	Cmd_RemoveCommand("fs_clearpaths");
+	Cmd_RemoveCommand("fs_exists");
+
 	// release gamedirs
 	for( i = 0; i < SI.numgames; i++ )
 		if( SI.games[i] ) Mem_Free( SI.games[i] );
@@ -1709,7 +1832,7 @@ Internal function used to determine filetime
 static int FS_SysFileTime( const char *filename )
 {
 	struct stat buf;
-	
+
 	if( stat( filename, &buf ) == -1 )
 		return -1;
 
@@ -1955,7 +2078,7 @@ static searchpath_t *FS_FindFile( const char *name, int *index, qboolean gamedir
 		}
 		else if( search->wad )
 		{
-			dlumpinfo_t	*lump;	
+			dlumpinfo_t	*lump;
 			char		type = W_TypeFromExt( name );
 			qboolean		anywadname = true;
 			string		wadname, wadfolder;
@@ -1992,6 +2115,48 @@ static searchpath_t *FS_FindFile( const char *name, int *index, qboolean gamedir
 			{
 				if( index )
 					*index = lump - search->wad->lumps;
+				return search;
+			}
+		}
+		else if (search->texDir)
+		{
+			texdir_t* texDir = NULL;
+			string fullPathToFolder;
+			const char* fileName = NULL;
+			int foundIndex = -1;
+
+			texDir = search->texDir;
+
+			FS_ExtractFilePath(name, fullPathToFolder);
+			if (Q_strcmp(fullPathToFolder, texDir->subDirName) != 0)
+			{
+				continue;
+			}
+
+			if (Q_strlen(fullPathToFolder) > 0)
+			{
+				fileName = name + Q_strlen(fullPathToFolder) + 1;
+			}
+			else
+			{
+				fileName = name;
+			}
+
+			foundIndex = BinarySearchFiles(fileName, texDir->files, texDir->numFiles, &Q_strcmp);
+			if (foundIndex < 0)
+			{
+				// Try case-insensitive.
+				foundIndex = BinarySearchFiles(fileName, texDir->filesCaseInsensitive, texDir->numFiles, &Q_stricmp);
+			}
+
+			if (foundIndex >= 0)
+			{
+				if (index)
+				{
+					// Index should be -1 to indicate file is not in pak or wad.
+					*index = -1;
+				}
+
 				return search;
 			}
 		}
@@ -2071,7 +2236,7 @@ file_t *FS_OpenReadFile( const char *filename, const char *mode, qboolean gamedi
 
 	// not found?
 	if( search == NULL )
-		return NULL; 
+		return NULL;
 
 	if( search->pack )
 		return FS_OpenPackedFile( search->pack, pack_ind );
@@ -2084,7 +2249,7 @@ file_t *FS_OpenReadFile( const char *filename, const char *mode, qboolean gamedi
 		// found in the filesystem?
 		Q_sprintf( path, "%s%s", search->filename, filename );
 		return FS_SysOpen( path, mode );
-	} 
+	}
 
 	return NULL;
 }
@@ -2125,7 +2290,7 @@ file_t *FS_Open( const char *filepath, const char *mode, qboolean gamedironly )
 		FS_CreatePath( real_path );// Create directories up to the file
 		return FS_SysOpen( real_path, mode );
 	}
-	
+
 	// else, we look at the various search paths and open the file in read-only mode
 	return FS_OpenReadFile( filepath, mode, gamedironly );
 }
@@ -2416,10 +2581,10 @@ int FS_Seek( file_t *file, fs_offset_t offset, int whence )
 	case SEEK_END:
 		offset += file->real_length;
 		break;
-	default: 
+	default:
 		return -1;
 	}
-	
+
 	if( offset < 0 || offset > file->real_length )
 		return -1;
 
@@ -2692,7 +2857,7 @@ dll_user_t *FS_FindLibrary( const char *dllname, qboolean directpath )
 
 	// NOTE: for libraries we not fail even if search is NULL
 	// let the OS find library himself
-	hInst = Mem_Calloc( host.mempool, sizeof( dll_user_t ));	
+	hInst = Mem_Calloc( host.mempool, sizeof( dll_user_t ));
 
 	// save dllname for debug purposes
 	Q_strncpy( hInst->dllName, dllname, sizeof( hInst->dllName ));
@@ -2714,7 +2879,7 @@ dll_user_t *FS_FindLibrary( const char *dllname, qboolean directpath )
 		hInst->custom_loader = (search) ? true : false;
 	}
 	fs_ext_path = false; // always reset direct paths
-		
+
 	return hInst;
 }
 
@@ -2728,7 +2893,7 @@ return size of file in bytes
 fs_offset_t FS_FileSize( const char *filename, qboolean gamedironly )
 {
 	int	length = -1; // in case file was missed
-	file_t	*fp;	
+	file_t	*fp;
 
 	fp = FS_Open( filename, "rb", gamedironly );
 
@@ -2767,7 +2932,7 @@ int FS_FileTime( const char *filename, qboolean gamedironly )
 {
 	searchpath_t	*search;
 	int		pack_ind;
-	
+
 	search = FS_FindFile( filename, &pack_ind, gamedironly );
 	if( !search ) return -1; // doesn't exist
 
@@ -3088,7 +3253,7 @@ search_t *FS_Search( const char *pattern, int caseinsensitive, int gamedironly )
 
 void FS_InitMemory( void )
 {
-	fs_mempool = Mem_AllocPool( "FileSystem Pool" );	
+	fs_mempool = Mem_AllocPool( "FileSystem Pool" );
 	fs_searchpaths = NULL;
 }
 
@@ -3126,7 +3291,7 @@ static char W_TypeFromExt( const char *lumpname )
 	// we not known about filetype, so match only by filename
 	if( !Q_strcmp( ext, "*" ) || !Q_strcmp( ext, "" ))
 		return TYP_ANY;
-	
+
 	for( type = wad_types; type->ext; type++ )
 	{
 		if( !Q_stricmp( ext, type->ext ))
@@ -3175,7 +3340,7 @@ static dlumpinfo_t *W_FindLump( wfile_t *wad, const char *name, const char match
 	// look for the file (binary search)
 	left = 0;
 	right = wad->numlumps - 1;
-	
+
 	while( left <= right )
 	{
 		int	middle = (left + right) / 2;
@@ -3325,7 +3490,7 @@ wfile_t *W_Open( const char *filename, int *error )
 		wad->handle = FS_SysOpen( filename, "rb" );
 
 	if( wad->handle == NULL )
-	{	
+	{
 		Con_Reportf( S_ERROR "W_Open: couldn't open %s\n", filename );
 		if( error ) *error = WAD_LOAD_COULDNT_OPEN;
 		W_Close( wad );
@@ -3412,7 +3577,7 @@ wfile_t *W_Open( const char *filename, int *error )
 
 		// check for Quake 'conchars' issues (only lmp loader really allows to read this lame pic)
 		if( srclumps[i].type == 68 && !Q_stricmp( srclumps[i].name, "conchars" ))
-			srclumps[i].type = TYP_GFXPIC; 
+			srclumps[i].type = TYP_GFXPIC;
 
 		W_AddFileToWad( name, wad, &srclumps[i] );
 	}
@@ -3437,7 +3602,7 @@ void W_Close( wfile_t *wad )
 
 	Mem_FreePool( &wad->mempool );
 	if( wad->handle != NULL )
-		FS_Close( wad->handle );	
+		FS_Close( wad->handle );
 	Mem_Free( wad ); // free himself
 }
 
@@ -3462,6 +3627,338 @@ static byte *W_LoadFile( const char *path, fs_offset_t *lumpsizeptr, qboolean ga
 
 	search = FS_FindFile( path, &index, gamedironly );
 	if( search && search->wad )
-		return W_ReadLump( search->wad, &search->wad->lumps[index], lumpsizeptr ); 
+		return W_ReadLump( search->wad, &search->wad->lumps[index], lumpsizeptr );
 	return NULL;
+}
+
+static file_t* TexDir_LoadFile(const char* path, qboolean gameDirOnly)
+{
+	path_string fullPath;
+
+	if (Q_stricmp(FS_FileExtension(path), "png") != 0)
+	{
+		return NULL;
+	}
+
+	Q_snprintf(fullPath, MAX_SYSPATH - 1, "textures/%s", path);
+	fullPath[MAX_SYSPATH - 1] = '\0';
+
+	return FS_Open(fullPath, "rb", gameDirOnly);
+}
+
+/*
+=============================================================================
+
+Loading texture paths
+
+=============================================================================
+*/
+
+static qboolean IsTexDirAlreadyLoaded(const char* directory)
+{
+	searchpath_t* search;
+
+	for (search = fs_searchpaths; search; search = search->next)
+	{
+		if (search->texDir && Q_stricmp(search->texDir->filePath, directory) == 0)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+static void CountFilesAndFolders(stringlist_t* list, const char* rootFolder, const char* fileExt, size_t* numFiles, size_t* numFolders)
+{
+	int i;
+
+	if (numFiles)
+	{
+		*numFiles = 0;
+	}
+
+	if (numFolders)
+	{
+		*numFolders = 0;
+	}
+
+	if (!list || !rootFolder)
+	{
+		return;
+	}
+
+	for (i = 0; i < list->numstrings; ++i)
+	{
+		path_string fullPath;
+		char* entry = list->strings[i];
+
+		if (!entry || entry[0] == '\0' || !Q_stricmp(entry, ".") || !Q_stricmp(entry, ".."))
+		{
+			continue;
+		}
+
+		Q_snprintf(fullPath, MAX_SYSPATH - 1, "%s%s", rootFolder, entry);
+		fullPath[MAX_SYSPATH - 1] = '\0';
+
+		if (numFolders && FS_SysFolderExists(fullPath))
+		{
+			++(*numFolders);
+		}
+		else if (numFiles)
+		{
+			if (!fileExt)
+			{
+				if (!FS_SysFileExists(fullPath, false))
+				{
+					continue;
+				}
+			}
+			else
+			{
+				const char* thisExtension = FS_FileExtension(entry);
+				if (!thisExtension || Q_stricmp(thisExtension, fileExt) != 0 || !FS_SysFileExists(fullPath, false))
+				{
+					continue;
+				}
+			}
+
+			++(*numFiles);
+		}
+	}
+}
+
+// Directory is the directory path to store in the texdir.
+static void InitSearchPathForDirectory(searchpath_t** search, const char* rootDirectory, const char* directory)
+{
+	path_string dirWithoutSlash;
+	size_t dirLength = 0;
+
+	dirLength = Q_strlen(directory);
+	Q_strncpy(dirWithoutSlash, directory, MAX_SYSPATH - 1);
+	dirWithoutSlash[dirLength - 1] = '\0';
+
+	if (!search || !directory)
+	{
+		return;
+	}
+
+	*search = (searchpath_t*)Mem_Alloc(fs_mempool, sizeof(searchpath_t));
+	Q_memset(*search, 0, sizeof(searchpath_t));
+
+	(*search)->texDir = (texdir_t*)Mem_Alloc(fs_mempool, sizeof(texdir_t));
+	Q_strncpy((*search)->filename, rootDirectory, PATH_MAX);
+	(*search)->next = NULL;
+
+	Q_memset((*search)->texDir, 0, sizeof(texdir_t));
+	Q_strncpy((*search)->texDir->filePath, dirWithoutSlash, MAX_SYSPATH - 1);
+	(*search)->texDir->filePath[MAX_SYSPATH - 1] = '\0';
+}
+
+// Directory is expected to end with a '/'. SubDirectory is not.
+qboolean AddTextureDirectoriesInternal(const char* directory, const char* subDirectory, qboolean* alreadyLoaded)
+{
+	path_string fullDirectoryPath;
+	stringlist_t directoryList;
+	size_t filesInDirectory = 0;
+	size_t foldersInDirectory = 0;
+	int i;
+	searchpath_t* search = NULL;
+	texdir_t* texDir = NULL;
+
+	if (!subDirectory)
+	{
+		// We're in the root directory and this is the first recursive call. Check we're not already loaded.
+		if (IsTexDirAlreadyLoaded(directory))
+		{
+			if (alreadyLoaded)
+			{
+				*alreadyLoaded = true;
+			}
+
+			return true;
+		}
+
+		// Set the full directory path to just be this directory.
+		Q_strncpy(fullDirectoryPath, directory, MAX_SYSPATH - 1);
+		fullDirectoryPath[MAX_SYSPATH - 1] = '\0';
+	}
+	else
+	{
+		// Set the full directory path taking into account the current subfolder.
+		Q_snprintf(fullDirectoryPath, MAX_SYSPATH - 1, "%s%s/", directory, subDirectory);
+		fullDirectoryPath[MAX_SYSPATH - 1] = '\0';
+	}
+
+	// Create and initialise the search path struct.
+	InitSearchPathForDirectory(&search, directory, fullDirectoryPath);
+	texDir = search->texDir;
+
+	if (subDirectory)
+	{
+		Q_strncpy(texDir->subDirName, subDirectory, MAX_STRING - 1);
+		texDir->subDirName[MAX_STRING - 1] = '\0';
+	}
+
+	// Get a list of how many files there are in the directory.
+	stringlistinit(&directoryList);
+	listdirectory(&directoryList, fullDirectoryPath, false);
+	stringlistsort(&directoryList);
+	CountFilesAndFolders(&directoryList, fullDirectoryPath, "png", &filesInDirectory, &foldersInDirectory);
+
+	if (filesInDirectory > 0)
+	{
+		// Allocate space for all the file paths.
+		texDir->files = (string*)Mem_Alloc(fs_mempool, filesInDirectory * sizeof(string));
+		texDir->filesCaseInsensitive = (string*)Mem_Alloc(fs_mempool, filesInDirectory * sizeof(string));
+
+		// This gets updated as files are added.
+		texDir->numFiles = 0;
+	}
+
+	// Check all the entries in the current directory.
+	for (i = 0; i < directoryList.numstrings; ++i)
+	{
+		path_string fullPathToEntry;
+		const char* entry = directoryList.strings[i];
+
+		// Trivially reject unwanted cases.
+		if (!entry || entry[0] == '\0' || Q_stricmp(entry, ".") == 0 || Q_stricmp(entry, "..") == 0)
+		{
+			continue;
+		}
+
+		// Create a string representing the full path to this item.
+		Q_snprintf(fullPathToEntry, MAX_SYSPATH - 1, "%s%s", fullDirectoryPath, entry);
+		fullPathToEntry[MAX_SYSPATH - 1] = '\0';
+
+		// If it's a file:
+		if (FS_SysFileExists(fullPathToEntry, false))
+		{
+			// Make sure it's a PNG.
+			const char* extension = FS_FileExtension(entry);
+			if (!extension || Q_stricmp(extension, "png") != 0)
+			{
+				continue;
+			}
+
+			// Sanity. If this is not true, we'll overflow!
+			ASSERT(texDir->numFiles < filesInDirectory);
+
+			// Copy the full path into the texdir.
+			Q_strncpy(texDir->files[texDir->numFiles], entry, MAX_STRING - 1);
+			texDir->files[texDir->numFiles][MAX_STRING - 1] = '\0';
+
+			++(texDir->numFiles);
+		}
+
+		// If it's a folder, only deal with these in the root.
+		else if (!subDirectory && FS_SysFolderExists(fullPathToEntry))
+		{
+			// Call through again.
+			AddTextureDirectoriesInternal(fullDirectoryPath, entry, NULL);
+		}
+	}
+
+	// Sanity.
+	ASSERT(texDir->numFiles == filesInDirectory);
+
+	SortFilesCaseInsensitive(texDir);
+
+	// Free up the list of directory contents.
+	stringlistfreecontents(&directoryList);
+
+	// Add our newly populated search path struct to the global list.
+	search->next = fs_searchpaths;
+	fs_searchpaths = search;
+
+	return true;
+}
+
+static int TexDirSortFunc(const void * elem1, const void * elem2)
+{
+	int int1 = *((const int*)elem1);
+	int int2 = *((const int*)elem2);
+	int comparison = 0;
+
+	ASSERT(currentSortingDir);
+
+	comparison = Q_stricmp(currentSortingDir->files[int1], currentSortingDir->files[int2]);
+
+	if (comparison < 0)
+	{
+		return -1;
+	}
+
+	if (comparison > 0)
+	{
+		return 1;
+	}
+
+	return 0;
+}
+
+void SortFilesCaseInsensitive(texdir_t* texDir)
+{
+	int* map = NULL;
+	int index = 0;
+
+	if (!texDir || !texDir->filesCaseInsensitive || texDir->numFiles < 1)
+	{
+		return;
+	}
+
+	map = (int*)Mem_Alloc(fs_mempool, texDir->numFiles * sizeof(int));
+
+	for (index = 0; index < texDir->numFiles; ++index)
+	{
+		map[index] = index;
+	}
+
+	currentSortingDir = texDir;
+	qsort(map, texDir->numFiles, sizeof(int), &TexDirSortFunc);
+	currentSortingDir = NULL;
+
+	for (index = 0; index < texDir->numFiles; ++index)
+	{
+		Q_strncpy(texDir->filesCaseInsensitive[map[index]], texDir->files[index], sizeof(string) - 1);
+		texDir->filesCaseInsensitive[map[index]][sizeof(string) - 1] = '\0';
+	}
+
+	Mem_Free(map);
+}
+
+static int BinarySearchFiles(const char* searchTerm, string* fileList, int fileCount, StringComparisonFunc comparison)
+{
+	int left = 0;
+	int right = fileCount - 1;
+
+	if (!comparison || !searchTerm || !fileList || fileCount < 1)
+	{
+		return -1;
+	}
+
+	while (left <= right)
+	{
+		int diff = 0;
+		int middle = (left + right) / 2;
+
+		diff = comparison(fileList[middle], searchTerm);
+
+		if (diff == 0)
+		{
+			return middle;
+		}
+
+		if (diff > 0)
+		{
+			right = middle - 1;
+		}
+		else
+		{
+			left = middle + 1;
+		}
+	}
+
+	return -1;
 }

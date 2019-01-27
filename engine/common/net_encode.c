@@ -29,7 +29,7 @@ GNU General Public License for more details.
 #define DELTA_PATH		"delta.lst"
 
 static qboolean		delta_init = false;
- 
+
 // list of all the struct names
 static const delta_field_t cmd_fields[] =
 {
@@ -121,7 +121,6 @@ static const delta_field_t wd_fields[] =
 { WPDT_DEF( m_fInReload )		},
 { WPDT_DEF( m_fInSpecialReload )	},
 { WPDT_DEF( m_flNextReload )		},
-{ WPDT_DEF( m_flPumpTime )		},
 { WPDT_DEF( m_fReloadTime )		},
 { WPDT_DEF( m_fAimedDamage )		},
 { WPDT_DEF( m_fNextAimBonus )		},
@@ -167,10 +166,6 @@ static const delta_field_t cd_fields[] =
 { CLDT_DEF( fov )		},
 { CLDT_DEF( weaponanim )	},
 { CLDT_DEF( m_iId )		},
-{ CLDT_DEF( ammo_shells )	},
-{ CLDT_DEF( ammo_nails )	},
-{ CLDT_DEF( ammo_cells )	},
-{ CLDT_DEF( ammo_rockets )	},
 { CLDT_DEF( m_flNextAttack )	},
 { CLDT_DEF( tfstate )	},
 { CLDT_DEF( pushmsec )	},
@@ -390,7 +385,7 @@ void Delta_CustomEncode( delta_info_t *dt, const void *from, const void *to )
 delta_field_t *Delta_FindFieldInfo( const delta_field_t *pInfo, const char *fieldName )
 {
 	if( !fieldName || !*fieldName )
-		return NULL;	
+		return NULL;
 
 	for( ; pInfo->name; pInfo++ )
 	{
@@ -405,7 +400,7 @@ int Delta_IndexForFieldInfo( const delta_field_t *pInfo, const char *fieldName )
 	int	i;
 
 	if( !fieldName || !*fieldName )
-		return -1;	
+		return -1;
 
 	for( i = 0; pInfo->name; i++, pInfo++ )
 	{
@@ -432,7 +427,7 @@ qboolean Delta_AddField( const char *pStructName, const char *pName, int flags, 
 		if( !Q_strcmp( pField->name, pName ))
 		{
 			Con_Reportf( "Delta_Add: %s->%s already existing\n", pStructName, pName );
-			return false; // field already exist		
+			return false; // field already exist
 		}
 	}
 
@@ -451,7 +446,7 @@ qboolean Delta_AddField( const char *pStructName, const char *pName, int flags, 
 	}
 
 	// allocate a new one
-	dt->pFields = Z_Realloc( dt->pFields, (dt->numFields + 1) * sizeof( delta_t ));	
+	dt->pFields = Z_Realloc( dt->pFields, (dt->numFields + 1) * sizeof( delta_t ));
 	for( i = 0, pField = dt->pFields; i < dt->numFields; i++, pField++ );
 
 	// copy info to new field
@@ -471,7 +466,7 @@ void Delta_WriteTableField( sizebuf_t *msg, int tableIndex, const delta_t *pFiel
 {
 	int		nameIndex;
 	delta_info_t	*dt;
-	
+
 	Assert( pField != NULL );
 
 	if( !pField->name || !*pField->name )
@@ -518,7 +513,7 @@ void Delta_ParseTableField( sizebuf_t *msg )
 	if( !dt )
 		Host_Error( "Delta_ParseTableField: not initialized" );
 
-	nameIndex = MSG_ReadUBitLong( msg, 8 );	// read field name index		
+	nameIndex = MSG_ReadUBitLong( msg, 8 );	// read field name index
 	if( !( nameIndex >= 0 && nameIndex < dt->maxFields ) )
 	{
 		Con_Reportf( "Delta_ParseTableField: wrong nameIndex %d for table %s, ignoring\n", nameIndex,  dt->pName );
@@ -635,7 +630,7 @@ qboolean Delta_ParseField( char **delta_script, const delta_field_t *pInfo, delt
 
 	pField->bits = Q_atoi( token );
 
-	*delta_script = COM_ParseFile( *delta_script, token ); 
+	*delta_script = COM_ParseFile( *delta_script, token );
 	if( Q_strcmp( token, "," ))
 	{
 		Con_DPrintf( S_ERROR "Delta_ReadField: expected ',', found '%s' instead\n", token );
@@ -748,7 +743,7 @@ void Delta_ParseTable( char **delta_script, delta_info_t *dt, const char *encode
 void Delta_InitFields( void )
 {
 	char		*afile, *pfile;
-	string		encodeDll, encodeFunc, token;	
+	string		encodeDll, encodeFunc, token;
 	delta_info_t	*dt;
 
 	afile = FS_LoadFile( DELTA_PATH, NULL, false );
@@ -773,7 +768,7 @@ void Delta_InitFields( void )
 
 		// jump to '{'
 		pfile = COM_ParseFile( pfile, token );
-	
+
 		if( token[0] != '{' )
 		{
 			Sys_Error( "%s: missing '{' in section %s\n", DELTA_PATH, dt->pName );
@@ -786,7 +781,7 @@ void Delta_InitFields( void )
 	// adding some required fields that user may forget or don't know how to specified
 	Delta_AddField( "event_t", "velocity[0]", DT_SIGNED | DT_FLOAT, 16, 8.0f, 1.0f );
 	Delta_AddField( "event_t", "velocity[1]", DT_SIGNED | DT_FLOAT, 16, 8.0f, 1.0f );
-	Delta_AddField( "event_t", "velocity[2]", DT_SIGNED | DT_FLOAT, 16, 8.0f, 1.0f );	
+	Delta_AddField( "event_t", "velocity[2]", DT_SIGNED | DT_FLOAT, 16, 8.0f, 1.0f );
 #endif
 }
 
@@ -825,7 +820,7 @@ void Delta_Init( void )
 	else Delta_AddField( "movevars_t", "zmax", DT_FLOAT|DT_SIGNED, 16, 1.0f, 1.0f );
 
 	Delta_AddField( "movevars_t", "waveHeight", DT_FLOAT|DT_SIGNED, 16, 16.0f, 1.0f );
-	Delta_AddField( "movevars_t", "skyName", DT_STRING, 1, 1.0f, 1.0f ); 
+	Delta_AddField( "movevars_t", "skyName", DT_STRING, 1, 1.0f, 1.0f );
 	Delta_AddField( "movevars_t", "footsteps", DT_INTEGER, 1, 1.0f, 1.0f );
 	Delta_AddField( "movevars_t", "rollangle", DT_FLOAT|DT_SIGNED, 16, 32.0f, 1.0f );
 	Delta_AddField( "movevars_t", "rollspeed", DT_FLOAT|DT_SIGNED, 16, 8.0f, 1.0f );
@@ -964,7 +959,7 @@ int Delta_ClampIntegerField( int iValue, qboolean bSigned, int bits )
 	}
 
 	return iValue; // clamped;
-} 
+}
 
 /*
 =====================
@@ -1244,10 +1239,10 @@ qboolean Delta_ReadField( sizebuf_t *msg, delta_t *pField, void *from, void *to,
 	qboolean		bSigned = ( pField->flags & DT_SIGNED ) ? true : false;
 	float		flValue, flAngle, flTime;
 	qboolean		bChanged;
-	uint		iValue;	
+	uint		iValue;
 	const char	*pStr;
 	char		*pOut;
-	
+
 	bChanged = MSG_ReadOneBit( msg );
 
 	Assert( pField->multiplier != 0.0f );
@@ -1366,7 +1361,7 @@ qboolean Delta_ReadField( sizebuf_t *msg, delta_t *pField, void *from, void *to,
 =============================================================================
 
 usercmd_t communication
-  
+
 =============================================================================
 */
 /*
@@ -1488,7 +1483,7 @@ void MSG_ReadDeltaEvent( sizebuf_t *msg, event_args_t *from, event_args_t *to )
 =============================================================================
 
 movevars_t communication
-  
+
 =============================================================================
 */
 qboolean MSG_WriteDeltaMovevars( sizebuf_t *msg, movevars_t *from, movevars_t *to )
@@ -1664,7 +1659,7 @@ void MSG_WriteWeaponData( sizebuf_t *msg, weapon_data_t *from, weapon_data_t *to
 
 	MSG_WriteOneBit( msg, 1 );
 	MSG_WriteUBitLong( msg, index, MAX_WEAPON_BITS );
-               
+
 	// process fields
 	for( i = 0; i < dt->numFields; i++, pField++ )
 	{
@@ -1722,7 +1717,7 @@ If force is not set, then nothing at all will be generated if the entity is
 identical, under the assumption that the in-order delta code will catch it.
 ==================
 */
-void MSG_WriteDeltaEntity( entity_state_t *from, entity_state_t *to, sizebuf_t *msg, qboolean force, int delta_type, float timebase, int baseline ) 
+void MSG_WriteDeltaEntity( entity_state_t *from, entity_state_t *to, sizebuf_t *msg, qboolean force, int delta_type, float timebase, int baseline )
 {
 	delta_info_t	*dt = NULL;
 	delta_t		*pField;
@@ -1762,7 +1757,7 @@ void MSG_WriteDeltaEntity( entity_state_t *from, entity_state_t *to, sizebuf_t *
 		MSG_WriteOneBit( msg, 1 );
 		MSG_WriteSBitLong( msg, baseline, 7 );
 	}
-	else MSG_WriteOneBit( msg, 0 ); 
+	else MSG_WriteOneBit( msg, 0 );
 
 	if( force || ( to->entityType != from->entityType ))
 	{
@@ -1786,7 +1781,7 @@ void MSG_WriteDeltaEntity( entity_state_t *from, entity_state_t *to, sizebuf_t *
 	}
 
 	Assert( dt && dt->bInitialized );
-		
+
 	pField = dt->pFields;
 	Assert( pField != NULL );
 
@@ -1819,7 +1814,7 @@ MSG_ReadDeltaEntity
 
 The entity number has already been read from the message, which
 is how the from state is identified.
-                             
+
 If the delta removes the entity, entity_state_t->number will be set to MAX_EDICTS
 Can go from either a baseline or a previous packet_entity
 ==================
@@ -1849,7 +1844,7 @@ qboolean MSG_ReadDeltaEntity( sizebuf_t *msg, entity_state_t *from, entity_state
                     }
 
 		if( fRemoveType & 2 )
-		{	
+		{
 			// entity was removed from server
 			to->number = -1;
 			return false;
@@ -1922,7 +1917,7 @@ qboolean MSG_ReadDeltaEntity( sizebuf_t *msg, entity_state_t *from, entity_state
 =============================================================================
 
 	game.dll interface
-  
+
 =============================================================================
 */
 void Delta_AddEncoder( char *name, pfnDeltaEncode encodeFunc )
@@ -1944,7 +1939,7 @@ void Delta_AddEncoder( char *name, pfnDeltaEncode encodeFunc )
 	}
 
 	// register new encode func
-	dt->userCallback = encodeFunc;	
+	dt->userCallback = encodeFunc;
 }
 
 int Delta_FindField( delta_t *pFields, const char *fieldname )

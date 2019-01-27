@@ -266,7 +266,7 @@ hull_t *Mod_HullForStudio( model_t *model, float frame, int sequence, vec3_t ang
 
 	if( SV_IsValidEdict( pEdict ) && pEdict->v.gamestate == 1 )
 		bSkipShield = 1;
-	
+
 	for( i = j = 0; i < mod_studiohdr->numhitboxes; i++, j += 6 )
 	{
 		if( bSkipShield && i == 21 )
@@ -309,7 +309,7 @@ static void Mod_StudioCalcBoneAdj( float *adj, const byte *pcontroller )
 	int			i, j;
 	float			value;
 	mstudiobonecontroller_t	*pbonecontroller;
-	
+
 	pbonecontroller = (mstudiobonecontroller_t *)((byte *)mod_studiohdr + mod_studiohdr->bonecontrollerindex);
 
 	for( j = 0; j < mod_studiohdr->numbonecontrollers; j++ )
@@ -326,7 +326,7 @@ static void Mod_StudioCalcBoneAdj( float *adj, const byte *pcontroller )
 			{
 				value = pcontroller[i] * (360.0f / 256.0f) + pbonecontroller[j].start;
 			}
-			else 
+			else
 			{
 				value = pcontroller[i] / 255.0f;
 				value = bound( 0.0f, value, 1.0f );
@@ -419,12 +419,12 @@ void R_StudioCalcBoneQuaternion( int frame, float s, mstudiobone_t *pbone, mstud
 			mstudioanimvalue_t *panimvalue = (mstudioanimvalue_t *)((byte *)panim + panim->offset[j+3]);
 
 			k = frame;
-			
+
 			// debug
 			if( panimvalue->num.total < panimvalue->num.valid )
 				k = 0;
 
-			// find span of values that includes the frame we want			
+			// find span of values that includes the frame we want
 			while( panimvalue->num.total <= k )
 			{
 				k -= panimvalue->num.total;
@@ -733,7 +733,7 @@ static void SV_StudioSetupBones( model_t *pModel,	float frame, int sequence, con
 		i = boneused[j];
 
 		Matrix3x4_FromOriginQuat( bonematrix, q[i], pos[i] );
-		if( pbones[i].parent == -1 ) 
+		if( pbones[i].parent == -1 )
 			Matrix3x4_ConcatTransforms( studio_bones[i], studio_transform, bonematrix );
 		else Matrix3x4_ConcatTransforms( studio_bones[i], studio_bones[pbones[i].parent], bonematrix );
 	}
@@ -979,6 +979,32 @@ const char *Mod_StudioTexName( const char *modname )
 	return texname;
 }
 
+float Mod_StudioGetSequenceDuration( model_t* model, int anim)
+{
+	studiohdr_t* header = NULL;
+	mstudioseqdesc_t* sequence = NULL;
+
+	if ( !model || model->type != mod_studio || anim < 0 )
+	{
+		return 0.0f;
+	}
+
+	header = (studiohdr_t*)Mod_Extradata(model);
+	if ( !header || anim >= header->numseq )
+	{
+		return 0.0f;
+	}
+
+	sequence = (mstudioseqdesc_t*)((byte*)header + header->seqindex) + anim;
+
+	if ( sequence->fps <= 0.0f || sequence->numframes < 1 )
+	{
+		return 0.0f;
+	}
+
+	return (float)sequence->numframes / sequence->fps;
+}
+
 /*
 ================
 Mod_StudioBodyVariations
@@ -1026,7 +1052,7 @@ studiohdr_t *R_StudioLoadHeader( model_t *mod, const void *buffer )
 	{
 		Con_Printf( S_ERROR "%s has wrong version number (%i should be %i)\n", mod->name, i, STUDIO_VERSION );
 		return NULL;
-	}	
+	}
 
 	return (studiohdr_t *)buffer;
 }
@@ -1060,7 +1086,7 @@ void Mod_LoadStudioModel( model_t *mod, const void *buffer, qboolean *loaded )
 
 		if( !thdr )
 		{
-			Con_Printf( S_WARN "Mod_LoadStudioModel: %s missing textures file\n", mod->name ); 
+			Con_Printf( S_WARN "Mod_LoadStudioModel: %s missing textures file\n", mod->name );
 			if( buffer2 ) Mem_Free( buffer2 );
 		}
 		else
@@ -1167,7 +1193,7 @@ static server_studio_api_t gStudioAPI =
 	Mod_LoadCacheFile,
 	Mod_StudioExtradata,
 };
-   
+
 /*
 ===============
 Mod_InitStudioAPI

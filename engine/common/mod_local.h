@@ -226,5 +226,6 @@ void Mod_StudioLoadTextures( model_t *mod, void *data );
 void Mod_StudioUnloadTextures( void *data );
 int Mod_HitgroupForStudioHull( int index );
 void Mod_ClearStudioCache( void );
+float Mod_StudioGetSequenceDuration( model_t* model, int anim);
 
 #endif//MOD_LOCAL_H

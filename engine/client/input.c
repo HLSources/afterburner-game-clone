@@ -133,6 +133,8 @@ Called when key_dest is changed
 */
 void IN_ToggleClientMouse( int newstate, int oldstate )
 {
+	qboolean allowGrab = !Sys_CheckParm("-nograbmouse");
+
 	if( newstate == oldstate ) return;
 
 	if( oldstate == key_game )
@@ -151,7 +153,7 @@ void IN_ToggleClientMouse( int newstate, int oldstate )
 		else
 		{
 			Platform_SetMousePos( host.window_center_x, host.window_center_y );
-			SDL_SetWindowGrab( host.hWnd, SDL_TRUE );
+			SDL_SetWindowGrab( host.hWnd, allowGrab ? SDL_TRUE : SDL_FALSE );
 			if( clgame.dllFuncs.pfnLookEvent )
 				SDL_SetRelativeMouseMode( SDL_TRUE );
 		}
@@ -196,12 +198,12 @@ void IN_ActivateMouse( qboolean force )
 {
 	int		width, height;
 	static int	oldstate;
-			
+
 	if( !in_mouseinitialized )
 		return;
 
 	if( CL_Active() && host.mouse_visible && !force )
-		return;	// VGUI controls  
+		return;	// VGUI controls
 
 	if( cls.key_dest == key_menu && !Cvar_VariableInteger( "fullscreen" ))
 	{
@@ -275,7 +277,7 @@ IN_MouseMove
 void IN_MouseMove( void )
 {
 	POINT	current_pos;
-	
+
 	if( !in_mouseinitialized || !in_mouseactive || !UI_IsVisible( ))
 		return;
 
@@ -516,10 +518,10 @@ void IN_CollectInput( float *forward, float *side, float *pitch, float *yaw, qbo
 		IN_EvdevMove( yaw, pitch );
 #endif
 	}
-	
+
 	Joy_FinalizeMove( forward, side, yaw, pitch );
 	IN_TouchMove( forward, side, yaw, pitch );
-	
+
 	if( look_filter->value )
 	{
 		*pitch = ( inputstate.lastpitch + *pitch ) / 2;
@@ -554,7 +556,7 @@ void IN_EngineAppendMove( float frametime, usercmd_t *cmd, qboolean active )
 		float sensitivity = ( (float)RI.fov_x / (float)90.0f );
 
 		IN_CollectInput( &forward, &side, &pitch, &yaw, in_mouseinitialized, m_enginemouse->value );
-		
+
 		IN_JoyAppendMove( cmd, forward, side );
 
 		RI.viewangles[YAW]   += yaw * sensitivity;
@@ -606,7 +608,7 @@ void Host_InputFrame( void )
 	// release mouse during pause or console typeing
 	if( cl.paused && cls.key_dest == key_game )
 		shutdownMouse = true;
-	
+
 	if( shutdownMouse && !Cvar_VariableInteger( "fullscreen" ))
 	{
 		IN_DeactivateMouse();
