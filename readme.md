@@ -16,7 +16,7 @@ Note that the Afterburner engine does not require the Xash3D VGUI support librar
 * Download [SDL2](https://libsdl.org/download-2.0.php) development package for Visual Studio.
 * Make sure you have at least 12GB of free space to store all build-time dependencies: approx 10GB for Visual Studio, 300 MB for Git, 100 MB for Python and other.
 
-### Linux
+### Linux/Mac
 Make sure you're OK with targeting 32-bit. The Xash3D FWGS engine does support targeting 64-bit, but functionality is not guaranteed at this point in time, so 64-bit builds are currently not supported by Afterburner.
 
 * **Gentoo**: TODO
@@ -39,9 +39,10 @@ Then navigate to the `afterburner-engine` directory in a command prompt, and fol
 3. Compile: `waf build`
 4. Install: `waf install`
 
-### Linux
+### Linux/Mac
 1. Examine which build options are available: `./waf --help`
 2. Configure build: `./waf configure --disable-vgui --build-type=release --win-style-install --prefix=/path/to/any/output/directory`
+   Note: Provide the path to SDL2 using the `--sdl2` option if required. On Mac, this is the path up to and including the `SDL2.framework` package.
 3. Compile: `./waf build`
 4. Install (optional): `./waf install`
 

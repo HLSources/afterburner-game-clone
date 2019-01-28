@@ -3853,6 +3853,7 @@ static efx_api_t gEfxApi =
 	R_Sprite_WallPuff,
 	R_StreakSplash,
 	R_TracerEffect,
+	R_BulletTracerEffect,
 	R_UserTracerParticle,
 	R_TracerParticles,
 	R_TeleportSplash,

@@ -37,7 +37,7 @@ PARTICLES MANAGEMENT
 static int ramp1[8] = { 0x6f, 0x6d, 0x6b, 0x69, 0x67, 0x65, 0x63, 0x61 };
 static int ramp2[8] = { 0x6f, 0x6e, 0x6d, 0x6c, 0x6b, 0x6a, 0x68, 0x66 };
 static int ramp3[6] = { 0x6d, 0x6b, 6, 5, 4, 3 };
-static float gTracerSize[11] = { 1.5f, 0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
+static float gTracerSize[12] = { 1.5f, 0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.5f, 1.0f };
 static int gSparkRamp[9] = { 0xfe, 0xfd, 0xfc, 0x6f, 0x6e, 0x6d, 0x6c, 0x67, 0x60 };
 
 static color24 gTracerColors[] =
@@ -1463,6 +1463,37 @@ void CL_Particle( const vec3_t org, int color, float life, int zpos, int zvel )
 	p->color = color;
 }
 
+static particle_t* CreateTracerEffect(const vec3_t start, const vec3_t end, ptype_t type)
+{
+	vec3_t	pos, vel, dir;
+	float	len, speed;
+	float	offset;
+	particle_t* particle = NULL;
+
+	speed = Q_max( tracerspeed->value, 3.0f );
+
+	VectorSubtract( end, start, dir );
+	len = VectorLength( dir );
+	if( len == 0.0f )
+	{
+		return NULL;
+	}
+
+	VectorScale( dir, 1.0f / len, dir ); // normalize
+	offset = COM_RandomFloat( -10.0f, 9.0f ) + traceroffset->value;
+	VectorScale( dir, offset, vel );
+	VectorAdd( start, vel, pos );
+	VectorScale( dir, speed, vel );
+
+	particle = R_AllocTracer( pos, vel, len / speed );
+	if ( particle )
+	{
+		particle->type = type;
+	}
+
+	return particle;
+}
+
 /*
 ===============
 R_TracerEffect
@@ -1471,23 +1502,12 @@ R_TracerEffect
 */
 void R_TracerEffect( const vec3_t start, const vec3_t end )
 {
-	vec3_t	pos, vel, dir;
-	float	len, speed;
-	float	offset;
+	CreateTracerEffect(start, end, pt_static);
+}
 
-	speed = Q_max( tracerspeed->value, 3.0f );
-
-	VectorSubtract( end, start, dir );
-	len = VectorLength( dir );
-	if( len == 0.0f ) return;
-
-	VectorScale( dir, 1.0f / len, dir ); // normalize
-	offset = COM_RandomFloat( -10.0f, 9.0f ) + traceroffset->value;
-	VectorScale( dir, offset, vel );
-	VectorAdd( start, vel, pos );
-	VectorScale( dir, speed, vel );
-
-	R_AllocTracer( pos, vel, len / speed );
+void R_BulletTracerEffect(const vec3_t start, const vec3_t end)
+{
+	CreateTracerEffect(start, end, pt_bullet_tracer);
 }
 
 /*
