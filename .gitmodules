@@ -4,6 +4,3 @@
 [submodule "vgui_support/miniutl"]
 	path = vgui_support/miniutl
 	url = https://github.com/FWGS/miniutl
-[submodule "dependencies/afterburner-compiletools"]
-	path = dependencies/afterburner-compiletools
-	url = https://github.com/x6herbius/afterburner-compiletools
