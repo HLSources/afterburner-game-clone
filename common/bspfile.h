@@ -31,6 +31,7 @@ BRUSH MODELS
 #define Q1BSP_VERSION	29	// quake1 regular version (beta is 28)
 #define HLBSP_VERSION	30	// half-life regular version
 #define QBSP2_VERSION	(('B' << 0) | ('S' << 8) | ('P' << 16) | ('2'<<24))
+#define ABBSP_VERSION	43
 
 #define IDEXTRAHEADER	(('H'<<24)+('S'<<16)+('A'<<8)+'X') // little-endian "XASH"
 #define EXTRA_VERSION	4	// ver. 1 was occupied by old versions of XashXT, ver. 2 was occupied by old vesrions of P2:savior
@@ -48,7 +49,7 @@ BRUSH MODELS
 
 #define SURF_PLANEBACK		BIT( 1 )		// plane should be negated
 #define SURF_DRAWSKY		BIT( 2 )		// sky surface
-#define SURF_DRAWTURB_QUADS		BIT( 3 )		// all subidivided polygons are quads 
+#define SURF_DRAWTURB_QUADS		BIT( 3 )		// all subidivided polygons are quads
 #define SURF_DRAWTURB		BIT( 4 )		// warp surface
 #define SURF_DRAWTILED		BIT( 5 )		// face without lighmap
 #define SURF_CONVEYOR		BIT( 6 )		// scrolled texture (was SURF_DRAWBACKGROUND)
@@ -164,7 +165,7 @@ typedef struct
 {
 	int	id;			// must be little endian XASH
 	int	version;
-	dlump_t	lumps[EXTRA_LUMPS];	
+	dlump_t	lumps[EXTRA_LUMPS];
 } dextrahdr_t;
 
 typedef struct

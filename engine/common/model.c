@@ -317,6 +317,7 @@ model_t *Mod_LoadModel( model_t *mod, qboolean crash )
 	case Q1BSP_VERSION:
 	case HLBSP_VERSION:
 	case QBSP2_VERSION:
+	case ABBSP_VERSION:	// TODO: This will need to be routed elsewhere soon
 		Mod_LoadBrushModel( mod, buf, &loaded );
 		break;
 	default:
