@@ -316,7 +316,9 @@ build-*
 build_current
 .waf-*
 waf-*/
+.waf-*/
 waf3-*/
+.waf3-*/
 .lock-waf*
 *.lastbuildstate
 *.unsuccessfulbuild
