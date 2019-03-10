@@ -134,7 +134,7 @@ CL_EventIndex
 word CL_EventIndex( const char *name )
 {
 	int	i;
-	
+
 	if( !COM_CheckString( name ))
 		return 0;
 
@@ -152,7 +152,7 @@ CL_RegisterEvent
 
 =============
 */
-void CL_RegisterEvent( int lastnum, const char *szEvName, pfnEventHook func )
+void CL_RegisterEvent( int lastnum, const char *szEvName, pfnEventHook func, void* pUserData )
 {
 	cl_user_event_t	*ev;
 
@@ -169,6 +169,7 @@ void CL_RegisterEvent( int lastnum, const char *szEvName, pfnEventHook func )
 	// NOTE: ev->index will be set later
 	Q_strncpy( ev->name, szEvName, MAX_QPATH );
 	ev->func = func;
+	ev->userData = pUserData;
 }
 
 /*
@@ -189,7 +190,7 @@ qboolean CL_FireEvent( event_info_t *ei, int slot )
 	// get the func pointer
 	for( i = 0; i < MAX_EVENTS; i++ )
 	{
-		ev = clgame.events[i];		
+		ev = clgame.events[i];
 
 		if( !ev )
 		{
@@ -202,6 +203,7 @@ qboolean CL_FireEvent( event_info_t *ei, int slot )
 		{
 			if( ev->func )
 			{
+				ei->args.localUserData = ev->userData;
 				CL_DescribeEvent( slot, ei->flags, cl.event_precache[ei->index] );
 				ev->func( &ei->args );
 				return true;
@@ -209,7 +211,7 @@ qboolean CL_FireEvent( event_info_t *ei, int slot )
 
 			name = cl.event_precache[ei->index];
 			Con_Reportf( S_ERROR "CL_FireEvent: %s not hooked\n", name );
-			break;			
+			break;
 		}
 	}
 
@@ -437,7 +439,7 @@ void CL_ParseEvent( sizebuf_t *msg )
 						args.angles[PITCH] /= -3.0f;
 				}
 			}
-		
+
 			// Place event on queue
 			CL_QueueEvent( FEV_SERVER, event_index, delay, &args );
 		}
@@ -469,7 +471,7 @@ void CL_PlaybackEvent( int flags, const edict_t *pInvoker, word eventindex, floa
 	if( !CL_EventIndex( cl.event_precache[eventindex] ))
 	{
 		Con_DPrintf( S_ERROR "CL_PlaybackEvent: event %i was not precached\n", eventindex );
-		return;		
+		return;
 	}
 
 	SetBits( flags, FEV_CLIENT ); // it's a client event

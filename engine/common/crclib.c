@@ -269,6 +269,7 @@ qboolean CRC32_MapFile( dword *crcvalue, const char *filename, qboolean multipla
 	case Q1BSP_VERSION:
 	case HLBSP_VERSION:
 	case QBSP2_VERSION:
+	case ABBSP_VERSION:
 		break;
 	default:
 		FS_Close( f );
@@ -379,7 +380,7 @@ void MD5Update( MD5Context_t *ctx, const byte *buf, uint len )
 ===============
 MD5Final
 
-Final wrapup - pad to 64-byte boundary with the bit pattern 
+Final wrapup - pad to 64-byte boundary with the bit pattern
 1 0* (64-bit count of bits processed, MSB-first)
 ===============
 */
@@ -532,7 +533,7 @@ qboolean MD5_HashFile( byte digest[16], const char *pszFileName, uint seed[4] )
 	char		buffer[1024];
 	MD5Context_t	MD5_Hash;
 	int		bytes;
- 
+
 	if(( file = FS_Open( pszFileName, "rb", false )) == NULL )
 		return false;
 

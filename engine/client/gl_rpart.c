@@ -37,7 +37,7 @@ PARTICLES MANAGEMENT
 static int ramp1[8] = { 0x6f, 0x6d, 0x6b, 0x69, 0x67, 0x65, 0x63, 0x61 };
 static int ramp2[8] = { 0x6f, 0x6e, 0x6d, 0x6c, 0x6b, 0x6a, 0x68, 0x66 };
 static int ramp3[6] = { 0x6d, 0x6b, 6, 5, 4, 3 };
-static float gTracerSize[11] = { 1.5f, 0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
+static float gTracerSize[12] = { 1.5f, 0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.5f, 1.0f };
 static int gSparkRamp[9] = { 0xfe, 0xfd, 0xfc, 0x6f, 0x6e, 0x6d, 0x6c, 0x67, 0x60 };
 
 static color24 gTracerColors[] =
@@ -311,7 +311,7 @@ void R_FreeDeadParticles( particle_t **ppparticles )
 	particle_t	*p, *kill;
 
 	// kill all the ones hanging direcly off the base pointer
-	while( 1 ) 
+	while( 1 )
 	{
 		kill = *ppparticles;
 		if( kill && kill->die < cl.time )
@@ -528,7 +528,7 @@ static qboolean CL_CullTracer( particle_t *p, const vec3_t start, const vec3_t e
 			mins[i] = end[i];
 			maxs[i] = start[i];
 		}
-		
+
 		// don't let it be zero sized
 		if( mins[i] == maxs[i] )
 		{
@@ -618,10 +618,10 @@ void CL_DrawTracers( double frametime )
 			VectorSubtract( normal, tmp2, normal );
 
 			// compute four vertexes
-			VectorSubtract( start, normal, verts[0] ); 
-			VectorAdd( start, normal, verts[1] ); 
-			VectorAdd( verts[0], delta, verts[2] ); 
-			VectorAdd( verts[1], delta, verts[3] ); 
+			VectorSubtract( start, normal, verts[0] );
+			VectorAdd( start, normal, verts[1] );
+			VectorAdd( verts[0], delta, verts[2] );
+			VectorAdd( verts[1], delta, verts[3] );
 
 			pColor = &gTracerColors[p->color];
 			pglColor4ub( pColor->r, pColor->g, pColor->b, p->packedColor );
@@ -705,7 +705,7 @@ void R_EntityParticles( cl_entity_t *ent )
 {
 	float		angle;
 	float		sr, sp, sy, cr, cp, cy;
-	vec3_t		forward;	
+	vec3_t		forward;
 	particle_t	*p;
 	int		i;
 
@@ -720,8 +720,8 @@ void R_EntityParticles( cl_entity_t *ent )
 		SinCos( angle, &sp, &cp );
 		angle = cl.time * cl_avelocities[i][2];
 		SinCos( angle, &sr, &cr );
-	
-		VectorSet( forward, cp * cy, cp * sy, -sp ); 
+
+		VectorSet( forward, cp * cy, cp * sy, -sp );
 
 		p->die = cl.time + 0.001f;
 		p->color = 111; // yellow
@@ -849,7 +849,7 @@ void R_RunParticleEffect( const vec3_t org, const vec3_t dir, int color, int cou
 		R_ParticleExplosion( org );
 		return;
 	}
-	
+
 	for( i = 0; i < count; i++ )
 	{
 		p = R_AllocParticle( NULL );
@@ -1003,7 +1003,7 @@ void R_LavaSplash( const vec3_t org )
 				p->die = cl.time + COM_RandomFloat( 2.0f, 2.62f );
 				p->color = COM_RandomLong( 224, 231 );
 				p->type = pt_slowgrav;
-				
+
 				dir[0] = j * 8.0f + COM_RandomFloat( 0.0f, 7.0f );
 				dir[1] = i * 8.0f + COM_RandomFloat( 0.0f, 7.0f );
 				dir[2] = 256.0f;
@@ -1121,19 +1121,19 @@ void R_TeleportSplash( const vec3_t org )
 			{
 				p = R_AllocParticle( NULL );
 				if( !p ) return;
-		
+
 				p->die = cl.time + COM_RandomFloat( 0.2f, 0.34f );
 				p->color = COM_RandomLong( 7, 14 );
 				p->type = pt_slowgrav;
-				
+
 				dir[0] = j * 8.0f;
 				dir[1] = i * 8.0f;
 				dir[2] = k * 8.0f;
-	
+
 				p->org[0] = org[0] + i + COM_RandomFloat( 0.0f, 3.0f );
 				p->org[1] = org[1] + j + COM_RandomFloat( 0.0f, 3.0f );
 				p->org[2] = org[2] + k + COM_RandomFloat( 0.0f, 3.0f );
-	
+
 				VectorNormalize( dir );
 				vel = COM_RandomFloat( 50.0f, 113.0f );
 				VectorScale( dir, vel, p->vel );
@@ -1182,7 +1182,7 @@ void R_RocketTrail( vec3_t start, vec3_t end, int type )
 
 		p = R_AllocParticle( NULL );
 		if( !p ) return;
-		
+
 		p->die = cl.time + 2.0f;
 
 		switch( type )
@@ -1312,7 +1312,7 @@ void R_ShowLine( const vec3_t start, const vec3_t end )
 	len = VectorNormalizeLength( dir );
 	VectorScale( dir, 5.0f, dir );
 	VectorCopy( start, org );
-	
+
 	while( len > 0 )
 	{
 		len -= 5.0f;
@@ -1341,7 +1341,7 @@ void R_BulletImpactParticles( const vec3_t pos )
 	float		dist;
 	vec3_t		dir;
 	particle_t	*p;
-	
+
 	VectorSubtract( pos, RI.vieworg, dir );
 	dist = VectorLength( dir );
 	if( dist > 1000.0f ) dist = 1000.0f;
@@ -1407,7 +1407,7 @@ create a splash of streaks
 void R_StreakSplash( const vec3_t pos, const vec3_t dir, int color, int count, float speed, int velocityMin, int velocityMax )
 {
 	vec3_t		vel, vel2;
-	particle_t	*p;	
+	particle_t	*p;
 	int		i;
 
 	VectorScale( dir, speed, vel );
@@ -1463,6 +1463,37 @@ void CL_Particle( const vec3_t org, int color, float life, int zpos, int zvel )
 	p->color = color;
 }
 
+static particle_t* CreateTracerEffect(const vec3_t start, const vec3_t end, ptype_t type)
+{
+	vec3_t	pos, vel, dir;
+	float	len, speed;
+	float	offset;
+	particle_t* particle = NULL;
+
+	speed = Q_max( tracerspeed->value, 3.0f );
+
+	VectorSubtract( end, start, dir );
+	len = VectorLength( dir );
+	if( len == 0.0f )
+	{
+		return NULL;
+	}
+
+	VectorScale( dir, 1.0f / len, dir ); // normalize
+	offset = COM_RandomFloat( -10.0f, 9.0f ) + traceroffset->value;
+	VectorScale( dir, offset, vel );
+	VectorAdd( start, vel, pos );
+	VectorScale( dir, speed, vel );
+
+	particle = R_AllocTracer( pos, vel, len / speed );
+	if ( particle )
+	{
+		particle->type = type;
+	}
+
+	return particle;
+}
+
 /*
 ===============
 R_TracerEffect
@@ -1471,23 +1502,12 @@ R_TracerEffect
 */
 void R_TracerEffect( const vec3_t start, const vec3_t end )
 {
-	vec3_t	pos, vel, dir;
-	float	len, speed;
-	float	offset;
+	CreateTracerEffect(start, end, pt_static);
+}
 
-	speed = Q_max( tracerspeed->value, 3.0f );
-
-	VectorSubtract( end, start, dir );
-	len = VectorLength( dir );
-	if( len == 0.0f ) return;
-
-	VectorScale( dir, 1.0f / len, dir ); // normalize
-	offset = COM_RandomFloat( -10.0f, 9.0f ) + traceroffset->value;
-	VectorScale( dir, offset, vel );
-	VectorAdd( start, vel, pos );
-	VectorScale( dir, speed, vel );
-
-	R_AllocTracer( pos, vel, len / speed );
+void R_BulletTracerEffect(const vec3_t start, const vec3_t end)
+{
+	CreateTracerEffect(start, end, pt_bullet_tracer);
 }
 
 /*
@@ -1542,7 +1562,7 @@ void R_SparkStreaks( const vec3_t pos, int count, int velocityMin, int velocityM
 	particle_t	*p;
 	vec3_t		vel;
 	int		i;
-	
+
 	for( i = 0; i<count; i++ )
 	{
 		vel[0] = COM_RandomFloat( velocityMin, velocityMax );
@@ -1605,7 +1625,7 @@ void CL_ReadPointFile_f( void )
 	particle_t	*p;
 	char		filename[64];
 	string		token;
-	
+
 	Q_snprintf( filename, sizeof( filename ), "maps/%s.pts", clgame.mapname );
 	afile = FS_LoadFile( filename, NULL, false );
 
@@ -1614,7 +1634,7 @@ void CL_ReadPointFile_f( void )
 		Con_Printf( S_ERROR "couldn't open %s\n", filename );
 		return;
 	}
-	
+
 	Con_Printf( "Reading %s...\n", filename );
 
 	count = 0;
@@ -1635,7 +1655,7 @@ void CL_ReadPointFile_f( void )
 		org[2] = Q_atof( token );
 
 		count++;
-		
+
 		if( !cl_free_particles )
 		{
 			Con_Printf( S_ERROR "not enough free particles!\n" );
@@ -1649,7 +1669,7 @@ void CL_ReadPointFile_f( void )
 		p->next = cl_active_particles;
 		cl_active_particles = p;
 
-		p->ramp = 0;		
+		p->ramp = 0;
 		p->type = pt_static;
 		p->die = cl.time + 99999;
 		p->color = (-count) & 15;

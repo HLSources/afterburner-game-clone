@@ -32,7 +32,7 @@ def build(bld):
 
 	bld(
 		source   = source,
-		target   = 'xash3d', # hl.exe
+		target   = 'bond', # hl.exe
 		features = 'c cprogram',
 		includes = includes,
 		use      = libs,

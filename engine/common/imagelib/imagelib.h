@@ -80,7 +80,7 @@ typedef struct imglib_s
 	int			source_width;	// locked cubemap dims (all wrong sides will be automatically resampled)
 	int			source_height;
 	uint			source_type;	// shared image type for all mipmaps or cubemap sides
-	int			num_sides;	// how much sides is loaded 
+	int			num_sides;	// how much sides is loaded
 	byte			*cubemap;		// cubemap pack
 
 	// indexed images state
@@ -305,6 +305,7 @@ qboolean Image_LoadDDS( const char *name, const byte *buffer, size_t filesize );
 qboolean Image_LoadFNT( const char *name, const byte *buffer, size_t filesize );
 qboolean Image_LoadLMP( const char *name, const byte *buffer, size_t filesize );
 qboolean Image_LoadPAL( const char *name, const byte *buffer, size_t filesize );
+qboolean Image_LoadPNG( const char *name, const byte *buffer, size_t filesize );
 
 //
 // formats save

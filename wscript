@@ -40,22 +40,22 @@ def options(opt):
 	grp = opt.add_option_group('Common options')
 
 	grp.add_option('--build-type', action='store', dest='BUILD_TYPE', default = None,
-		help = 'build type: debug, release or none(custom flags)')
+		help = 'Build type: debug, release or none (custom flags)')
 
 	grp.add_option('--dedicated', action = 'store_true', dest = 'DEDICATED', default = False,
-		help = 'build Xash Dedicated Server(XashDS)')
+		help = 'Build dedicated server')
 
 	grp.add_option(	'--single-binary', action = 'store_true', dest = 'SINGLE_BINARY', default = False,
-		help = 'build single "xash" binary instead of xash.dll/libxash.so (forced for dedicated)')
+		help = 'Build single binary instead of runtime libraries (forced for dedicated)')
 
 	grp.add_option('--64bits', action = 'store_true', dest = 'ALLOW64', default = False,
-		help = 'allow targetting 64-bit engine')
+		help = 'Allow targetting 64-bit engine')
 
 	grp.add_option('--win-style-install', action = 'store_true', dest = 'WIN_INSTALL', default = False,
-		help = 'install like Windows build, ignore prefix, useful for development')
+		help = 'Install like Windows build, ignore prefix, useful for development')
 
 	grp.add_option('--skip-subprojects', action='store', dest = 'SKIP_SUBDIRS', default=None,
-		help = 'don\'t recurse into specified subprojects. Current subdirs: ' + str(subdirs()))
+		help = "Don't recurse into specified subprojects. Current subdirs: " + str(subdirs()))
 
 	for i in SUBDIRS:
 		if not os.path.isfile(os.path.join(i.name, 'wscript')):
@@ -165,8 +165,8 @@ def configure(conf):
 
 
 	# indicate if we are packaging for Linux/BSD
-	if(not conf.options.WIN_INSTALL and 
-		conf.env.DEST_OS != 'win32' and 
+	if(not conf.options.WIN_INSTALL and
+		conf.env.DEST_OS != 'win32' and
 		conf.env.DEST_OS != 'darwin'):
 		conf.env.LIBDIR = conf.env.BINDIR = '${PREFIX}/lib/xash3d'
 	else:

@@ -127,7 +127,7 @@ extern int CL_UPDATE_BACKUP;
 #define MIN_EX_INTERP	50.0f
 #define MAX_EX_INTERP	100.0f
 
-#define CL_MIN_RESEND_TIME	1.5f		// mininum time gap (in seconds) before a subsequent connection request is sent.    
+#define CL_MIN_RESEND_TIME	1.5f		// mininum time gap (in seconds) before a subsequent connection request is sent.
 #define CL_MAX_RESEND_TIME	20.0f		// max time.  The cvar cl_resend is bounded by these.
 
 #define cl_serverframetime()	(cl.mtime[0] - cl.mtime[1])
@@ -204,7 +204,7 @@ typedef struct
 						// render a frame yet
 	int		parsecount;		// server message counter
 	int		parsecountmod;		// modulo with network window
-									
+
 	qboolean		video_prepped;		// false if on new level or new ref dll
 	qboolean		audio_prepped;		// false if on new level or new snd dll
 	qboolean		paused;
@@ -339,7 +339,7 @@ typedef struct
 	char		name[32];
 	int		number;	// svc_ number
 	int		size;	// if size == -1, size come from first byte after svcnum
-	pfnUserMsgHook	func;	// user-defined function	
+	pfnUserMsgHook	func;	// user-defined function
 } cl_user_message_t;
 
 typedef void (*pfnEventHook)( event_args_t *args );
@@ -349,6 +349,7 @@ typedef struct
 	char		name[MAX_QPATH];
 	word		index;	// event index
 	pfnEventHook	func;	// user-defined function
+	void* userData;
 } cl_user_event_t;
 
 #define FONT_FIXED		0
@@ -578,7 +579,7 @@ typedef struct
 
 	netadr_t		hltv_listen_address;
 
-	int		signon;			// 0 to SIGNONS, for the signon sequence.	
+	int		signon;			// 0 to SIGNONS, for the signon sequence.
 	int		quakePort;		// a 16 bit value that allows quake servers
 						// to work around address translating routers
 						// g-cont. this port allow many copies of engine in multiplayer game
@@ -604,7 +605,7 @@ typedef struct
 	double		packet_loss_recalc_time;
 	int		starting_count;		// message num readed bits
 
-	float		nextcmdtime;		// when can we send the next command packet?                
+	float		nextcmdtime;		// when can we send the next command packet?
 	int		lastoutgoingcommand;	// sequence number of last outgoing command
 	int		lastupdate_sequence;	// prediction stuff
 
@@ -820,7 +821,7 @@ void CL_SetEventIndex( const char *szEvName, int ev_index );
 void CL_QueueEvent( int flags, int index, float delay, event_args_t *args );
 void CL_PlaybackEvent( int flags, const edict_t *pInvoker, word eventindex, float delay, float *origin,
 	float *angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2 );
-void CL_RegisterEvent( int lastnum, const char *szEvName, pfnEventHook func );
+void CL_RegisterEvent( int lastnum, const char *szEvName, pfnEventHook func, void* pUserData );
 void CL_BatchResourceRequest( qboolean initialize );
 int CL_EstimateNeededResources( void );
 void CL_ResetEvent( event_info_t *ei );
@@ -870,7 +871,7 @@ _inline cl_entity_t *CL_EDICT_NUM( int n )
 		return clgame.entities + n;
 
 	Host_Error( "CL_EDICT_NUM: bad number %i\n", n );
-	return NULL;	
+	return NULL;
 }
 
 //
@@ -947,6 +948,7 @@ void CL_ClearPhysEnts( void );
 void CL_PushPMStates( void );
 void CL_PopPMStates( void );
 void CL_SetUpPlayerPrediction( int dopred, int bIncludeLocalClient );
+msurface_t* CL_GetSurfaceUnderCrosshair();
 
 //
 // cl_qparse.c

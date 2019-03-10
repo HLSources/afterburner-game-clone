@@ -72,12 +72,12 @@ static int CheckSkybox( const char *name )
 	int		i, j, num_checked_sides;
 	const char	*sidename;
 
-	// search for skybox images				
+	// search for skybox images
 	for( i = 0; i < 3; i++ )
-	{	
+	{
 		num_checked_sides = 0;
 		for( j = 0; j < 6; j++ )
-		{         
+		{
 			// build side name
 			sidename = va( "%s%s.%s", name, r_skyBoxSuffix[j], skybox_ext[i] );
 			if( FS_FileExists( sidename, false ))
@@ -89,7 +89,7 @@ static int CheckSkybox( const char *name )
 			return SKYBOX_HLSTYLE; // image exists
 
 		for( j = 0; j < 6; j++ )
-		{         
+		{
 			// build side name
 			sidename = va( "%s_%s.%s", name, r_skyBoxSuffix[j], skybox_ext[i] );
 			if( FS_FileExists( sidename, false ))
@@ -166,7 +166,7 @@ void ClipSkyPolygon( int nump, vec3_t vecs, int stage )
 		Host_Error( "ClipSkyPolygon: MAX_CLIP_VERTS\n" );
 loc1:
 	if( stage == 6 )
-	{	
+	{
 		// fully clipped, so draw it
 		DrawSkyPolygon( nump, vecs );
 		return;
@@ -195,7 +195,7 @@ loc1:
 	}
 
 	if( !front || !back )
-	{	
+	{
 		// not clipped
 		stage++;
 		goto loc1;
@@ -435,7 +435,7 @@ void R_SetupSky( const char *skyboxname )
 	{
 		Con_Reportf( S_WARN "missed or incomplete skybox '%s'\n", skyboxname );
 		R_SetupSky( "desert" ); // force to default
-		return; 
+		return;
 	}
 
 	// release old skybox
@@ -656,7 +656,7 @@ void R_InitSkyClouds( mip_t *mt, texture_t *tx, qboolean custom_palette )
 	uint	transpix;
 	int	r, g, b;
 	int	i, j, p;
-	char	texname[32];
+	char	texname[64];
 
 	if( !glw_state.initialized )
 		return;
@@ -672,8 +672,16 @@ void R_InitSkyClouds( mip_t *mt, texture_t *tx, qboolean custom_palette )
 	}
 	else
 	{
-		// okay, loading it from wad
-		r_sky = FS_LoadImage( texname, NULL, 0 );
+		// Attempt load from texture directory first.
+		Q_snprintf(texname, sizeof(texname), "%s.png", tx->name);
+		r_sky = FS_LoadImage(texname, NULL, 0);
+
+		if (!r_sky)
+		{
+			// Try wad.
+			Q_snprintf(texname, sizeof(texname), "%s.mip", tx->name);
+			r_sky = FS_LoadImage(texname, NULL, 0);
+		}
 	}
 
 	// make sure what sky image is valid
@@ -731,7 +739,7 @@ void R_InitSkyClouds( mip_t *mt, texture_t *tx, qboolean custom_palette )
 				trans[(i * r_sky->height) + j] = transpix;
 			}
 			else
-			{         
+			{
 				rgba = (uint *)r_sky->palette + p;
 				trans[(i * r_sky->height) + j] = *rgba;
 			}

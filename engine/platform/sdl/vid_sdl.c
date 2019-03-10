@@ -502,6 +502,7 @@ qboolean VID_SetScreenResolution( int width, int height )
 	SDL_DisplayMode want, got;
 	Uint32 wndFlags = 0;
 	static string wndname;
+	qboolean allowGrab = !Sys_CheckParm("-nograbmouse");
 
 	if( vid_highdpi->value ) wndFlags |= SDL_WINDOW_ALLOW_HIGHDPI;
 	Q_strncpy( wndname, GI->title, sizeof( wndname ));
@@ -524,7 +525,7 @@ qboolean VID_SetScreenResolution( int width, int height )
 
 	SDL_SetWindowBordered( host.hWnd, SDL_FALSE );
 	//SDL_SetWindowPosition( host.hWnd, 0, 0 );
-	SDL_SetWindowGrab( host.hWnd, SDL_TRUE );
+	SDL_SetWindowGrab( host.hWnd, allowGrab ? SDL_TRUE : SDL_FALSE );
 	SDL_SetWindowSize( host.hWnd, got.w, got.h );
 
 	SDL_GL_GetDrawableSize( host.hWnd, &got.w, &got.h );

@@ -37,6 +37,7 @@ void R_RocketTrail( vec3_t start, vec3_t end, int type );
 short R_LookupColor( byte r, byte g, byte b );
 void R_GetPackedColor( short *packed, short color );
 void R_TracerEffect( const vec3_t start, const vec3_t end );
+void R_BulletTracerEffect( const vec3_t start, const vec3_t end );
 void R_UserTracerParticle( float *org, float *vel, float life, int colorIndex, float length, byte deathcontext, void (*deathfunc)( struct particle_s* ));
 struct particle_s *R_TracerParticles( float *org, float *vel, float life );
 void R_ParticleLine( const vec3_t start, const vec3_t end, byte r, byte g, byte b, float life );
