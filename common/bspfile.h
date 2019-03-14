@@ -320,4 +320,23 @@ typedef struct
 	int	lightofs;			// start of [numstyles*surfsize] samples
 } dface32_t;
 
+// The following are structures for Afterburner-specific BSPs:
+
+#define AB_MAX_TEXTURE_NAME_LENGTH 80
+
+// This header begins the texture lump.
+// After it there are pngCount consecutive dpngtexturepath_t items,
+// and then miptexCount consective miptex offsets and textures,
+// as per the normal Half Life spec.
+typedef struct
+{
+	uint32_t pngCount;
+	uint32_t miptexCount;
+} dtexturelumpheader_t;
+
+typedef struct
+{
+	char path[AB_MAX_TEXTURE_NAME_LENGTH];
+} dpngtexturepath_t;
+
 #endif//BSPFILE_H

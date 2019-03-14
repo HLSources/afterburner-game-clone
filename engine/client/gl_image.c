@@ -1090,7 +1090,7 @@ static qboolean GL_UploadTexture( gl_texture_t *tex, rgbdata_t *pic )
 
 	GL_SetTextureTarget( tex, pic ); // must be first
 
-	// make sure what target is correct
+	// make sure that target is correct
 	if( tex->target == GL_NONE )
 	{
 		Con_DPrintf( S_ERROR "GL_UploadTexture: %s is not supported by your hardware\n", tex->name );

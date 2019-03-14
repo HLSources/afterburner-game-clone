@@ -16,10 +16,9 @@ GNU General Public License for more details.
 #include "imagelib.h"
 #include "stb_image.h"
 
-// If image.depth = 3, assumes image.size = (4*size)/3
-static void CopyImageData(const stbi_uc* loadedData, size_t size)
+static void CopyImageData(const stbi_uc* loadedData, size_t size, uint32_t colDepth)
 {
-	switch (image.depth)
+	switch (colDepth)
 	{
 		case 4:
 		{
@@ -29,8 +28,8 @@ static void CopyImageData(const stbi_uc* loadedData, size_t size)
 
 		case 3:
 		{
-			size_t source = 0;
-			size_t dest = 0;
+			uint32_t source = 0;
+			uint32_t dest = 0;
 
 			for (dest = 0; dest < image.size; ++dest)
 			{
@@ -71,9 +70,10 @@ qboolean Image_LoadPNG(const char *fileName, const byte *rawImageData, size_t fi
 		}
 
 		// We loaded successfully. Set all relevant image metadata.
+		// Depth is used for co-ordinates (eg. 3D textures), NOT the colour depth.
 		image.width = width;
 		image.height = height;
-		image.depth = depth;
+		image.depth = 1;
 		image.size = image.width * image.height * 4;
 		image.type = PF_RGBA_32;
 		image.flags |= IMAGE_HAS_COLOR;
@@ -84,7 +84,7 @@ qboolean Image_LoadPNG(const char *fileName, const byte *rawImageData, size_t fi
 		}
 
 		image.rgba = Mem_Malloc(host.imagepool, image.size);
-		CopyImageData(loadedData, width * height * depth);
+		CopyImageData(loadedData, width * height, depth);
 		stbi_image_free(loadedData);
 
 		return true;

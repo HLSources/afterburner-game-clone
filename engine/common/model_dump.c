@@ -323,7 +323,7 @@ static void DumpModelItems(const model_t* model,
 {
 	if (!model || !printFunc || !itemName || !items || count < 1 || itemSize < 1)
 	{
-		WRITEL("NULL");
+		WRITELF("DumpModelItems: NULL for '%s'", itemName);
 		return;
 	}
 
@@ -339,7 +339,7 @@ static void DumpGeneralModelData(const model_t* model)
 {
 	if (!model)
 	{
-		WRITEL("NULL");
+		WRITEL("DumpGeneralModelData: NULL");
 		return;
 	}
 
@@ -362,7 +362,7 @@ static void DumpPlane(int index, const void* data, const model_t* model)
 
 	if (!data)
 	{
-		WRITEL("NULL");
+		WRITEL("DumpPlane: NULL");
 		return;
 	}
 
@@ -383,7 +383,7 @@ static void DumpLeaf(int index, const void* data, const model_t* model)
 
 	if (!data)
 	{
-		WRITEL("NULL");
+		WRITEL("DumpLeaf: NULL");
 		return;
 	}
 
@@ -411,7 +411,7 @@ static void DumpVertices(const model_t* model)
 
 	if (!model)
 	{
-		WRITEL("NULL");
+		WRITEL("DumpVertices: NULL");
 		return;
 	}
 
@@ -434,7 +434,7 @@ static void DumpEdges(const model_t* model)
 
 	if (!model)
 	{
-		WRITEL("NULL");
+		WRITEL("DumpEdges: NULL");
 		return;
 	}
 
@@ -445,7 +445,7 @@ static void DumpEdges(const model_t* model)
 	for (edgeIndex = 0; edgeIndex < model->numedges; ++edgeIndex)
 	{
 		medge_t* edge = &model->edges[edgeIndex];
-		WRITELF("[%d]: %u -> %u (%d)", edgeIndex, edge->v[0], edge->v[1], edge->cachededgeoffset);
+		WRITELF("[%d]: %u -> %u", edgeIndex, edge->v[0], edge->v[1]);
 	}
 	DecrementIndent();
 
@@ -460,7 +460,7 @@ static void DumpNode(int index, const void* data, const model_t* model)
 
 	if (!data)
 	{
-		WRITEL("NULL");
+		WRITEL("DumpNode: NULL");
 		return;
 	}
 
@@ -515,7 +515,7 @@ static void DumpTexInfo(int index, const void* data, const model_t* model)
 
 	if (!data)
 	{
-		WRITEL("NULL");
+		WRITEL("DumpTexInfo: NULL");
 		return;
 	}
 
@@ -534,7 +534,7 @@ static void DumpSurface(int index, const void* data, const model_t* model)
 
 	if (!data)
 	{
-		WRITEL("NULL");
+		WRITEL("DumpSurface: NULL");
 		return;
 	}
 
@@ -569,7 +569,7 @@ static void DumpSurfEdges(const model_t* model)
 
 	if (!model)
 	{
-		WRITEL("NULL");
+		WRITEL("DumpSurfEdges: NULL");
 		return;
 	}
 
@@ -605,7 +605,7 @@ static void DumpClipNode(int index, const void* data, const model_t* model)
 
 	if (!data)
 	{
-		WRITEL("NULL");
+		WRITEL("DumpClipNode: NULL");
 		return;
 	}
 
@@ -623,7 +623,7 @@ static void DumpMarkSurfaces(const model_t* model)
 
 	if (!model)
 	{
-		WRITEL("NULL");
+		WRITEL("DumpMarkSurfaces: NULL");
 		return;
 	}
 
@@ -649,7 +649,7 @@ static void DumpHull(int index, const void* data, const model_t* model)
 
 	if (!data)
 	{
-		WRITEL("NULL");
+		WRITEL("DumpHull: NULL");
 		return;
 	}
 
@@ -670,14 +670,14 @@ static void DumpTexture(int index, const void* data, const model_t* model)
 
 	if (!data)
 	{
-		WRITEL("NULL");
+		WRITEL("DumpTexture: NULL data");
 		return;
 	}
 
 	textureRef = (const texture_t**)data;
 	if (!*textureRef)
 	{
-		WRITEL("NULL");
+		WRITEL("DumpTexture: NULL texture ref");
 		return;
 	}
 
@@ -702,7 +702,7 @@ static void DumpSubmodel(int index, const void* data, const model_t* model)
 
 	if (!data)
 	{
-		WRITEL("NULL");
+		WRITEL("DumpSubmodel: NULL");
 		return;
 	}
 
@@ -775,7 +775,7 @@ static void DumpAllModelData(const model_t* model, unsigned int flags)
 {
 	if (!model)
 	{
-		WRITEL("NULL");
+		WRITEL("DumpAllModelData: NULL");
 		return;
 	}
 
