@@ -21,7 +21,7 @@ Make sure you're OK with targeting 32-bit. The Xash3D FWGS engine does support t
 
 * **Gentoo**: TODO
 * **Debian**: TODO
-* **ArchLinux**: TODO
+* **ArchLinux**: `<AUR Helper> -S xash3d-git`
 
 ## Building
 

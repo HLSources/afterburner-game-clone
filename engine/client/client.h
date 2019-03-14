@@ -664,6 +664,8 @@ typedef struct
 	qboolean internetservers_pending;	// internetservers is waiting for dns request
 	qboolean legacymode;				// one-way 48 protocol compatibility
 	netadr_t legacyserver;
+	netadr_t legacyservers[MAX_LEGACY_SERVERS];
+	int	legacyservercount;
 } client_static_t;
 
 #ifdef __cplusplus
