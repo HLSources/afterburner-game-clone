@@ -16,38 +16,11 @@ GNU General Public License for more details.
 #include "imagelib.h"
 #include "stb_image.h"
 
-static void CopyImageData(const stbi_uc* loadedData, size_t size, uint32_t colDepth)
-{
-	switch (colDepth)
-	{
-		case 4:
-		{
-			memcpy(image.rgba, loadedData, size);
-			break;
-		}
-
-		case 3:
-		{
-			uint32_t source = 0;
-			uint32_t dest = 0;
-
-			for (dest = 0; dest < image.size; ++dest)
-			{
-				image.rgba[dest] = (dest % 4 != 3) ? loadedData[source++] : 255;
-			}
-
-			break;
-		}
-
-		default:
-		{
-			break;
-		}
-	}
-}
-
 qboolean Image_LoadPNG(const char *fileName, const byte *rawImageData, size_t fileSize)
 {
+	static const int RGBA_SIZE = 4;
+
+	bool success = false;
 	int width = 0;
 	int height = 0;
 	int depth = 0;
@@ -55,7 +28,7 @@ qboolean Image_LoadPNG(const char *fileName, const byte *rawImageData, size_t fi
 
 	do
 	{
-		loadedData = stbi_load_from_memory(rawImageData, (int)fileSize, &width, &height, &depth, 0);
+		loadedData = stbi_load_from_memory(rawImageData, (int)fileSize, &width, &height, &depth, RGBA_SIZE);
 
 		if (!loadedData)
 		{
@@ -63,31 +36,30 @@ qboolean Image_LoadPNG(const char *fileName, const byte *rawImageData, size_t fi
 			break;
 		}
 
-		if (depth < 3)
+		if (depth != 3 && depth != 4)
 		{
-			Con_DPrintf(S_WARN "Image_LoadPNG: Only 24-bit and 32-bit PNGs are supported at the current time.\n");
+			Con_DPrintf(S_WARN "Image_LoadPNG: Expected 3 or 4 colour channels, but got %d.\n", depth);
 			break;
 		}
 
 		// We loaded successfully. Set all relevant image metadata.
-		// Depth is used for co-ordinates (eg. 3D textures), NOT the colour depth.
+		// Depth is used for co-ordinate space (eg. 3D textures), NOT the colour depth.
 		image.width = width;
 		image.height = height;
 		image.depth = 1;
-		image.size = image.width * image.height * 4;
+		image.size = image.width * image.height * RGBA_SIZE;
 		image.type = PF_RGBA_32;
 		image.flags |= IMAGE_HAS_COLOR;
 
-		if (depth == 4)
+		if (depth == RGBA_SIZE)
 		{
 			image.flags |= IMAGE_HAS_ALPHA;
 		}
 
 		image.rgba = Mem_Malloc(host.imagepool, image.size);
-		CopyImageData(loadedData, width * height, depth);
-		stbi_image_free(loadedData);
+		memcpy(image.rgba, loadedData, image.size);
 
-		return true;
+		success = true;
 	}
 	while (false);
 
@@ -96,5 +68,5 @@ qboolean Image_LoadPNG(const char *fileName, const byte *rawImageData, size_t fi
 		stbi_image_free(loadedData);
 	}
 
-	return false;
+	return success;
 }
