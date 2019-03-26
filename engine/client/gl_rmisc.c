@@ -70,7 +70,7 @@ static void R_ParseDetailTextures( const char *filename )
 		Q_snprintf( detail_path, sizeof( detail_path ), "gfx/%s", detail_texname );
 
 		// read scales
-		xScale = Q_atof( token );		
+		xScale = Q_atof( token );
 
 		pfile = COM_ParseFile( pfile, token );
 		yScale = Q_atof( token );
@@ -163,7 +163,7 @@ void R_NewMap( void )
 			sf->fadeReset = title->fadeout;
 		}
 		else sf->fadeEnd = sf->fadeReset = fadetime;
-	
+
 		sf->fadeFlags = FFADE_IN;
 		sf->fader = sf->fadeg = sf->fadeb = 0;
 		sf->fadealpha = 255;
@@ -190,7 +190,7 @@ void R_NewMap( void )
 
 		tx = cl.worldmodel->textures[i];
 
-		if( !Q_strncmp( tx->name, "sky", 3 ) && tx->width == ( tx->height * 2 ))
+		if( !Q_strncmp( tx->name, HALFLIFE_TEXPATH_SKY, sizeof(HALFLIFE_TEXPATH_SKY) - 1 ) && tx->width == ( tx->height * 2 ))
 			tr.skytexturenum = i;
 
  		tx->texturechain = NULL;

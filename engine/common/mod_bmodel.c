@@ -1873,7 +1873,7 @@ static void LoadTexture(dbspmodel_t* bmod, const int32_t* miptexOffsets, uint32_
 
 #ifndef XASH_DEDICATED
 	// check for multi-layered sky texture (quake1 specific)
-	if( bmod->isworld && !Q_strncmp( mt->name, "sky", 3 ) && (( mt->width / mt->height ) == 2 ))
+	if( bmod->isworld && !Q_strncmp( mt->name, HALFLIFE_TEXPATH_SKY, sizeof(HALFLIFE_TEXPATH_SKY) - 1 ) && (( mt->width / mt->height ) == 2 ))
 	{
 		R_InitSkyClouds( mt, tx, custom_palette ); // load quake sky
 
@@ -2508,9 +2508,14 @@ static void Mod_LoadSurfaces( dbspmodel_t *bmod )
 
 		tex = out->texinfo->texture;
 
-		if( !Q_strncmp( tex->name, "sky", 3 ))
+		if( (bmod->version == ABBSP_VERSION && Q_strcmp(tex->name, AFTERBURNER_TEXPATH_SKY) == 0) ||
+			Q_strncmp(tex->name, HALFLIFE_TEXPATH_SKY, sizeof(HALFLIFE_TEXPATH_SKY) - 1) == 0)
+		{
 			SetBits( out->flags, SURF_DRAWSKY );
+		}
 
+		// TODO: All these texture names should be defined somewhere properly.
+		// Some of these will also need to be edited for Nightfire support.
 		if(( tex->name[0] == '*' && Q_stricmp( tex->name, "*default" )) || tex->name[0] == '!' )
 			SetBits( out->flags, SURF_DRAWTURB );
 

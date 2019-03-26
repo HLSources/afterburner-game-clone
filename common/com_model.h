@@ -82,6 +82,10 @@ typedef struct
 #endif
 } medge_t;
 
+#define HALFLIFE_TEXPATH_SKY "sky"
+
+#define AFTERBURNER_TEXPATH_SKY "special/sky"
+
 typedef struct texture_s
 {
 	char		name[64];	// Upped from 16 to 64 for Nightfire support. Keep an eye on this in case it causes problems.
