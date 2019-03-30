@@ -20,7 +20,7 @@ qboolean Image_LoadPNG(const char *fileName, const byte *rawImageData, size_t fi
 {
 	static const int RGBA_SIZE = 4;
 
-	bool success = false;
+	qboolean success = false;
 	int width = 0;
 	int height = 0;
 	int depth = 0;
