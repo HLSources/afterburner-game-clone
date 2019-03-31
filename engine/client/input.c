@@ -155,7 +155,7 @@ void IN_ToggleClientMouse( int newstate, int oldstate )
 			Platform_SetMousePos( host.window_center_x, host.window_center_y );
 			SDL_SetWindowGrab( host.hWnd, allowGrab ? SDL_TRUE : SDL_FALSE );
 			if( clgame.dllFuncs.pfnLookEvent )
-				SDL_SetRelativeMouseMode( SDL_TRUE );
+				SDL_SetRelativeMouseMode( allowGrab ? SDL_TRUE : SDL_FALSE );
 		}
 #endif // XASH_SDL
 		if( cls.initialized )
