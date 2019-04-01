@@ -415,6 +415,8 @@ void R_SetupSky( const char *skyboxname )
 	char	loadname[MAX_QPATH];
 	char	sidename[MAX_QPATH];
 	int	i, result;
+	char* msg = NULL;
+	const size_t msgLength = 512;
 
 	if( !COM_CheckString( skyboxname ))
 	{
@@ -440,27 +442,44 @@ void R_SetupSky( const char *skyboxname )
 
 	// release old skybox
 	R_UnloadSkybox();
-	Con_DPrintf( "SKY:  " );
+
+	msg = Mem_Malloc(r_temppool, msgLength);
+	msg[0] = '\0';
+
+	Q_strncat(msg, "Sky: ", msgLength);
 
 	for( i = 0; i < 6; i++ )
 	{
 		if( result == SKYBOX_HLSTYLE )
+		{
 			Q_snprintf( sidename, sizeof( sidename ), "%s%s", loadname, r_skyBoxSuffix[i] );
-		else Q_snprintf( sidename, sizeof( sidename ), "%s_%s", loadname, r_skyBoxSuffix[i] );
+		}
+		else
+		{
+			Q_snprintf( sidename, sizeof( sidename ), "%s_%s", loadname, r_skyBoxSuffix[i] );
+		}
 
 		tr.skyboxTextures[i] = GL_LoadTexture( sidename, NULL, 0, TF_CLAMP|TF_SKY );
-		if( !tr.skyboxTextures[i] ) break;
-		Con_DPrintf( "%s%s%s", skyboxname, r_skyBoxSuffix[i], i != 5 ? ", " : ". " );
+		if( !tr.skyboxTextures[i] )
+		{
+			break;
+		}
+
+		Q_snprintf(sidename, sizeof(sidename), "%s%s%s", skyboxname, r_skyBoxSuffix[i], i != 5 ? ", " : ".\n");
+		Q_strncat(msg, sidename, msgLength);
 	}
+
+	Con_DPrintf("%s", msg);
+	Mem_Free(msg);
 
 	if( i == 6 )
 	{
-		SetBits( world.flags, FWORLD_CUSTOM_SKYBOX );
-		Con_DPrintf( "done\n" );
+		SetBits(world.flags, FWORLD_CUSTOM_SKYBOX);
+		Con_DPrintf("Sky loaded successfully.\n");
 		return; // loaded
 	}
 
-	Con_DPrintf( "^2failed\n" );
+	Con_DPrintf("^2Failed to load sky image %d.\n", i + 1);
 	R_UnloadSkybox();
 }
 
