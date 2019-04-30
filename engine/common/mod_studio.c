@@ -18,6 +18,7 @@ GNU General Public License for more details.
 #include "studio.h"
 #include "r_studioint.h"
 #include "library.h"
+#include "ref_common.h"
 
 typedef int (*STUDIOAPI)( int, sv_blending_interface_t**, server_studio_api_t*,  float (*transform)[3][4], float (*bones)[MAXSTUDIOBONES][3][4] );
 
@@ -1073,7 +1074,8 @@ void Mod_LoadStudioModel( model_t *mod, const void *buffer, qboolean *loaded )
 	phdr = R_StudioLoadHeader( mod, buffer );
 	if( !phdr ) return;	// bad model
 
-#ifndef XASH_DEDICATED
+	if( !Host_IsDedicated() )
+	{
 	if( phdr->numtextures == 0 )
 	{
 		studiohdr_t	*thdr;
@@ -1091,7 +1093,7 @@ void Mod_LoadStudioModel( model_t *mod, const void *buffer, qboolean *loaded )
 		}
 		else
 		{
-			Mod_StudioLoadTextures( mod, thdr );
+				ref.dllFuncs.Mod_StudioLoadTextures( mod, thdr );
 
 			// give space for textures and skinrefs
 			size1 = thdr->numtextures * sizeof( mstudiotexture_t );
@@ -1118,20 +1120,22 @@ void Mod_LoadStudioModel( model_t *mod, const void *buffer, qboolean *loaded )
 		loadmodel->cache.data = Mem_Calloc( loadmodel->mempool, phdr->length );
 		memcpy( loadmodel->cache.data, buffer, phdr->length );
 		phdr = (studiohdr_t *)loadmodel->cache.data; // get the new pointer on studiohdr
-		Mod_StudioLoadTextures( mod, phdr );
+			ref.dllFuncs.Mod_StudioLoadTextures( mod, phdr );
 
 		// NOTE: we wan't keep raw textures in memory. just cutoff model pointer above texture base
 		loadmodel->cache.data = Mem_Realloc( loadmodel->mempool, loadmodel->cache.data, phdr->texturedataindex );
 		phdr = (studiohdr_t *)loadmodel->cache.data; // get the new pointer on studiohdr
 		phdr->length = phdr->texturedataindex;	// update model size
 	}
-#else
+	}
+	else
+	{
 	// just copy model into memory
 	loadmodel->cache.data = Mem_Calloc( loadmodel->mempool, phdr->length );
 	memcpy( loadmodel->cache.data, buffer, phdr->length );
 
 	phdr = loadmodel->cache.data;
-#endif
+	}
 
 	// setup bounding box
 	if( !VectorCompare( vec3_origin, phdr->bbmin ))
@@ -1159,25 +1163,6 @@ void Mod_LoadStudioModel( model_t *mod, const void *buffer, qboolean *loaded )
 	loadmodel->flags = phdr->flags; // copy header flags
 
 	if( loaded ) *loaded = true;
-}
-
-/*
-=================
-Mod_UnloadStudioModel
-=================
-*/
-void Mod_UnloadStudioModel( model_t *mod )
-{
-	Assert( mod != NULL );
-
-	if( mod->type != mod_studio )
-		return; // not a studio
-
-#ifndef XASH_DEDICATED
-	Mod_StudioUnloadTextures( mod->cache.data );
-#endif
-	Mem_FreePool( &mod->mempool );
-	memset( mod, 0, sizeof( *mod ));
 }
 
 static sv_blending_interface_t gBlendAPI =

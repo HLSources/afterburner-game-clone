@@ -17,7 +17,6 @@ GNU General Public License for more details.
 #include "client.h"
 #include "net_encode.h"
 #include "particledef.h"
-#include "gl_local.h"
 #include "cl_tent.h"
 #include "shake.h"
 #include "hltv.h"
@@ -250,7 +249,7 @@ void CL_ParseMovevars( sizebuf_t *msg )
 
 	// update sky if changed
 	if( Q_strcmp( clgame.oldmovevars.skyName, clgame.movevars.skyName ) && cl.video_prepped )
-		R_SetupSky( clgame.movevars.skyName );
+		ref.dllFuncs.R_SetupSky( clgame.movevars.skyName );
 
 	memcpy( &clgame.oldmovevars, &clgame.movevars, sizeof( movevars_t ));
 	clgame.entities->curstate.scale = clgame.movevars.waveHeight;
@@ -662,7 +661,7 @@ void CL_RemoveCustomization( int nPlayerNum, customization_t *pRemove )
 			if( pList->resource.type == t_decal )
 			{
 				if( cls.state == ca_active )
-					R_DecalRemoveAll( pList->nUserData1 );
+					ref.dllFuncs.R_DecalRemoveAll( pList->nUserData1 );
 				FS_FreeImage( pList->pInfo );
 			}
 		}
@@ -964,8 +963,8 @@ void CL_ParseServerData( sizebuf_t *msg )
 
 	// get splash name
 	if( cls.demoplayback && ( cls.demonum != -1 ))
-		Cvar_Set( "cl_levelshot_name", va( "levelshots/%s_%s", cls.demoname, glState.wideScreen ? "16x9" : "4x3" ));
-	else Cvar_Set( "cl_levelshot_name", va( "levelshots/%s_%s", clgame.mapname, glState.wideScreen ? "16x9" : "4x3" ));
+		Cvar_Set( "cl_levelshot_name", va( "levelshots/%s_%s", cls.demoname, refState.wideScreen ? "16x9" : "4x3" ));
+	else Cvar_Set( "cl_levelshot_name", va( "levelshots/%s_%s", clgame.mapname, refState.wideScreen ? "16x9" : "4x3" ));
 	Cvar_SetValue( "scr_loading", 0.0f ); // reset progress bar
 
 	if(( cl_allow_levelshots->value && !cls.changelevel ) || cl.background )
@@ -1552,18 +1551,15 @@ void CL_RegisterResources( sizebuf_t *msg )
 			CL_ClearWorld ();
 
 			// tell rendering system we have a new set of models.
-			R_NewMap ();
+			ref.dllFuncs.R_NewMap ();
 
 			CL_SetupOverviewParams();
-
-			if( clgame.drawFuncs.R_NewMap != NULL )
-				clgame.drawFuncs.R_NewMap();
 
 			// release unused SpriteTextures
 			for( i = 1, mod = clgame.sprites; i < MAX_CLIENT_SPRITES; i++, mod++ )
 			{
 				if( mod->needload == NL_UNREFERENCED && COM_CheckString( mod->name ))
-					Mod_UnloadSpriteModel( mod );
+					Mod_FreeModel( mod );
 			}
 
 			Mod_FreeUnused ();
@@ -2470,8 +2466,8 @@ void CL_ParseLegacyServerData( sizebuf_t *msg )
 
 	// get splash name
 	if( cls.demoplayback && ( cls.demonum != -1 ))
-		Cvar_Set( "cl_levelshot_name", va( "levelshots/%s_%s", cls.demoname, glState.wideScreen ? "16x9" : "4x3" ));
-	else Cvar_Set( "cl_levelshot_name", va( "levelshots/%s_%s", clgame.mapname, glState.wideScreen ? "16x9" : "4x3" ));
+		Cvar_Set( "cl_levelshot_name", va( "levelshots/%s_%s", cls.demoname, refState.wideScreen ? "16x9" : "4x3" ));
+	else Cvar_Set( "cl_levelshot_name", va( "levelshots/%s_%s", clgame.mapname, refState.wideScreen ? "16x9" : "4x3" ));
 	Cvar_SetValue( "scr_loading", 0.0f ); // reset progress bar
 
 	if(( cl_allow_levelshots->value && !cls.changelevel ) || cl.background )
@@ -3136,18 +3132,15 @@ void CL_LegacyPrecache_f( void )
 		clgame.entities->model = cl.worldmodel;
 
 	// tell rendering system we have a new set of models.
-	R_NewMap ();
+	ref.dllFuncs.R_NewMap ();
 
 	CL_SetupOverviewParams();
-
-	if( clgame.drawFuncs.R_NewMap != NULL )
-		clgame.drawFuncs.R_NewMap();
 
 	// release unused SpriteTextures
 	for( i = 1, mod = clgame.sprites; i < MAX_CLIENT_SPRITES; i++, mod++ )
 	{
 		if( mod->needload == NL_UNREFERENCED && COM_CheckString( mod->name ))
-			Mod_UnloadSpriteModel( mod );
+			Mod_FreeModel( mod );
 	}
 
 //	Mod_FreeUnused ();

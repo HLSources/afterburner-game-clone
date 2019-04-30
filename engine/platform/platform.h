@@ -82,13 +82,19 @@ typedef enum
 typedef struct vidmode_s vidmode_t;
 
 // Window
-qboolean  R_Init_Video( void );
+qboolean  R_Init_Video( const int type );
 void      R_Free_Video( void );
 qboolean  VID_SetMode( void );
 rserr_t   R_ChangeDisplaySettings( int width, int height, qboolean fullscreen );
 int       R_MaxVideoModes();
 vidmode_t*R_GetVideoMode( int num );
 void*     GL_GetProcAddress( const char *name ); // RenderAPI requirement
+void      GL_UpdateSwapInterval( void );
+int GL_SetAttribute( int attr, int val );
+int GL_GetAttribute( int attr, int *val );
+void *SW_LockBuffer();
+void SW_UnlockBuffer();
+qboolean SW_CreateBuffer( int width, int height, uint *stride, uint *bpp, uint *r, uint *g, uint *b );
 
 /*
 ==============================================================================

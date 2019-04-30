@@ -128,10 +128,6 @@ Default build-depended cvar and constant values
 // You need add library loading code to library.c when adding new platform
 #endif
 
-#if defined XASH_NANOGL || defined XASH_WES || defined XASH_REGAL
-#define XASH_GL_STATIC
-#endif
-
 #define DEFAULT_SV_MASTER "ms.xash.su:27010"
 // Set ForceSimulating to 1 by default for dedicated, because AMXModX timers require this
 // TODO: enable simulating for any server?
@@ -148,6 +144,10 @@ Default build-depended cvar and constant values
 
 #ifndef DEFAULT_FULLSCREEN
 	#define DEFAULT_FULLSCREEN 1
+#endif
+
+#ifndef DEFAULT_RENDERER
+	#define DEFAULT_RENDERER "gl"
 #endif
 
 #if TARGET_OS_IPHONE

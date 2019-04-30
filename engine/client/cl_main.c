@@ -22,6 +22,7 @@ GNU General Public License for more details.
 #include "kbutton.h"
 #include "vgui_draw.h"
 #include "library.h"
+#include "vid_common.h"
 #include "model_dump.h"
 #include "viscompress.h"
 

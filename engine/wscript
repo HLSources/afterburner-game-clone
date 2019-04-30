@@ -4,7 +4,6 @@
 
 from waflib import Logs
 import os
-from fwgslib import get_subproject_name
 
 top = '.'
 
@@ -47,12 +46,10 @@ def configure(conf):
 
 	if conf.env.DEST_OS == 'win32':
 		conf.env.append_unique('DEFINES', 'DBGHELP')
+		conf.env.append_unique('DEFINES', 'PSAPI_VERSION=1')
 
 def build(bld):
-	bld.load_envs()
-	bld.env = bld.all_envs[get_subproject_name(bld)]
-
-	libs = []
+	libs = [ 'public' ]
 	source = bld.path.ant_glob([
 	    'common/*.c',
 		'common/imagelib/*.c',
@@ -90,15 +87,16 @@ def build(bld):
 		if bld.env.DEST_OS == 'linux':
 			libs.append('RT')
 
+	# HACK: public headers must be put before common, so we don't get wrong mathlib included
 	includes = \
 	[
 		'common',
 		'common/bsp/generic',
-		'common/imagelib',
 		'server',
 		'client',
 		'client/vgui',
 		'.',
+		'../public',
 		'../common',
 		'../pm_shared'
 	]

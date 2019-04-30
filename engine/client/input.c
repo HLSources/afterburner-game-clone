@@ -520,8 +520,8 @@ void IN_CollectInput( float *forward, float *side, float *pitch, float *yaw, qbo
 	}
 
 	Joy_FinalizeMove( forward, side, yaw, pitch );
-	IN_TouchMove( forward, side, yaw, pitch );
-
+	// IN_TouchMove( forward, side, yaw, pitch );
+	
 	if( look_filter->value )
 	{
 		*pitch = ( inputstate.lastpitch + *pitch ) / 2;

@@ -968,11 +968,11 @@ static void CL_DrawLoading( float percent )
 		right = (int)ceil( percent * step );
 		s2 = (float)right / width;
 		width = right;
-
-		pglColor4ub( 208, 152, 0, 255 );
-		GL_SetRenderMode( kRenderTransTexture );
-		R_DrawStretchPic( x, y, width, height, 0, 0, s2, 1, cls.loadingBar );
-		pglColor4ub( 255, 255, 255, 255 );
+	
+		ref.dllFuncs.Color4ub( 208, 152, 0, 255 );
+		ref.dllFuncs.GL_SetRenderMode( kRenderTransTexture );
+		ref.dllFuncs.R_DrawStretchPic( x, y, width, height, 0, 0, s2, 1, cls.loadingBar );
+		ref.dllFuncs.Color4ub( 255, 255, 255, 255 );
 	}
 	else
 	{
@@ -1236,8 +1236,12 @@ static qboolean CL_LoadHudSprite( const char *szSpriteName, model_t *m_pSprite, 
 	ASSERT( buf != NULL );
 
 	if( type == SPR_MAPSPRITE )
-		Mod_LoadMapSprite( m_pSprite, buf, size, &loaded );
-	else Mod_LoadSpriteModel( m_pSprite, buf, &loaded, texFlags );
+		ref.dllFuncs.Mod_LoadMapSprite( m_pSprite, buf, size, &loaded );
+	else
+	{
+		Mod_LoadSpriteModel( m_pSprite, buf, &loaded, texFlags );
+		ref.dllFuncs.Mod_ProcessRenderData( m_pSprite, true, buf );
+	}
 
 	Mem_Free( buf );
 
@@ -3793,30 +3797,8 @@ static void GAME_EXPORT VGui_ViewportPaintBackground( int extents[4] )
 	// stub
 }
 
-// shared between client and server
-triangleapi_t gTriApi =
-{
-	TRI_API_VERSION,
-	TriRenderMode,
-	TriBegin,
-	TriEnd,
-	TriColor4f,
-	TriColor4ub,
-	TriTexCoord2f,
-	TriVertex3fv,
-	TriVertex3f,
-	TriBrightness,
-	TriCullFace,
-	TriSpriteTexture,
-	R_WorldToScreen,	// NOTE: XPROJECT, YPROJECT should be done in client.dll
-	TriFog,
-	R_ScreenToWorld,
-	TriGetMatrix,
-	TriBoxInPVS,
-	TriLightAtPoint,
-	TriColor4fRendermode,
-	TriFogParams,
-};
+// shared between client and server			
+triangleapi_t gTriApi;
 
 static efx_api_t gEfxApi =
 {
