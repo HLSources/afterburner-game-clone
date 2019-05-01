@@ -16,6 +16,8 @@ GNU General Public License for more details.
 #ifndef BSPFILE_H
 #define BSPFILE_H
 
+#include <stdint.h>
+
 //#define SUPPORT_BSP2_FORMAT		// allow to loading Darkplaces BSP2 maps (with broke binary compatibility)
 
 /*

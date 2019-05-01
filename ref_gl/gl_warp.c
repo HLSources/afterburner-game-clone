@@ -691,13 +691,13 @@ void R_InitSkyClouds( mip_t *mt, texture_t *tx, qboolean custom_palette )
 	{
 		// Attempt load from texture directory first.
 		Q_snprintf(texname, sizeof(texname), "%s.png", tx->name);
-		r_sky = gEngfuncsFS_LoadImage(texname, NULL, 0);
+		r_sky = gEngfuncs.FS_LoadImage(texname, NULL, 0);
 
 		if (!r_sky)
 		{
 			// Try wad.
 			Q_snprintf(texname, sizeof(texname), "%s.mip", tx->name);
-			r_sky = gEngfuncsFS_LoadImage(texname, NULL, 0);
+			r_sky = gEngfuncs.FS_LoadImage(texname, NULL, 0);
 		}
 	}
 

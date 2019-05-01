@@ -1425,7 +1425,7 @@ NET_SendPacket
 */
 void NET_SendPacket( netsrc_t sock, size_t length, const void *data, netadr_t to )
 {
-	return NET_SendPacketEx( sock, length, data, to, 0 );
+	NET_SendPacketEx( sock, length, data, to, 0 );
 }
 
 /*

@@ -12,7 +12,7 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
-
+#include "common.h"
 #include "mod_local.h"
 #include "sprite.h"
 #include "mathlib.h"
@@ -23,7 +23,8 @@ GNU General Public License for more details.
 #include "enginefeatures.h"
 #include "client.h"
 #include "server.h"			// LUMP_ error codes
-
+#include "ref_common.h"
+#include "stb_image.h"
 typedef struct wadlist_s
 {
 	char			wadnames[MAX_MAP_WADS][32];
@@ -1810,9 +1811,9 @@ static void CreateDefaultTexture(texture_t** texture)
 #ifndef XASH_DEDICATED
 	if( !Host_IsDedicated() )
 	{
-		tx->gl_texturenum = R_GetBuiltinTexture( REF_DEFAULT_TEXTURE );
-		tx->width = 16;
-		tx->height = 16;
+		(*texture)->gl_texturenum = R_GetBuiltinTexture( REF_DEFAULT_TEXTURE );
+		(*texture)->width = 16;
+		(*texture)->height = 16;
 	}
 #endif
 }
@@ -1879,7 +1880,7 @@ static void LoadTexture(dbspmodel_t* bmod, const int32_t* miptexOffsets, uint32_
 		// check for multi-layered sky texture (quake1 specific)
 		if( bmod->isworld && !Q_strncmp( mt->name, HALFLIFE_TEXPATH_SKY, sizeof(HALFLIFE_TEXPATH_SKY) - 1 ) && (( mt->width / mt->height ) == 2 ))
 		{
-			R_InitSkyClouds( mt, tx, custom_palette ); // load quake sky
+			ref.dllFuncs.R_InitSkyClouds( mt, tx, custom_palette ); // load quake sky
 
 			if( R_GetBuiltinTexture( REF_SOLIDSKY_TEXTURE ) && R_GetBuiltinTexture( REF_ALPHASKY_TEXTURE ) )
 			{
@@ -2174,23 +2175,35 @@ static void LoadPNGTexture(const dpngtexturepath_t* in, texture_t** out)
 	}
 	else
 	{
-		gl_texture_t* glTex = NULL;
-		int textureNum = ref.dllFuncs.GL_LoadTexture(texName, pngData, pngDataSize, TF_MAKELUMA);
-		glTex = R_GetTexture(textureNum);
-
-		if ( glTex || !textureNum )
+		int width = 0;
+		int height = 0;
+		
+		// Not sure if this is the best way to do this?
+		// Really these kinds of implementation details should be handled by the FS loader,
+		// but it seems that there's no way of getting this information right now.
+		if ( stbi_info_from_memory(pngData, pngDataSize, &width, &height, NULL) )
 		{
-			*out = Mem_Calloc(loadmodel->mempool, sizeof(texture_t));
+			const int textureNum = ref.dllFuncs.GL_LoadTexture(texName, pngData, pngDataSize, TF_MAKELUMA);
 
-			(*out)->width = glTex->srcWidth;
-			(*out)->height = glTex->srcHeight;
+			if ( textureNum > 0 )
+			{
+				*out = Mem_Calloc(loadmodel->mempool, sizeof(texture_t));
 
-			Q_strncpy((*out)->name, in->path, sizeof((*out)->name));
-			(*out)->gl_texturenum = textureNum;
+				(*out)->width = width;
+				(*out)->height = height;
+
+				Q_strncpy((*out)->name, in->path, sizeof((*out)->name));
+				(*out)->gl_texturenum = textureNum;
+			}
+			else
+			{
+				Con_Printf(S_ERROR "LoadPngTexture: Map '%s' texture '%s' failed to load.\n", loadmodel->name, texName);
+				CreateDefaultTexture(out);
+			}
 		}
 		else
 		{
-			Con_Printf(S_ERROR "LoadPngTexture: Map '%s' texture '%s' failed to load.\n", loadmodel->name, texName);
+			Con_Printf(S_ERROR "LoadPngTexture: Map '%s' texture '%s' failed to retrieve dimensions.\n", loadmodel->name, texName);
 			CreateDefaultTexture(out);
 		}
 	}

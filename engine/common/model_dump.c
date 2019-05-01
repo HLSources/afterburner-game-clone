@@ -15,7 +15,6 @@ GNU General Public License for more details.
 
 #include "model_dump.h"
 #include "common.h"
-#include "imagelib.h"
 #include "viscompress.h"
 #include "mathlib.h"
 #include <stdint.h>

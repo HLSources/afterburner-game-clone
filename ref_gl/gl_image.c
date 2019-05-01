@@ -13,9 +13,8 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-#include "common.h"
-#include "client.h"
 #include "gl_local.h"
+
 
 #define TEXTURES_HASH_SIZE	(MAX_TEXTURES >> 2)
 
@@ -1890,7 +1889,7 @@ void R_InitDlightTexture( void )
 static int CreateTraceTexture()
 {
 	rgbdata_t* pic = GL_FakeImage( 8, 8, 1, IMAGE_HAS_COLOR|IMAGE_HAS_ALPHA );
-	uint* argbBuffer = (uint)pic->buffer;
+	uint* argbBuffer = (uint*)pic->buffer;
 	int x;
 	int y;
 
@@ -1923,7 +1922,7 @@ static int CreateBulletTraceTexture()
 	};
 
 	rgbdata_t* pic = GL_FakeImage( 8, 8, 1, IMAGE_HAS_COLOR|IMAGE_HAS_ALPHA );
-	uint* argbBuffer = (uint)pic->buffer;
+	uint* argbBuffer = (uint*)pic->buffer;
 	int x;
 	int y;
 

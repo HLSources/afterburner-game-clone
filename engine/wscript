@@ -92,6 +92,7 @@ def build(bld):
 	[
 		'common',
 		'common/bsp/generic',
+		"common/imagelib",
 		'server',
 		'client',
 		'client/vgui',

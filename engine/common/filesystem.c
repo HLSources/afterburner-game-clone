@@ -29,7 +29,6 @@ GNU General Public License for more details.
 #include "library.h"
 #include "mathlib.h"
 #include "protocol.h"
-#include "crtlib.h"
 
 #define FILE_COPY_SIZE		(1024 * 1024)
 #define FILE_BUFF_SIZE		(2048)
@@ -486,7 +485,7 @@ void FS_Path_f( void )
 	{
 		if( s->pack ) Con_Printf( "%s (%i files)", s->pack->filename, s->pack->numfiles );
 		else if( s->wad ) Con_Printf( "%s (%i files)", s->wad->filename, s->wad->numlumps );
-		else if ( s->texDir ) Msg("%s (%i textures)", s->texDir->filePath, s->texDir->numFiles);
+		else if ( s->texDir ) Con_Printf("%s (%i textures)", s->texDir->filePath, s->texDir->numFiles);
 		else Con_Printf( "%s", s->filename );
 
 		if( s->flags & FS_GAMERODIR_PATH ) Con_Printf( " ^2rodir^7" );
@@ -520,7 +519,7 @@ static void FS_Exists_f( void )
 
 	if (Cmd_Argc() != 2)
 	{
-		Msg("Use fs_exists <path>\n");
+		Con_Printf("Use fs_exists <path>\n");
 		return;
 	}
 
@@ -528,7 +527,7 @@ static void FS_Exists_f( void )
 
 	if (!search)
 	{
-		Msg(CCOL_RED "File '%s' was not found." CCOL_DEFAULT "\n", Cmd_Argv(1));
+		Con_Printf("^1File '%s' was not found.^7\n", Cmd_Argv(1));
 		return;
 	}
 
@@ -580,7 +579,7 @@ static void FS_Exists_f( void )
 				   search->filename);
 	}
 
-	Msg(CCOL_GREEN "File '%s' found in %s at index %d." CCOL_DEFAULT "\n%s", Cmd_Argv(1), fsType, fileIndex, info);
+	Con_Printf("^2File '%s' found in %s at index %d.^7\n%s", Cmd_Argv(1), fsType, fileIndex, info);
 }
 
 /*
@@ -3747,7 +3746,7 @@ static void InitSearchPathForDirectory(searchpath_t** search, const char* rootDi
 	memset(*search, 0, sizeof(searchpath_t));
 
 	(*search)->texDir = (texdir_t*)Mem_Malloc(fs_mempool, sizeof(texdir_t));
-	Q_strncpy((*search)->filename, rootDirectory, PATH_MAX);
+	Q_strncpy((*search)->filename, rootDirectory, sizeof((*search)->filename));
 	(*search)->next = NULL;
 
 	memset((*search)->texDir, 0, sizeof(texdir_t));
