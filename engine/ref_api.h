@@ -504,7 +504,7 @@ typedef struct ref_interface_s
 	void (*CL_InitStudioAPI)( void );
 
 	// bmodel
-	void (*R_InitSkyClouds)( struct mip_s *mt, struct texture_s *tx, qboolean custom_palette );
+	void (*R_InitSkyClouds)( const struct mip_s *mt, struct texture_s *tx, qboolean custom_palette );
 	void (*GL_SubdivideSurface)( msurface_t *fa );
 	void (*CL_RunLightStyles)( void );
 

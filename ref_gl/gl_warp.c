@@ -666,7 +666,7 @@ R_InitSkyClouds
 A sky texture is 256*128, with the right side being a masked overlay
 ==============
 */
-void R_InitSkyClouds( mip_t *mt, texture_t *tx, qboolean custom_palette )
+void R_InitSkyClouds( const mip_t *mt, texture_t *tx, qboolean custom_palette )
 {
 	rgbdata_t	r_temp, *r_sky;
 	uint	*trans, *rgba;
@@ -685,7 +685,7 @@ void R_InitSkyClouds( mip_t *mt, texture_t *tx, qboolean custom_palette )
 		int	size = (int)sizeof( mip_t ) + ((mt->width * mt->height * 85)>>6);
 
 		if( custom_palette ) size += sizeof( short ) + 768;
-		r_sky = gEngfuncs.FS_LoadImage( texname, (byte *)mt, size );
+		r_sky = gEngfuncs.FS_LoadImage( texname, (const byte *)mt, size );
 	}
 	else
 	{

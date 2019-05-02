@@ -807,7 +807,7 @@ int Con_UtfMoveRight( char *str, int pos, int length )
 static void Con_DrawCharToConback( int num, const byte *conchars, byte *dest )
 {
 	int	row, col;
-	byte	*source;
+	const byte *source;
 	int	drawline;
 	int	x;
 

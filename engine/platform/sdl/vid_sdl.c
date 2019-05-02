@@ -135,6 +135,8 @@ qboolean SW_CreateBuffer( int width, int height, uint *stride, uint *bpp, uint *
 #endif
 
 	}
+
+	return true;
 }
 
 void *SW_LockBuffer()

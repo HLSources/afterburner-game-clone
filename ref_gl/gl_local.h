@@ -486,7 +486,7 @@ void R_AliasInit( void );
 // gl_warp.c
 //
 typedef struct mip_s mip_t;
-void R_InitSkyClouds( mip_t *mt, struct texture_s *tx, qboolean custom_palette );
+void R_InitSkyClouds( const mip_t *mt, struct texture_s *tx, qboolean custom_palette );
 void R_AddSkyBoxSurface( msurface_t *fa );
 void R_ClearSkyBox( void );
 void R_DrawSkyBox( void );

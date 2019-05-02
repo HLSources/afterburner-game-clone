@@ -518,7 +518,7 @@ void Delta_ParseTableField( sizebuf_t *msg )
 	{
 		Con_Reportf( "Delta_ParseTableField: wrong nameIndex %d for table %s, ignoring\n", nameIndex,  dt->pName );
 		MSG_ReadUBitLong( msg, 10 );
-		MSG_ReadUBitLong( msg, 5 ) + 1;
+		MSG_ReadUBitLong( msg, 5 );
 		if( MSG_ReadOneBit( msg ))
 			MSG_ReadFloat( msg );
 		if( MSG_ReadOneBit( msg ))
