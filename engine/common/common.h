@@ -496,7 +496,7 @@ int Cmd_AddGameUICommand( const char *cmd_name, xcommand_t function );
 int Cmd_AddRefCommand( const char *cmd_name, xcommand_t function, const char *description );
 void Cmd_RemoveCommand( const char *cmd_name );
 qboolean Cmd_Exists( const char *cmd_name );
-void Cmd_LookupCmds( char *buffer, void *ptr, setpair_t callback );
+void Cmd_LookupCmds( void *buffer, void *ptr, setpair_t callback );
 qboolean Cmd_GetMapList( const char *s, char *completedname, int length );
 qboolean Cmd_GetDemoList( const char *s, char *completedname, int length );
 qboolean Cmd_GetMovieList( const char *s, char *completedname, int length );
@@ -890,7 +890,6 @@ void SV_StartSound( edict_t *ent, int chan, const char *sample, float vol, float
 void SV_StartMusic( const char *curtrack, const char *looptrack, int position );
 void SV_CreateDecal( sizebuf_t *msg, const float *origin, int decalIndex, int entityIndex, int modelIndex, int flags, float scale );
 void Log_Printf( const char *fmt, ... ) _format( 1 );
-struct sizebuf_s *SV_GetReliableDatagram( void );
 void SV_BroadcastCommand( const char *fmt, ... ) _format( 1 );
 qboolean SV_RestoreCustomDecal( struct decallist_s *entry, edict_t *pEdict, qboolean adjacent );
 void SV_BroadcastPrintf( sv_client_t *ignore, char *fmt, ... ) _format( 2 );

@@ -178,20 +178,20 @@ enum // OpenGL configuration attributes
 	REF_GL_GREEN_SIZE,
 	REF_GL_BLUE_SIZE,
 	REF_GL_ALPHA_SIZE,
-	REF_GL_BUFFER_SIZE,
-	REF_GL_DOUBLEBUFFER,
+	// UNUSED_REF_GL_BUFFER_SIZE,
+	REF_GL_DOUBLEBUFFER = REF_GL_ALPHA_SIZE + 1,
 	REF_GL_DEPTH_SIZE,
 	REF_GL_STENCIL_SIZE,
-	REF_GL_ACCUM_RED_SIZE,
-	REF_GL_ACCUM_GREEN_SIZE,
-	REF_GL_ACCUM_BLUE_SIZE,
-	REF_GL_ACCUM_ALPHA_SIZE,
-	REF_GL_STEREO,
-	REF_GL_MULTISAMPLEBUFFERS,
+	// UNUSED_REF_GL_ACCUM_RED_SIZE,
+	// UNUSED_REF_GL_ACCUM_GREEN_SIZE,
+	// UNUSED_REF_GL_ACCUM_BLUE_SIZE,
+	// UNUSED_REF_GL_ACCUM_ALPHA_SIZE,
+	// UNUSED_REF_GL_STEREO,
+	REF_GL_MULTISAMPLEBUFFERS = REF_GL_STENCIL_SIZE + 5,
 	REF_GL_MULTISAMPLESAMPLES,
 	REF_GL_ACCELERATED_VISUAL,
-	REF_GL_RETAINED_BACKING,
-	REF_GL_CONTEXT_MAJOR_VERSION,
+	// UNUSED_REF_GL_RETAINED_BACKING,
+	REF_GL_CONTEXT_MAJOR_VERSION = REF_GL_ACCELERATED_VISUAL + 1,
 	REF_GL_CONTEXT_MINOR_VERSION,
 	REF_GL_CONTEXT_EGL,
 	REF_GL_CONTEXT_FLAGS,
@@ -200,7 +200,8 @@ enum // OpenGL configuration attributes
 	REF_GL_FRAMEBUFFER_SRGB_CAPABLE,
 	REF_GL_CONTEXT_RELEASE_BEHAVIOR,
 	REF_GL_CONTEXT_RESET_NOTIFICATION,
-	REF_GL_CONTEXT_NO_ERROR
+	REF_GL_CONTEXT_NO_ERROR,
+	REF_GL_ATTRIBUTES_COUNT,
 };
 
 enum
@@ -210,6 +211,7 @@ enum
 	REF_GL_CONTEXT_PROFILE_ES             = 0x0004 /**< GLX_CONTEXT_ES2_PROFILE_BIT_EXT */
 };
 
+// binary compatible with SDL and EGL_KHR_create_context(0x0007 mask)
 enum
 {
 	REF_GL_CONTEXT_DEBUG_FLAG              = 0x0001,
@@ -294,7 +296,7 @@ typedef struct ref_api_s
 	struct cl_entity_s *(*GetViewModel)( void );
 	struct cl_entity_s *(*GetEntityByIndex)( int idx );
 	struct cl_entity_s *(*R_BeamGetEntity)( int index );
-	struct cl_entity_s *(*CL_GetWaterEntity)( vec3_t p );
+	struct cl_entity_s *(*CL_GetWaterEntity)( const vec3_t p );
 	qboolean (*CL_AddVisibleEntity)( cl_entity_t *ent, int entityType );
 
 	// brushes
@@ -343,7 +345,7 @@ typedef struct ref_api_s
 	struct screenfade_s *(*GetScreenFade)( void );
 	struct client_textmessage_s *(*pfnTextMessageGet)( const char *pName );
 	void (*GetPredictedOrigin)( vec3_t v );
-	byte *(*CL_GetPaletteColor)(int color); // clgame.palette[color]
+	color24 *(*CL_GetPaletteColor)(int color); // clgame.palette[color]
 	void (*CL_GetScreenInfo)( int *width, int *height ); // clgame.scrInfo, ptrs may be NULL
 	void (*SetLocalLightLevel)( int level ); // cl.local.light_level
 	int (*Sys_CheckParm)( const char *flag );
@@ -379,7 +381,7 @@ typedef struct ref_api_s
 	// video init
 	// try to create window
 	// will call GL_SetupAttributes in case of REF_GL
-	int	(*R_Init_Video)( int type );
+	qboolean  (*R_Init_Video)( int type );
 	void (*R_Free_Video)( void );
 
 	// GL
@@ -445,7 +447,6 @@ typedef struct ref_interface_s
 
 	// only called for GL contexts
 	void (*GL_SetupAttributes)( int safegl );
-	void (*GL_OnContextCreated)( void );
 	void (*GL_InitExtensions)( void );
 	void (*GL_ClearExtensions)( void );
 
@@ -572,7 +573,7 @@ typedef struct ref_interface_s
 	struct mstudiotex_s *( *StudioGetTexture )( struct cl_entity_s *e );
 
 	// passed through R_RenderFrame (0 - use engine renderer, 1 - use custom client renderer)
-	int		(*GL_RenderFrame)( const struct ref_viewpass_s *rvp );
+	void		(*GL_RenderFrame)( const struct ref_viewpass_s *rvp );
 	// setup map bounds for ortho-projection when we in dev_overview mode
 	void		(*GL_OrthoBounds)( const float *mins, const float *maxs );
 	// grab r_speeds message

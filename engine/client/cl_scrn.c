@@ -550,7 +550,7 @@ qboolean SCR_LoadVariableWidthFont( const char *fontname )
 {
 	int	i, fontWidth;
 	byte	*buffer;
-	size_t	length;
+	fs_offset_t	length;
 	qfont_t	*src;
 
 	if( cls.creditsFont.valid )
@@ -731,7 +731,7 @@ void SCR_VidInit( void )
 		gameui.globals->scrHeight = refState.height;
 	}
 
-	VGui_Startup( refState.width, refState.height );
+	VGui_Startup( NULL, refState.width, refState.height ); // initialized already, so pass NULL
 
 	CL_ClearSpriteTextures(); // now all hud sprites are invalid
 	

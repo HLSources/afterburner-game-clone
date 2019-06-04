@@ -2861,6 +2861,7 @@ void CL_ReadPackets( void )
 			// check resource for downloading and precache
 			CL_EstimateNeededResources();
 			CL_BatchResourceRequest( false );
+			cls.dl.doneregistering = false;
 			cls.dl.custom = true;
 		}
 
@@ -3628,7 +3629,11 @@ void CL_Init( void )
 	// IN_TouchInit();
 	Con_LoadHistory();
 
+#ifdef XASH_INTERNAL_GAMELIBS
+	if( !CL_LoadProgs( "client" ) )
+#else
 	if( !CL_LoadProgs( va( "%s/%s", GI->dll_path, SI.clientlib)))
+#endif
 		Host_Error( "can't initialize %s: %s\n", SI.clientlib, COM_GetLibraryError() );
 
 	cls.initialized = true;

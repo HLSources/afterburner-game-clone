@@ -26,13 +26,16 @@
  * SUCH DAMAGE.
  */
 
-#ifdef __ANDROID__
+#if defined __ANDROID__ && !defined XASH_64BIT
 #include <android/log.h>
 #include "linker.h"
 
 static Elf_Sym* soinfo_elf_lookup(soinfo* si, unsigned hash, const char* name) {
     Elf_Sym* symtab = si->symtab;
     const char* strtab = si->strtab;
+
+	if( si->nbucket == 0 )
+		return NULL;
 
     for (unsigned n = si->bucket[hash % si->nbucket]; n != 0; n = si->chain[n]) {
         Elf_Sym* s = symtab + n;
@@ -74,7 +77,7 @@ static unsigned elfhash(const char* _name) {
    Binary Interface) where in Chapter 5 it discuss resolving "Shared
    Object Dependencies" in breadth first search order.
  */
-Elf_Sym* dlsym_handle_lookup(soinfo* si, const char* name) {
+static Elf_Sym* dlsym_handle_lookup(soinfo* si, const char* name) {
     return soinfo_elf_lookup(si, elfhash(name), name);
 }
 

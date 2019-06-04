@@ -766,8 +766,8 @@ Create entity patch for selected map
 */
 void SV_WriteEntityPatch( const char *filename )
 {
-	int		ver = -1, lumpofs = 0, lumplen = 0;
-	byte		buf[MAX_SYSPATH]; // 1 kb
+	int		lumpofs = 0, lumplen = 0;
+	byte		buf[MAX_TOKEN]; // 1 kb
 	string		bspfilename;
 	dheader_t		*header;
 	file_t		*f;
@@ -776,8 +776,8 @@ void SV_WriteEntityPatch( const char *filename )
 	f = FS_Open( bspfilename, "rb", false );
 	if( !f ) return;
 
-	memset( buf, 0, MAX_SYSPATH );
-	FS_Read( f, buf, MAX_SYSPATH );
+	memset( buf, 0, MAX_TOKEN );
+	FS_Read( f, buf, MAX_TOKEN );
 	header = (dheader_t *)buf;
 
 	// check all the lumps and some other errors
@@ -815,9 +815,9 @@ pfnMapIsValid use this
 static char *SV_ReadEntityScript( const char *filename, int *flags )
 {
 	string		bspfilename, entfilename;
-	int		ver = -1, lumpofs = 0, lumplen = 0;
+	int		lumpofs = 0, lumplen = 0;
+	byte		buf[MAX_TOKEN];
 	char		*ents = NULL;
-	byte		buf[1024];
 	dheader_t		*header;
 	size_t		ft1, ft2;
 	file_t		*f;
@@ -829,8 +829,8 @@ static char *SV_ReadEntityScript( const char *filename, int *flags )
 	if( !f ) return NULL;
 
 	SetBits( *flags, MAP_IS_EXIST );
-	memset( buf, 0, MAX_SYSPATH );
-	FS_Read( f, buf, MAX_SYSPATH );
+	memset( buf, 0, MAX_TOKEN );
+	FS_Read( f, buf, MAX_TOKEN );
 	header = (dheader_t *)buf;
 
 	// check all the lumps and some other errors
@@ -848,7 +848,7 @@ static char *SV_ReadEntityScript( const char *filename, int *flags )
 	// check for entfile too
 	Q_strncpy( entfilename, va( "maps/%s.ent", filename ), sizeof( entfilename ));
 
-	// make sure what entity patch is never than bsp
+	// make sure what entity patch is newer than bsp
 	ft1 = FS_FileTime( bspfilename, false );
 	ft2 = FS_FileTime( entfilename, true );
 
@@ -889,7 +889,7 @@ int SV_MapIsValid( const char *filename, const char *spawn_entity, const char *l
 	if( ents )
 	{
 		qboolean	need_landmark = Q_strlen( landmark_name ) > 0 ? true : false;
-		char	token[2048];
+		char	token[MAX_TOKEN];
 		string	check_name;
 
 		// g-cont. in-dev mode we can entering on map even without "info_player_start"
@@ -1294,6 +1294,7 @@ pfnSetModel
 void pfnSetModel( edict_t *e, const char *m )
 {
 	char	name[MAX_QPATH];
+	qboolean	found = false;
 	model_t	*mod;
 	int	i;
 
@@ -1306,19 +1307,17 @@ void pfnSetModel( edict_t *e, const char *m )
 
 	if( COM_CheckString( name ))
 	{
-		qboolean notfound = true;
-
 		// check to see if model was properly precached
 		for( i = 1; i < MAX_MODELS && sv.model_precache[i][0]; i++ )
 		{
 			if( !Q_stricmp( sv.model_precache[i], name ))
 			{
-				notfound = false;
+				found = true;
 				break;
 			}
 		}
 
-		if( notfound )
+		if( !found )
 		{
 			Con_Printf( S_ERROR "Failed to set model %s: was not precached\n", name );
 			return;
@@ -2177,7 +2176,7 @@ SV_StartMusic
 void SV_StartMusic( const char *curtrack, const char *looptrack, int position )
 {
 	MSG_BeginServerCmd( &sv.multicast, svc_stufftext );
-	MSG_WriteString( &sv.multicast, va( "music \"%s\" \"%s\" %li\n", curtrack, looptrack, position ));
+	MSG_WriteString( &sv.multicast, va( "music \"%s\" \"%s\" %d\n", curtrack, looptrack, position ));
 	SV_Multicast( MSG_ALL, NULL, NULL, false, false );
 }
 
@@ -2805,7 +2804,7 @@ void pfnWriteString( const char *src )
 {
 	static char	string[MAX_USERMSG_LENGTH];
 	int		len = Q_strlen( src ) + 1;
-	int		rem = rem = sizeof( string ) - 1;
+	int		rem = sizeof( string ) - 1;
 	char		*dst;
 
 	if( len == 1 )
@@ -4762,7 +4761,7 @@ qboolean SV_ParseEdict( char **pfile, edict_t *ent )
 
 		// keynames with a leading underscore are used for
 		// utility comments and are immediately discarded by engine
-		if( keyname[0] == '_' && Q_strcmp( keyname, "_light" ))
+		if( FBitSet( world.flags, FWORLD_SKYSPHERE ) && keyname[0] == '_' )
 			continue;
 
 		// ignore attempts to set value ""
@@ -4865,7 +4864,7 @@ qboolean SV_ParseEdict( char **pfile, edict_t *ent )
 			Mem_Free( pkvd[i].szValue );
 	}
 
-	if( classname )
+	if( classname && Mem_IsAllocatedExt( host.mempool, classname ))
 		Mem_Free( classname );
 
 	return true;
@@ -5032,7 +5031,12 @@ qboolean SV_LoadProgs( const char *name )
 	// fill it in
 	svgame.pmove = &gpMove;
 	svgame.globals = &gpGlobals;
-	svgame.mempool = Mem_AllocPool( "Server Edicts Zone" );
+	
+	if ( !svgame.mempool )
+	{
+		svgame.mempool = Mem_AllocPool( "Server Edicts Zone" );
+	}
+	
 	svgame.hInstance = COM_LoadLibrary( name, true, false );
 	if( !svgame.hInstance ) return false;
 

@@ -257,7 +257,7 @@ Return contents for point
 */
 int CL_PointContents( const vec3_t p )
 {
-	int cont = CL_TruePointContents( p );
+	int cont = PM_PointContents( clgame.pmove, p );
 
 	if( cont <= CONTENTS_CURRENT_0 && cont >= CONTENTS_CURRENT_DOWN )
 		cont = CONTENTS_WATER;
@@ -647,7 +647,7 @@ and hold them into permament memory pool
 */
 static void CL_InitTitles( const char *filename )
 {
-	size_t	fileSize;
+	fs_offset_t	fileSize;
 	byte	*pMemFile;
 	int	i;
 
@@ -1194,7 +1194,7 @@ upload sprite frames
 static qboolean CL_LoadHudSprite( const char *szSpriteName, model_t *m_pSprite, uint type, uint texFlags )
 {
 	byte	*buf;
-	size_t	size;
+	fs_offset_t	size;
 	qboolean	loaded;
 
 	Assert( m_pSprite != NULL );
@@ -1206,7 +1206,7 @@ static qboolean CL_LoadHudSprite( const char *szSpriteName, model_t *m_pSprite, 
 		SetBits( m_pSprite->flags, MODEL_CLIENT );
 	m_pSprite->numtexinfo = texFlags; // store texFlags into numtexinfo
 
-	if( FS_FileSize( szSpriteName, false ) == -1 )
+	if( !FS_FileExists( szSpriteName, false ) )
 	{
 		if( cls.state != ca_active && cl.maxclients > 1 )
 		{
@@ -2201,7 +2201,7 @@ static int pfnPointContents( const float *p, int *truecontents )
 {
 	int	cont, truecont;
 
-	truecont = cont = CL_TruePointContents( p );
+	truecont = cont = PM_PointContents( clgame.pmove, p );
 	if( truecontents ) *truecontents = truecont;
 
 	if( cont <= CONTENTS_CURRENT_0 && cont >= CONTENTS_CURRENT_DOWN )
@@ -3951,7 +3951,7 @@ qboolean CL_LoadProgs( const char *name )
 	// NOTE: important stuff!
 	// vgui must startup BEFORE loading client.dll to avoid get error ERROR_NOACESS
 	// during LoadLibrary
-	VGui_Startup( gameui.globals->scrWidth, gameui.globals->scrHeight );
+	VGui_Startup( name, gameui.globals->scrWidth, gameui.globals->scrHeight );
 
 	clgame.hInstance = COM_LoadLibrary( name, false, false );
 	if( !clgame.hInstance ) return false;

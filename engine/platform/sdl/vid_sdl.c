@@ -70,10 +70,13 @@ qboolean SW_CreateBuffer( int width, int height, uint *stride, uint *bpp, uint *
 										width, height);
 
 		// fallback
-		if( !sw.tex )
-			sw.tex = SDL_CreateTexture(sw.renderer, format = SDL_PIXELFORMAT_RGBA8888,
+		if( !sw.tex && format != SDL_PIXELFORMAT_RGBA8888 )
+		{
+			format = SDL_PIXELFORMAT_RGBA8888;
+			sw.tex = SDL_CreateTexture(sw.renderer, format,
 											SDL_TEXTUREACCESS_STREAMING,
 											width, height);
+		}
 
 		if( !sw.tex )
 		{
@@ -133,10 +136,10 @@ qboolean SW_CreateBuffer( int width, int height, uint *stride, uint *bpp, uint *
 				Sys_Error(SDL_GetError());
 		}
 #endif
-
 	}
 
-	return true;
+	// we can't create ref_soft buffer
+	return false;
 }
 
 void *SW_LockBuffer()
@@ -179,18 +182,13 @@ void *SW_LockBuffer()
 
 void SW_UnlockBuffer()
 {
-
 	if( sw.renderer )
 	{
 		SDL_Rect src, dst;
-		src.x = 0;
-		src.y = 0;
+		src.x = src.y = 0;
 		src.w = sw.width;
 		src.h = sw.height;
-		dst.x = 0;
-		dst.y = 0;
-		dst.w = sw.width;
-		dst.h = sw.height;
+		dst = src;
 		SDL_UnlockTexture(sw.tex);
 
 		SDL_SetTextureBlendMode(sw.tex, SDL_BLENDMODE_NONE);
@@ -206,14 +204,10 @@ void SW_UnlockBuffer()
 		if( sw.surf )
 		{
 			SDL_Rect src, dst;
-			src.x = 0;
-			src.y = 0;
+			src.x = src.y = 0;
 			src.w = sw.width;
 			src.h = sw.height;
-			dst.x = 0;
-			dst.y = 0;
-			dst.w = sw.width;
-			dst.h = sw.height;
+			dst = src;
 			SDL_UnlockSurface( sw.surf );
 			SDL_BlitSurface( sw.surf, &src, sw.win, &dst );
 		}
@@ -392,7 +386,7 @@ void GL_UpdateSwapInterval( void )
 	// disable VSync while level is loading
 	if( cls.state < ca_active )
 	{
-		SDL_GL_SetSwapInterval( gl_vsync->value );
+		SDL_GL_SetSwapInterval( 0 );
 		SetBits( gl_vsync->flags, FCVAR_CHANGED );
 	}
 	else if( FBitSet( gl_vsync->flags, FCVAR_CHANGED ))
@@ -434,8 +428,6 @@ qboolean GL_CreateContext( void )
 		Con_Reportf( S_ERROR "GL_CreateContext: %s\n", SDL_GetError());
 		return GL_DeleteContext();
 	}
-
-	ref.dllFuncs.GL_OnContextCreated();
 
 	return true;
 }
@@ -727,8 +719,10 @@ int GL_SetAttribute( int attr, int val )
 	switch( attr )
 	{
 	case REF_GL_CONTEXT_PROFILE_MASK:
+#ifdef SDL_HINT_OPENGL_ES_DRIVER
 		if( val == REF_GL_CONTEXT_PROFILE_ES )
 			SDL_SetHint( SDL_HINT_OPENGL_ES_DRIVER, "1" );
+#endif // SDL_HINT_OPENGL_ES_DRIVER
 		break;
 	default:
 		break;

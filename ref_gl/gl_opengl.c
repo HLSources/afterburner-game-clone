@@ -373,6 +373,18 @@ void GL_CheckExtension( const char *name, const dllfunc_t *funcs, const char *cv
 }
 
 /*
+==============
+GL_GetProcAddress
+
+defined just for nanogl/glwes, so it don't link to SDL2 directly, nor use dlsym
+==============
+*/
+void GAME_EXPORT *GL_GetProcAddress( const char *name )
+{
+	return gEngfuncs.GL_GetProcAddress( name );
+}
+
+/*
 ===============
 GL_SetDefaultTexState
 ===============
@@ -632,13 +644,13 @@ void GL_InitExtensionsBigGL()
 	}
 
 	GL_CheckExtension( "GL_ARB_texture_non_power_of_two", NULL, "gl_texture_npot", GL_ARB_TEXTURE_NPOT_EXT );
-	GL_CheckExtension( "GL_ARB_texture_compression", texturecompressionfuncs, "gl_dds_hardware_support", GL_TEXTURE_COMPRESSION_EXT );
+	GL_CheckExtension( "GL_ARB_texture_compression", texturecompressionfuncs, "gl_texture_dxt_compression", GL_TEXTURE_COMPRESSION_EXT );
 	GL_CheckExtension( "GL_EXT_texture_edge_clamp", NULL, "gl_clamp_to_edge", GL_CLAMPTOEDGE_EXT );
 	if( !GL_Support( GL_CLAMPTOEDGE_EXT ))
 		GL_CheckExtension( "GL_SGIS_texture_edge_clamp", NULL, "gl_clamp_to_edge", GL_CLAMPTOEDGE_EXT );
 
 	glConfig.max_texture_anisotropy = 0.0f;
-	GL_CheckExtension( "GL_EXT_texture_filter_anisotropic", NULL, "gl_ext_anisotropic_filter", GL_ANISOTROPY_EXT );
+	GL_CheckExtension( "GL_EXT_texture_filter_anisotropic", NULL, "gl_texture_anisotropic_filter", GL_ANISOTROPY_EXT );
 	if( GL_Support( GL_ANISOTROPY_EXT ))
 		pglGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &glConfig.max_texture_anisotropy );
 
@@ -651,12 +663,13 @@ void GL_InitExtensionsBigGL()
 	if( GL_Support( GL_TEXTURE_LOD_BIAS ))
 		pglGetFloatv( GL_MAX_TEXTURE_LOD_BIAS_EXT, &glConfig.max_texture_lod_bias );
 
-	GL_CheckExtension( "GL_ARB_texture_border_clamp", NULL, "gl_ext_texborder_clamp", GL_CLAMP_TEXBORDER_EXT );
-	GL_CheckExtension( "GL_ARB_depth_texture", NULL, "gl_depthtexture", GL_DEPTH_TEXTURE );
-	GL_CheckExtension( "GL_ARB_texture_float", NULL, "gl_arb_texture_float", GL_ARB_TEXTURE_FLOAT_EXT );
-	GL_CheckExtension( "GL_ARB_depth_buffer_float", NULL, "gl_arb_depth_float", GL_ARB_DEPTH_FLOAT_EXT );
+	GL_CheckExtension( "GL_ARB_texture_border_clamp", NULL, NULL, GL_CLAMP_TEXBORDER_EXT );
+
+	GL_CheckExtension( "GL_ARB_depth_texture", NULL, NULL, GL_DEPTH_TEXTURE );
+	GL_CheckExtension( "GL_ARB_texture_float", NULL, "gl_texture_float", GL_ARB_TEXTURE_FLOAT_EXT );
+	GL_CheckExtension( "GL_ARB_depth_buffer_float", NULL, "gl_texture_depth_float", GL_ARB_DEPTH_FLOAT_EXT );
 	GL_CheckExtension( "GL_EXT_gpu_shader4", NULL, NULL, GL_EXT_GPU_SHADER4 ); // don't confuse users
-	GL_CheckExtension( "GL_ARB_shading_language_100", NULL, "gl_glslprogram", GL_SHADER_GLSL100_EXT );
+	GL_CheckExtension( "GL_ARB_shading_language_100", NULL, NULL, GL_SHADER_GLSL100_EXT );
 	GL_CheckExtension( "GL_ARB_vertex_buffer_object", vbofuncs, "gl_vertex_buffer_object", GL_ARB_VERTEX_BUFFER_OBJECT_EXT );
 
 	// rectangle textures support
@@ -693,6 +706,8 @@ void GL_InitExtensionsBigGL()
 
 void GL_InitExtensions( void )
 {
+	GL_OnContextCreated();
+
 	// initialize gl extensions
 	GL_CheckExtension( "OpenGL 1.1.0", opengl_110funcs, NULL, GL_OPENGL_110 );
 
@@ -708,6 +723,8 @@ void GL_InitExtensions( void )
 #else
 	GL_InitExtensionsBigGL();
 #endif
+
+	R_RenderInfo_f();
 
 	// enable gldebug if allowed
 	if( GL_Support( GL_DEBUG_OUTPUT ))

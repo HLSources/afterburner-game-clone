@@ -1302,8 +1302,6 @@ StudioCalcAttachments
 static void R_StudioCalcAttachments( void )
 {
 	mstudioattachment_t	*pAtt;
-	vec3_t		forward, bonepos;
-	vec3_t		localOrg, localAng;
 	int		i;
 
 	// calculate attachment points
@@ -1312,11 +1310,6 @@ static void R_StudioCalcAttachments( void )
 	for( i = 0; i < Q_min( MAXSTUDIOATTACHMENTS, m_pStudioHeader->numattachments ); i++ )
 	{
 		Matrix3x4_VectorTransform( g_studio.lighttransform[pAtt[i].bone], pAtt[i].org, RI.currententity->attachment[i] );
-		VectorSubtract( RI.currententity->attachment[i], RI.currententity->origin, localOrg );
-		Matrix3x4_OriginFromMatrix( g_studio.lighttransform[pAtt[i].bone], bonepos );
-		VectorSubtract( localOrg, bonepos, forward );	// make forward
-		VectorNormalizeFast( forward );
-		VectorAngles( forward, localAng );
 	}
 }
 
@@ -1939,12 +1932,12 @@ R_StudioMeshCompare
 Sorting opaque entities by model type
 ===============
 */
-static int R_StudioMeshCompare( const sortedmesh_t *a, const sortedmesh_t *b )
+static int R_StudioMeshCompare( const void *a, const void *b )
 {
-	if( FBitSet( a->flags, STUDIO_NF_ADDITIVE ))
+	if( FBitSet( ((const sortedmesh_t*)a)->flags, STUDIO_NF_ADDITIVE ))
 		return 1;
 
-	if( FBitSet( a->flags, STUDIO_NF_MASKED ))
+	if( FBitSet( ((const sortedmesh_t*)a)->flags, STUDIO_NF_MASKED ))
 		return -1;
 
 	return 0;
@@ -3118,7 +3111,7 @@ void R_StudioRenderFinal( void )
 	{
 		for( i = 0; i < m_pStudioHeader->numbodyparts; i++ )
 		{
-			R_StudioSetupModel( i, &m_pBodyPart, &m_pSubModel );
+			R_StudioSetupModel( i, (void**)&m_pBodyPart, (void**)&m_pSubModel );
 
 			GL_StudioSetRenderMode( rendermode );
 			R_StudioDrawPoints();
@@ -3826,7 +3819,7 @@ static void R_StudioLoadTexture( model_t *mod, studiohdr_t *phdr, mstudiotexture
 	gEngfuncs.Image_SetMDLPointer((byte *)phdr + ptexture->index);
 	size = sizeof( mstudiotexture_t ) + ptexture->width * ptexture->height + 768;
 
-	if( FBitSet( ENGINE_GET_PARM( PARM_FEATURES ), ENGINE_LOAD_DELUXEDATA ) && FBitSet( ptexture->flags, STUDIO_NF_MASKED ))
+	if( FBitSet( ENGINE_GET_PARM( PARM_FEATURES ), ENGINE_IMPROVED_LINETRACE ) && FBitSet( ptexture->flags, STUDIO_NF_MASKED ))
 		flags |= TF_KEEP_SOURCE; // Paranoia2 texture alpha-tracing
 
 	// build the texname

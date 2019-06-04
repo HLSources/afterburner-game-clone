@@ -144,7 +144,7 @@ void Con_SetColor_f( void )
 {
 	vec3_t	color;
 
-	switch( Cmd_Argc() )
+	switch( Cmd_Argc( ))
 	{
 	case 1:
 		Con_Printf( "\"con_color\" is %i %i %i\n", g_color_table[7][0], g_color_table[7][1], g_color_table[7][2] );
@@ -558,7 +558,7 @@ static qboolean Con_LoadVariableWidthFont( const char *fontname, cl_font_t *font
 {
 	int	i, fontWidth;
 	byte	*buffer;
-	size_t	length;
+	fs_offset_t	length;
 	qfont_t	*src;
 
 	if( font->valid )
@@ -807,7 +807,7 @@ int Con_UtfMoveRight( char *str, int pos, int length )
 static void Con_DrawCharToConback( int num, const byte *conchars, byte *dest )
 {
 	int	row, col;
-	const byte *source;
+	const byte	*source;
 	int	drawline;
 	int	x;
 
@@ -883,7 +883,7 @@ static int Con_DrawGenericChar( int x, int y, int number, rgba_t color )
 		return con.curFont->charWidths[number];
 
 	// don't apply color to fixed fonts it's already colored
-	if( con.curFont->type != FONT_FIXED || REF_GET_PARM( PARM_TEX_GLFORMAT, 0x8045 ) ) // GL_LUMINANCE8_ALPHA8
+	if( con.curFont->type != FONT_FIXED || REF_GET_PARM( PARM_TEX_GLFORMAT, con.curFont->hFontTexture ) == 0x8045 ) // GL_LUMINANCE8_ALPHA8
 		ref.dllFuncs.Color4ub( color[0], color[1], color[2], color[3] );
 	else ref.dllFuncs.Color4ub( 255, 255, 255, color[3] );
 
@@ -2349,8 +2349,8 @@ void Con_VidInit( void )
 	if( !con.background ) // last chance - quake conback image
 	{
 		qboolean		draw_to_console = false;
-		int		length = 0;
-		byte *buf;
+		fs_offset_t		length = 0;
+		const byte *buf;
 
 		// NOTE: only these games want to draw build number into console background
 		if( !Q_stricmp( FS_Gamedir(), "id1" ))

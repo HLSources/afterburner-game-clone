@@ -35,7 +35,7 @@ void GL_FreeImage( const char *name )
 		 ref.dllFuncs.GL_FreeTexture( texnum );
 }
 
-int GL_RenderFrame( const ref_viewpass_t *rvp )
+void GL_RenderFrame( const ref_viewpass_t *rvp )
 {
 	refState.time      = cl.time;
 	refState.oldtime   = cl.oldtime;
@@ -118,7 +118,7 @@ static void pfnGetPredictedOrigin( vec3_t v )
 	VectorCopy( cl.simorg, v );
 }
 
-static color24 *pfnCL_GetPaletteColor(int color) // clgame.palette[color]
+static color24 *pfnCL_GetPaletteColor( int color ) // clgame.palette[color]
 {
 	return &clgame.palette[color];
 }
@@ -201,13 +201,13 @@ static ref_api_t gEngfuncs =
 {
 	pfnEngineGetParm,
 
-	Cvar_Get,
-	Cvar_FindVarExt,
+	(void*)Cvar_Get,
+	(void*)Cvar_FindVarExt,
 	Cvar_VariableValue,
 	Cvar_VariableString,
 	Cvar_SetValue,
 	Cvar_Set,
-	Cvar_RegisterVariable,
+	(void*)Cvar_RegisterVariable,
 	Cvar_FullSet,
 
 	Cmd_AddRefCommand,
@@ -528,6 +528,8 @@ qboolean R_Init( void )
 		Host_Error( "Can't initialize %s renderer!\n", refdll );
 		return false;
 	}
+
+	Con_Reportf( "Renderer %s initialized\n", refdll );
 
 	SCR_Init();
 

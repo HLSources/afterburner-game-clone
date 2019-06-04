@@ -15,6 +15,8 @@ GNU General Public License for more details.
 
 #include <windows.h>
 #include "platform/platform.h"
+#include "menu_int.h"
+
 #ifdef _WIN32
 BOOL WINAPI IsDebuggerPresent(VOID);
 #endif // _WIN32
@@ -47,4 +49,17 @@ qboolean Sys_DebuggerPresent( void )
 	return IsDebuggerPresent();
 }
 
+void Platform_ShellExecute( const char *path, const char *parms )
+{
+	if( !Q_strcmp( path, GENERIC_UPDATE_PAGE ) || !Q_strcmp( path, PLATFORM_UPDATE_PAGE ))
+		path = DEFAULT_UPDATE_PAGE;
 
+	ShellExecute( NULL, "open", path, parms, NULL, SW_SHOW );
+}
+
+#ifdef XASH_DEDICATED
+void Platform_MessageBox( const char *title, const char *message, qboolean parentMainWindow )
+{
+	MessageBox( parentMainWindow ? host.hWnd : NULL, message, title, MB_OK|MB_SETFOREGROUND|MB_ICONSTOP );
+}
+#endif

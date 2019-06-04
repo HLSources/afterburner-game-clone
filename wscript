@@ -31,6 +31,7 @@ SUBDIRS = [
 	Subproject('engine',      dedicated=False),
 	Subproject('game_launch', singlebin=True),
 	Subproject('ref_gl'),
+#	Subproject('ref_soft'),
 	Subproject('mainui'),
 	Subproject('vgui_support'),
 ]
@@ -97,16 +98,31 @@ def configure(conf):
 	if sys.platform == 'win32':
 		conf.load('msvc msvs')
 
-	# print(conf.options.ALLOW64)
+	# Every static library must have fPIC
+	if conf.env.DEST_OS != 'win32' and '-fPIC' in conf.env.CFLAGS_cshlib:
+		conf.env.append_unique('CFLAGS_cstlib', '-fPIC')
+		conf.env.append_unique('CXXFLAGS_cxxstlib', '-fPIC')
 
-	conf.env.BIT32_MANDATORY = not conf.options.ALLOW64
-	conf.env.BIT32_ALLOW64 = conf.options.ALLOW64
-	conf.load('force_32bit sdl2')
+	# modify options dictionary early
+	if conf.env.DEST_OS2 == 'android':
+		conf.options.ALLOW64 = True # skip pointer length check
+		conf.options.NO_VGUI = True # skip vgui
+		conf.options.NANOGL = True
+		conf.options.GLWES  = True
+		conf.options.GL     = False
 
-	if conf.env.DEST_SIZEOF_VOID_P == 4:
-		Logs.info('NOTE: will build engine for 32-bit target')
+	# We restrict 64-bit builds ONLY for Win/Linux/OSX running on Intel architecture
+	# Because compatibility with original GoldSrc
+	if conf.env.DEST_OS in ['win32', 'linux', 'darwin'] and conf.env.DEST_CPU in ['x86_64']:
+		conf.env.BIT32_ALLOW64 = conf.options.ALLOW64
+		if not conf.env.BIT32_ALLOW64:
+			Logs.info('WARNING: will build engine for 32-bit target')
 	else:
-		Logs.warn('WARNING: 64-bit engine may be unstable')
+		conf.env.BIT32_ALLOW64 = True
+	conf.env.BIT32_MANDATORY = not conf.env.BIT32_ALLOW64
+	conf.load('force_32bit')
+	if conf.env.DEST_OS2 != 'android':
+		conf.load('sdl2')
 
 	linker_flags = {
 		'common': {
@@ -121,8 +137,8 @@ def configure(conf):
 	compiler_c_cxx_flags = {
 		'common': {
 			'msvc':    ['/D_USING_V110_SDK71_', '/Zi', '/FS'],
-			'clang':   ['-g', '-gdwarf-2'],
-			'gcc':     ['-g', '-Werror=implicit-function-declaration', '-fdiagnostics-color=always']
+			'clang':   ['-g', '-gdwarf-2', '-Werror=implicit-function-declaration', '-Werror=return-type'],
+			'gcc':     ['-g', '-Werror=implicit-function-declaration', '-fdiagnostics-color=always', '-Werror=return-type']
 		},
 		'fast': {
 			'msvc':    ['/O2', '/Oy'], #todo: check /GL /LTCG
@@ -163,8 +179,8 @@ def configure(conf):
 		conf.check_cc( lib='dl' )
 
 	if conf.env.DEST_OS != 'win32':
-		conf.check_cc( lib='m' )
 		if conf.env.DEST_OS2 != 'android':
+			conf.check_cc( lib='m' ) # HACK: already added in xcompile!
 			conf.check_cc( lib='pthread' )
 	else:
 		# Common Win32 libraries
@@ -181,8 +197,8 @@ def configure(conf):
 
 	# indicate if we are packaging for Linux/BSD
 	if(not conf.options.WIN_INSTALL and
-		conf.env.DEST_OS != 'win32' and
-		conf.env.DEST_OS != 'darwin'):
+		conf.env.DEST_OS not in ['win32', 'darwin'] and
+		conf.env.DEST_OS2 not in ['android']):
 		conf.env.LIBDIR = conf.env.BINDIR = '${PREFIX}/lib/xash3d'
 	else:
 		conf.env.LIBDIR = conf.env.BINDIR = conf.env.PREFIX
@@ -193,6 +209,9 @@ def configure(conf):
 		if conf.env.SINGLE_BINARY and i.singlebin:
 			continue
 
+		if conf.env.DEST_OS2 == 'android' and i.singlebin:
+			continue
+
 		if conf.env.DEDICATED and i.dedicated:
 			continue
 
@@ -201,6 +220,9 @@ def configure(conf):
 def build(bld):
 	for i in SUBDIRS:
 		if bld.env.SINGLE_BINARY and i.singlebin:
+			continue
+
+		if bld.env.DEST_OS2 == 'android' and i.singlebin:
 			continue
 
 		if bld.env.DEDICATED and i.dedicated:

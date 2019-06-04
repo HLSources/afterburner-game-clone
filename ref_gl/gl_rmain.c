@@ -41,18 +41,14 @@ static int R_RankForRenderMode( int rendermode )
 
 void R_AllowFog( qboolean allowed )
 {
-	static int	isFogEnabled;
-
 	if( allowed )
 	{
-		if( isFogEnabled )
+		if( glState.isFogEnabled )
 			pglEnable( GL_FOG );
 	}
 	else
 	{
-		isFogEnabled = pglIsEnabled( GL_FOG );
-
-		if( isFogEnabled )
+		if( glState.isFogEnabled )
 			pglDisable( GL_FOG );
 	}
 }
@@ -78,7 +74,7 @@ R_TransEntityCompare
 Sorting translucent entities by rendermode then by distance
 ===============
 */
-static int R_TransEntityCompare( const cl_entity_t **a, const cl_entity_t **b )
+static int R_TransEntityCompare( const void *a, const void *b )
 {
 	cl_entity_t	*ent1, *ent2;
 	vec3_t		vecLen, org;
@@ -86,8 +82,8 @@ static int R_TransEntityCompare( const cl_entity_t **a, const cl_entity_t **b )
 	int		rendermode1;
 	int		rendermode2;
 
-	ent1 = (cl_entity_t *)*a;
-	ent2 = (cl_entity_t *)*b;
+	ent1 = *(cl_entity_t **)a;
+	ent2 = *(cl_entity_t **)b;
 	rendermode1 = R_GetEntityRenderMode( ent1 );
 	rendermode2 = R_GetEntityRenderMode( ent2 );
 
@@ -498,6 +494,9 @@ static void R_SetupFrame( void )
 	// setup viewplane dist
 	RI.viewplanedist = DotProduct( RI.vieworg, RI.vforward );
 
+	// NOTE: this request is the fps-killer on some NVidia drivers
+	glState.isFogEnabled = pglIsEnabled( GL_FOG );
+
 	if( !gl_nosort->value )
 	{
 		// sort translucents entities by rendermode and distance
@@ -701,7 +700,11 @@ static void R_CheckFog( void )
 			// in some cases waterlevel jumps from 3 to 1. Catch it
 			RI.cached_waterlevel = ENGINE_GET_PARM( PARM_WATER_LEVEL );
 			RI.cached_contents = CONTENTS_EMPTY;
-			if( !RI.fogCustom ) pglDisable( GL_FOG );
+			if( !RI.fogCustom )
+			{
+				glState.isFogEnabled = false;
+				pglDisable( GL_FOG );
+			}
 		}
 		return;
 	}
@@ -1100,10 +1103,10 @@ void R_SetupRefParams( const ref_viewpass_t *rvp )
 R_RenderFrame
 ===============
 */
-int R_RenderFrame( const ref_viewpass_t *rvp )
+void R_RenderFrame( const ref_viewpass_t *rvp )
 {
 	if( r_norefresh->value )
-		return 1;
+		return;
 
 	// setup the initial render params
 	R_SetupRefParams( rvp );
@@ -1129,7 +1132,7 @@ int R_RenderFrame( const ref_viewpass_t *rvp )
 			R_GatherPlayerLight();
 			tr.realframecount++;
 			tr.fResetVis = true;
-			return 1;
+			return;
 		}
 	}
 
@@ -1140,7 +1143,7 @@ int R_RenderFrame( const ref_viewpass_t *rvp )
 	tr.realframecount++; // right called after viewmodel events
 	R_RenderScene();
 
-	return 1;
+	return;
 }
 
 /*

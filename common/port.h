@@ -21,11 +21,11 @@ GNU General Public License for more details.
   #define XASH_64BIT
 #endif
 
-#ifdef XASH_64BIT
-#define ARCH_SUFFIX "64"
-#else
+// #ifdef XASH_64BIT
+// #define ARCH_SUFFIX "64"
+// #else
 #define ARCH_SUFFIX
-#endif
+// #endif
 
 #if defined(__ANDROID__) || TARGET_OS_IOS
 #define XASH_MOBILE_PLATFORM
@@ -47,21 +47,21 @@ GNU General Public License for more details.
 	#if defined(__APPLE__)
 		#include <sys/syslimits.h>
 		#define OS_LIB_EXT "dylib"
-        #define OPEN_COMMAND "open"
+		#define OPEN_COMMAND "open"
 		#include "TargetConditionals.h"
 	#else
 		#define OS_LIB_EXT "so"
-        #define OPEN_COMMAND "xdg-open"
+		#define OPEN_COMMAND "xdg-open"
 	#endif
 
 	#define OS_LIB_PREFIX "lib"
 
 	#if defined(__ANDROID__)
-		#if defined(LOAD_HARDFP)
-			#define POSTFIX "_hardfp"
-		#else
+		//#if defined(LOAD_HARDFP)
+		//	#define POSTFIX "_hardfp"
+		//#else
 			#define POSTFIX
-		#endif
+		//#endif
 
 		// don't change these names
 		#define MENUDLL   "libmenu"   POSTFIX "." OS_LIB_EXT

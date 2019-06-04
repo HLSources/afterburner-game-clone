@@ -51,15 +51,16 @@ R_SpriteLoadFrame
 upload a single frame
 ====================
 */
-static dframetype_t *R_SpriteLoadFrame( model_t *mod, void *pin, mspriteframe_t **ppframe, int num )
+static const dframetype_t *R_SpriteLoadFrame( model_t *mod, const void *pin, mspriteframe_t **ppframe, int num )
 {
-	dspriteframe_t	*pinframe;
+	const dspriteframe_t	pinframe;
 	mspriteframe_t	*pspriteframe;
 	int		gl_texturenum = 0;
 	char		texname[128];
 	int		bytes = 1;
 
-	pinframe = (dspriteframe_t *)pin;
+	memcpy( &pinframe, pin, sizeof(dspriteframe_t));
+
 	if( sprite_version == SPRITE_VERSION_32 )
 		bytes = 4;
 
@@ -67,26 +68,26 @@ static dframetype_t *R_SpriteLoadFrame( model_t *mod, void *pin, mspriteframe_t 
 	if( FBitSet( mod->flags, MODEL_CLIENT )) // it's a HUD sprite
 	{
 		Q_snprintf( texname, sizeof( texname ), "#HUD/%s(%s:%i%i).spr", sprite_name, group_suffix, num / 10, num % 10 );
-		gl_texturenum = GL_LoadTexture( texname, pin, pinframe->width * pinframe->height * bytes, r_texFlags );
+		gl_texturenum = GL_LoadTexture( texname, pin, pinframe.width * pinframe.height * bytes, r_texFlags );
 	}
 	else
 	{
 		Q_snprintf( texname, sizeof( texname ), "#%s(%s:%i%i).spr", sprite_name, group_suffix, num / 10, num % 10 );
-		gl_texturenum = GL_LoadTexture( texname, pin, pinframe->width * pinframe->height * bytes, r_texFlags );
+		gl_texturenum = GL_LoadTexture( texname, pin, pinframe.width * pinframe.height * bytes, r_texFlags );
 	}	
 
 	// setup frame description
 	pspriteframe = Mem_Malloc( mod->mempool, sizeof( mspriteframe_t ));
-	pspriteframe->width = pinframe->width;
-	pspriteframe->height = pinframe->height;
-	pspriteframe->up = pinframe->origin[1];
-	pspriteframe->left = pinframe->origin[0];
-	pspriteframe->down = pinframe->origin[1] - pinframe->height;
-	pspriteframe->right = pinframe->width + pinframe->origin[0];
+	pspriteframe->width = pinframe.width;
+	pspriteframe->height = pinframe.height;
+	pspriteframe->up = pinframe.origin[1];
+	pspriteframe->left = pinframe.origin[0];
+	pspriteframe->down = pinframe.origin[1] - pinframe.height;
+	pspriteframe->right = pinframe.width + pinframe.origin[0];
 	pspriteframe->gl_texturenum = gl_texturenum;
 	*ppframe = pspriteframe;
 
-	return (dframetype_t *)((byte *)(pinframe + 1) + pinframe->width * pinframe->height * bytes );
+	return ( (const byte*)pin + sizeof(dspriteframe_t) + pinframe.width * pinframe.height * bytes );
 }
 
 /*
@@ -96,16 +97,16 @@ R_SpriteLoadGroup
 upload a group frames
 ====================
 */
-static dframetype_t *R_SpriteLoadGroup( model_t *mod, void *pin, mspriteframe_t **ppframe, int framenum )
+static const dframetype_t *R_SpriteLoadGroup( model_t *mod, const void *pin, mspriteframe_t **ppframe, int framenum )
 {
-	dspritegroup_t	*pingroup;
+	const dspritegroup_t	*pingroup;
 	mspritegroup_t	*pspritegroup;
-	dspriteinterval_t	*pin_intervals;
+	const dspriteinterval_t	*pin_intervals;
 	float		*poutintervals;
 	int		i, groupsize, numframes;
-	void		*ptemp;
+	const void		*ptemp;
 
-	pingroup = (dspritegroup_t *)pin;
+	pingroup = (const dspritegroup_t *)pin;
 	numframes = pingroup->numframes;
 
 	groupsize = sizeof( mspritegroup_t ) + (numframes - 1) * sizeof( pspritegroup->frames[0] );
@@ -113,7 +114,7 @@ static dframetype_t *R_SpriteLoadGroup( model_t *mod, void *pin, mspriteframe_t 
 	pspritegroup->numframes = numframes;
 
 	*ppframe = (mspriteframe_t *)pspritegroup;
-	pin_intervals = (dspriteinterval_t *)(pingroup + 1);
+	pin_intervals = (const dspriteinterval_t *)(pingroup + 1);
 	poutintervals = Mem_Calloc( mod->mempool, numframes * sizeof( float ));
 	pspritegroup->intervals = poutintervals;
 
@@ -126,13 +127,13 @@ static dframetype_t *R_SpriteLoadGroup( model_t *mod, void *pin, mspriteframe_t 
 		pin_intervals++;
 	}
 
-	ptemp = (void *)pin_intervals;
+	ptemp = (const void *)pin_intervals;
 	for( i = 0; i < numframes; i++ )
 	{
 		ptemp = R_SpriteLoadFrame( mod, ptemp, &pspritegroup->frames[i], framenum * 10 + i );
 	}
 
-	return (dframetype_t *)ptemp;
+	return (const dframetype_t *)ptemp;
 }
 
 /*

@@ -16,7 +16,7 @@ GNU General Public License for more details.
 #include "imagelib.h"
 #include "stb_image.h"
 
-qboolean Image_LoadPNG(const char *fileName, const byte *rawImageData, size_t fileSize)
+qboolean Image_LoadPNG(const char *fileName, const byte *rawImageData, fs_offset_t fileSize)
 {
 	static const int RGBA_SIZE = 4;
 

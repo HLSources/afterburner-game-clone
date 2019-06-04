@@ -26,7 +26,9 @@ def configure(conf):
 			conf.check_cc( lib='rt' )
 		conf.env.append_unique('DEFINES', 'XASH_DEDICATED')
 	elif conf.env.DEST_OS2 == 'android': # Android doesn't need SDL2
+		conf.check_cc(lib='android')
 		conf.check_cc(lib='log')
+		conf.check_cc(lib='EGL')
 	else:
 		conf.load('sdl2')
 		if not conf.env.HAVE_SDL2:
@@ -47,6 +49,9 @@ def configure(conf):
 	if conf.env.DEST_OS == 'win32':
 		conf.env.append_unique('DEFINES', 'DBGHELP')
 		conf.env.append_unique('DEFINES', 'PSAPI_VERSION=1')
+
+	if conf.env.DEST_SIZEOF_VOID_P != 4:
+		conf.env.append_unique('DEFINES', 'XASH_64BIT')
 
 def build(bld):
 	libs = [ 'public' ]
@@ -74,8 +79,8 @@ def build(bld):
 		source += bld.path.ant_glob(['platform/sdl/*.c'])
 
 	if bld.env.DEST_OS2 == 'android':
-		libs.append('LOG')
-		source += bld.path.ant_glob(['platform/android/*.c*'])
+		libs += ['LOG', 'EGL', 'ANDROID']
+		source += bld.path.ant_glob(['platform/android/*.cpp', 'platform/android/*.c'])
 
 	# add client files
 	if not bld.env.DEDICATED:
@@ -103,22 +108,18 @@ def build(bld):
 	]
 
 	if bld.env.SINGLE_BINARY:
-		bld(
-			source   = source,
-			target   = 'xash',
-			features = 'c cprogram',
-			includes = includes,
-			use      = libs,
-			install_path = bld.env.BINDIR,
-			subsystem = bld.env.MSVC_SUBSYSTEM
-		)
+		install_path = bld.env.BINDIR
+		features = 'c cprogram'
 	else:
-		bld.shlib(
-			source   = source,
-			target   = 'xash',
-			features = 'c',
-			includes = includes,
-			use      = libs,
-			install_path = bld.env.LIBDIR,
-			subsystem = bld.env.MSVC_SUBSYSTEM
-		)
+		install_path = bld.env.LIBDIR
+		features = 'c cshlib'
+
+	bld(
+		source   = source,
+		target   = 'xash',
+		features = features,
+		includes = includes,
+		use      = libs,
+		install_path = install_path,
+		subsystem = bld.env.MSVC_SUBSYSTEM
+	)
