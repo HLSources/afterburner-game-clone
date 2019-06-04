@@ -916,7 +916,7 @@ determine face contents by name
 */
 static int Mod_GetFaceContents( const char *name )
 {
-	if( !Q_strnicmp( name, HALFLIFE_TEXPATH_SKY, 3 ) || !Q_strncmp(name, AFTERBURNER_TEXPATH_SKY))
+	if( !Q_strnicmp( name, HALFLIFE_TEXPATH_SKY, 3 ) || !Q_strcmp(name, AFTERBURNER_TEXPATH_SKY))
 		return CONTENTS_SKY;
 
 	if( name[0] == '!' || name[0] == '*' )
