@@ -59,7 +59,7 @@ def options(opt):
 
 	grp.add_option('--enable-bsp2', action = 'store_true', dest = 'SUPPORT_BSP2_FORMAT', default = False,
 		help = 'build engine and renderers with BSP2 map support(recommended for Quake, breaks compability!)')
-	
+
 	opt.load('subproject')
 
 	opt.add_subproject(subdirs())
@@ -150,7 +150,7 @@ def configure(conf):
 			'default': ['-O3']
 		},
 		'debug': {
-			'msvc':    ['/O1'],
+			'msvc':    ['/O1', '/D_DEBUG'],
 			'gcc':     ['-Og'],
 			'default': ['-O1']
 		},
