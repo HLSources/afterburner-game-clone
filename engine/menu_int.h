@@ -24,6 +24,10 @@ GNU General Public License for more details.
 // Xash3D 1.0 interface
 #define NEW_ENGINE_INTERFACE
 
+// Convenience define for modifications that are specific to Afterburner,
+// to avoid ripping code out of the repo completely.
+#define MENU_AFTERBURNER
+
 typedef int		HIMAGE;		// handle to a graphic
 
 // flags for PIC_Load
