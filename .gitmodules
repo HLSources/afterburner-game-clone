@@ -4,3 +4,6 @@
 [submodule "ref_gl/gl-wes-v2"]
 	path = ref_gl/gl-wes-v2
 	url = https://github.com/FWGS/gl-wes-v2
+[submodule "mainui"]
+	path = mainui
+	url = https://github.com/x6herbius/afterburner-menus.git
