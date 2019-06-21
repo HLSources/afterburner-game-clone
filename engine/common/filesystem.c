@@ -2452,6 +2452,7 @@ static searchpath_t *FS_FindFile( const char *name, int *index, qboolean gamedir
 			return search;
 		}
 
+#if 0
 		// search for environment path
 		while( ( pEnvPath = getenv( "Path" ) ) )
 		{
@@ -2469,6 +2470,7 @@ static searchpath_t *FS_FindFile( const char *name, int *index, qboolean gamedir
 			}
 			pEnvPath += (end - pEnvPath) + 1; // move pointer
 		}
+#endif // 0
 	}
 
 	if( index != NULL )
@@ -2940,6 +2942,68 @@ byte *FS_LoadFile( const char *path, fs_offset_t *filesizeptr, qboolean gamediro
 		*filesizeptr = filesize;
 
 	return buf;
+}
+
+qboolean CRC32_File( dword *crcvalue, const char *filename )
+{
+	char	buffer[1024];
+	int	num_bytes;
+	file_t	*f;
+
+	f = FS_Open( filename, "rb", false );
+	if( !f ) return false;
+
+	Assert( crcvalue != NULL );
+	CRC32_Init( crcvalue );
+
+	while( 1 )
+	{
+		num_bytes = FS_Read( f, buffer, sizeof( buffer ));
+
+		if( num_bytes > 0 )
+			CRC32_ProcessBuffer( crcvalue, buffer, num_bytes );
+
+		if( FS_Eof( f )) break;
+	}
+
+	FS_Close( f );
+	return true;
+}
+
+qboolean MD5_HashFile( byte digest[16], const char *pszFileName, uint seed[4] )
+{
+	file_t		*file;
+	char		buffer[1024];
+	MD5Context_t	MD5_Hash;
+	int		bytes;
+
+	if(( file = FS_Open( pszFileName, "rb", false )) == NULL )
+		return false;
+
+	memset( &MD5_Hash, 0, sizeof( MD5Context_t ));
+
+	MD5Init( &MD5_Hash );
+
+	if( seed )
+	{
+		MD5Update( &MD5_Hash, (const byte *)seed, 16 );
+	}
+
+	while( 1 )
+	{
+		bytes = FS_Read( file, buffer, sizeof( buffer ));
+
+		if( bytes > 0 )
+			MD5Update( &MD5_Hash, buffer, bytes );
+
+		if( FS_Eof( file ))
+			break;
+	}
+
+	FS_Close( file );
+	MD5Final( digest, &MD5_Hash );
+
+	return true;
 }
 
 /*

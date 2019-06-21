@@ -14,7 +14,7 @@ GNU General Public License for more details.
 */
 
 #include "gl_local.h"
-
+#include "crclib.h"
 
 #define TEXTURES_HASH_SIZE	(MAX_TEXTURES >> 2)
 
@@ -71,12 +71,13 @@ void GL_Bind( GLint tmu, GLenum texnum )
 	gl_texture_t	*texture;
 	GLuint		glTarget;
 
-	Assert( texnum >= 0 && texnum < MAX_TEXTURES );
-
 	// missed or invalid texture?
 	if( texnum <= 0 || texnum >= MAX_TEXTURES )
+	{
+		if( texnum != 0 )
+			gEngfuncs.Con_DPrintf( S_ERROR "GL_Bind: invalid texturenum %d\n", texnum );
 		texnum = tr.defaultTexture;
-
+	}
 	if( tmu != GL_KEEP_UNIT )
 		GL_SelectTexture( tmu );
 	else tmu = glState.activeTMU;
@@ -1310,7 +1311,7 @@ static gl_texture_t *GL_TextureForName( const char *name )
 	uint		hash;
 
 	// find the texture in array
-	hash = gEngfuncs.COM_HashKey( name, TEXTURES_HASH_SIZE );
+	hash = COM_HashKey( name, TEXTURES_HASH_SIZE );
 
 	for( tex = gl_texturesHashTable[hash]; tex != NULL; tex = tex->nextHash )
 	{
@@ -1352,7 +1353,7 @@ static gl_texture_t *GL_AllocTexture( const char *name, texFlags_t flags )
 	tex->flags = flags;
 
 	// add to hash table
-	tex->hashValue = gEngfuncs.COM_HashKey( name, TEXTURES_HASH_SIZE );
+	tex->hashValue = COM_HashKey( name, TEXTURES_HASH_SIZE );
 	tex->nextHash = gl_texturesHashTable[tex->hashValue];
 	gl_texturesHashTable[tex->hashValue] = tex;
 
@@ -1680,6 +1681,7 @@ creates texture from buffer
 */
 int GL_CreateTexture( const char *name, int width, int height, const void *buffer, texFlags_t flags )
 {
+	qboolean	update = FBitSet( flags, TF_UPDATE ) ? true : false;
 	int	datasize = 1;
 	rgbdata_t	r_empty;
 
@@ -1688,6 +1690,7 @@ int GL_CreateTexture( const char *name, int width, int height, const void *buffe
 	else if( FBitSet( flags, TF_ARB_FLOAT ))
 		datasize = 4;
 
+	ClearBits( flags, TF_UPDATE );
 	memset( &r_empty, 0, sizeof( r_empty ));
 	r_empty.width = width;
 	r_empty.height = height;
@@ -1713,7 +1716,7 @@ int GL_CreateTexture( const char *name, int width, int height, const void *buffe
 		r_empty.size *= 6;
 	}
 
-	return GL_LoadTextureInternal( name, &r_empty, flags );
+	return GL_LoadTextureFromBuffer( name, &r_empty, flags, update );
 }
 
 /*
@@ -2207,7 +2210,7 @@ void R_InitImages( void )
 
 	// create unused 0-entry
 	Q_strncpy( gl_textures->name, "*unused*", sizeof( gl_textures->name ));
-	gl_textures->hashValue = gEngfuncs.COM_HashKey( gl_textures->name, TEXTURES_HASH_SIZE );
+	gl_textures->hashValue = COM_HashKey( gl_textures->name, TEXTURES_HASH_SIZE );
 	gl_textures->nextHash = gl_texturesHashTable[gl_textures->hashValue];
 	gl_texturesHashTable[gl_textures->hashValue] = gl_textures;
 	gl_numTextures = 1;
