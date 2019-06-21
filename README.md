@@ -18,10 +18,19 @@ Note that the Afterburner engine does not require the Xash3D VGUI support librar
 
 ### Linux/Mac
 Make sure you're OK with targeting 32-bit. The Xash3D FWGS engine does support targeting 64-bit, but functionality is not guaranteed at this point in time, so 64-bit builds are currently not supported by Afterburner.
+**TODO:** See if we can get 64-bit working as the default, Xash3D support seems to be getting better.
 
-* **Gentoo**: TODO
-* **Debian**: TODO
-* **ArchLinux**: `<AUR Helper> -S xash3d-git`
+#### Debian/Ubuntu
+* Enable i386 on your system, if you're compiling 32-bit engine on amd64. If not, skip this.
+
+`$ sudo dpkg --add-architecture i386`
+* Install development tools
+  * For 64-bit engine on amd64: 
+		
+    `$ sudo apt install build-essential gcc-multilib g++-multilib python libsdl2-dev:i386 libfontconfig-dev:i386 libfreetype6-dev:i386`
+  * For everything else: 
+		
+    `$ sudo apt install build-essential python libsdl2-dev libfontconfig-dev libfreetype6-dev`
 
 ## Building
 

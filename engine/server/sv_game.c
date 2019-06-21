@@ -5031,14 +5031,14 @@ qboolean SV_LoadProgs( const char *name )
 	// fill it in
 	svgame.pmove = &gpMove;
 	svgame.globals = &gpGlobals;
-	
-	if ( !svgame.mempool )
-	{
-		svgame.mempool = Mem_AllocPool( "Server Edicts Zone" );
-	}
-	
+	svgame.mempool = Mem_AllocPool( "Server Edicts Zone" );
+
 	svgame.hInstance = COM_LoadLibrary( name, true, false );
-	if( !svgame.hInstance ) return false;
+	if( !svgame.hInstance )
+	{
+		Mem_FreePool(&svgame.mempool);
+		return false;
+	}
 
 	// make sure what new dll functions is cleared
 	memset( &svgame.dllFuncs2, 0, sizeof( svgame.dllFuncs2 ));
@@ -5058,6 +5058,7 @@ qboolean SV_LoadProgs( const char *name )
 		COM_FreeLibrary( svgame.hInstance );
          		Con_Printf( S_ERROR "SV_LoadProgs: failed to get address of GetEntityAPI proc\n" );
 		svgame.hInstance = NULL;
+		Mem_FreePool(&svgame.mempool);
 		return false;
 	}
 
@@ -5068,6 +5069,7 @@ qboolean SV_LoadProgs( const char *name )
 		COM_FreeLibrary( svgame.hInstance );
 		Con_Printf( S_ERROR "SV_LoadProgs: failed to get address of GiveFnptrsToDll proc\n" );
 		svgame.hInstance = NULL;
+		Mem_FreePool(&svgame.mempool);
 		return false;
 	}
 
@@ -5100,6 +5102,7 @@ qboolean SV_LoadProgs( const char *name )
 				COM_FreeLibrary( svgame.hInstance );
 				Con_Printf( S_ERROR "SV_LoadProgs: couldn't get entity API\n" );
 				svgame.hInstance = NULL;
+				Mem_FreePool(&svgame.mempool);
 				return false;
 			}
 		}
@@ -5110,6 +5113,7 @@ qboolean SV_LoadProgs( const char *name )
 		COM_FreeLibrary( svgame.hInstance );
 		Con_Printf( S_ERROR "SV_LoadProgs: couldn't get entity API\n" );
 		svgame.hInstance = NULL;
+		Mem_FreePool(&svgame.mempool);
 		return false;
 	}
 

@@ -390,6 +390,7 @@ void R_SetupGL( qboolean set_gl_state );
 void R_AllowFog( qboolean allowed );
 void R_SetupFrustum( void );
 void R_FindViewLeaf( void );
+void R_CheckGamma( void );
 void R_PushScene( void );
 void R_PopScene( void );
 void R_DrawFog( void );
@@ -670,6 +671,7 @@ typedef struct
 	gles_wrapper_t	wrapper;
 
 	qboolean		softwareGammaUpdate;
+	qboolean		fCustomRenderer;
 	int		prev_width;
 	int		prev_height;
 } glconfig_t;
