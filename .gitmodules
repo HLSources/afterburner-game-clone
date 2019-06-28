@@ -7,3 +7,6 @@
 [submodule "mainui"]
 	path = mainui
 	url = https://github.com/x6herbius/afterburner-menus.git
+[submodule "vgui-dev"]
+	path = vgui-dev
+	url = https://github.com/FWGS/vgui-dev
