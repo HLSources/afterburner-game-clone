@@ -892,7 +892,7 @@ int Delta_ClampIntegerField( delta_t *pField, int iValue, qboolean bSigned, int 
 #ifdef _DEBUG
 	if( numbits < 32 && abs( iValue ) >= (uint)BIT( numbits ))
 	{
-		Msg( "Network field value overflow: field '%s' abs value %d is out of range of %d-bit container (max value %u).\n",
+		Msg( "Network field value overflow: field '%s' abs value %u is out of range of %d-bit container (max value %u).\n",
 			 pField->name, abs( iValue ), numbits, (uint)BIT( numbits ) - 1);
 	}
 #endif
