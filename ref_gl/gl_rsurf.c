@@ -1207,7 +1207,7 @@ void R_RenderBrushPoly( msurface_t *fa, int cull_type )
 	}
 
 	// dynamic this frame or dynamic previously
-	if(( fa->dlightframe == tr.framecount ))
+	if( fa->dlightframe == tr.framecount )
 	{
 dynamic:
 		// NOTE: at this point we have only valid textures
@@ -2362,10 +2362,10 @@ static void R_DrawLightmappedVBO( vboarray_t *vbo, vbotexture_t *vbotex, texture
 					R_SetDecalMode( true );
 					if( vbos.decal_dlight_vbo )
 					{
-						pglTexCoordPointer( 2, GL_FLOAT, sizeof( vbovertex_t ), offsetof( vbovertex_t, lm_tc ) );
+						pglTexCoordPointer( 2, GL_FLOAT, sizeof( vbovertex_t ), (void*)offsetof( vbovertex_t, lm_tc ) );
 						GL_SelectTexture( mtst.tmu_gl );
-						pglTexCoordPointer( 2, GL_FLOAT, sizeof( vbovertex_t ), offsetof( vbovertex_t, gl_tc ) );
-						pglVertexPointer( 3, GL_FLOAT, sizeof( vbovertex_t ), offsetof( vbovertex_t, pos ) );
+						pglTexCoordPointer( 2, GL_FLOAT, sizeof( vbovertex_t ), (void*)offsetof( vbovertex_t, gl_tc ) );
+						pglVertexPointer( 3, GL_FLOAT, sizeof( vbovertex_t ), (void*)offsetof( vbovertex_t, pos ) );
 					}
 					else
 					{
@@ -2544,10 +2544,10 @@ static void R_DrawLightmappedVBO( vboarray_t *vbo, vbotexture_t *vbotex, texture
 				R_SetDecalMode( true );
 				if( vbos.decal_dlight_vbo )
 				{
-					pglTexCoordPointer( 2, GL_FLOAT, sizeof( vbovertex_t ), offsetof( vbovertex_t, lm_tc ) );
+					pglTexCoordPointer( 2, GL_FLOAT, sizeof( vbovertex_t ), (void*)offsetof( vbovertex_t, lm_tc ) );
 					GL_SelectTexture( mtst.tmu_gl );
-					pglTexCoordPointer( 2, GL_FLOAT, sizeof( vbovertex_t ), offsetof( vbovertex_t, gl_tc ) );
-					pglVertexPointer( 3, GL_FLOAT, sizeof( vbovertex_t ), offsetof( vbovertex_t, pos ) );
+					pglTexCoordPointer( 2, GL_FLOAT, sizeof( vbovertex_t ), (void*)offsetof( vbovertex_t, gl_tc ) );
+					pglVertexPointer( 3, GL_FLOAT, sizeof( vbovertex_t ), (void*)offsetof( vbovertex_t, pos ) );
 				}
 				else
 				{
@@ -2910,7 +2910,7 @@ static qboolean R_CheckLightMap( msurface_t *fa )
 	}
 
 	// already up to date
-	if( !is_dynamic && ( fa->dlightframe != tr.framecount || maps == MAX_LIGHTMAPS ) )
+	if( !is_dynamic && ( fa->dlightframe != tr.framecount || maps == MAXLIGHTMAPS ) )
 		return false;
 
 	// build lightmap

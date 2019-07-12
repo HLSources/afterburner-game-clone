@@ -42,9 +42,20 @@ void *COM_FunctionFromName_SR( void *hInstance, const char *pName ); // Save/Res
 void *COM_FunctionFromName( void *hInstance, const char *pName );
 void COM_FreeLibrary( void *hInstance );
 const char *COM_GetLibraryError( void );
+qboolean COM_CheckLibraryDirectDependency( const char *name, const char *depname, qboolean directpath );
 
 // TODO: Move to internal?
 void COM_ResetLibraryError( void );
 void COM_PushLibraryError( const char *error );
 const char *COM_OffsetNameForFunction( void *function );
+
+typedef enum
+{
+	LIBRARY_CLIENT,
+	LIBRARY_SERVER,
+	LIBRARY_GAMEUI
+} ECommonLibraryType;
+
+void COM_GetCommonLibraryPath( ECommonLibraryType eLibType, char *out, size_t size );
+
 #endif//LIBRARY_H

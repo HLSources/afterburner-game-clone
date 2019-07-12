@@ -483,6 +483,8 @@ typedef struct
 
 	efrag_t		*free_efrags;		// linked efrags
 	cl_entity_t	viewent;			// viewmodel
+
+	qboolean client_dll_uses_sdl;
 } clgame_static_t;
 
 typedef struct

@@ -187,55 +187,6 @@ FILEMATCH COMMON SYSTEM
 
 =============================================================================
 */
-static int matchpattern( const char *str, const char *cmp, qboolean caseinsensitive )
-{
-	int	c1, c2;
-
-	while( *cmp )
-	{
-		switch( *cmp )
-		{
-		case 0:   return 1; // end of pattern
-		case '?': // match any single character
-			if( *str == 0 || *str == '/' || *str == '\\' || *str == ':' )
-				return 0; // no match
-			str++;
-			cmp++;
-			break;
-		case '*': // match anything until following string
-			if( !*str ) return 1; // match
-			cmp++;
-			while( *str )
-			{
-				if( *str == '/' || *str == '\\' || *str == ':' )
-					break;
-				// see if pattern matches at this offset
-				if( matchpattern( str, cmp, caseinsensitive ))
-					return 1;
-				// nope, advance to next offset
-				str++;
-			}
-			break;
-		default:
-			if( *str != *cmp )
-			{
-				if( !caseinsensitive )
-					return 0; // no match
-				c1 = Q_tolower( *str );
-				c2 = Q_tolower( *cmp );
-				if( c1 != c2 ) return 0; // no match
-			}
-
-			str++;
-			cmp++;
-			break;
-		}
-	}
-
-	// reached end of pattern but not end of input?
-	return (*str) ? 0 : 1;
-}
-
 static void stringlistinit( stringlist_t *list )
 {
 	memset( list, 0, sizeof( *list ));
@@ -1605,7 +1556,6 @@ void FS_InitGameInfo( gameinfo_t *GameInfo, const char *gamedir )
 	Q_strncpy( GameInfo->game_dll, "dlls/hl.dll", sizeof( GameInfo->game_dll ));
 	Q_strncpy( GameInfo->game_dll_linux, "dlls/hl.so", sizeof( GameInfo->game_dll_linux ));
 	Q_strncpy( GameInfo->game_dll_osx, "dlls/hl.dylib", sizeof( GameInfo->game_dll_osx ));
-	Q_strncpy( GameInfo->client_lib, CLIENTDLL, sizeof( GameInfo->client_lib ));
 
 	// .ico path
 	Q_strncpy( GameInfo->iconpath, "game.ico", sizeof( GameInfo->iconpath ));
@@ -1769,10 +1719,6 @@ void FS_ParseGenericGameInfo( gameinfo_t *GameInfo, const char *buf, const qbool
 			else if( !Q_stricmp( token, "sp_entity" ))
 			{
 				pfile = COM_ParseFile( pfile, GameInfo->sp_entity );
-			}
-			else if( !Q_stricmp( token, "clientlib" ))
-			{
-				pfile = COM_ParseFile( pfile, GameInfo->client_lib );
 			}
 			else if( isGameInfo && !Q_stricmp( token, "dllpath" ))
 			{
@@ -2057,25 +2003,15 @@ void FS_LoadGameInfo( const char *rootfolder )
 		Sys_Error( "Couldn't find game directory '%s'\n", fs_gamedir );
 
 	SI.GameInfo = SI.games[i];
+
 	if( !Sys_GetParmFromCmdLine( "-dll", SI.gamedll ) )
 	{
-#ifdef XASH_INTERNAL_GAMELIBS
-		Q_strncpy( SI.gamedll, "server", sizeof( SI.gamedll ) );
-#elif defined(_WIN32)
-		Q_strncpy( SI.gamedll, GI->game_dll, sizeof( SI.gamedll ) );
-#elif defined(__APPLE__)
-		Q_strncpy( SI.gamedll, GI->game_dll_osx, sizeof( SI.gamedll ) );
-#else
-		Q_strncpy( SI.gamedll, GI->game_dll_linux, sizeof( SI.gamedll ) );
-#endif
+		SI.gamedll[0] = 0;
 	}
+
 	if( !Sys_GetParmFromCmdLine( "-clientlib", SI.clientlib ) )
 	{
-#ifdef XASH_INTERNAL_GAMELIBS
-		Q_strncpy( SI.clientlib, "client", sizeof( SI.clientlib ) );
-#else
-		Q_strncpy( SI.clientlib, GI->client_lib, sizeof( SI.clientlib ) );
-#endif
+		SI.clientlib[0] = 0;
 	}
 
 	FS_Rescan(); // create new filesystem

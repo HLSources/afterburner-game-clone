@@ -52,3 +52,125 @@ const char *COM_OffsetNameForFunction( void *function )
 	Con_Reportf( "COM_OffsetNameForFunction %s\n", sname );
 	return sname;
 }
+
+/*
+=============================================================================
+
+	LIBRARY NAMING(see Documentation/library-naming.md for more info)
+
+=============================================================================
+*/
+
+static void COM_GenerateCommonLibraryName( const char *name, const char *ext, char *out, size_t size )
+{
+#if ( XASH_WIN32 || XASH_LINUX || XASH_APPLE ) && XASH_X86
+	Q_snprintf( out, size, "%s.%s", name, ext );
+#elif ( XASH_WIN32 || XASH_LINUX || XASH_APPLE )
+	Q_snprintf( out, size, "%s_%s.%s", name, Q_buildarch(), ext );
+#else
+	Q_snprintf( out, size, "%s_%s_%s.%s", name, Q_buildos(), Q_buildarch(), ext );
+#endif
+}
+
+/*
+==============
+COM_GenerateClientLibraryPath
+
+Generates platform-unique and compatible name for client libraries
+==============
+*/
+static void COM_GenerateClientLibraryPath( const char *name, char *out, size_t size )
+{
+#ifdef XASH_INTERNAL_GAMELIBS // assuming library loader knows where to get libraries
+	Q_strncpy( out, name, size );
+#else
+	string dllpath;
+
+	// we don't have any library prefixes, so we can safely append dll_path here
+	Q_snprintf( dllpath, sizeof( dllpath ), "%s/%s", GI->dll_path, name );
+
+	COM_GenerateCommonLibraryName( dllpath, OS_LIB_EXT, out, size );
+#endif
+}
+
+/*
+==============
+COM_GenerateServerLibraryPath
+
+Generates platform-unique and compatible name for server library
+==============
+*/
+static void COM_GenerateServerLibraryPath( char *out, size_t size )
+{
+#ifdef XASH_INTERNAL_GAMELIBS // assuming library loader knows where to get libraries
+	Q_strncpy( out, "server", size );
+#elif ( XASH_WIN32 || XASH_LINUX || XASH_APPLE ) && XASH_X86
+
+#if XASH_WIN32
+	Q_strncpy( out, GI->game_dll, size );
+#elif XASH_APPLE
+	Q_strncpy( out, GI->game_dll_osx, size );
+#else // XASH_LINUX
+	Q_strncpy( out, GI->game_dll_linux, size );
+#endif
+
+#else
+	string dllpath;
+	char *ext;
+
+#if XASH_WIN32
+	Q_strncpy( dllpath, GI->game_dll, sizeof( dllname ) );
+#elif XASH_APPLE
+	Q_strncpy( dllpath, GI->game_dll_osx, sizeof( dllname ) );
+#else // XASH_APPLE
+	Q_strncpy( dllpath, GI->game_dll_linux, sizeof( dllname ) );
+#endif
+
+	ext = COM_FileExtension( dllpath );
+	COM_StripExtension( dllpath );
+
+	COM_GenerateCommonLibraryName( dllpath, ext, out, size );
+#endif
+}
+
+
+/*
+==============
+COM_GetCommonLibraryPath
+
+Generates platform-unique and compatible name for server library
+==============
+*/
+void COM_GetCommonLibraryPath( ECommonLibraryType eLibType, char *out, size_t size )
+{
+	switch( eLibType )
+	{
+	case LIBRARY_GAMEUI:
+		COM_GenerateClientLibraryPath( "menu", out, size );
+		break;
+	case LIBRARY_CLIENT:
+		if( SI.clientlib[0] )
+		{
+			Q_strncpy( out, SI.clientlib, size );
+		}
+		else
+		{
+			COM_GenerateClientLibraryPath( "client", out, size );
+		}
+		break;
+	case LIBRARY_SERVER:
+		if( SI.gamedll[0] )
+		{
+			Q_strncpy( out, SI.gamedll, size );
+		}
+		else
+		{
+			COM_GenerateServerLibraryPath( out, size );
+		}
+		break;
+	default:
+		ASSERT( true );
+		out[0] = 0;
+		break;
+	}
+}

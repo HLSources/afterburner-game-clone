@@ -238,7 +238,6 @@ typedef struct gameinfo_s
 
 	char		game_dll_linux[64];	// custom path for game.dll
 	char		game_dll_osx[64];	// custom path for game.dll
-	char		client_lib[64];	// custom name of client library
 
 	qboolean	added;
 } gameinfo_t;
@@ -715,6 +714,7 @@ int CL_Active( void );
 
 void SV_Init( void );
 void SV_Shutdown( const char *finalmsg );
+void SV_ShutdownFilter( void );
 void Host_ServerFrame( void );
 qboolean SV_Active( void );
 
@@ -787,7 +787,7 @@ void pfnResetTutorMessageDecayData( void );
 //
 // con_utils.c
 //
-qboolean Cmd_AutocompleteName( const char *source, char *buffer, size_t bufsize );
+qboolean Cmd_AutocompleteName( const char *source, int arg, char *buffer, size_t bufsize );
 void Con_CompleteCommand( field_t *field );
 void Cmd_AutoComplete( char *complete_string );
 void Cmd_AutoCompleteClear( void );
@@ -836,6 +836,15 @@ void Key_SetKeyDest( int key_dest );
 void Key_EnableTextInput( qboolean enable, qboolean force );
 
 #include "avi/avi.h"
+
+//
+// input.c
+//
+
+#define INPUT_DEVICE_MOUSE (1<<0)
+#define INPUT_DEVICE_TOUCH (1<<1)
+#define INPUT_DEVICE_JOYSTICK (1<<2)
+#define INPUT_DEVICE_VR (1<<3)
 
 // shared calls
 struct physent_s;

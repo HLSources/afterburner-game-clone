@@ -79,7 +79,7 @@ def configure(conf):
 
 	# -march=native should not be used
 	if conf.options.BUILD_TYPE == 'fast':
-	    Logs.warn('WARNING: \'fast\' build type should not be used in release builds')
+		Logs.warn('WARNING: \'fast\' build type should not be used in release builds')
 
 	conf.load('subproject')
 
@@ -126,6 +126,7 @@ def configure(conf):
 			'gcc': ['-Wl,--no-undefined']
 		},
 		'sanitize': {
+			'clang':   ['-fsanitize=undefined', '-fsanitize=address'],
 			'gcc':     ['-fsanitize=undefined', '-fsanitize=address'],
 		}
 	}
@@ -133,13 +134,28 @@ def configure(conf):
 	compiler_c_cxx_flags = {
 		'common': {
 			# disable thread-safe local static initialization for C++11 code, as it cause crashes on Windows XP
-			'msvc':    ['/D_USING_V110_SDK71_', '/Zi', '/FS', '/Zc:threadSafeInit-'],
-			'clang':   ['-g', '-gdwarf-2', '-Werror=implicit-function-declaration', '-Werror=return-type'],
-			'gcc':     ['-g', '-Werror=implicit-function-declaration', '-fdiagnostics-color=always', '-Werror=return-type']
+			'msvc':    ['/D_USING_V110_SDK71_', '/Zi', '/FS', '/Zc:threadSafeInit-', '/MT'],
+			'clang': [
+				'-g',
+				'-gdwarf-2',
+				'-Werror=implicit-function-declaration',
+				'-Werror=return-type',
+				'-Werror=int-conversion',
+				'-fvisibility=hidden',
+			],
+			'gcc': [
+				'-g',
+				'-fdiagnostics-color=always',
+				'-Werror=implicit-function-declaration',
+				'-Werror=return-type',
+				'-Werror=int-conversion',
+				'-fvisibility=hidden',
+			]
 		},
 		'fast': {
 			'msvc':    ['/O2', '/Oy'], #todo: check /GL /LTCG
 			'gcc':     ['-Ofast', '-march=native', '-funsafe-math-optimizations', '-funsafe-loop-optimizations', '-fomit-frame-pointer'],
+			'clang':   ['-Ofast', '-march=native'],
 			'default': ['-O3']
 		},
 		'release': {
@@ -154,6 +170,7 @@ def configure(conf):
 		'sanitize': {
 			'msvc':    ['/Od', '/RTC1'],
 			'gcc':     ['-Og', '-fsanitize=undefined', '-fsanitize=address'],
+			'clang':   ['-O1', '-fsanitize=undefined', '-fsanitize=address'],
 			'default': ['-O1']
 		},
 		'nooptimize': {
@@ -163,11 +180,11 @@ def configure(conf):
 	}
 
 	conf.env.append_unique('CFLAGS', conf.get_flags_by_type(
-	    compiler_c_cxx_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC))
+		compiler_c_cxx_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC))
 	conf.env.append_unique('CXXFLAGS', conf.get_flags_by_type(
-	    compiler_c_cxx_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC))
+		compiler_c_cxx_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC))
 	conf.env.append_unique('LINKFLAGS', conf.get_flags_by_type(
-	    linker_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC))
+		linker_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC))
 
 	conf.env.DEDICATED     = conf.options.DEDICATED
 	# we don't need game launcher on dedicated
@@ -190,6 +207,7 @@ def configure(conf):
 		conf.check_cc( lib='advapi32' )
 		conf.check_cc( lib='dbghelp' )
 		conf.check_cc( lib='psapi' )
+		conf.check_cc( lib='ws2_32' )
 
 
 	# indicate if we are packaging for Linux/BSD
