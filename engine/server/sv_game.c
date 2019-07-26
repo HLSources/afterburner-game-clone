@@ -855,7 +855,7 @@ static char *SV_ReadEntityScript( const char *filename, int *flags )
 	if( ft2 != -1 && ft1 < ft2 )
 	{
 		// grab .ent files only from gamedir
-		ents = FS_LoadFile( entfilename, NULL, true );
+		ents = (char *)FS_LoadFile( entfilename, NULL, true );
 	}
 
 	// at least entities should contain "{ "classname" "worldspawn" }\0"
@@ -1271,7 +1271,7 @@ int pfnPrecacheModel( const char *s )
 	if( *s == '!' )
 	{
 		optional = true;
-		*s++;
+		s++;
 	}
 
 	if(( i = SV_ModelIndex( s )) == 0 )
@@ -1574,6 +1574,9 @@ edict_t *SV_FindEntityByString( edict_t *pStartEdict, const char *pszField, cons
 				if( !Q_strcmp( t, pszValue ))
 					return ed;
 			}
+			break;
+		default:
+			ASSERT( 0 );
 			break;
 		}
 	}
@@ -2288,14 +2291,14 @@ static void pfnTraceModel( const float *v1, const float *v2, int hullNumber, edi
 		pent->v.movetype = MOVETYPE_PUSH;
 		pent->v.solid = SOLID_BSP;
 
-      		SV_ClipMoveToEntity( pent, v1, mins, maxs, v2, &trace );
+		SV_ClipMoveToEntity( pent, v1, mins, maxs, v2, &trace );
 
 		pent->v.movetype = oldmovetype;
 		pent->v.solid = oldsolid;
 	}
 	else
 	{
-      		SV_ClipMoveToEntity( pent, v1, mins, maxs, v2, &trace );
+		SV_ClipMoveToEntity( pent, v1, mins, maxs, v2, &trace );
 	}
 
 	SV_ConvertTrace( ptr, &trace );
@@ -2370,7 +2373,7 @@ void pfnGetAimVector( edict_t* ent, float speed, float *rgflReturn )
 			continue;
 
 		if( FBitSet( check->v.flags, FL_FAKECLIENT ))
-      			continue;
+			continue;
 
 		if( ent->v.team > 0 && ent->v.team == check->v.team )
 			continue;
@@ -4008,7 +4011,7 @@ void SV_PlaybackEventFull( int flags, const edict_t *pInvoker, word eventindex, 
 	}
 
 	if( !FBitSet( flags, FEV_GLOBAL ) && VectorIsNull( pvspoint ))
-          {
+	{
 		Con_DPrintf( S_ERROR "%s: not a FEV_GLOBAL event missing origin. Ignored.\n", sv.event_precache[eventindex] );
 		return;
 	}
@@ -5056,7 +5059,7 @@ qboolean SV_LoadProgs( const char *name )
 	if( !GetEntityAPI && !GetEntityAPI2 )
 	{
 		COM_FreeLibrary( svgame.hInstance );
-         		Con_Printf( S_ERROR "SV_LoadProgs: failed to get address of GetEntityAPI proc\n" );
+		Con_Printf( S_ERROR "SV_LoadProgs: failed to get address of GetEntityAPI proc\n" );
 		svgame.hInstance = NULL;
 		Mem_FreePool(&svgame.mempool);
 		return false;

@@ -79,7 +79,7 @@ S_FadeClientVolume
 void S_FadeClientVolume( float fadePercent, float fadeOutSeconds, float holdTime, float fadeInSeconds )
 {
 	soundfade.starttime	= cl.mtime[0];
-	soundfade.initial_percent = fadePercent;       
+	soundfade.initial_percent = fadePercent;
 	soundfade.fadeouttime = fadeOutSeconds;    
 	soundfade.holdtime = holdTime;   
 	soundfade.fadeintime = fadeInSeconds;
@@ -283,7 +283,7 @@ channel_t *SND_PickDynamicChannel( int entnum, int channel, sfx_t *sfx, qboolean
 	}
 
 	return &channels[first_to_die];
-}       
+}
 
 /*
 =====================
@@ -601,7 +601,7 @@ void S_StartSound( const vec3_t pos, int ent, int chan, sound_t handle, float fv
 		{
 			// skip up to 0.1 seconds of audio
 			int skip = COM_RandomLong( 0, (long)( 0.1f * check->sfx->cache->rate ));
-                              
+
 			S_SetSampleStart( check, sfx->cache, skip );
 			break;
 		}
@@ -1840,7 +1840,7 @@ qboolean S_Init( void )
 	Cmd_AddCommand( "spk", S_SayReliable_f, "reliable play a specified sententce" );
 	Cmd_AddCommand( "speak", S_Say_f, "playing a specified sententce" );
 
-	if( !SNDDMA_Init( host.hWnd ))
+	if( !SNDDMA_Init( ) )
 	{
 		Con_Printf( "Audio: sound system can't be initialized\n" );
 		return false;

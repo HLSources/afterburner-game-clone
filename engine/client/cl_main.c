@@ -1735,6 +1735,8 @@ void CL_CheckForResend( void )
 		cls.signon = 0;
 		cls.state = ca_connecting;
 		Q_strncpy( cls.servername, "localhost", sizeof( cls.servername ));
+		cls.serveradr.type = NA_LOOPBACK;
+
 		// we don't need a challenge on the localhost
 		CL_SendConnectPacket();
 		return;
@@ -1787,6 +1789,7 @@ void CL_CheckForResend( void )
 		return;
 	}
 
+	cls.serveradr = adr;
 	cls.max_fragment_size = Q_max( FRAGMENT_MAX_SIZE, cls.max_fragment_size >> Q_min( 1, cls.connect_retry ));
 	cls.connect_time = host.realtime; // for retransmit requests
 	cls.connect_retry++;
@@ -2138,6 +2141,7 @@ void CL_Disconnect( void )
 	IN_LockInputDevices( false ); // unlock input devices
 
 	cls.state = ca_disconnected;
+	memset( &cls.serveradr, 0, sizeof( cls.serveradr ) );
 	cls.set_lastdemo = false;
 	cls.connect_retry = 0;
 	cls.signon = 0;
@@ -2497,6 +2501,19 @@ void CL_SetupOverviewParams( void )
 
 /*
 =================
+CL_IsFromConnectingServer
+
+Used for connectionless packets, when netchan may not be ready.
+=================
+*/
+static qboolean CL_IsFromConnectingServer( netadr_t from )
+{
+	return NET_IsLocalAddress( from ) ||
+		NET_CompareAdr( cls.serveradr, from );
+}
+
+/*
+=================
 CL_ConnectionlessPacket
 
 Responses to broadcasts, etc
@@ -2524,6 +2541,9 @@ void CL_ConnectionlessPacket( netadr_t from, sizebuf_t *msg )
 	// server connection
 	if( !Q_strcmp( c, "client_connect" ))
 	{
+		if( !CL_IsFromConnectingServer( from ))
+			return;
+
 		if( cls.state == ca_connected )
 		{
 			Con_DPrintf( S_ERROR "dup connect received. ignored\n");
@@ -2564,20 +2584,18 @@ void CL_ConnectionlessPacket( netadr_t from, sizebuf_t *msg )
 		// print command from somewhere
 		Con_Printf( "%s", MSG_ReadString( msg ));
 	}
-	else if( !Q_strcmp( c, "errormsg" ))
-	{
-		args = MSG_ReadString( msg );
-		if( !Q_strcmp( args, "Server uses protocol version 48.\n" ))
-		{
-			cls.legacyserver = from;
-		}
-	}
 	else if( !Q_strcmp( c, "testpacket" ))
 	{
 		byte	recv_buf[NET_MAX_FRAGMENT];
-		dword	crcValue = MSG_ReadLong( msg );
-		int	realsize = MSG_GetMaxBytes( msg ) - MSG_GetNumBytesRead( msg );
+		dword	crcValue;
+		int	realsize;
 		dword	crcValue2 = 0;
+
+		if( !CL_IsFromConnectingServer( from ))
+			return;
+
+		crcValue = MSG_ReadLong( msg );
+		realsize = MSG_GetMaxBytes( msg ) - MSG_GetNumBytesRead( msg );
 
 		if( cls.max_fragment_size != MSG_GetMaxBytes( msg ))
 		{
@@ -2636,6 +2654,9 @@ void CL_ConnectionlessPacket( netadr_t from, sizebuf_t *msg )
 	}
 	else if( !Q_strcmp( c, "challenge" ))
 	{
+		if( !CL_IsFromConnectingServer( from ))
+			return;
+
 		// challenge from the server we are connecting to
 		cls.challenge = Q_atoi( Cmd_Argv( 1 ));
 		CL_SendConnectPacket();
@@ -2643,11 +2664,17 @@ void CL_ConnectionlessPacket( netadr_t from, sizebuf_t *msg )
 	}
 	else if( !Q_strcmp( c, "echo" ))
 	{
+		if( !CL_IsFromConnectingServer( from ))
+			return;
+
 		// echo request from server
 		Netchan_OutOfBandPrint( NS_CLIENT, from, "%s", Cmd_Argv( 1 ));
 	}
 	else if( !Q_strcmp( c, "disconnect" ))
 	{
+		if( !CL_IsFromConnectingServer( from ))
+			return;
+
 		// a disconnect message from the server, which will happen if the server
 		// dropped the connection but it is still getting packets from us
 		CL_Disconnect_f();
@@ -2656,6 +2683,48 @@ void CL_ConnectionlessPacket( netadr_t from, sizebuf_t *msg )
 		{
 			Cbuf_AddText( va( "connect %s legacy\n", NET_AdrToString( from )));
 			memset( &cls.legacyserver, 0, sizeof( cls.legacyserver ));
+		}
+	}
+	else if( !Q_strcmp( c, "errormsg" ))
+	{
+		if( !CL_IsFromConnectingServer( from ))
+			return;
+
+		args = MSG_ReadString( msg );
+
+		if( !Q_strcmp( args, "Server uses protocol version 48.\n" ))
+		{
+			cls.legacyserver = from;
+		}
+		else
+		{
+			if( UI_IsVisible() )
+				UI_ShowMessageBox( va("^3Server message^7\n%s", args ) );
+			Msg( "%s", args );
+		}
+	}
+	else if( !Q_strcmp( c, "updatemsg" ))
+	{
+		// got an update message from master server
+		// show update dialog from menu
+		netadr_t adr;
+		qboolean preferStore = true;
+
+		if( !Q_strcmp( Cmd_Argv( 1 ), "nostore" ) )
+			preferStore = false;
+
+		// trust only hardcoded master server
+		if( NET_StringToAdr( MASTERSERVER_ADR, &adr ) )
+		{
+			if( NET_CompareAdr( from, adr ))
+			{
+				UI_ShowUpdateDialog( preferStore );
+			}
+		}
+		else
+		{
+			// in case we don't have master anymore
+			UI_ShowUpdateDialog( preferStore );
 		}
 	}
 	else if( !Q_strcmp( c, "f" ))
@@ -2725,14 +2794,14 @@ void CL_ConnectionlessPacket( netadr_t from, sizebuf_t *msg )
 
 		if( cls.internetservers_pending )
 		{
-			Cbuf_AddText( "menu_resetping\n" ); // TODO: New Menu API
+			UI_ResetPing();
 			cls.internetservers_pending = false;
 		}
 	}
 	else if( clgame.dllFuncs.pfnConnectionlessPacket( &from, args, buf, &len ))
 	{
 		// user out of band message (must be handled in CL_ConnectionlessPacket)
-		if( len > 0 ) Netchan_OutOfBand( NS_SERVER, from, len, buf );
+		if( len > 0 ) Netchan_OutOfBand( NS_SERVER, from, len, (byte *)buf );
 	}
 	else Con_DPrintf( S_ERROR "bad connectionless packet from %s:\n%s\n", NET_AdrToString( from ), args );
 }
@@ -3359,6 +3428,7 @@ void CL_InitLocal( void )
 {
 	cls.state = ca_disconnected;
 	cls.signon = 0;
+	memset( &cls.serveradr, 0, sizeof( cls.serveradr ) );
 
 	cl.resourcesneeded.pNext = cl.resourcesneeded.pPrev = &cl.resourcesneeded;
 	cl.resourcesonhand.pNext = cl.resourcesonhand.pPrev = &cl.resourcesonhand;

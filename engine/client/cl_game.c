@@ -217,7 +217,8 @@ Initialize CD playlist
 */
 void CL_InitCDAudio( const char *filename )
 {
-	char	*afile, *pfile;
+	byte *afile;
+	char *pfile;
 	string	token;
 	int	c = 0;
 
@@ -230,7 +231,7 @@ void CL_InitCDAudio( const char *filename )
 	afile = FS_LoadFile( filename, NULL, false );
 	if( !afile ) return;
 
-	pfile = afile;
+	pfile = (char *)afile;
 
 	// format: trackname\n [num]
 	while(( pfile = COM_ParseFile( pfile, token )) != NULL )
@@ -1516,7 +1517,8 @@ static client_sprite_t *pfnSPR_GetList( char *psz, int *piCount )
 {
 	cached_spritelist_t	*pEntry = &clgame.sprlist[0];
 	int		slot, index, numSprites = 0;
-	char		*afile, *pfile;
+	byte *afile;
+	char *pfile;
 	string		token;
 
 	if( piCount ) *piCount = 0;
@@ -1539,7 +1541,7 @@ static client_sprite_t *pfnSPR_GetList( char *psz, int *piCount )
 	{
 		Con_Printf( S_ERROR "SPR_GetList: overflow cache!\n" );
 		return NULL;
-          }
+	}
 
 	if( !clgame.itemspath[0] )	// typically it's sprites\*.txt
 		COM_ExtractFilePath( psz, clgame.itemspath );
@@ -1547,7 +1549,7 @@ static client_sprite_t *pfnSPR_GetList( char *psz, int *piCount )
 	afile = FS_LoadFile( psz, NULL, false );
 	if( !afile ) return NULL;
 
-	pfile = afile;
+	pfile = (char *)afile;
 	pfile = COM_ParseFile( pfile, token );
 	numSprites = Q_atoi( token );
 
@@ -3454,7 +3456,7 @@ void NetAPI_CancelRequest( int context )
 				SetBits( nr->resp.error, NET_ERROR_TIMEOUT );
 				nr->resp.ping = host.realtime - nr->timesend;
 				nr->pfnFunc( &nr->resp );
-                              }
+			}
 
 			if( clgame.net_requests[i].resp.type == NETAPI_REQUEST_SERVERLIST && &clgame.net_requests[i] == clgame.master_request )
 			{
@@ -4005,7 +4007,7 @@ qboolean CL_LoadProgs( const char *name )
 		// functions are cleared before all the extensions are evaluated
 		if(( *func->func = (void *)COM_GetProcAddress( clgame.hInstance, func->name )) == NULL )
 		{
-          		Con_Reportf( "CL_LoadProgs: failed to get address of %s proc\n", func->name );
+			Con_Reportf( "CL_LoadProgs: failed to get address of %s proc\n", func->name );
 
 			if( critical_exports )
 			{

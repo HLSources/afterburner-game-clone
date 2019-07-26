@@ -91,7 +91,7 @@ Sys_SetClipboardData
 write screenshot into clipboard
 ================
 */
-void Sys_SetClipboardData( const byte *buffer, size_t size )
+void Sys_SetClipboardData( const char *buffer, size_t size )
 {
 	Platform_SetClipboardText( buffer, size );
 }
@@ -269,8 +269,8 @@ void Sys_SendKeyEvents( void )
 		if( !GetMessage( &msg, NULL, 0, 0 ))
 			Sys_Quit ();
 
-      		TranslateMessage( &msg );
-      		DispatchMessage( &msg );
+		TranslateMessage( &msg );
+		DispatchMessage( &msg );
 	}
 #endif
 }
@@ -317,7 +317,7 @@ qboolean Sys_LoadLibrary( dll_info_t *dll )
 			goto error;
 		}
 	}
-          Con_Reportf( " - ok\n" );
+	Con_Reportf( " - ok\n" );
 
 	return true;
 error:

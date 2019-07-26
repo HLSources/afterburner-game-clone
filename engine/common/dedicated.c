@@ -327,4 +327,9 @@ void CL_ClearStaticEntities( void )
 
 }
 
+void UI_ShowConnectionWarning( void )
+{
+
+}
+
 #endif // XASH_DEDICATED

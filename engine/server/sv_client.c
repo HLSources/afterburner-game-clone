@@ -137,7 +137,6 @@ SV_RejectConnection
 Rejects connection request and sends back a message
 ================
 */
-void SV_RejectConnection( netadr_t from, char *fmt, ... ) _format( 2 );
 void SV_RejectConnection( netadr_t from, char *fmt, ... )
 {
 	char	text[1024];
@@ -148,6 +147,7 @@ void SV_RejectConnection( netadr_t from, char *fmt, ... )
 	va_end( argptr );
 
 	Con_Reportf( "%s connection refused. Reason: %s\n", NET_AdrToString( from ), text );
+	Netchan_OutOfBandPrint( NS_SERVER, from, "errormsg\n^1Server was reject the connection:^7 %s", text );
 	Netchan_OutOfBandPrint( NS_SERVER, from, "print\n^1Server was reject the connection:^7 %s", text );
 	Netchan_OutOfBandPrint( NS_SERVER, from, "disconnect\n" );
 }
@@ -305,7 +305,6 @@ void SV_ConnectClient( netadr_t from )
 
 	if( !SV_ProcessUserAgent( from, protinfo ) )
 	{
-		Netchan_OutOfBandPrint( NS_SERVER, from, "disconnect\n" );
 		return;
 	}
 
@@ -681,7 +680,7 @@ const char *SV_GetClientIDString( sv_client_t *cl )
 	}
 	else
 	{
-		Q_snprintf( result, sizeof( result ), "ID_%s", MD5_Print( cl->hashedcdkey ));
+		Q_snprintf( result, sizeof( result ), "ID_%s", MD5_Print( (byte *)cl->hashedcdkey ));
 	}
 
 	return result;
@@ -1147,7 +1146,7 @@ void SV_FullClientUpdate( sv_client_t *cl, sizebuf_t *msg )
 		MSG_WriteString( msg, info );
 
 		MD5Init( &ctx );
-		MD5Update( &ctx, cl->hashedcdkey, sizeof( cl->hashedcdkey ));
+		MD5Update( &ctx, (byte *)cl->hashedcdkey, sizeof( cl->hashedcdkey ));
 		MD5Final( digest, &ctx );
 
 		MSG_WriteBytes( msg, digest, sizeof( digest ));
@@ -2236,7 +2235,7 @@ void SV_ConnectionlessPacket( netadr_t from, sizebuf_t *msg )
 	else if( svgame.dllFuncs.pfnConnectionlessPacket( &from, args, buf, &len ))
 	{
 		// user out of band message (must be handled in CL_ConnectionlessPacket)
-		if( len > 0 ) Netchan_OutOfBand( NS_SERVER, from, len, buf );
+		if( len > 0 ) Netchan_OutOfBand( NS_SERVER, from, len, (byte*)buf );
 	}
 	else Con_DPrintf( S_ERROR "bad connectionless packet from %s:\n%s\n", NET_AdrToString( from ), args );
 }

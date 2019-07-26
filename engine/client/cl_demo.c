@@ -1154,6 +1154,7 @@ void CL_StopPlayback( void )
 		// let game known about demo state	
 		Cvar_FullSet( "cl_background", "0", FCVAR_READ_ONLY );
 		cls.state = ca_disconnected;
+		memset( &cls.serveradr, 0, sizeof( cls.serveradr ) );
 		cls.set_lastdemo = false;
 		S_StopBackgroundTrack();
 		cls.connect_time = 0;
@@ -1186,7 +1187,7 @@ int CL_GetDemoComment( const char *demoname, char *comment )
 	{
 		Q_strncpy( comment, "", MAX_STRING );
 		return false;
-          }
+	}
 
 	// read in the m_DemoHeader
 	FS_Read( demfile, &demohdr, sizeof( demoheader_t ));
