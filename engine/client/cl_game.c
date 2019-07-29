@@ -968,7 +968,7 @@ static void CL_DrawLoading( float percent )
 		right = (int)ceil( percent * step );
 		s2 = (float)right / width;
 		width = right;
-	
+
 		ref.dllFuncs.Color4ub( 208, 152, 0, 255 );
 		ref.dllFuncs.GL_SetRenderMode( kRenderTransTexture );
 		ref.dllFuncs.R_DrawStretchPic( x, y, width, height, 0, 0, s2, 1, cls.loadingBar );
@@ -3621,7 +3621,7 @@ static void GAME_EXPORT VGui_ViewportPaintBackground( int extents[4] )
 	// stub
 }
 
-// shared between client and server			
+// shared between client and server
 triangleapi_t gTriApi;
 
 static efx_api_t gEfxApi =
@@ -3963,7 +3963,7 @@ qboolean CL_LoadProgs( const char *name )
 
 	// a1ba: we need to check if client.dll has direct dependency on SDL2
 	// and if so, disable relative mouse mode
-#if XASH_WIN32
+#if defined(XASH_WIN32) && !defined(AFTERBURNER_ENGINE)
 	if( ( clgame.client_dll_uses_sdl = COM_CheckLibraryDirectDependency( name, OS_LIB_PREFIX "SDL2." OS_LIB_EXT, false ) ) )
 	{
 		Con_Printf( S_NOTE "%s uses SDL2 for mouse input\n", name );
