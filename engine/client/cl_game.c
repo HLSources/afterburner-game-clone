@@ -1103,14 +1103,16 @@ void CL_FreeEntity( cl_entity_t *pEdict )
 
 void CL_ClearWorld( void )
 {
-	cl_entity_t	*world;
+	cl_entity_t	*worldmodel;
 
-	world = clgame.entities;
-	world->curstate.modelindex = 1;	// world model
-	world->curstate.solid = SOLID_BSP;
-	world->curstate.movetype = MOVETYPE_PUSH;
-	world->model = cl.worldmodel;
-	world->index = 0;
+	worldmodel = clgame.entities;
+	worldmodel->curstate.modelindex = 1;	// world model
+	worldmodel->curstate.solid = SOLID_BSP;
+	worldmodel->curstate.movetype = MOVETYPE_PUSH;
+	worldmodel->model = cl.worldmodel;
+	worldmodel->index = 0;
+
+	world.max_recursion = 0;
 
 	clgame.ds.cullMode = TRI_FRONT;
 	clgame.numStatics = 0;
@@ -3904,6 +3906,10 @@ static cl_enginefunc_t gEngfuncs =
 	pfnGetAppID,
 	Cmd_AliasGetList,
 	pfnVguiWrap2_GetMouseDelta,
+
+	// HACKHACK: added it here so it wouldn't cause overflow or segfault
+	// TODO: itself client command filtering is not implemented yet
+	pfnClientCmd
 };
 
 void CL_UnloadProgs( void )

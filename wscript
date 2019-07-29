@@ -50,8 +50,8 @@ def options(opt):
 	grp.add_option('-8', '--64bits', action = 'store_true', dest = 'ALLOW64', default = False,
 		help = 'allow targetting 64-bit engine')
 
-	grp.add_option('--win-style-install', action = 'store_true', dest = 'WIN_INSTALL', default = False,
-		help = 'Install like Windows build, ignore prefix, useful for development')
+	grp.add_option('-W', '--win-style-install', action = 'store_true', dest = 'WIN_INSTALL', default = False,
+		help = 'install like Windows build, ignore prefix, useful for development')
 
 	grp.add_option('--enable-bsp2', action = 'store_true', dest = 'SUPPORT_BSP2_FORMAT', default = False,
 		help = 'build engine and renderers with BSP2 map support(recommended for Quake, breaks compability!)')
@@ -117,7 +117,7 @@ def configure(conf):
 		conf.env.BIT32_ALLOW64 = True
 	conf.env.BIT32_MANDATORY = not conf.env.BIT32_ALLOW64
 	conf.load('force_32bit')
-	if conf.env.DEST_OS2 != 'android':
+	if conf.env.DEST_OS2 != 'android' and not conf.options.DEDICATED:
 		conf.load('sdl2')
 
 	linker_flags = {
@@ -172,8 +172,8 @@ def configure(conf):
 		'sanitize': {
 			'msvc':    ['/Od', '/RTC1'],
 			'gcc':     ['-Og', '-fsanitize=undefined', '-fsanitize=address'],
-			'clang':   ['-O1', '-fsanitize=undefined', '-fsanitize=address'],
-			'default': ['-O1']
+			'clang':   ['-O0', '-fsanitize=undefined', '-fsanitize=address'],
+			'default': ['-O0']
 		},
 		'nooptimize': {
 			'msvc':    ['/Od'],

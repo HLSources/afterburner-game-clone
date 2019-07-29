@@ -2026,7 +2026,7 @@ static void GL_CreateInternalTextures( void )
 		}
 	}
 
-	tr.particleTexture = GL_LoadTextureInternal( "*particle", pic, TF_CLAMP );
+	tr.particleTexture = GL_LoadTextureInternal( REF_PARTICLE_TEXTURE, pic, TF_CLAMP );
 	tr.traceTexture = CreateTraceTexture();
 	tr.bulletTraceTexture = CreateBulletTraceTexture();
 

@@ -22,7 +22,6 @@ cvar_t	*gl_stencilbits;
 cvar_t	*r_speeds;
 cvar_t	*r_fullbright;
 cvar_t	*r_norefresh;
-cvar_t	*r_showtree;
 cvar_t	*r_lighting_extended;
 cvar_t	*r_lighting_modulate;
 cvar_t	*r_lighting_ambient;
@@ -780,7 +779,6 @@ void GL_InitCommands( void )
 	r_speeds = gEngfuncs.Cvar_Get( "r_speeds", "0", FCVAR_ARCHIVE, "shows renderer speeds" );
 	r_fullbright = gEngfuncs.Cvar_Get( "r_fullbright", "0", FCVAR_CHEAT, "disable lightmaps, get fullbright for entities" );
 	r_norefresh = gEngfuncs.Cvar_Get( "r_norefresh", "0", 0, "disable 3D rendering (use with caution)" );
-	r_showtree = gEngfuncs.Cvar_Get( "r_showtree", "0", FCVAR_ARCHIVE, "build the graph of visible BSP tree" );
 	r_lighting_extended = gEngfuncs.Cvar_Get( "r_lighting_extended", "1", FCVAR_ARCHIVE, "allow to get lighting from world and bmodels" );
 	r_lighting_modulate = gEngfuncs.Cvar_Get( "r_lighting_modulate", "0.6", FCVAR_ARCHIVE, "lightstyles modulate scale" );
 	r_lighting_ambient = gEngfuncs.Cvar_Get( "r_lighting_ambient", "0.3", FCVAR_ARCHIVE, "map ambient lighting scale" );
@@ -814,7 +812,7 @@ void GL_InitCommands( void )
 	gl_wireframe = gEngfuncs.Cvar_Get( "gl_wireframe", "0", FCVAR_ARCHIVE|FCVAR_SPONLY, "show wireframe overlay" );
 	gl_msaa = gEngfuncs.Cvar_Get( "gl_msaa", "1", FCVAR_ARCHIVE, "enable or disable multisample anti-aliasing" );
 	gl_stencilbits = gEngfuncs.Cvar_Get( "gl_stencilbits", "8", FCVAR_GLCONFIG, "pixelformat stencil bits (0 - auto)" );
-	gl_round_down = gEngfuncs.Cvar_Get( "gl_round_down", "2", FCVAR_RENDERINFO, "round texture sizes to nearest POT value" );
+	gl_round_down = gEngfuncs.Cvar_Get( "gl_round_down", "2", FCVAR_GLCONFIG, "round texture sizes to nearest POT value" );
 	// these cvar not used by engine but some mods requires this
 	gl_polyoffset = gEngfuncs.Cvar_Get( "gl_polyoffset", "2.0", FCVAR_ARCHIVE, "polygon offset for decals" );
 
@@ -833,16 +831,6 @@ void GL_InitCommands( void )
 
 	gEngfuncs.Cmd_AddCommand( "r_info", R_RenderInfo_f, "display renderer info" );
 	gEngfuncs.Cmd_AddCommand( "timerefresh", SCR_TimeRefresh_f, "turn quickly and print rendering statistcs" );
-
-	// give initial OpenGL configuration
-	gEngfuncs.Cbuf_SetOpenGLConfigHack( true );
-	gEngfuncs.Cbuf_AddText( "exec opengl.cfg\n" );
-	gEngfuncs.Cbuf_Execute();
-	gEngfuncs.Cbuf_SetOpenGLConfigHack( false );
-
-	// apply actual video mode to window
-	gEngfuncs.Cbuf_AddText( "exec video.cfg\n" );
-	gEngfuncs.Cbuf_Execute();
 }
 
 /*
