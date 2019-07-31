@@ -545,7 +545,7 @@ void SV_DropClient( sv_client_t *cl, qboolean crash )
 	if( !crash )
 	{
 		// add the disconnect
-		if( !FBitSet( cl->flags, FCL_FAKECLIENT ))
+		if( !FBitSet( cl->flags, FCL_FAKECLIENT ) )
 		{
 			MSG_BeginServerCmd( &cl->netchan.message, svc_disconnect );
 		}
@@ -555,7 +555,7 @@ void SV_DropClient( sv_client_t *cl, qboolean crash )
 			svgame.dllFuncs.pfnClientDisconnect( cl->edict );
 		}
 
-		if( !FBitSet( cl->flags, FCL_FAKECLIENT ))
+		if( !FBitSet( cl->flags, FCL_FAKECLIENT ) )
 		{
 			Netchan_TransmitBits( &cl->netchan, 0, NULL );
 		}
