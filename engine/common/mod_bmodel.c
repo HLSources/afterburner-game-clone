@@ -2014,7 +2014,7 @@ static void LoadTexture(dbspmodel_t* bmod, const int32_t* miptexOffsets, uint32_
 		// 2. internal from map
 
 		// trying wad texture (force while r_wadtextures is 1)
-		if(loadFromWad && ( r_wadtextures->value && bmod->wadlist.count > 0 ) || ( mt->offsets[0] <= 0 ))
+		if((loadFromWad && r_wadtextures->value && bmod->wadlist.count > 0 ) || ( mt->offsets[0] <= 0 ))
 		{
 			int32_t wadIndex;
 			Q_snprintf( texname, sizeof( texname ), "%s.mip", mt->name );
