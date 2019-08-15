@@ -157,10 +157,6 @@ typedef enum
 
 #define FORCE_DRAW_VERSION_TIME 5.0f // draw version for 5 seconds
 
-#if !defined(_WIN32) && !defined(NDEBUG) && !defined(_DEBUG)
-#define _DEBUG
-#endif
-
 #ifdef _DEBUG
 void DBG_AssertFunction( qboolean fExpr, const char* szExpr, const char* szFile, int szLine, const char* szMessage );
 #define Assert( f )		DBG_AssertFunction( f, #f, __FILE__, __LINE__, NULL )

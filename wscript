@@ -161,13 +161,13 @@ def configure(conf):
 			'default': ['-O3']
 		},
 		'release': {
-			'msvc':    ['/O2'],
-			'default': ['-O3']
+			'msvc':    ['/O2', '/DNDEBUG'],
+			'default': ['-O3', '-DNDEBUG']
 		},
 		'debug': {
 			'msvc':    ['/O1', '/D_DEBUG'],
-			'gcc':     ['-Og'],
-			'default': ['-O1']
+			'gcc':     ['-Og', '-D_DEBUG'],
+			'default': ['-O1', '-D_DEBUG']
 		},
 		'sanitize': {
 			'msvc':    ['/Od', '/RTC1'],
