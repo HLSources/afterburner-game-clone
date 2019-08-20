@@ -2077,7 +2077,7 @@ static void LoadTexture(dbspmodel_t* bmod, const int32_t* miptexOffsets, uint32_
 			else
 			{
 				int32_t wadIndex;
-				size_t srcSize = 0;
+				fs_offset_t srcSize = 0;
 				byte *src = NULL;
 
 				// NOTE: we can't loading it from wad as normal because _luma texture doesn't exist

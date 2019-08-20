@@ -140,12 +140,14 @@ def configure(conf):
 				'-gdwarf-2',
 				'-Werror',
 				'-fvisibility=hidden',
+				'-Wno-format-truncation'
 			],
 			'gcc': [
 				'-g',
 				'-fdiagnostics-color=always',
 				'-Werror',
 				'-fvisibility=hidden',
+				'-Wno-format-truncation'
 			]
 		},
 		'fast': {

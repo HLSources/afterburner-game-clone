@@ -24,6 +24,12 @@ GNU General Public License for more details.
 static char currentIndent[MAX_INDENT + 1];
 static size_t currentIndentSize = 0;
 
+#ifdef XASH_64BIT
+#define FMT_SIZE_T "%lu"
+#else
+#define FMT_SIZE_T "%u"
+#endif
+
 #define ARRCOUNT(_arr, _type) (sizeof(_arr)/sizeof(_type))
 #define WRITEL(_msg) FS_Printf(outFile, "%s" _msg "\n", currentIndent)
 #define WRITELF(_msg, ...) FS_Printf(outFile, "%s" _msg "\n", currentIndent, __VA_ARGS__)
@@ -50,7 +56,7 @@ static size_t currentIndentSize = 0;
 #define ARG_BOUNDS(_min, _max) ARG_VEC3(_min), ARG_VEC3(_max)
 #define ARG_BOUNDS_CONSEC(_minMax) ARG_BOUNDS(&(_minMax)[0], &(_minMax)[3])
 
-#define FMT_POINTER_INDEX "[%lu] {0x%p}"
+#define FMT_POINTER_INDEX "[" FMT_SIZE_T "] {0x%p}"
 #define ARG_POINTER_INDEX(_item, _base, _typeSize) IndexOfPointer((_item), (_base), (_typeSize)), (_item)
 
 #define FMT_HEX_INT "0x%08X"
@@ -924,28 +930,28 @@ void DumpFaceAsWavefrontObj(const char* fileName, const model_t* model, const ms
 
 static void WriteLinesForBounds(file_t* file, size_t vertexCount)
 {
-	size_t baseVertex;
+	uint32_t baseVertex;
 
 	// OBJ vertices are 1-based, I always forget. :c
 	for ( baseVertex = 1; baseVertex <= vertexCount; baseVertex += 8 )
 	{
 		// Bottom rectangle
-		FS_Printf(file, "l %lu %lu\n", baseVertex + 0, baseVertex + 1);
-		FS_Printf(file, "l %lu %lu\n", baseVertex + 1, baseVertex + 3);
-		FS_Printf(file, "l %lu %lu\n", baseVertex + 3, baseVertex + 2);
-		FS_Printf(file, "l %lu %lu\n", baseVertex + 2, baseVertex + 0);
+		FS_Printf(file, "l %u %u\n", baseVertex + 0, baseVertex + 1);
+		FS_Printf(file, "l %u %u\n", baseVertex + 1, baseVertex + 3);
+		FS_Printf(file, "l %u %u\n", baseVertex + 3, baseVertex + 2);
+		FS_Printf(file, "l %u %u\n", baseVertex + 2, baseVertex + 0);
 
 		// Top rectangle
-		FS_Printf(file, "l %lu %lu\n", baseVertex + 4, baseVertex + 5);
-		FS_Printf(file, "l %lu %lu\n", baseVertex + 5, baseVertex + 7);
-		FS_Printf(file, "l %lu %lu\n", baseVertex + 7, baseVertex + 6);
-		FS_Printf(file, "l %lu %lu\n", baseVertex + 6, baseVertex + 4);
+		FS_Printf(file, "l %u %u\n", baseVertex + 4, baseVertex + 5);
+		FS_Printf(file, "l %u %u\n", baseVertex + 5, baseVertex + 7);
+		FS_Printf(file, "l %u %u\n", baseVertex + 7, baseVertex + 6);
+		FS_Printf(file, "l %u %u\n", baseVertex + 6, baseVertex + 4);
 
 		// Connections
-		FS_Printf(file, "l %lu %lu\n", baseVertex + 0, baseVertex + 4);
-		FS_Printf(file, "l %lu %lu\n", baseVertex + 1, baseVertex + 5);
-		FS_Printf(file, "l %lu %lu\n", baseVertex + 3, baseVertex + 7);
-		FS_Printf(file, "l %lu %lu\n", baseVertex + 2, baseVertex + 6);
+		FS_Printf(file, "l %u %u\n", baseVertex + 0, baseVertex + 4);
+		FS_Printf(file, "l %u %u\n", baseVertex + 1, baseVertex + 5);
+		FS_Printf(file, "l %u %u\n", baseVertex + 3, baseVertex + 7);
+		FS_Printf(file, "l %u %u\n", baseVertex + 2, baseVertex + 6);
 	}
 }
 

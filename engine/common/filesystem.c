@@ -533,7 +533,7 @@ static void FS_Exists_f( void )
 
 		Q_snprintf(info, MAX_STRING - 1,
 				   "File name: %s\n"
-				   "Handle: %d\n"
+				   "Handle: %p\n"
 				   "Total lumps: %d\n",
 				   search->wad->filename,
 				   search->wad->handle,
@@ -599,7 +599,12 @@ pack_t *FS_LoadPackPAK( const char *packfile, int *error )
 		return NULL;
 	}
 
-	read( packhandle, (void *)&header, sizeof( header ));
+	if ( read( packhandle, (void *)&header, sizeof( header )) < 0 )
+	{
+		if( error ) *error = PAK_LOAD_COULDNT_OPEN;
+		close( packhandle );
+		return NULL;
+	}
 
 	if( header.ident != IDPACKV1HEADER )
 	{
