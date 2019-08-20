@@ -122,7 +122,7 @@ def configure(conf):
 
 	linker_flags = {
 		'common': {
-			'msvc':    ['/DEBUG'], # always create PDB, doesn't affect result binaries
+			'msvc':    ['/DEBUG', '/WX'], # always create PDB, doesn't affect result binaries
 			'gcc': ['-Wl,--no-undefined']
 		},
 		'sanitize': {
@@ -134,23 +134,17 @@ def configure(conf):
 	compiler_c_cxx_flags = {
 		'common': {
 			# disable thread-safe local static initialization for C++11 code, as it cause crashes on Windows XP
-			'msvc':    ['/D_USING_V110_SDK71_', '/Zi', '/FS', '/Zc:threadSafeInit-', '/MT'],
+			'msvc':    ['/D_USING_V110_SDK71_', '/Zi', '/FS', '/Zc:threadSafeInit-', '/MT', '/WX'],
 			'clang': [
 				'-g',
 				'-gdwarf-2',
-				'-Werror=implicit-function-declaration',
-				'-Werror=return-type',
-				'-Werror=int-conversion',
-				'-Werror=parentheses',
+				'-Werror',
 				'-fvisibility=hidden',
 			],
 			'gcc': [
 				'-g',
 				'-fdiagnostics-color=always',
-				'-Werror=implicit-function-declaration',
-				'-Werror=return-type',
-				'-Werror=int-conversion',
-				'-Werror=parentheses',
+				'-Werror',
 				'-fvisibility=hidden',
 			]
 		},
