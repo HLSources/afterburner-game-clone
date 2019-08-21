@@ -21,7 +21,7 @@ int AVI_GetVideoFrameNumber( movie_state_t *Avi, float time )
 	return 0;
 }
 
-byte *AVI_GetVideoFrame( movie_state_t *Avi, int frame )
+byte *AVI_GetVideoFrame( movie_state_t *Avi, long frame )
 {
 	return NULL;
 }

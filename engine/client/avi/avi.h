@@ -20,7 +20,7 @@ GNU General Public License for more details.
 //
 typedef struct movie_state_s  movie_state_t;
 int AVI_GetVideoFrameNumber( movie_state_t *Avi, float time );
-byte *AVI_GetVideoFrame( movie_state_t *Avi, int frame );
+byte *AVI_GetVideoFrame( movie_state_t *Avi, long frame );
 qboolean AVI_GetVideoInfo( movie_state_t *Avi, int *xres, int *yres, float *duration );
 qboolean AVI_GetAudioInfo( movie_state_t *Avi, wavdata_t *snd_info );
 int AVI_GetAudioChunk( movie_state_t *Avi, char *audiodata, int offset, int length );
