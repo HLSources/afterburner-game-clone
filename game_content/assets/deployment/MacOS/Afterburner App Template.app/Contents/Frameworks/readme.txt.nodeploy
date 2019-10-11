@@ -1,0 +1,10 @@
+The SDL2 framework must be copied into this directory. The path to the framework in libxash.dylib must also be
+modified, or it will not be found.
+
+To modify the path, run the following from a terminal within the frameworks directory:
+
+install_name_tool -id @executable_path/../Frameworks/SDL2.framework/SDL2 SDL2.framework/SDL2
+
+For more information, see https://stackoverflow.com/questions/1304239/osx-changing-path-of-framework
+It may be advantageous to build a specific 32-bit SDL2 library for Mac with the install_name linker flag set,
+so that we don't have to go through this rigmarole when creating an app package.

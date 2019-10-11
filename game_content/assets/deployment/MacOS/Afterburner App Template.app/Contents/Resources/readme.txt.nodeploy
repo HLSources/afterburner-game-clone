@@ -1,0 +1,2 @@
+Contrary to other platforms, the Afterburner game contents directory must be put here instead of in the same folder as
+the executable. The Mac system will automatically make the Resources directory the working directory at boot.

@@ -1,0 +1,5 @@
+# Studiomdl is included for model compiling convenience (it's small anyway).
+!studiomdl.exe
+
+# Don't include any actual MDL files - these should be put into the content folder.
+*.mdl

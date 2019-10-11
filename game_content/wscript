@@ -1,0 +1,19 @@
+#! /usr/bin/env python
+# encoding: utf-8
+
+from waflib import Logs
+import os
+import sys
+
+top = '.'
+
+def options(opt):
+	return
+
+def configure(conf):
+	return
+
+def build(bld):
+	bld.install_files("${PREFIX}",
+					  bld.path.ant_glob("afterburner/**/*.*", excl=["**/git-track-me"]),
+					  relative_trick=True)

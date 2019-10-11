@@ -30,6 +30,7 @@ SUBDIRS = [
 #	Subproject('ref_soft'),
 	Subproject('mainui'),
 	Subproject('vgui_support'),
+	Subproject('game_content')
 ]
 
 def subdirs():
