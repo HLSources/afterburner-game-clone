@@ -1,19 +1,71 @@
-Afterburner Engine
-==================
+Afterburner
+===========
 
-Customised Xash3D FWGS engine for use with [Afterburner](https://github.com/x6herbius/afterburner-game).
+*(Working title)*
 
-This repo is built automatically as part of the Afterburner game build process. The up-to-date Xash3D readme is below.
+Open-source reboot of [James Bond 007: Nightfire](https://en.wikipedia.org/wiki/James_Bond_007:_Nightfire). The primary purpose of this mod is to recreate and improve the experience of the PC version of Nightfire, and to provide in the process an open-source codebase that will allow for extension and refinement. The Xash3D (GoldSrc) engine was chosen because its codebase is fully available, it's smaller and simpler than Source, it's closer to the genuine Nightfire engine, and it doesn't come with the expectation that games will be photorealistic (I don't have the time or the energy as a single hobbyist to be working on some sort of HD photorealistic remake).
+
+## I want to play, where are the downloads?
+
+See [here](https://github.com/x6herbius/afterburner-game/releases). Please note, however, that at time of writing only pre-release versions of the game are available for testing purposes. These are liable to be buggy and will not be representative of the final game.
+
+## I want to compile the game from source, how do I do that?
+
+Ensure that you have Python 3 installed on your computer, as well as the appropriate C/C++ development tools for your platform (Windows and Linux are supported). You will also need to ensure that the **32-bit development** version of the [SDL2 library](https://www.libsdl.org/download-2.0.php) is installed. If this is not available for download for your platform, you should compile it from source. For detailed information on the prerequisites for compiling, see the Xash3D FWGS readme [here](https://github.com/FWGS/xash3d-fwgs), or at the bottom of this file.
+
+*Note that 64-bit builds of the game will be supported in future, but are not at the moment.*
+
+Clone this repository using `git clone --recursive`. If you don't use the `--recursive` switch, the game **will not** compile without manually updating the subrepositories.
+
+To build, open a terminal in the root of the repository and call:
+
+```
+python3 ./waf configure --disable-vgui --win-style-install --build-type=debug --prefix=build/debug
+```
+
+This will set up the build for a debug version of the game. Note that if you downloaded SDL2 from the website and it is not available in the system path, you will need to pass the path to the directory you extracted it to via the `--sdl2` option, eg. `--sdl2=~/my-SDL2-folder`.
+
+To build the game and copy all output to the `build/debug` folder in the root of the repo, call:
+
+```
+python3 ./waf build install
+```
+
+For more information, or a list of all available options, run `python3 ./waf --help`. Note that most of these will be for advanced users only.
+
+## Why is Mac not supported any more?
+
+[Apple have deprecated OpenGL support on Mac](https://www.anandtech.com/show/12894/apple-deprecates-opengl-across-all-oses). I'm not gonna lie - this is incredibly irritating, because OpenGL was the easiest way to write graphics-based applications that worked across the three big operating systems. In response, the developers of the Xash3D engine used by Afterburner have decided [not to support the engine on Mac as a response](https://github.com/FWGS/xash3d-fwgs/issues/61), because to do so would now require too much extra work and testing.
+
+If you wish to try compiling the game for Mac then feel free - in theory the engine should be compatible as long as you have a version of MacOS that supports OpenGL. However, I won't be able to help you out, so you'll be on your own.
+
+## I want to contribute!
+
+Since this project is currently only in active development by myself, I don't have any set roadmap or procedure for contributing. If you would like to get involved, please drop me a line (jonathan.poncelet@talk21.com, or [@x6herbius](https://twitter.com/x6herbius) on Twitter) and we can discuss!
+
+## Credits
+
+Many thanks to:
+
+* Gearbox for the original Nightfire assets
+* The FWGS team for the [Xash3D engine](https://github.com/FWGS/xash3d-fwgs) and [Xash3D version of Half Life SDK](https://github.com/FWGS/hlsdk-xash3d).
+* j-yaniv and others for [Rho-Bot Half Life bots](https://sourceforge.net/projects/rhobot/).
+* Developers of [STB libraries](https://github.com/nothings/stb).
+* Developers of [rapidjson library](http://rapidjson.org/).
+* Contributors to [XeNTaX game reverse-engineering forums](https://forum.xentax.com/).
+* Various Nightfire modders over the years whose tools and reverse-engineering have proven invaluable when developing this mod (specifically Tres, 009, Ford, UltimateSniper).
+
+For posterity, the Xash3D engine readme is below.
 
 -----
 
-# Xash3D FWGS Engine
+## Xash3D FWGS Engine Readme
 [![Build Status](https://api.travis-ci.org/FWGS/xash3d-fwgs.svg?branch=master)](https://travis-ci.org/FWGS/xash3d-fwgs) [![Discord Server](https://img.shields.io/discord/355697768582610945.svg)](https://discord.gg/TbnHcVb)
 
 Xash3D FWGS is a fork of Xash3D Engine by Unkle Mike with extended features and crossplatform.
 
 ```
-Xash3D is a game engine, aimed to provide compatibility with Half-Life Engine, 
+Xash3D is a game engine, aimed to provide compatibility with Half-Life Engine,
 as well as to give game developers well known workflow and extend it.
 Read more about Xash3D on ModDB: https://www.moddb.com/engines/xash3d-engine
 ```
@@ -66,11 +118,11 @@ Even if Xash3D FWGS does support targetting 64-bit, you can't load games without
 
 `$ sudo dpkg --add-architecture i386`
 * Install development tools
-  * For 32-bit engine on amd64: 
-		
+  * For 32-bit engine on amd64:
+
     `$ sudo apt install build-essential gcc-multilib g++-multilib python libsdl2-dev:i386 libfontconfig-dev:i386 libfreetype6-dev:i386`
-  * For everything else: 
-		
+  * For everything else:
+
     `$ sudo apt install build-essential python libsdl2-dev libfontconfig-dev libfreetype6-dev`
 * Clone this repostory:
 `$ git clone --recursive https://github.com/FWGS/xash3d-fwgs`
