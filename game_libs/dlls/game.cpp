@@ -19,6 +19,8 @@
 #include "weaponregistry.h"
 #include "bot_cvars.h"
 #include "bot_commands.h"
+#include "projectInterface/IProjectInterface.h"
+#include "projectInterface_server.h"
 
 cvar_t displaysoundlist = {"displaysoundlist","0"};
 
@@ -454,6 +456,8 @@ cvar_t	sk_player_leg3	= { "sk_player_leg3","1" };
 // This gets called one time when the game is initialied
 void GameDLLInit( void )
 {
+	IProjectInterface::SetProjectInterfaceImpl(ProjectInterface_Server::StaticInstance());
+
 	// Register cvars here:
 
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );

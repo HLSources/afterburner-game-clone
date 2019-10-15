@@ -1,15 +1,15 @@
 #pragma once
 
 #include "projectInterface/IProjectInterface.h"
-#include "logInterface_gamelib.h"
-#include "fileLoaders_gamelib.h"
+#include "logInterface_server.h"
+#include "fileLoaders_server.h"
 
-class ProjectInterface_MainUI : public IProjectInterface
+class ProjectInterface_Server : public IProjectInterface
 {
 public:
-	virtual ~ProjectInterface_MainUI() {}
+	virtual ~ProjectInterface_Server() {}
 
-	static IProjectInterface& StaticInstance();
+	static IProjectInterface* StaticInstance();
 
 	virtual IFileLoader& FileLoader() override;
 	virtual ILogInterface& LogInterface() override;

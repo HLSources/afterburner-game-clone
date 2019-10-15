@@ -30,6 +30,7 @@ COMMON_INCLUDE_PATHS = \
 	"game_shared/weaponattributes",
 	"game_shared/util",
 	"game_shared/gameplay",
+	"../game_menu_shared",
 	"miniutl"
 ]
 
@@ -38,7 +39,8 @@ SERVER_INCLUDE_PATHS = \
 	"dlls",
 	"dlls/bots",
 	"dlls/bots/profiles",
-	"dlls/bots/itemattributes"
+	"dlls/bots/itemattributes",
+	"dlls/projectInterface_server"
 ]
 
 SERVER_SOURCES = \
@@ -46,13 +48,7 @@ SERVER_SOURCES = \
 	"miniutl/**/*.cpp",
 	"pm_shared/**/*.c",
 	"dlls/bots/**/*.cpp",
-
-	# TODO: Remove these and put into stlib
-	"shared_utils/cpp/botprofiles/**/*.cpp",
-	"shared_utils/cpp/gamelib/**/*.cpp",
-	"shared_utils/cpp/projectInterface/**/*.cpp",
-	"shared_utils/cpp/rapidjson/**/*.cpp",
-	"shared_utils/cpp/rapidjson_helpers/**/*.cpp",
+	"dlls/projectInterface_server/**/*.cpp",
 
 	# TODO: Change the folder structure one day so that we can use globs and not have to do this.
 	# Currently we don't want to include absolutely everything...
@@ -152,7 +148,8 @@ CLIENT_INCLUDE_PATHS = \
 	"cl_dll",
 	"utils/false_vgui/include"
 	"cl_dll/hl",
-	"cl_dll/events"
+	"cl_dll/events",
+	"cl_dll/projectInterface_client"
 ]
 
 CLIENT_SOURCES = \
@@ -161,13 +158,7 @@ CLIENT_SOURCES = \
 	"pm_shared/**/*.c",
 	"cl_dll/events/**/*.cpp",
 	"cl_dll/hl/**/*.cpp",
-
-	# TODO: Remove these and put into stlib
-	"shared_utils/cpp/botprofiles/**/*.cpp",
-	"shared_utils/cpp/gamelib/**/*.cpp",
-	"shared_utils/cpp/projectInterface/**/*.cpp",
-	"shared_utils/cpp/rapidjson/**/*.cpp",
-	"shared_utils/cpp/rapidjson_helpers/**/*.cpp",
+	"cl_dll/projectInterface_client/**/*.cpp",
 
 	# TODO: Change the folder structure one day so that we can use globs and not have to do this.
 	# Currently we don't want to include absolutely everything...
@@ -272,7 +263,7 @@ def configure(conf):
 		conf.env.GAMELIB_TARGET_CLIENT = "client"
 		conf.env.GAMELIB_TARGET_SERVER = "hl"
 
-def __build_server(bld):
+def __build_server(bld, gameMenuSharedSources):
 	sources = SERVER_SOURCES
 
 	if bld.env.USE_VOICEMGR:
@@ -281,7 +272,7 @@ def __build_server(bld):
 	bld.shlib(
 		target = bld.env.GAMELIB_TARGET_SERVER + bld.env.GAMELIB_EXT,
 		includes = COMMON_INCLUDE_PATHS + SERVER_INCLUDE_PATHS,
-		source = bld.path.ant_glob(sources),
+		source = bld.path.ant_glob(sources) + gameMenuSharedSources,
 		use = LIBS,
 		defines = bld.env.DEFINES,
 		install_path = "${PREFIX}/afterburner/dlls",
@@ -289,11 +280,11 @@ def __build_server(bld):
 		subsystem = bld.env.MSVC_SUBSYSTEM
 	)
 
-def __build_client(bld):
+def __build_client(bld, gameMenuSharedSources):
 	bld.shlib(
 		target = bld.env.GAMELIB_TARGET_CLIENT + bld.env.GAMELIB_EXT,
 		includes = COMMON_INCLUDE_PATHS + CLIENT_INCLUDE_PATHS,
-		source = bld.path.ant_glob(CLIENT_SOURCES),
+		source = bld.path.ant_glob(CLIENT_SOURCES) + gameMenuSharedSources,
 		use = LIBS,
 		defines = bld.env.DEFINES + ["CLIENT_DLL", "CLIENT_WEAPONS"],
 		install_path = "${PREFIX}/afterburner/cl_dlls",
@@ -302,5 +293,7 @@ def __build_client(bld):
 	)
 
 def build(bld):
-	__build_server(bld)
-	__build_client(bld)
+	gameMenuSharedSources = bld.path.parent.ant_glob("game_menu_shared/**/*.cpp")
+
+	__build_server(bld, gameMenuSharedSources)
+	__build_client(bld, gameMenuSharedSources)

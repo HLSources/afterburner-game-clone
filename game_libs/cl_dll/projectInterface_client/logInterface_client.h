@@ -2,10 +2,10 @@
 
 #include "projectInterface/ILogInterface.h"
 
-class LogInterface_MainUI : public ILogInterface
+class LogInterface_Client : public ILogInterface
 {
 public:
-	virtual ~LogInterface_MainUI() {}
+	virtual ~LogInterface_Client() {}
 
 	virtual void Debug(const CUtlString& message) override;
 	virtual void Message(const CUtlString& message) override;

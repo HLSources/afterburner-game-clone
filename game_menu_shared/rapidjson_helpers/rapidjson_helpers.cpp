@@ -55,10 +55,10 @@ const char* ValueTypeAsString(Type valueType)
 
 bool LoadJsonFile(const CUtlString& path, Document& document, const char* moduleName)
 {
-	IProjectInterface& pIfc = IProjectInterface::ProjectInterfaceImpl();
+	IProjectInterface* iface = IProjectInterface::ProjectInterfaceImpl();
 
 	size_t length = 0;
-	uint8_t* fileData = pIfc.FileLoader().Load(path, length);
+	uint8_t* fileData = iface->FileLoader().Load(path, length);
 
 	if ( !fileData )
 	{
@@ -70,12 +70,12 @@ bool LoadJsonFile(const CUtlString& path, Document& document, const char* module
 		}
 
 		log.AppendFormat("Could not load file %s.\n", path.String());
-		pIfc.LogInterface().Error(log);
+		iface->LogInterface().Error(log);
 		return false;
 	}
 
 	rapidjson::ParseResult parseResult = document.Parse(reinterpret_cast<char*>(fileData));
-	pIfc.FileLoader().Free(fileData);
+	iface->FileLoader().Free(fileData);
 
 	if ( parseResult.IsError() )
 	{
@@ -91,7 +91,7 @@ bool LoadJsonFile(const CUtlString& path, Document& document, const char* module
 						 parseResult.Offset(),
 						 rapidjson::GetParseError_En(parseResult.Code()));
 
-		pIfc.LogInterface().Error(log);
+		iface->LogInterface().Error(log);
 		return false;
 	}
 

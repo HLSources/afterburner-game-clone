@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -22,6 +22,8 @@
 #include "cl_util.h"
 #include "netadr.h"
 #include "parsemsg.h"
+#include "projectInterface/IProjectInterface.h"
+#include "projectInterface_client.h"
 
 #if defined(GOLDSOURCE_SUPPORT) && (defined(_WIN32) || defined(__linux__) || defined(__APPLE__)) && (defined(__i386) || defined(_M_IX86))
 #define USE_VGUI_FOR_GOLDSOURCE_SUPPORT
@@ -55,13 +57,13 @@ int __MsgFunc_Bhopcap( const char *pszName, int iSize, void *pbuf )
 }
 
 /*
-========================== 
+==========================
     Initialize
 
 Called when the DLL is first loaded.
 ==========================
 */
-extern "C" 
+extern "C"
 {
 int		DLLEXPORT Initialize( cl_enginefunc_t *pEnginefuncs, int iVersion );
 int		DLLEXPORT HUD_VidInit( void );
@@ -159,6 +161,7 @@ int DLLEXPORT Initialize( cl_enginefunc_t *pEnginefuncs, int iVersion )
 
 	memcpy( &gEngfuncs, pEnginefuncs, sizeof(cl_enginefunc_t) );
 
+	IProjectInterface::SetProjectInterfaceImpl(ProjectInterface_Client::StaticInstance());
 	EV_HookEvents();
 
 	return 1;
@@ -265,7 +268,7 @@ int DLLEXPORT HUD_VidInit( void )
 	HUD_Init
 
 Called whenever the client connects
-to a server.  Reinitializes all 
+to a server.  Reinitializes all
 the hud variables.
 ==========================
 */
