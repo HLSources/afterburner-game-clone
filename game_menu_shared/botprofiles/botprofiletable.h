@@ -2,6 +2,7 @@
 
 #include "utlstring.h"
 #include "utlhashmap.h"
+#include "iterators/utlhashmapconstiterator.h"
 
 class CBotProfileTable
 {
@@ -13,6 +14,8 @@ public:
 		CUtlString playerName;
 	};
 
+	typedef CUtlHashMapConstIterator<CUtlString, ProfileData> ConstIterator;
+
 	CBotProfileTable();
 
 	void Clear();
@@ -23,15 +26,15 @@ public:
 	ProfileData* GetProfile(const CUtlString& name);
 	const ProfileData* GetProfile(const CUtlString& name) const;
 
-	ProfileData* GetProfile(uint32_t index);
-	const ProfileData* GetProfile(uint32_t index) const;
-
 	ProfileData& CreateProfile(const CUtlString& name);
 	void RemoveProfile(const CUtlString& name);
 
-	void RandomProfileNameList(CUtlVector<CUtlString>& list, size_t count) const;
+	ConstIterator CBegin() const;
+	ConstIterator CEnd() const;
 
 private:
 	typedef CUtlHashMap<CUtlString, ProfileData> HashTable;
+
 	HashTable m_Table;
+	CUtlVector<uint32_t> m_IndexToHash;
 };

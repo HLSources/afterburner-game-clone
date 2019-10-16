@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <random>
 #include "botfactory.h"
 #include "standard_includes.h"
 #include "bot.h"
@@ -31,7 +33,7 @@ void CBotFactory::LoadBotProfiles()
 void CBotFactory::CreateBots(uint32_t num)
 {
 	CUtlVector<CUtlString> randomProfileNameList;
-	m_ProfileTable.RandomProfileNameList(randomProfileNameList, num);
+	RandomProfileNameList(randomProfileNameList, num);
 
 	if ( randomProfileNameList.Count() > 0 )
 	{
@@ -116,4 +118,41 @@ void CBotFactory::SetBotSkin(CBaseBot* bot, const CUtlString& skin)
 									g_engfuncs.pfnGetInfoKeyBuffer(bot->edict()),
 									"model",
 									(char*)CUtlString(skin).String());
+}
+
+void CBotFactory::RandomProfileNameList(CUtlVector<CUtlString>& list, size_t count)
+{
+	list.Purge();
+
+	if ( m_ProfileTable.Count() < 1 )
+	{
+		return;
+	}
+
+	list.EnsureCapacity(count);
+	auto rng = std::default_random_engine {(unsigned int)RANDOM_LONG(0, 1000)};
+
+	while ( static_cast<size_t>(list.Count()) < count )
+	{
+		// This has to be a std::vector in order to randomise it.
+		std::vector<const char*> intermediateList;
+		intermediateList.reserve(m_ProfileTable.Count());
+
+		for ( CBotProfileTable::ConstIterator it = m_ProfileTable.CBegin(); it != m_ProfileTable.CEnd(); ++it )
+		{
+			intermediateList.push_back(it.Key().String());
+		}
+
+		std::shuffle(std::begin(intermediateList), std::end(intermediateList), rng);
+
+		for ( const char* name : intermediateList )
+		{
+			list.AddToTail(CUtlString(name));
+
+			if ( static_cast<size_t>(list.Count()) >= count )
+			{
+				break;
+			}
+		}
+	}
 }

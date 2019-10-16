@@ -21,6 +21,7 @@ public:
 	bool TryCreateBot(const CUtlString& profileName, const CUtlString& playerName = CUtlString());
 
 private:
+	void RandomProfileNameList(CUtlVector<CUtlString>& list, size_t count);
 	bool CreateBot(const CBotProfileTable::ProfileData* profile = NULL, const CUtlString& playerName = CUtlString());
 
 	void SetBotAttributesViaProfile(CBaseBot* bot, const CBotProfileTable::ProfileData* profile);
