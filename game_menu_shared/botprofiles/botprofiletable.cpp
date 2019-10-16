@@ -1,9 +1,4 @@
 #include "botprofiletable.h"
-#include "extdll.h"
-#include "util.h"
-#include "cbase.h"
-#include "player.h"
-#include "enginecallback.h"
 #include "utlvector.h"
 
 CBotProfileTable::CBotProfileTable()
@@ -23,7 +18,7 @@ CBotProfileTable::ProfileData& CBotProfileTable::CreateProfile(const CUtlString&
 	ProfileData& data = m_Table.Element(index);
 	data.profileName = name;
 
-	return data;
+return data;
 }
 
 CBotProfileTable::ProfileData* CBotProfileTable::GetProfile(const CUtlString& name)

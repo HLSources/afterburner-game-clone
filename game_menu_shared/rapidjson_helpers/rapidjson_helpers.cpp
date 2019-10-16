@@ -70,7 +70,7 @@ bool LoadJsonFile(const CUtlString& path, Document& document, const char* module
 		}
 
 		log.AppendFormat("Could not load file %s.\n", path.String());
-		iface->LogInterface().Error(log);
+		iface->LogInterface().Log(ILogInterface::Level::Error, log);
 		return false;
 	}
 
@@ -91,7 +91,7 @@ bool LoadJsonFile(const CUtlString& path, Document& document, const char* module
 						 parseResult.Offset(),
 						 rapidjson::GetParseError_En(parseResult.Code()));
 
-		iface->LogInterface().Error(log);
+		iface->LogInterface().Log(ILogInterface::Level::Error, log);
 		return false;
 	}
 

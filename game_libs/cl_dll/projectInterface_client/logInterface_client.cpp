@@ -9,27 +9,37 @@
 #define PREFIX_WARNING "^3Warning:^7 "
 #define PREFIX_ERROR "^1Error:^7 "
 
-void LogInterface_Client::Debug(const CUtlString& message)
+void LogInterface_Client::Log(ILogInterface::Level level, const CUtlString& message)
 {
-	gEngfuncs.Con_DPrintf(message.String());
+	switch ( level )
+	{
+		case ILogInterface::Level::Debug:
+		{
+			gEngfuncs.Con_DPrintf(message.String());
+			break;
+		}
+
+		case ILogInterface::Level::Warning:
+		{
+			gEngfuncs.Con_Printf(PREFIX_WARNING "%s", message.String());
+			break;
+		}
+
+		case ILogInterface::Level::Error:
+		{
+			gEngfuncs.Con_Printf(PREFIX_ERROR "%s", message.String());
+			break;
+		}
+
+		default:
+		{
+			gEngfuncs.Con_Printf(message.String());
+			break;
+		}
+	}
 }
 
-void LogInterface_Client::Message(const CUtlString& message)
-{
-	gEngfuncs.Con_Printf(message.String());
-}
-
-void LogInterface_Client::Warning(const CUtlString& message)
-{
-	gEngfuncs.Con_Printf(PREFIX_WARNING "%s", message.String());
-}
-
-void LogInterface_Client::Error(const CUtlString& message)
-{
-	gEngfuncs.Con_Printf(PREFIX_ERROR "%s", message.String());
-}
-
-void LogInterface_Client::DebugF(const char* format, ...)
+void LogInterface_Client::LogF(ILogInterface::Level level, const char* format, ...)
 {
 	std::unique_ptr<char> message(new char[MAX_MESSAGE_LENGTH]);
 	va_list args;
@@ -38,41 +48,30 @@ void LogInterface_Client::DebugF(const char* format, ...)
 	V_vsnprintf(message.get(), MAX_MESSAGE_LENGTH, format, args);
 	va_end(args);
 
-	gEngfuncs.Con_DPrintf(message.get());
-}
+	switch ( level )
+	{
+		case ILogInterface::Level::Debug:
+		{
+			gEngfuncs.Con_DPrintf(message.get());
+			break;
+		}
 
-void LogInterface_Client::MessageF(const char* format, ...)
-{
-	std::unique_ptr<char> message(new char[MAX_MESSAGE_LENGTH]);
-	va_list args;
+		case ILogInterface::Level::Warning:
+		{
+			gEngfuncs.Con_Printf(PREFIX_WARNING "%s", message.get());
+			break;
+		}
 
-	va_start(args, format);
-	V_vsnprintf(message.get(), MAX_MESSAGE_LENGTH, format, args);
-	va_end(args);
+		case ILogInterface::Level::Error:
+		{
+			gEngfuncs.Con_Printf(PREFIX_ERROR "%s", message.get());
+			break;
+		}
 
-	gEngfuncs.Con_Printf(message.get());
-}
-
-void LogInterface_Client::WarningF(const char* format, ...)
-{
-	std::unique_ptr<char> message(new char[MAX_MESSAGE_LENGTH]);
-	va_list args;
-
-	va_start(args, format);
-	V_vsnprintf(message.get(), MAX_MESSAGE_LENGTH, format, args);
-	va_end(args);
-
-	gEngfuncs.Con_Printf(PREFIX_WARNING "%s", message.get());
-}
-
-void LogInterface_Client::ErrorF(const char* format, ...)
-{
-	std::unique_ptr<char> message(new char[MAX_MESSAGE_LENGTH]);
-	va_list args;
-
-	va_start(args, format);
-	V_vsnprintf(message.get(), MAX_MESSAGE_LENGTH, format, args);
-	va_end(args);
-
-	gEngfuncs.Con_Printf(PREFIX_ERROR "%s", message.get());
+		default:
+		{
+			gEngfuncs.Con_Printf(message.get());
+			break;
+		}
+	}
 }

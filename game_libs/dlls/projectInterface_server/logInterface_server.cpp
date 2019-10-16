@@ -5,29 +5,37 @@
 #include "utlstring.h"
 #include "enginecallback.h"
 
-// Ick. Engine functions don't take const char* pointers...
-
-void LogInterface_Server::Debug(const CUtlString& message)
+void LogInterface_Server::Log(ILogInterface::Level level, const CUtlString& message)
 {
-	ALERT(at_aiconsole, const_cast<char*>(message.String()));
+	switch ( level )
+	{
+		case ILogInterface::Level::Debug:
+		{
+			ALERT(at_aiconsole, const_cast<char*>(message.String()));
+			break;
+		}
+
+		case ILogInterface::Level::Warning:
+		{
+			ALERT(at_warning, const_cast<char*>(message.String()));
+			break;
+		}
+
+		case ILogInterface::Level::Error:
+		{
+			ALERT(at_error, const_cast<char*>(message.String()));
+			break;
+		}
+
+		default:
+		{
+			ALERT(at_console, const_cast<char*>(message.String()));
+			break;
+		}
+	}
 }
 
-void LogInterface_Server::Message(const CUtlString& message)
-{
-	ALERT(at_console, const_cast<char*>(message.String()));
-}
-
-void LogInterface_Server::Warning(const CUtlString& message)
-{
-	ALERT(at_warning, const_cast<char*>(message.String()));
-}
-
-void LogInterface_Server::Error(const CUtlString& message)
-{
-	ALERT(at_error, const_cast<char*>(message.String()));
-}
-
-void LogInterface_Server::DebugF(const char* format, ...)
+void LogInterface_Server::LogF(ILogInterface::Level level, const char* format, ...)
 {
 	std::unique_ptr<char> message(new char[MAX_MESSAGE_LENGTH]);
 	va_list args;
@@ -36,41 +44,30 @@ void LogInterface_Server::DebugF(const char* format, ...)
 	V_vsnprintf(message.get(), MAX_MESSAGE_LENGTH, format, args);
 	va_end(args);
 
-	ALERT(at_aiconsole, message.get());
-}
+	switch ( level )
+	{
+		case ILogInterface::Level::Debug:
+		{
+			ALERT(at_aiconsole, message.get());
+			break;
+		}
 
-void LogInterface_Server::MessageF(const char* format, ...)
-{
-	std::unique_ptr<char> message(new char[MAX_MESSAGE_LENGTH]);
-	va_list args;
+		case ILogInterface::Level::Warning:
+		{
+			ALERT(at_warning, message.get());
+			break;
+		}
 
-	va_start(args, format);
-	V_vsnprintf(message.get(), MAX_MESSAGE_LENGTH, format, args);
-	va_end(args);
+		case ILogInterface::Level::Error:
+		{
+			ALERT(at_error, message.get());
+			break;
+		}
 
-	ALERT(at_console, message.get());
-}
-
-void LogInterface_Server::WarningF(const char* format, ...)
-{
-	std::unique_ptr<char> message(new char[MAX_MESSAGE_LENGTH]);
-	va_list args;
-
-	va_start(args, format);
-	V_vsnprintf(message.get(), MAX_MESSAGE_LENGTH, format, args);
-	va_end(args);
-
-	ALERT(at_warning, message.get());
-}
-
-void LogInterface_Server::ErrorF(const char* format, ...)
-{
-	std::unique_ptr<char> message(new char[MAX_MESSAGE_LENGTH]);
-	va_list args;
-
-	va_start(args, format);
-	V_vsnprintf(message.get(), MAX_MESSAGE_LENGTH, format, args);
-	va_end(args);
-
-	ALERT(at_error, message.get());
+		default:
+		{
+			ALERT(at_console, message.get());
+			break;
+		}
+	}
 }

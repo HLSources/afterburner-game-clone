@@ -7,15 +7,16 @@ class ILogInterface
 public:
 	static constexpr size_t MAX_MESSAGE_LENGTH = 8192;
 
+	enum class Level
+	{
+		Debug,
+		Message,
+		Warning,
+		Error
+	};
+
 	virtual ~ILogInterface() {}
 
-	virtual void Debug(const CUtlString& message) = 0;
-	virtual void Message(const CUtlString& message) = 0;
-	virtual void Warning(const CUtlString& message) = 0;
-	virtual void Error(const CUtlString& message) = 0;
-
-	virtual void DebugF(const char* format, ...) = 0;
-	virtual void MessageF(const char* format, ...) = 0;
-	virtual void WarningF(const char* format, ...) = 0;
-	virtual void ErrorF(const char* format, ...) = 0;
+	virtual void Log(Level level, const CUtlString& message) = 0;
+	virtual void LogF(Level level, const char* format, ...) = 0;
 };

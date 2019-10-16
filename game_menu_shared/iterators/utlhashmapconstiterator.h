@@ -19,7 +19,7 @@ public:
 	static inline CUtlHashMapConstIterator CEnd(const HashMap& map)
 	{
 		CUtlHashMapConstIterator it(map);
-		it.m_Index = it.m_Map.InvalidIndex();
+		it.m_Index = it.m_Map->InvalidIndex();
 		return it;
 	}
 
@@ -36,7 +36,7 @@ public:
 	{
 	}
 
-	inline operator ==(const CUtlHashMapConstIterator& other) const
+	inline bool operator ==(const CUtlHashMapConstIterator& other) const
 	{
 		if ( other.m_Map != m_Map )
 		{
@@ -53,7 +53,7 @@ public:
 		}
 	}
 
-	inline operator !=(const CUtlHashMapConstIterator& other) const
+	inline bool operator !=(const CUtlHashMapConstIterator& other) const
 	{
 		return !(*this == other);
 	}
@@ -101,7 +101,7 @@ private:
 	{
 		for ( m_Index = fromBeginning ? 0 : m_Index + 1;
 			  m_Index < m_Map->MaxElement();
-			  ++m_Index; )
+			  ++m_Index )
 		{
 			if ( m_Map->IsValidIndex(m_Index) )
 			{
