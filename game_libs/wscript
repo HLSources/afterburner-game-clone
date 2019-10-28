@@ -211,8 +211,7 @@ CLIENT_SOURCES = \
 	"cl_dll/MOTD.cpp"
 ]
 
-# TODO: Common game stlib here!
-LIBS = []
+WIN32_LIBS = ["USER32"]
 
 def options(opt):
 	opt.add_option('--use-voicemgr', dest='use_voicemgr', action='store_true', help='Include voice manager code.')
@@ -223,13 +222,11 @@ def configure(conf):
 	# Identifies that we're building for the client and server DLLs.
 	conf.env.append_unique("DEFINES", COMMON_DEFINES)
 
-	if sys.platform != "win32":
-		conf.env.append_unique("CXXFLAGS", ["-fno-exceptions", "-Wno-invalid-offsetof"])
-
 	if conf.env.DEST_OS == 'win32':
 		conf.env.append_unique("DEFINES",
 		[
 			"_WIN32",
+			"WIN32",
 			"NOMINMAX"
 		])
 
@@ -242,8 +239,6 @@ def configure(conf):
 			"/wd4005",
 			"/wd4244"
 		])
-
-		conf.env.GAMELIB_EXT = ".dll"
 	else:
 		conf.env.append_unique("DEFINES",
 		[
@@ -254,17 +249,14 @@ def configure(conf):
 			"_vsnprintf=vsnprintf"
 		])
 
-		conf.env.GAMELIB_EXT = ".so"
+		conf.env.append_unique("CXXFLAGS",
+		[
+			"-fno-exceptions",
+			"-Wno-invalid-offsetof"
+		])
 
 	if not conf.options.use_voicemgr:
 		conf.env.append_unique('DEFINES', 'NO_VOICEGAMEMGR')
-
-	if conf.env.BIT32_ALLOW64:
-		conf.env.GAMELIB_TARGET_CLIENT = "client64"
-		conf.env.GAMELIB_TARGET_SERVER = "hl64"
-	else:
-		conf.env.GAMELIB_TARGET_CLIENT = "client"
-		conf.env.GAMELIB_TARGET_SERVER = "hl"
 
 def __build_server(bld, gameMenuSharedSources):
 	sources = SERVER_SOURCES
@@ -273,26 +265,26 @@ def __build_server(bld, gameMenuSharedSources):
 		sources += [ "game_shared/voice_gamemgr.cpp" ]
 
 	bld.shlib(
-		target = bld.env.GAMELIB_TARGET_SERVER + bld.env.GAMELIB_EXT,
+		target = "hl",
 		includes = COMMON_INCLUDE_PATHS + SERVER_INCLUDE_PATHS,
 		source = bld.path.ant_glob(sources) + gameMenuSharedSources,
-		use = LIBS,
+		use = WIN32_LIBS if bld.env.DEST_OS == "win32" else [],
 		defines = bld.env.DEFINES,
 		install_path = "${PREFIX}/afterburner/dlls",
-		features = "c cxx cxxprogram",
+		features = "c cxx cxxshlib",
 		subsystem = bld.env.MSVC_SUBSYSTEM,
 		idx = SERVER_BUILD_INDEX
 	)
 
 def __build_client(bld, gameMenuSharedSources):
 	bld.shlib(
-		target = bld.env.GAMELIB_TARGET_CLIENT + bld.env.GAMELIB_EXT,
+		target = "client",
 		includes = COMMON_INCLUDE_PATHS + CLIENT_INCLUDE_PATHS,
 		source = bld.path.ant_glob(CLIENT_SOURCES) + gameMenuSharedSources,
-		use = LIBS,
+		use = WIN32_LIBS if bld.env.DEST_OS == "win32" else [],
 		defines = bld.env.DEFINES + ["CLIENT_DLL", "CLIENT_WEAPONS"],
 		install_path = "${PREFIX}/afterburner/cl_dlls",
-		features = "c cxx cxxprogram",
+		features = "c cxx cxxshlib",
 		subsystem = bld.env.MSVC_SUBSYSTEM,
 		idx = CLIENT_BUILD_INDEX
 	)

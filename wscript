@@ -93,8 +93,6 @@ def configure(conf):
 	if sys.platform == 'win32':
 		conf.load('msvc msvcfix msdev msvs')
 	conf.load('xcompile compiler_c compiler_cxx gitversion clang_compilation_database')
-	if sys.platform == 'win32':
-		conf.load('msvc msvs')
 
 	# Every static library must have fPIC
 	if conf.env.DEST_OS != 'win32' and '-fPIC' in conf.env.CFLAGS_cshlib:
