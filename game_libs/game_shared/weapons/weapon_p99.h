@@ -31,5 +31,5 @@ private:
 namespace WeaponAtts
 {
 	template<>
-	const struct WACollection& StaticWeaponAttributes<CWeaponP99>();
+	const WACollection& StaticWeaponAttributes<CWeaponP99>();
 }

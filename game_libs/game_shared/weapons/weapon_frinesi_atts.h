@@ -34,10 +34,10 @@ static constexpr uint8_t FRINESI_PELLETS_PER_SHOT = 6;
 
 static const CAmmoDef Ammo_Frinesi =
 {
-	.ClassName = "ammo_frinesi",
-	.AmmoName = "ammodef_frinesi",
-	.MaxCarry = 72,
-	.AmmoBoxGive = 125
+	"ammo_frinesi",	// ClassName
+	"ammodef_frinesi",	// AmmoName
+	72,	// MaxCarry
+	125	// AmmoBoxGive
 };
 
 static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACollection& obj)

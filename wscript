@@ -136,7 +136,7 @@ def configure(conf):
 	compiler_c_cxx_flags = {
 		'common': {
 			# disable thread-safe local static initialization for C++11 code, as it cause crashes on Windows XP
-			'msvc':    ['/D_USING_V110_SDK71_', '/Zi', '/FS', '/Zc:threadSafeInit-', '/MT', '/WX', '/wd4005'],
+			'msvc':    ['/D_USING_V110_SDK71_', '/Zi', '/FS', '/Zc:threadSafeInit-', '/WX', '/wd4005', '/EHsc'],
 			'clang': [
 				'-g',
 				'-gdwarf-2',
@@ -153,29 +153,29 @@ def configure(conf):
 			]
 		},
 		'fast': {
-			'msvc':    ['/O2', '/Oy'], #todo: check /GL /LTCG
-			'gcc':     ['-Ofast', '-march=native', '-funsafe-math-optimizations', '-funsafe-loop-optimizations', '-fomit-frame-pointer'],
-			'clang':   ['-Ofast', '-march=native'],
-			'default': ['-O3']
+			'msvc':    ['/O2', '/Oy', '/MT', '/DNDEBUG'], #todo: check /GL /LTCG
+			'gcc':     ['-Ofast', '-march=native', '-funsafe-math-optimizations', '-funsafe-loop-optimizations', '-fomit-frame-pointer', '-DNDEBUG'],
+			'clang':   ['-Ofast', '-march=native', '-DNDEBUG'],
+			'default': ['-O3', '-DNDEBUG']
 		},
 		'release': {
-			'msvc':    ['/O2', '/DNDEBUG'],
+			'msvc':    ['/O2', '/DNDEBUG', '/MT'],
 			'default': ['-O3', '-DNDEBUG']
 		},
 		'debug': {
-			'msvc':    ['/O1', '/D_DEBUG'],
+			'msvc':    ['/O1', '/D_DEBUG', '/MTd'],
 			'gcc':     ['-Og', '-D_DEBUG'],
 			'default': ['-O1', '-D_DEBUG']
 		},
 		'sanitize': {
-			'msvc':    ['/Od', '/RTC1'],
-			'gcc':     ['-Og', '-fsanitize=undefined', '-fsanitize=address'],
-			'clang':   ['-O0', '-fsanitize=undefined', '-fsanitize=address'],
-			'default': ['-O0']
+			'msvc':    ['/Od', '/RTC1', '/MT', '/DNDEBUG'],
+			'gcc':     ['-Og', '-fsanitize=undefined', '-fsanitize=address', '-DNDEBUG'],
+			'clang':   ['-O0', '-fsanitize=undefined', '-fsanitize=address', '-DNDEBUG'],
+			'default': ['-O0', '-DNDEBUG']
 		},
 		'nooptimize': {
-			'msvc':    ['/Od'],
-			'default': ['-O0']
+			'msvc':    ['/Od', '/MT', '/DNDEBUG'],
+			'default': ['-O0', '-DNDEBUG']
 		}
 	}
 

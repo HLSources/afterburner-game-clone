@@ -37,10 +37,10 @@ static constexpr float P99_FIRE_RATE = 6.0f;
 
 static const CAmmoDef Ammo_P99 =
 {
-	.ClassName = "ammo_p99",
-	.AmmoName = "ammodef_p99",
-	.MaxCarry = 200,
-	.AmmoBoxGive = 32
+	"ammo_p99",	// ClassName
+	"ammodef_p99",	// AmmoName
+	200,	// MaxCarry
+	32	// AmmoBoxGive
 };
 
 static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACollection& obj)

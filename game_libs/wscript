@@ -7,11 +7,12 @@ import sys
 
 top = '.'
 
-COMMON_CXXFLAGS = \
-[
-	"-fno-exceptions",
-	"-Wno-invalid-offsetof"
-]
+# Client/server/menu share some code in game_menu_shared, so we need to make sure
+# the object files that are generated don't clash. Setting indices for each build
+# ensures that the object files have different names. The index values themselves
+# are just arbitrary.
+SERVER_BUILD_INDEX = 1001
+CLIENT_BUILD_INDEX = 1002
 
 COMMON_DEFINES = \
 [
@@ -221,7 +222,9 @@ def configure(conf):
 
 	# Identifies that we're building for the client and server DLLs.
 	conf.env.append_unique("DEFINES", COMMON_DEFINES)
-	conf.env.append_unique("CXXFLAGS", COMMON_CXXFLAGS)
+
+	if sys.platform != "win32":
+		conf.env.append_unique("CXXFLAGS", ["-fno-exceptions", "-Wno-invalid-offsetof"])
 
 	if conf.env.DEST_OS == 'win32':
 		conf.env.append_unique("DEFINES",
@@ -277,7 +280,8 @@ def __build_server(bld, gameMenuSharedSources):
 		defines = bld.env.DEFINES,
 		install_path = "${PREFIX}/afterburner/dlls",
 		features = "c cxx cxxprogram",
-		subsystem = bld.env.MSVC_SUBSYSTEM
+		subsystem = bld.env.MSVC_SUBSYSTEM,
+		idx = SERVER_BUILD_INDEX
 	)
 
 def __build_client(bld, gameMenuSharedSources):
@@ -289,7 +293,8 @@ def __build_client(bld, gameMenuSharedSources):
 		defines = bld.env.DEFINES + ["CLIENT_DLL", "CLIENT_WEAPONS"],
 		install_path = "${PREFIX}/afterburner/cl_dlls",
 		features = "c cxx cxxprogram",
-		subsystem = bld.env.MSVC_SUBSYSTEM
+		subsystem = bld.env.MSVC_SUBSYSTEM,
+		idx = CLIENT_BUILD_INDEX
 	)
 
 def build(bld):

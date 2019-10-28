@@ -272,7 +272,7 @@ void CWeaponFrinesi::Bot_SetFightStyle(CBaseBotFightStyle& fightStyle) const
 namespace WeaponAtts
 {
 	template<>
-	const struct WACollection& StaticWeaponAttributes<CWeaponFrinesi>()
+	const WACollection& StaticWeaponAttributes<CWeaponFrinesi>()
 	{
 		return ::StaticWeaponAttributes;
 	}

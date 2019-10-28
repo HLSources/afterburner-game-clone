@@ -32,10 +32,10 @@ DEV_CVAR(grenadelauncher_launch_pitch_adjust, "5");
 
 static const CAmmoDef Ammo_GrenadeLauncher =
 {
-	.ClassName = "ammo_grenadelauncher",
-	.AmmoName = "ammodef_grenadelauncher",
-	.MaxCarry = 12,
-	.AmmoBoxGive = 6
+	"ammo_grenadelauncher",	// ClassName
+	"ammodef_grenadelauncher",	// AmmoName
+	12,	// MaxCarry
+	6	// AmmoBoxGive
 };
 
 static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACollection& obj)

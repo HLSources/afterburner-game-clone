@@ -31,10 +31,10 @@ static constexpr float RAPTOR_FIRE_RATE = 1.0f / 0.4f;
 
 static const CAmmoDef Ammo_Raptor =
 {
-	.ClassName = "ammo_raptor",
-	.AmmoName = "ammodef_raptor",
-	.MaxCarry = 72,
-	.AmmoBoxGive = 9
+	"ammo_raptor",	// ClassName
+	"ammodef_raptor",	// AmmoName
+	72,	// MaxCarry
+	9	// AmmoBoxGive
 };
 
 static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACollection& obj)

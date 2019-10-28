@@ -41,5 +41,5 @@ namespace WeaponAtts
 	};
 
 	template<typename T>
-	const struct WACollection& StaticWeaponAttributes();
+	const WACollection& StaticWeaponAttributes();
 }

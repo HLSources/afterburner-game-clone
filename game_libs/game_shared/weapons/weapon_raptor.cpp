@@ -45,7 +45,7 @@ void CWeaponRaptor::Bot_SetFightStyle(CBaseBotFightStyle& fightStyle) const
 namespace WeaponAtts
 {
 	template<>
-	const struct WACollection& StaticWeaponAttributes<CWeaponRaptor>()
+	const WACollection& StaticWeaponAttributes<CWeaponRaptor>()
 	{
 		return ::StaticWeaponAttributes;
 	}

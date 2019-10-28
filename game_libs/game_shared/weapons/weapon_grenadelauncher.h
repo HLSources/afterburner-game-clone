@@ -46,5 +46,5 @@ public:
 namespace WeaponAtts
 {
 	template<>
-	const struct WACollection& StaticWeaponAttributes<CWeaponGrenadeLauncher>();
+	const WACollection& StaticWeaponAttributes<CWeaponGrenadeLauncher>();
 }

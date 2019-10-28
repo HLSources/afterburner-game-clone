@@ -106,7 +106,7 @@ void CWeaponP99::Bot_SetFightStyle(CBaseBotFightStyle& fightStyle) const
 namespace WeaponAtts
 {
 	template<>
-	const struct WACollection& StaticWeaponAttributes<CWeaponP99>()
+	const WACollection& StaticWeaponAttributes<CWeaponP99>()
 	{
 		return ::StaticWeaponAttributes;
 	}
