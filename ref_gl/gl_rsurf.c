@@ -185,13 +185,13 @@ static void SubdividePolygon_r( msurface_t *warpface, int numverts, float *verts
 			s = DotProduct( verts, warpinfo->lmvecs[0] ) + warpinfo->lmvecs[0][3];
 			s -= warpinfo->lightmapmins[0];
 			s += warpface->light_s * sample_size;
-			s += sample_size * 0.5;
+			s += sample_size * 0.5f;
 			s /= BLOCK_SIZE * sample_size; //fa->texinfo->texture->width;
 
 			t = DotProduct( verts, warpinfo->lmvecs[1] ) + warpinfo->lmvecs[1][3];
 			t -= warpinfo->lightmapmins[1];
 			t += warpface->light_t * sample_size;
-			t += sample_size * 0.5;
+			t += sample_size * 0.5f;
 			t /= BLOCK_SIZE * sample_size; //fa->texinfo->texture->height;
 
 			poly->verts[i][5] = s;
@@ -653,7 +653,7 @@ static int LM_AllocBlock( int w, int h, int *x, int *y )
 	return true;
 }
 
-static void LM_UploadDynamicBlock()
+static void LM_UploadDynamicBlock( void )
 {
 	int	height = 0, i;
 
@@ -805,10 +805,10 @@ void DrawGLPoly( glpoly_t *p, float xScale, float yScale )
 		}
 		texture = R_GetTexture( glState.currentTextures[glState.activeTMU] );
 
-		flRate = abs( flConveyorSpeed ) / (float)texture->srcWidth;
+		flRate = fabs( flConveyorSpeed ) / (float)texture->srcWidth;
 		flAngle = ( flConveyorSpeed >= 0 ) ? 180 : 0;
 
-		SinCos( flAngle * ( M_PI / 180.0f ), &sy, &cy );
+		SinCos( flAngle * ( M_PI_F / 180.0f ), &sy, &cy );
 		sOffset = gpGlobals->time * cy * flRate;
 		tOffset = gpGlobals->time * sy * flRate;
 	
@@ -1603,7 +1603,7 @@ void R_DrawBrushModel( cl_entity_t *e )
 		{
 			if( psurf->plane->type != PLANE_Z && !FBitSet( e->curstate.effects, EF_WATERSIDES ))
 				continue;
-			if( mins[2] + 1.0 >= psurf->plane->dist )
+			if( mins[2] + 1.0f >= psurf->plane->dist )
 				continue;
 		}
 
@@ -1781,7 +1781,7 @@ R_GenerateVBO
 Allocate memory for arrays, fill it with vertex attribs and upload to GPU
 ===================
 */
-void R_GenerateVBO()
+void R_GenerateVBO( void )
 {
 	int numtextures = WORLDMODEL->numtextures;
 	int numlightmaps = gl_lms.current_lightmap_texture;
@@ -2033,7 +2033,7 @@ R_ClearVBO
 free all vbo data
 =============
 */
-void R_ClearVBO()
+void R_ClearVBO( void )
 {
 	vboarray_t *vbo;
 

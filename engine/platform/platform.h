@@ -68,6 +68,7 @@ void Platform_RunEvents( void );
 // Mouse
 void Platform_GetMousePos( int *x, int *y );
 void Platform_SetMousePos( int x, int y );
+void Platform_PreCreateMove( void );
 // Clipboard
 void Platform_GetClipboardText( char *buffer, size_t size );
 void Platform_SetClipboardText( const char *buffer, size_t size );
@@ -99,17 +100,28 @@ qboolean  R_Init_Video( const int type );
 void      R_Free_Video( void );
 qboolean  VID_SetMode( void );
 rserr_t   R_ChangeDisplaySettings( int width, int height, qboolean fullscreen );
-int       R_MaxVideoModes();
+int       R_MaxVideoModes( void );
 vidmode_t*R_GetVideoMode( int num );
 void*     GL_GetProcAddress( const char *name ); // RenderAPI requirement
 void      GL_UpdateSwapInterval( void );
 int GL_SetAttribute( int attr, int val );
 int GL_GetAttribute( int attr, int *val );
-void GL_SwapBuffers();
-void *SW_LockBuffer();
-void SW_UnlockBuffer();
+void GL_SwapBuffers( void );
+void *SW_LockBuffer( void );
+void SW_UnlockBuffer( void );
 qboolean SW_CreateBuffer( int width, int height, uint *stride, uint *bpp, uint *r, uint *g, uint *b );
 
+
+//
+// in_evdev.c
+//
+#ifdef XASH_USE_EVDEV
+void Evdev_SetGrab( qboolean grab );
+void Evdev_Shutdown( void );
+void Evdev_Init( void );
+void IN_EvdevMove( float *yaw, float *pitch );
+void IN_EvdevFrame ( void );
+#endif // XASH_USE_EVDEV
 /*
 ==============================================================================
 

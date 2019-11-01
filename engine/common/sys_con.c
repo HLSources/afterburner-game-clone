@@ -22,7 +22,7 @@ GNU General Public License for more details.
 #define XASH_COLORIZE_CONSOLE
 // use with caution, running engine in Qt Creator may cause a freeze in read() call
 // I was never encountered this bug anywhere else, so still enable by default
-#define XASH_USE_SELECT
+// #define XASH_USE_SELECT
 #endif
 
 #ifdef XASH_USE_SELECT
@@ -162,7 +162,7 @@ void Sys_PrintLog( const char *pMsg )
 
 	time( &crt_time );
 	crt_tm = localtime( &crt_time );
-#ifdef __ANDROID__
+#if XASH_ANDROID && !XASH_DEDICATED
 	__android_log_print( ANDROID_LOG_DEBUG, "Xash", "%s", pMsg );
 #endif
 

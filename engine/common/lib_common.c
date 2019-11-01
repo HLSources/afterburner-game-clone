@@ -20,12 +20,12 @@ GNU General Public License for more details.
 
 static char s_szLastError[1024] = "";
 
-const char *COM_GetLibraryError()
+const char *COM_GetLibraryError( void )
 {
 	return s_szLastError;
 }
 
-void COM_ResetLibraryError()
+void COM_ResetLibraryError( void )
 {
 	s_szLastError[0] = 0;
 }
@@ -48,7 +48,7 @@ void *COM_FunctionFromName_SR( void *hInstance, const char *pName )
 const char *COM_OffsetNameForFunction( void *function )
 {
 	static string sname;
-	Q_snprintf( sname, MAX_STRING, "ofs:%d", (size_t)((byte*)function - (byte*)svgame.dllFuncs.pfnGameInit) );
+	Q_snprintf( sname, MAX_STRING, "ofs:%lu", (size_t)((byte*)function - (byte*)svgame.dllFuncs.pfnGameInit) );
 	Con_Reportf( "COM_OffsetNameForFunction %s\n", sname );
 	return sname;
 }

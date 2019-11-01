@@ -430,26 +430,20 @@ static qboolean R_LoadProgs( const char *name )
 
 	if( ref.hInstance ) R_UnloadProgs();
 
-#ifdef XASH_INTERNAL_GAMELIBS
-	if( !(ref.hInstance = COM_LoadLibrary( name, false, true ) ))
-	{
-		return false;
-	}
-#else
 	FS_AllowDirectPaths( true );
 	if( !(ref.hInstance = COM_LoadLibrary( name, false, true ) ))
 	{
 		FS_AllowDirectPaths( false );
+		Con_Reportf( "R_LoadProgs: can't load renderer library %s: %s\n", name, COM_GetLibraryError() );
 		return false;
 	}
-#endif
 
 	FS_AllowDirectPaths( false );
 
-	if( ( GetRefAPI = (REFAPI)COM_GetProcAddress( ref.hInstance, "GetRefAPI" )) == NULL )
+	if( !( GetRefAPI = (REFAPI)COM_GetProcAddress( ref.hInstance, GET_REF_API )) )
 	{
 		COM_FreeLibrary( ref.hInstance );
-		Con_Reportf( "R_LoadProgs: can't init renderer API\n" );
+		Con_Reportf( "R_LoadProgs: can't find GetRefAPI entry point in %s\n", name );
 		ref.hInstance = NULL;
 		return false;
 	}
@@ -508,21 +502,26 @@ static void R_GetRendererName( char *dest, size_t size, const char *opt )
 {
 	if( !Q_strstr( opt, va( ".%s", OS_LIB_EXT )))
 	{
-		// shortened renderer name
-		Q_snprintf( dest, size, "%sref_%s.%s",
-#ifdef OS_LIB_PREFIX
-			OS_LIB_PREFIX,
+		const char *format;
+
+#ifdef XASH_INTERNAL_GAMELIBS
+		if( !Q_strcmp( opt, "ref_" ))
+			format = "%s";
+		else
+			format = "ref_%s";
 #else
-			"",
+		if( !Q_strcmp( opt, "ref_" ))
+			format = OS_LIB_PREFIX "%s." OS_LIB_EXT;
+		else
+			format = OS_LIB_PREFIX "ref_%s." OS_LIB_EXT;
 #endif
-			opt, OS_LIB_EXT );
-		Con_Printf( "Loading renderer by short name: %s\n", opt );
+		Q_snprintf( dest, size, format, opt );
+
 	}
 	else
 	{
 		// full path
 		Q_strcpy( dest, opt );
-		Con_Printf( "Loading renderer: %s\n", opt );
 	}
 }
 
@@ -531,6 +530,8 @@ static qboolean R_LoadRenderer( const char *refopt )
 	string refdll;
 
 	R_GetRendererName( refdll, sizeof( refdll ), refopt );
+
+	Con_Printf( "Loading renderer: %s -> %s\n", refopt, refdll );
 
 	if( !R_LoadProgs( refdll ))
 	{
@@ -544,7 +545,7 @@ static qboolean R_LoadRenderer( const char *refopt )
 	return true;
 }
 
-static void SetWidthAndHeightFromCommandLine()
+static void SetWidthAndHeightFromCommandLine( void )
 {
 	int width, height;
 
@@ -560,7 +561,7 @@ static void SetWidthAndHeightFromCommandLine()
 	R_SaveVideoMode( width, height );
 }
 
-static void SetFullscreenModeFromCommandLine( )
+static void SetFullscreenModeFromCommandLine( void )
 {
 #ifndef __ANDROID__
 	if ( Sys_CheckParm("-fullscreen") )
@@ -574,10 +575,60 @@ static void SetFullscreenModeFromCommandLine( )
 #endif
 }
 
+void R_CollectRendererNames( void )
+{
+	const char *renderers[] = DEFAULT_RENDERERS;
+	int i;
+
+	ref.numRenderers = 0;
+
+	for( i = 0; i < DEFAULT_RENDERERS_LEN; i++ )
+	{
+		string temp;
+		void *dll, *pfn;
+
+		R_GetRendererName( temp, sizeof( temp ), renderers[i] );
+
+		dll = COM_LoadLibrary( temp, false, true );
+		if( !dll )
+		{
+			Con_Reportf( "R_CollectRendererNames: can't load library %s: %s\n", temp, COM_GetLibraryError() );
+			continue;
+		}
+
+		pfn = COM_GetProcAddress( dll, GET_REF_API );
+		if( !pfn )
+		{
+			Con_Reportf( "R_CollectRendererNames: can't find API entry point in %s\n", temp );
+			COM_FreeLibrary( dll );
+			continue;
+		}
+
+		Q_strncpy( ref.shortNames[i], renderers[i], sizeof( ref.shortNames[i] ));
+
+		pfn = COM_GetProcAddress( dll, GET_REF_HUMANREADABLE_NAME );
+		if( !pfn ) // just in case
+		{
+			Con_Reportf( "R_CollectRendererNames: can't find GetHumanReadableName export in %s\n", temp, COM_GetLibraryError() );
+			Q_strncpy( ref.readableNames[i], renderers[i], sizeof( ref.readableNames[i] ));
+		}
+		else
+		{
+			REF_HUMANREADABLE_NAME GetHumanReadableName = (REF_HUMANREADABLE_NAME)pfn;
+
+			GetHumanReadableName( ref.readableNames[i], sizeof( ref.readableNames[i] ));
+		}
+
+		Con_Printf( "Found renderer %s: %s\n", ref.shortNames[i], ref.readableNames[i] );
+
+		ref.numRenderers++;
+		COM_FreeLibrary( dll );
+	}
+}
+
 qboolean R_Init( void )
 {
 	qboolean success = false;
-	int i;
 	string refopt;
 
 	gl_vsync = Cvar_Get( "gl_vsync", "0", FCVAR_ARCHIVE,  "enable vertical syncronization" );
@@ -597,6 +648,8 @@ qboolean R_Init( void )
 	// this is done after executing video.cfg, as the command line values should take priority.
 	SetWidthAndHeightFromCommandLine();
 	SetFullscreenModeFromCommandLine();
+
+	R_CollectRendererNames();
 
 	// command line have priority
 	if( !Sys_GetParmFromCmdLine( "-ref", refopt ) )
@@ -625,6 +678,7 @@ qboolean R_Init( void )
 	if( !success )
 	{
 		Host_Error( "Can't initialize any renderer. Check your video drivers!" );
+		return false;
 	}
 
 	SCR_Init();

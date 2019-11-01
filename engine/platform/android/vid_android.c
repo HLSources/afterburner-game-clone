@@ -1,5 +1,5 @@
 #include "platform/platform.h"
-#if defined XASH_VIDEO == VIDEO_ANDROID || 1
+#if XASH_VIDEO == VIDEO_ANDROID
 #include "input.h"
 #include "client.h"
 #include "filesystem.h"
@@ -63,7 +63,7 @@ Android_SwapBuffers
 Update screen. Use native EGL if possible
 ========================
 */
-void GL_SwapBuffers()
+void GL_SwapBuffers( void )
 {
 	eglSwapBuffers( negl.dpy, negl.surface );
 }
@@ -96,7 +96,6 @@ qboolean  R_Init_Video( const int type )
 	{
 	case REF_SOFTWARE:
 		glw_state.software = true;
-		Host_Error( "software mode isn't supported on Android yet! :(\n", type );
 		break;
 	case REF_GL:
 		if( !glw_state.safe && Sys_GetParmFromCmdLine( "-safegl", safe ) )
@@ -108,6 +107,12 @@ qboolean  R_Init_Video( const int type )
 	default:
 		Host_Error( "Can't initialize unknown context type %d!\n", type );
 		break;
+	}
+
+	if( glw_state.software )
+	{
+		Con_Reportf( S_ERROR "Native software mode isn't supported on Android yet! :(\n" );
+		return false;
 	}
 
 	if( !(retval = VID_SetMode()) )
@@ -289,13 +294,13 @@ qboolean VID_SetMode( void )
 		return false;
 	}
 
-	if( !( negl.surface = eglCreateWindowSurface( negl.dpy, negl.cfg, negl.window, NULL )))
+	if(( negl.surface = eglCreateWindowSurface( negl.dpy, negl.cfg, negl.window, NULL )) == EGL_NO_SURFACE )
 	{
 		Con_Reportf( S_ERROR "eglCreateWindowSurface returned error: 0x%x\n", eglGetError() );
 		return false;
 	}
 
-	if( !( negl.context = eglCreateContext( negl.dpy, negl.cfg, NULL, contextAttribs )))
+	if(( negl.context = eglCreateContext( negl.dpy, negl.cfg, NULL, contextAttribs )) == EGL_NO_CONTEXT )
 	{
 		Con_Reportf( S_ERROR "eglCreateContext returned error: 0x%x\n", eglGetError() );
 		return false;
@@ -387,7 +392,7 @@ int GL_GetAttribute( int attr, int *val )
 	return 0;
 }
 
-int R_MaxVideoModes()
+int R_MaxVideoModes( void )
 {
 	return 0;
 }
@@ -417,12 +422,12 @@ void GL_UpdateSwapInterval( void )
 	}
 }
 
-void *SW_LockBuffer()
+void *SW_LockBuffer( void )
 {
 	return NULL;
 }
 
-void SW_UnlockBuffer()
+void SW_UnlockBuffer( void )
 {
 
 }

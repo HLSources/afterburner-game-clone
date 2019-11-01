@@ -3176,14 +3176,18 @@ use -str64dup to disable deduplication, -str64alloc to set array size
 string_t GAME_EXPORT SV_AllocString( const char *szValue )
 {
 	const char *newString = NULL;
+	int cmp;
 
 	if( svgame.physFuncs.pfnAllocString != NULL )
 		return svgame.physFuncs.pfnAllocString( szValue );
+
 #ifdef XASH_64BIT
-	int cmp = 1;
+	cmp = 1;
 
 	if( !str64.allowdup )
-		for( newString = str64.poldstringbase + 1; newString < str64.plast && ( cmp = Q_strcmp( newString, szValue ) ); newString += Q_strlen( newString ) + 1 );
+		for( newString = str64.poldstringbase + 1;
+			newString < str64.plast && ( cmp = Q_strcmp( newString, szValue ) );
+			newString += Q_strlen( newString ) + 1 );
 
 	if( cmp )
 	{
@@ -4551,8 +4555,17 @@ pfnEngineStub
 extended iface stubs
 =============
 */
-static void pfnEngineStub( void )
+static int pfnGetFileSize( char *filename )
 {
+	return 0;
+}
+static unsigned int pfnGetApproxWavePlayLen(const char *filepath)
+{
+	return 0;
+}
+static int pfnGetLocalizedStringLength(const char *label)
+{
+	return 0;
 }
 
 // engine callbacks
@@ -4702,17 +4715,17 @@ static enginefuncs_t gEngfuncs =
 	pfnVoice_GetClientListening,
 	pfnVoice_SetClientListening,
 	pfnGetPlayerAuthId,
-	pfnEngineStub,
-	pfnEngineStub,
-	pfnEngineStub,
-	pfnEngineStub,
-	pfnEngineStub,
-	pfnEngineStub,
-	pfnEngineStub,
-	pfnEngineStub,
-	pfnEngineStub,
-	pfnEngineStub,
-	pfnEngineStub,
+	pfnSequenceGet,
+	pfnSequencePickSentence,
+	pfnGetFileSize,
+	pfnGetApproxWavePlayLen,
+	pfnIsCareerMatch,
+	pfnGetLocalizedStringLength,
+	pfnRegisterTutorMessageShown,
+	pfnGetTimesTutorMessageShown,
+	pfnProcessTutorMessageDecayBuffer,
+	pfnConstructTutorMessageDecayBuffer,
+	pfnResetTutorMessageDecayData,
 	pfnQueryClientCvarValue,
 	pfnQueryClientCvarValue2,
 	COM_CheckParm,

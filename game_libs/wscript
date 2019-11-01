@@ -273,7 +273,8 @@ def __build_server(bld, gameMenuSharedSources):
 		install_path = "${PREFIX}/afterburner/dlls",
 		features = "c cxx cxxshlib",
 		subsystem = bld.env.MSVC_SUBSYSTEM,
-		idx = SERVER_BUILD_INDEX
+		idx = SERVER_BUILD_INDEX,
+		linkflags = "/def:C:\\Users\\Vesper\\Documents\\GitHub\\afterburner-game\\game_libs\\dlls\\hl.def"
 	)
 
 def __build_client(bld, gameMenuSharedSources):

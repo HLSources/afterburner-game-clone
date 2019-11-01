@@ -13,12 +13,15 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 #pragma once
-#ifdef __ANDROID__
+#if XASH_ANDROID
 #ifndef ANDROID_LIB_H
 #define ANDROID_LIB_H
+
+#define Platform_POSIX_LoadLibrary( x ) ANDROID_LoadLibrary(( x ))
+#define Platform_POSIX_GetProcAddress( x, y ) ANDROID_GetProcAddress(( x ), ( y ))
 
 void *ANDROID_LoadLibrary( const char *dllname );
 void *ANDROID_GetProcAddress( void *hInstance, const char *name );
 
 #endif // ANDROID_LIB_H
-#endif // __ANDROID__
+#endif // XASH_ANDROID

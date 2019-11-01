@@ -73,6 +73,7 @@ convar_t	*cl_lw;
 convar_t	*cl_charset;
 convar_t	*cl_trace_messages;
 convar_t	*hud_utf8;
+convar_t	*ui_renderworld;
 
 //
 // userinfo
@@ -908,13 +909,13 @@ static float CL_LerpPoint( void )
 
 	if( frac < 0.0f )
 	{
-		if( frac < -0.01 )
+		if( frac < -0.01f )
 			cl.time = cl.mtime[1];
 		frac = 0.0f;
 	}
 	else if( frac > 1.0f )
 	{
-		if( frac > 1.01 )
+		if( frac > 1.01f )
 			cl.time = cl.mtime[0];
 		frac = 1.0f;
 	}
@@ -1287,7 +1288,9 @@ void CL_CreateCmd( void )
 	}
 
 	active = (( cls.signon == SIGNONS ) && !cl.paused && !cls.demoplayback );
+	Platform_PreCreateMove();
 	clgame.dllFuncs.CL_CreateMove( host.frametime, &pcmd->cmd, active );
+	IN_EngineAppendMove( host.frametime, &pcmd->cmd, active  );
 
 	CL_PopPMStates();
 
@@ -3491,6 +3494,7 @@ void CL_InitLocal( void )
 	Cvar_Get( "cl_background", "0", FCVAR_READ_ONLY, "indicate what background map is running" );
 	cl_showevents = Cvar_Get( "cl_showevents", "0", FCVAR_ARCHIVE, "show events playback" );
 	Cvar_Get( "lastdemo", "", FCVAR_ARCHIVE, "last played demo" );
+	ui_renderworld = Cvar_Get( "ui_renderworld", "0", FCVAR_ARCHIVE, "render world when UI is visible" );
 
 	// these two added to shut up CS 1.5 about 'unknown' commands
 	Cvar_Get( "lightgamma", "1", FCVAR_ARCHIVE, "ambient lighting level (legacy, unused)" );
@@ -3583,12 +3587,13 @@ void CL_AdjustClock( void )
 
 	if( fabs( cl.timedelta ) >= 0.001f )
 	{
-		double	msec, adjust, sign;
+		double msec, adjust;
+		float sign;
 
-		msec = ( cl.timedelta * 1000.0 );
-		sign = ( msec < 0 ) ? 1.0 : -1.0;
+		msec = ( cl.timedelta * 1000.0f );
+		sign = ( msec < 0 ) ? 1.0f : -1.0f;
 		msec = fabs( msec );
-		adjust = sign * ( cl_fixtimerate->value / 1000.0 );
+		adjust = sign * ( cl_fixtimerate->value / 1000.0f );
 
 		if( fabs( adjust ) < fabs( cl.timedelta ))
 		{
@@ -3743,6 +3748,7 @@ void CL_Shutdown( void )
 	{
 		Host_WriteOpenGLConfig ();
 		Host_WriteVideoConfig ();
+		Touch_WriteConfig();
 	}
 
 	// IN_TouchShutdown ();

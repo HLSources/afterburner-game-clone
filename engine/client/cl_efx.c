@@ -55,7 +55,7 @@ short R_LookupColor( byte r, byte g, byte b )
 		bf = b - clgame.palette[i].b;
 
 		// convert color to monochrome
-		diff = rf * (rf * 0.2) + gf * (gf * 0.5) + bf * (bf * 0.3);
+		diff = rf * (rf * 0.2f) + gf * (gf * 0.5f) + bf * (bf * 0.3f);
 
 		if ( diff < bestdiff )
 		{
@@ -2081,7 +2081,7 @@ void CL_ReadPointFile_f( void )
 	else Con_Printf( "map %s has no leaks!\n", clgame.mapname );
 }
 
-void CL_FreeDeadBeams()
+void CL_FreeDeadBeams( void )
 {
 	BEAM *pBeam, *pNext, *pPrev = NULL;
 	// draw temporary entity beams

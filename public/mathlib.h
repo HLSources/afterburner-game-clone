@@ -17,6 +17,9 @@ GNU General Public License for more details.
 #define MATHLIB_H
 
 #include <math.h>
+#ifdef HAVE_TGMATH_H
+#include <tgmath.h>
+#endif
 
 #pragma warning(disable : 4201)	// nonstandard extension used
 
@@ -30,14 +33,14 @@ GNU General Public License for more details.
 #endif
 
 #ifndef M_PI2
-#define M_PI2		(float)6.28318530717958647692
+#define M_PI2		((float)(M_PI * 2))
 #endif
 
 #define M_PI_F		((float)(M_PI))
 #define M_PI2_F		((float)(M_PI2))
 
-#define RAD2DEG( x )	((float)(x) * (float)(180.f / M_PI))
-#define DEG2RAD( x )	((float)(x) * (float)(M_PI / 180.f))
+#define RAD2DEG( x )	((float)(x) * (float)(180.f / M_PI_F))
+#define DEG2RAD( x )	((float)(x) * (float)(M_PI_F / 180.f))
 
 #define NUMVERTEXNORMALS	162
 
@@ -69,9 +72,14 @@ GNU General Public License for more details.
 #define Q_recip( a )	((float)(1.0f / (float)(a)))
 #define Q_floor( a )	((float)(int)(a))
 #define Q_ceil( a )		((float)(int)((a) + 1))
-#define Q_round( x, y )	(floor( x / y + 0.5 ) * y )
-#define Q_rint(x)		((x) < 0 ? ((int)((x)-0.5f)) : ((int)((x)+0.5f)))
+#define Q_round( x, y )	(floor( x / y + 0.5f ) * y )
+#define Q_rint(x)		((x) < 0.0f ? ((int)((x)-0.5f)) : ((int)((x)+0.5f)))
+
+#ifdef isnan // check for C99 isnan
+#define IS_NAN isnan
+#else
 #define IS_NAN(x)		(((*(int *)&x) & (255<<23)) == (255<<23))
+#endif
 
 #define ALIGN( x, a )	((( x ) + (( size_t )( a ) - 1 )) & ~(( size_t )( a ) - 1 ))
 
@@ -97,8 +105,8 @@ GNU General Public License for more details.
 #define VectorLength2(a) (DotProduct( a, a ))
 #define VectorDistance(a, b) (sqrt( VectorDistance2( a, b )))
 #define VectorDistance2(a, b) (((a)[0] - (b)[0]) * ((a)[0] - (b)[0]) + ((a)[1] - (b)[1]) * ((a)[1] - (b)[1]) + ((a)[2] - (b)[2]) * ((a)[2] - (b)[2]))
-#define Vector2Average(a,b,o)	((o)[0]=((a)[0]+(b)[0])*0.5,(o)[1]=((a)[1]+(b)[1])*0.5)
-#define VectorAverage(a,b,o)	((o)[0]=((a)[0]+(b)[0])*0.5,(o)[1]=((a)[1]+(b)[1])*0.5,(o)[2]=((a)[2]+(b)[2])*0.5)
+#define Vector2Average(a,b,o)	((o)[0]=((a)[0]+(b)[0])*0.5f,(o)[1]=((a)[1]+(b)[1])*0.5f)
+#define VectorAverage(a,b,o)	((o)[0]=((a)[0]+(b)[0])*0.5f,(o)[1]=((a)[1]+(b)[1])*0.5f,(o)[2]=((a)[2]+(b)[2])*0.5f)
 #define Vector2Set(v, x, y) ((v)[0]=(x),(v)[1]=(y))
 #define VectorSet(v, x, y, z) ((v)[0]=(x),(v)[1]=(y),(v)[2]=(z))
 #define Vector4Set(v, a, b, c, d) ((v)[0]=(a),(v)[1]=(b),(v)[2]=(c),(v)[3] = (d))

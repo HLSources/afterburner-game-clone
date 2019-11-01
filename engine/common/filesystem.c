@@ -1468,7 +1468,7 @@ static void FS_WriteGameInfo( const char *filepath, gameinfo_t *GameInfo )
 		FS_Printf( f, "version\t\t%g\n", GameInfo->version );
 
 	if( GameInfo->size != 0 )
-		FS_Printf( f, "size\t\t%i\n", GameInfo->size );
+		FS_Printf( f, "size\t\t%lu\n", GameInfo->size );
 
 	if( Q_strlen( GameInfo->game_url ))
 		FS_Printf( f, "url_info\t\t\"%s\"\n", GameInfo->game_url );
@@ -1686,7 +1686,7 @@ void FS_ParseGenericGameInfo( gameinfo_t *GameInfo, const char *buf, const qbool
 			pfile = COM_ParseFile( pfile, token );
 			GameInfo->max_edicts = Q_atoi( token );
 		}
-		else if( !Q_stricmp( token, "mpentity" ))
+		else if( !Q_stricmp( token, isGameInfo ? "mp_entity" : "mpentity" ))
 		{
 			pfile = COM_ParseFile( pfile, GameInfo->mp_entity );
 		}

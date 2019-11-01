@@ -26,6 +26,10 @@ struct ref_state_s
 
 	HINSTANCE hInstance;
 	ref_interface_t dllFuncs;
+
+	int numRenderers;
+	string shortNames[DEFAULT_RENDERERS_LEN];
+	string readableNames[DEFAULT_RENDERERS_LEN];
 };
 
 extern struct ref_state_s ref;

@@ -21,11 +21,13 @@ GNU General Public License for more details.
 #define VIDEO_NULL 0
 #define VIDEO_SDL 1
 #define VIDEO_ANDROID 2
+#define VIDEO_FBDEV 3
 
 // audio backends (XASH_SOUND)
 #define SOUND_NULL 0
 #define SOUND_SDL 1
 #define SOUND_OPENSLES 2
+#define SOUND_ALSA 3
 
 // crash handler (XASH_CRASHHANDLER)
 #define CRASHHANDLER_NULL 0
@@ -37,6 +39,7 @@ GNU General Public License for more details.
 #define INPUT_NULL 0
 #define INPUT_SDL 1
 #define INPUT_ANDROID 2
+#define INPUT_EVDEV 3
 
 // timer (XASH_TIMER)
 #define TIMER_NULL 0 // not used

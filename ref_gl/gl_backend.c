@@ -509,7 +509,6 @@ qboolean VID_ScreenShot( const char *filename, int shot_type )
 
 	// write image
 	result = gEngfuncs.FS_SaveImage( filename, r_shot );
-	// REFTODO: host.write_to_clipboard = false;		// disable write to clipboard
 	gEngfuncs.FS_AllowDirectPaths( false );			// always reset after store screenshot
 	gEngfuncs.FS_FreeImage( r_shot );
 
@@ -738,7 +737,7 @@ void SCR_TimeRefresh_f( void )
 		pglDrawBuffer( GL_FRONT );
 		for( i = 0; i < 128; i++ )
 		{
-			gpGlobals->viewangles[1] = i / 128.0 * 360.0f;
+			gpGlobals->viewangles[1] = i / 128.0f * 360.0f;
 			R_RenderScene();
 		}
 		pglFinish();
@@ -749,7 +748,7 @@ void SCR_TimeRefresh_f( void )
 		for( i = 0; i < 128; i++ )
 		{
 			R_BeginFrame( true );
-			gpGlobals->viewangles[1] = i / 128.0 * 360.0f;
+			gpGlobals->viewangles[1] = i / 128.0f * 360.0f;
 			R_RenderScene();
 			R_EndFrame();
 		}

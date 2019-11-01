@@ -608,7 +608,7 @@ typedef struct
 
 	// demo recording info must be here, so it isn't clearing on level change
 	qboolean		demorecording;
-	qboolean		demoplayback;
+	int			demoplayback;
 	qboolean		demowaiting;		// don't record until a non-delta message is received
 	qboolean		timedemo;
 	string		demoname;			// for demo looping
@@ -690,8 +690,9 @@ extern convar_t	*scr_loading;
 extern convar_t	*v_dark;	// start from dark
 extern convar_t	*net_graph;
 extern convar_t	*rate;
-extern convar_t *m_ignore;
-extern convar_t *r_showtree;
+extern convar_t	*m_ignore;
+extern convar_t	*r_showtree;
+extern convar_t	*ui_renderworld;
 
 //=============================================================================
 
@@ -1085,6 +1086,13 @@ void UI_ResetPing( void );
 void UI_ShowUpdateDialog( qboolean preferStore );
 void UI_ShowMessageBox( const char *text );
 void UI_AddTouchButtonToList( const char *name, const char *texture, const char *command, unsigned char *color, int flags );
+void UI_ConnectionProgress_Disconnect( void );
+void UI_ConnectionProgress_Download( const char *pszFileName, const char *pszServerName, const char *pszServerPath, int iCurrent, int iTotal, const char *comment );
+void UI_ConnectionProgress_DownloadEnd( void );
+void UI_ConnectionProgress_Precache( void );
+void UI_ConnectionProgress_Connect( const char *server );
+void UI_ConnectionProgress_ChangeLevel( void );
+void UI_ConnectionProgress_ParseServerInfo( const char *server );
 void pfnPIC_Set( HIMAGE hPic, int r, int g, int b, int a );
 void pfnPIC_Draw( int x, int y, int width, int height, const wrect_t *prc );
 void pfnPIC_DrawTrans( int x, int y, int width, int height, const wrect_t *prc );

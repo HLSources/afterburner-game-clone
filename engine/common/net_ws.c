@@ -13,9 +13,12 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
+#include "common.h"
+#include "client.h" // ConnectionProgress
+#include "netchan.h"
+#include "mathlib.h"
 #ifdef _WIN32
 // Winsock
-#include <winsock2.h>
 #include <WS2tcpip.h>
 #else
 // BSD sockets
@@ -29,9 +32,6 @@ GNU General Public License for more details.
 #include <errno.h>
 #include <fcntl.h>
 #endif
-#include "common.h"
-#include "netchan.h"
-#include "mathlib.h"
 
 #define NET_USE_FRAGMENTS
 
@@ -888,7 +888,7 @@ static void NET_AdjustLag( void )
 			converge = dt * 200.0f;
 			if( fabs( diff ) < converge )
 				converge = fabs( diff );
-			if( diff < 0.0 )
+			if( diff < 0.0f )
 				converge = -converge;
 			net.fakelag += converge;
 		}
@@ -959,7 +959,7 @@ static qboolean NET_LagPacket( qboolean newdata, netsrc_t sock, netadr_t *from, 
 
 	while( pPacket != &net.lagdata[sock] )
 	{
-		if( pPacket->receivedtime <= curtime - ( net.fakelag / 1000.0 ))
+		if( pPacket->receivedtime <= curtime - ( net.fakelag / 1000.0f ))
 			break;
 
 		pPacket = pPacket->next;
@@ -1803,7 +1803,7 @@ typedef struct httpfile_s
 	qboolean process;
 
 	// query or response
-   char buf[BUFSIZ];
+   char buf[BUFSIZ+1];
    int header_size, query_length, bytes_sent;
 } httpfile_t;
 
@@ -1861,7 +1861,7 @@ static void HTTP_FreeFile( httpfile_t *file, qboolean error )
 
 	file->socket = -1;
 
-	Q_snprintf( incname, 256, "%s.incomplete", file->path );
+	Q_snprintf( incname, 256, "downloaded/%s.incomplete", file->path );
 	if( error )
 	{
 		// Switch to next fastdl server if present
@@ -1887,7 +1887,7 @@ static void HTTP_FreeFile( httpfile_t *file, qboolean error )
 		// Success, rename and process file
 		char name[256];
 
-		Q_snprintf( name, 256, "%s", file->path );
+		Q_snprintf( name, 256, "downloaded/%s", file->path );
 		FS_Rename( incname, name );
 
 		if( file->process )
@@ -1952,14 +1952,21 @@ static qboolean HTTP_ProcessStream( httpfile_t *curfile )
 	char *begin = 0;
 	int res;
 
-	while( ( res = recv( curfile->socket, buf, BUFSIZ, 0 ) ) > 0) // if we got there, we are receiving data
+	if( curfile->header_size >= BUFSIZ )
+	{
+		Con_Reportf( S_ERROR "Header to big\n");
+		HTTP_FreeFile( curfile, true );
+		return false;
+	}
+
+	while( ( res = recv( curfile->socket, buf, BUFSIZ - curfile->header_size, 0 ) ) > 0) // if we got there, we are receiving data
 	{
 		curfile->blocktime = 0;
 
 		if( curfile->state < HTTP_RESPONSE_RECEIVED ) // Response still not received
 		{
-			buf[res] = 0; // string break to search \r\n\r\n
 			memcpy( curfile->buf + curfile->header_size, buf, res );
+			curfile->buf[curfile->header_size + res] = 0;
 			begin = Q_strstr( curfile->buf, "\r\n\r\n" );
 
 			if( begin ) // Got full header
@@ -1978,7 +1985,7 @@ static qboolean HTTP_ProcessStream( httpfile_t *curfile )
 					if( begin )
 						*begin = 0;
 
-					Con_Printf( S_ERROR "bad response: %s\n", curfile->buf );
+					Con_Printf( S_ERROR "%s: bad response: %s\n", curfile->path, curfile->buf );
 					HTTP_FreeFile( curfile, true );
 					return false;
 				}
@@ -1995,6 +2002,7 @@ static qboolean HTTP_ProcessStream( httpfile_t *curfile )
 						Con_Reportf( S_WARN "Server reports wrong file size!\n" );
 
 					curfile->size = size;
+					curfile->header_size = 0;
 				}
 
 				if( curfile->size == -1 )
@@ -2023,7 +2031,8 @@ static qboolean HTTP_ProcessStream( httpfile_t *curfile )
 					curfile->downloaded += ret;
 				}
 			}
-			curfile->header_size += res;
+			else
+				curfile->header_size += res;
 		}
 		else if( res > 0 )
 		{
@@ -2045,8 +2054,10 @@ static qboolean HTTP_ProcessStream( httpfile_t *curfile )
 			// as after it will run in same frame
 			if( curfile->checktime > 5 )
 			{
+				float speed = (float)curfile->lastchecksize / ( 5.0f * 1024 );
+
 				curfile->checktime = 0;
-				Con_Reportf( "download speed %f KB/s\n", (float)curfile->lastchecksize / ( 5.0 * 1024 ) );
+				Con_Reportf( "download speed %f KB/s\n", speed );
 				curfile->lastchecksize = 0;
 			}
 		}
@@ -2091,11 +2102,11 @@ void HTTP_Run( void )
 			{
 				Con_Printf( S_ERROR "no servers to download %s!\n", curfile->path );
 				HTTP_FreeFile( curfile, true );
-				continue;
+				break;
 			}
 
 			Con_Reportf( "HTTP: Starting download %s from %s\n", curfile->path, curfile->server->host );
-			Q_snprintf( name, sizeof( name ), "%s.incomplete", curfile->path );
+			Q_snprintf( name, sizeof( name ), "downloaded/%s.incomplete", curfile->path );
 
 			curfile->file = FS_Open( name, "wb", true );
 
@@ -2103,7 +2114,7 @@ void HTTP_Run( void )
 			{
 				Con_Printf( S_ERROR "cannot open %s!\n", name );
 				HTTP_FreeFile( curfile, true );
-				continue;
+				break;
 			}
 
 			curfile->state = HTTP_OPENED;
@@ -2150,7 +2161,7 @@ void HTTP_Run( void )
 			{
 				Con_Printf( S_ERROR "failed to resolve server address for %s!\n", curfile->server->host );
 				HTTP_FreeFile( curfile, true ); // Cannot connect
-				continue;
+				break;
 			}
 			curfile->state = HTTP_NS_RESOLVED;
 		}
@@ -2167,7 +2178,7 @@ void HTTP_Run( void )
 				{
 					Con_Printf( S_ERROR "cannot connect to server: %s\n", NET_ErrorString( ) );
 					HTTP_FreeFile( curfile, true ); // Cannot connect
-					continue;
+					break;
 				}
 				continue; // skip to next file
 			}
@@ -2233,7 +2244,7 @@ void HTTP_Run( void )
 		}
 
 		if( !HTTP_ProcessStream( curfile ) )
-			continue;
+			break;
 
 		if( curfile->size > 0 )
 		{
@@ -2244,9 +2255,9 @@ void HTTP_Run( void )
 		if( curfile->size > 0 && curfile->downloaded >= curfile->size )
 		{
 			HTTP_FreeFile( curfile, false ); // success
-			continue;
+			break;
 		}
-		else if( WSAGetLastError() != WSAEWOULDBLOCK )
+		else if( (WSAGetLastError() != WSAEWOULDBLOCK) && (WSAGetLastError() != WSAEINPROGRESS) )
 			Con_Reportf( "problem downloading %s:\n%s\n", curfile->path, NET_ErrorString() );
 		else
 			curfile->blocktime += host.frametime;
@@ -2255,7 +2266,7 @@ void HTTP_Run( void )
 		{
 			Con_Printf( S_ERROR "timeout on receiving data!\n");
 			HTTP_FreeFile( curfile, true );
-			continue;
+			break;
 		}
 	}
 
@@ -2576,5 +2587,5 @@ void HTTP_Shutdown( void )
 		Mem_Free( tmp );
 	}
 
-	http.last_server = 0;
+	http.last_server = NULL;
 }

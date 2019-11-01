@@ -331,7 +331,7 @@ static void Mod_LoadLump( const byte *in, mlumpinfo_t *info, mlumpstat_t *stat, 
 	if( l->filelen % real_entrysize )
 	{
 		if( !FBitSet( flags, LUMP_SILENT ))
-			Con_DPrintf( S_ERROR "Mod_Load%s: Lump size %d was not a multiple of %u bytes\n", msg2, l->filelen, real_entrysize );
+			Con_DPrintf( S_ERROR "Mod_Load%s: Lump size %d was not a multiple of %lu bytes\n", msg2, l->filelen, real_entrysize );
 		loadstat.numerrors++;
 		return;
 	}
@@ -1027,11 +1027,11 @@ static void Mod_LightMatrixFromTexMatrix( const mtexinfo_t *tx, float lmvecs[2][
 	}
 
 	// put the lighting origin at center the of poly
-	VectorScale( lmvecs[0], (1.0 / lmscale), lmvecs[0] );
-	VectorScale( lmvecs[1], -(1.0 / lmscale), lmvecs[1] );
+	VectorScale( lmvecs[0], (1.0f / lmscale), lmvecs[0] );
+	VectorScale( lmvecs[1], -(1.0f / lmscale), lmvecs[1] );
 
-	lmvecs[0][3] = lmscale * 0.5;
-	lmvecs[1][3] = -lmscale * 0.5;
+	lmvecs[0][3] = lmscale * 0.5f;
+	lmvecs[1][3] = -lmscale * 0.5f;
 }
 
 /*
@@ -1415,7 +1415,7 @@ static qboolean Mod_LoadColoredLighting( dbspmodel_t *bmod )
 
 	if( litdatasize != ( bmod->lightdatasize * 3 ))
 	{
-		Con_Printf( S_ERROR "%s has mismatched size (%li should be %i)\n", path, litdatasize, bmod->lightdatasize * 3 );
+		Con_Printf( S_ERROR "%s has mismatched size (%li should be %lu)\n", path, litdatasize, bmod->lightdatasize * 3 );
 		Mem_Free( in );
 		return false;
 	}
@@ -1470,7 +1470,7 @@ static void Mod_LoadDeluxemap( dbspmodel_t *bmod )
 
 	if( deluxdatasize != bmod->lightdatasize )
 	{
-		Con_Reportf( S_ERROR "%s has mismatched size (%li should be %i)\n", path, deluxdatasize, bmod->lightdatasize );
+		Con_Reportf( S_ERROR "%s has mismatched size (%li should be %lu)\n", path, deluxdatasize, bmod->lightdatasize );
 		Mem_Free( in );
 		return;
 	}
@@ -2626,7 +2626,7 @@ static void Mod_LoadSurfaces( dbspmodel_t *bmod )
 
 			if(( in->firstedge + in->numedges ) > loadmodel->numsurfedges )
 			{
-				Con_Reportf( S_ERROR "bad surface %i from %i\n", i, bmod->numsurfaces );
+				Con_Reportf( S_ERROR "bad surface %i from %lu\n", i, bmod->numsurfaces );
 				continue;
 			}
 
@@ -2966,7 +2966,7 @@ static void Mod_LoadLightVecs( dbspmodel_t *bmod )
 	if( bmod->deluxdatasize != bmod->lightdatasize )
 	{
 		if( bmod->deluxdatasize > 0 )
-			Con_Printf( S_ERROR "Mod_LoadLightVecs: has mismatched size (%i should be %i)\n", bmod->deluxdatasize, bmod->lightdatasize );
+			Con_Printf( S_ERROR "Mod_LoadLightVecs: has mismatched size (%lu should be %i)\n", bmod->deluxdatasize, bmod->lightdatasize );
 		else Mod_LoadDeluxemap( bmod ); // old method
 		return;
 	}
@@ -2985,7 +2985,7 @@ static void Mod_LoadShadowmap( dbspmodel_t *bmod )
 	if( bmod->shadowdatasize != ( bmod->lightdatasize / 3 ))
 	{
 		if( bmod->shadowdatasize > 0 )
-			Con_Printf( S_ERROR "Mod_LoadShadowmap: has mismatched size (%i should be %i)\n", bmod->shadowdatasize, bmod->lightdatasize / 3 );
+			Con_Printf( S_ERROR "Mod_LoadShadowmap: has mismatched size (%i should be %lu)\n", bmod->shadowdatasize, bmod->lightdatasize / 3 );
 		return;
 	}
 

@@ -44,7 +44,7 @@ static void pfnVibrate( float life, char flags )
 	Platform_Vibrate( life * vibration_length->value, flags );
 }
 
-static void Vibrate_f()
+static void Vibrate_f( void )
 {
 	if( Cmd_Argc() != 2 )
 	{
@@ -95,22 +95,18 @@ static void *pfnGetNativeObject( const char *obj )
 	return Platform_GetNativeObject( obj );
 }
 
-void IN_TouchHideButtons( const char *str, unsigned char hide )
-{
-
-}
 
 static mobile_engfuncs_t gpMobileEngfuncs =
 {
 	MOBILITY_API_VERSION,
 	pfnVibrate,
 	pfnEnableTextInput,
-	NULL, // IN_TouchAddClientButton,
-	NULL, // IN_TouchAddDefaultButton,
-	IN_TouchHideButtons,
-	NULL, // IN_TouchRemoveButton,
-	NULL, // (void*)IN_TouchSetClientOnly,
-	NULL, // IN_TouchResetDefaultButtons,
+	Touch_AddClientButton,
+	Touch_AddDefaultButton,
+	Touch_HideButtons,
+	Touch_RemoveButton,
+	(void*)Touch_SetClientOnly,
+	Touch_ResetDefaultButtons,
 	pfnDrawScaledCharacter,
 	Sys_Warn,
 	pfnGetNativeObject,

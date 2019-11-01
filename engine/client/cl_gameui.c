@@ -135,6 +135,161 @@ qboolean UI_IsVisible( void )
 	return gameui.dllFuncs.pfnIsVisible();
 }
 
+/*
+=======================
+UI_AddTouchButtonToList
+
+send button parameters to menu
+=======================
+*/
+void UI_AddTouchButtonToList( const char *name, const char *texture, const char *command, unsigned char *color, int flags )
+{
+	if( gameui.dllFuncs2.pfnAddTouchButtonToList )
+	{
+		gameui.dllFuncs2.pfnAddTouchButtonToList( name, texture, command, color, flags );
+	}
+}
+
+/*
+=================
+UI_ResetPing
+
+notify gameui dll about latency reset
+=================
+*/
+void UI_ResetPing( void )
+{
+	if( gameui.dllFuncs2.pfnResetPing )
+	{
+		gameui.dllFuncs2.pfnResetPing( );
+	}
+}
+
+/*
+=================
+UI_ShowConnectionWarning
+
+show connection warning dialog implemented by gameui dll
+=================
+*/
+void UI_ShowConnectionWarning( void )
+{
+	if( cls.state != ca_connected )
+		return;
+
+	if( Host_IsLocalClient() )
+		return;
+
+	if( ++cl.lostpackets == 8 )
+	{
+		CL_Disconnect();
+		if( gameui.dllFuncs2.pfnShowConnectionWarning )
+		{
+			gameui.dllFuncs2.pfnShowConnectionWarning();
+		}
+		Con_DPrintf( S_WARN "Too many lost packets! Showing Network options menu\n" );
+	}
+}
+
+
+/*
+=================
+UI_ShowConnectionWarning
+
+show update dialog
+=================
+*/
+void UI_ShowUpdateDialog( qboolean preferStore )
+{
+	if( gameui.dllFuncs2.pfnShowUpdateDialog )
+	{
+		gameui.dllFuncs2.pfnShowUpdateDialog( preferStore );
+	}
+
+	Con_Printf( S_WARN "This version is not supported anymore. To continue, install latest engine version\n" );
+}
+
+/*
+=================
+UI_ShowConnectionWarning
+
+show message box
+=================
+*/
+void UI_ShowMessageBox( const char *text )
+{
+	if( gameui.dllFuncs2.pfnShowMessageBox )
+	{
+		gameui.dllFuncs2.pfnShowMessageBox( text );
+	}
+}
+
+void UI_ConnectionProgress_Disconnect( void )
+{
+	if( gameui.dllFuncs2.pfnConnectionProgress_Disconnect )
+	{
+		gameui.dllFuncs2.pfnConnectionProgress_Disconnect( );
+	}
+}
+
+void UI_ConnectionProgress_Download( const char *pszFileName, const char *pszServerName, const char *pszServerPath, int iCurrent, int iTotal, const char *comment )
+{
+	if( !gameui.dllFuncs2.pfnConnectionProgress_Download )
+		return;
+
+	if( pszServerPath )
+	{
+		char serverpath[MAX_SYSPATH];
+
+		Q_snprintf( serverpath, sizeof( serverpath ), "%s%s", pszServerName, pszServerPath );
+		gameui.dllFuncs2.pfnConnectionProgress_Download( pszFileName, serverpath, iCurrent, iTotal, comment );
+	}
+	else
+	{
+		gameui.dllFuncs2.pfnConnectionProgress_Download( pszFileName, pszServerName, iCurrent, iTotal, comment );
+	}
+}
+
+void UI_ConnectionProgress_DownloadEnd( void )
+{
+	if( gameui.dllFuncs2.pfnConnectionProgress_DownloadEnd )
+	{
+		gameui.dllFuncs2.pfnConnectionProgress_DownloadEnd( );
+	}
+}
+
+void UI_ConnectionProgress_Precache( void )
+{
+	if( gameui.dllFuncs2.pfnConnectionProgress_Precache )
+	{
+		gameui.dllFuncs2.pfnConnectionProgress_Precache( );
+	}
+}
+
+void UI_ConnectionProgress_Connect( const char *server ) // NULL for local server
+{
+	if( gameui.dllFuncs2.pfnConnectionProgress_Connect )
+	{
+		gameui.dllFuncs2.pfnConnectionProgress_Connect( server );
+	}
+}
+
+void UI_ConnectionProgress_ChangeLevel( void )
+{
+	if( gameui.dllFuncs2.pfnConnectionProgress_ChangeLevel )
+	{
+		gameui.dllFuncs2.pfnConnectionProgress_ChangeLevel( );
+	}
+}
+
+void UI_ConnectionProgress_ParseServerInfo( const char *server )
+{
+	if( gameui.dllFuncs2.pfnConnectionProgress_ParseServerInfo )
+	{
+		gameui.dllFuncs2.pfnConnectionProgress_ParseServerInfo( server );
+	}
+}
+
 static void UI_DrawLogo( const char *filename, float x, float y, float width, float height )
 {
 	static float	cin_time;
@@ -486,95 +641,6 @@ void pfnPIC_DrawAdditive( int x, int y, int width, int height, const wrect_t *pr
 {
 	ref.dllFuncs.GL_SetRenderMode( kRenderTransAdd );
 	PIC_DrawGeneric( x, y, width, height, prc );
-}
-
-/*
-=======================
-UI_AddTouchButtonToList
-
-send button parameters to menu
-=======================
-*/
-void UI_AddTouchButtonToList( const char *name, const char *texture, const char *command, unsigned char *color, int flags )
-{
-	if( gameui.dllFuncs2.pfnAddTouchButtonToList )
-	{
-		gameui.dllFuncs2.pfnAddTouchButtonToList( name, texture, command, color, flags );
-	}
-}
-
-/*
-=================
-UI_ResetPing
-
-notify gameui dll about latency reset
-=================
-*/
-void UI_ResetPing( void )
-{
-	if( gameui.dllFuncs2.pfnResetPing )
-	{
-		gameui.dllFuncs2.pfnResetPing( );
-	}
-}
-
-/*
-=================
-UI_ShowConnectionWarning
-
-show connection warning dialog implemented by gameui dll
-=================
-*/
-void UI_ShowConnectionWarning( void )
-{
-	if( cls.state != ca_connected )
-		return;
-
-	if( Host_IsLocalClient() )
-		return;
-
-	if( ++cl.lostpackets == 8 )
-	{
-		CL_Disconnect();
-		if( gameui.dllFuncs2.pfnShowConnectionWarning )
-		{
-			gameui.dllFuncs2.pfnShowConnectionWarning();
-		}
-		Con_DPrintf( S_WARN "Too many lost packets! Showing Network options menu\n" );
-	}
-}
-
-
-/*
-=================
-UI_ShowConnectionWarning
-
-show update dialog
-=================
-*/
-void UI_ShowUpdateDialog( qboolean preferStore )
-{
-	if( gameui.dllFuncs2.pfnShowUpdateDialog )
-	{
-		gameui.dllFuncs2.pfnShowUpdateDialog( preferStore );
-	}
-
-	Con_Printf( S_WARN "This version is not supported anymore. To continue, install latest engine version\n" );
-}
-
-/*
-=================
-UI_ShowConnectionWarning
-
-show message box
-=================
-*/
-void UI_ShowMessageBox( const char *text )
-{
-	if( gameui.dllFuncs2.pfnShowMessageBox )
-	{
-		gameui.dllFuncs2.pfnShowMessageBox( text );
-	}
 }
 
 /*
@@ -1026,6 +1092,21 @@ static void GL_ProcessTexture( int texnum, float gamma, int topColor, int bottom
 	ref.dllFuncs.GL_ProcessTexture( texnum, gamma, topColor, bottomColor );
 }
 
+
+/*
+=================
+UI_ShellExecute
+=================
+*/
+static void UI_ShellExecute( const char *path, const char *parms, int shouldExit )
+{
+	Platform_ShellExecute( path, parms );
+
+	if( shouldExit )
+		Sys_Quit();
+}
+
+
 // engine callbacks
 static ui_enginefuncs_t gEngfuncs = 
 {
@@ -1098,7 +1179,7 @@ static ui_enginefuncs_t gEngfuncs =
 	CL_GetDemoComment,
 	pfnCheckGameDll,
 	pfnGetClipboardData,
-	Sys_ShellExecute,
+	UI_ShellExecute,
 	Host_WriteServerConfig,
 	pfnChangeInstance,
 	pfnStartBackgroundTrack,
@@ -1119,12 +1200,27 @@ static void pfnEnableTextInput( int enable )
 	Key_EnableTextInput( enable, false );
 }
 
+static int pfnGetRenderers( unsigned int num, char *shortName, size_t size1, char *readableName, size_t size2 )
+{
+	if( num >= ref.numRenderers )
+		return 0;
+
+	if( shortName && size1 )
+		Q_strncpy( shortName, ref.shortNames[num], size1 );
+
+	if( readableName && size2 )
+		Q_strncpy( readableName, ref.readableNames[num], size2 );
+
+	return 1;
+}
+
 static ui_extendedfuncs_t gExtendedfuncs =
 {
 	pfnEnableTextInput,
 	Con_UtfProcessChar,
 	Con_UtfMoveLeft,
-	Con_UtfMoveRight
+	Con_UtfMoveRight,
+	pfnGetRenderers
 };
 
 void UI_UnloadProgs( void )
