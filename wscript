@@ -33,8 +33,16 @@ SUBDIRS = [
 	Subproject('vgui_support'),
 	Subproject('engine', dedicated=False),
 	Subproject('game_content', dedicated=False),
-	Subproject('game_libs',   dedicated=False)
+	Subproject('game_libs',   dedicated=False),
+	#Subproject('game_libs/cl_dll',   dedicated=False),
+	#Subproject('game_libs/dlls',   dedicated=False),
 ]
+
+@Configure.conf
+def get_taskgen_count(self):
+	try: idx = self.tg_idx_count
+	except: idx = 0 # don't set tg_idx_count to not increase counter
+	return idx
 
 def subdirs():
 	return map(lambda x: x.name, SUBDIRS)
@@ -76,6 +84,8 @@ def options(opt):
 	opt.load('reconfigure')
 
 def configure(conf):
+	conf.env.GAMEDIR = "afterburner"
+
 	conf.load('fwgslib reconfigure')
 	conf.start_msg('Build type')
 	if conf.options.BUILD_TYPE == None:

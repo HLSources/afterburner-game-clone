@@ -1,0 +1,138 @@
+#! /usr/bin/env python
+# encoding: utf-8
+
+from waflib import Logs
+from scripts.buildutils import gamelib_common
+import os
+import sys
+
+top = '.'
+
+DEFINES = \
+[
+	"CLIENT_DLL",		# Distinguishes this from the server DLL.
+]
+
+INCLUDE_PATHS = \
+[
+	"common",
+	"engine",
+	"pm_shared",
+	"game_shared",
+	"shared_utils/cpp",
+	"public",
+	"game_shared/weapons",
+	"game_shared/weaponattributes",
+	"game_shared/util",
+	"game_shared/gameplay",
+	"../game_menu_shared",
+	"miniutl",
+	"cl_dll",
+	"utils/false_vgui/include"
+	"cl_dll/hl",
+	"cl_dll/events",
+	"cl_dll/projectInterface_client"
+]
+
+SOURCES = \
+[
+	"miniutl/**/*.cpp",
+	"pm_shared/**/*.c",
+	"cl_dll/events/**/*.cpp",
+	"cl_dll/hl/**/*.cpp",
+	"cl_dll/projectInterface_client/**/*.cpp",
+
+	# TODO: Change the folder structure one day so that we can use globs and not have to do this.
+	# Currently we don't want to include absolutely everything...
+	"game_shared/weapons/**/*.cpp",
+	"game_shared/gameplay/**/*.cpp",
+	"game_shared/weaponattributes/**/*.cpp",
+	"game_shared/studio_utils_shared.cpp",
+	"cl_dll/ev_hldm.cpp",
+	"cl_dll/ammo.cpp",
+	"cl_dll/ammo_secondary.cpp",
+	"cl_dll/ammohistory.cpp",
+	"cl_dll/battery.cpp",
+	"cl_dll/cdll_int.cpp",
+	"cl_dll/com_weapons.cpp",
+	"cl_dll/death.cpp",
+	"cl_dll/demo.cpp",
+	"cl_dll/entity.cpp",
+	"cl_dll/ev_common.cpp",
+	"cl_dll/events.cpp",
+	"cl_dll/flashlight.cpp",
+	"cl_dll/GameStudioModelRenderer.cpp",
+	"cl_dll/geiger.cpp",
+	"cl_dll/health.cpp",
+	"cl_dll/hud.cpp",
+	"cl_dll/hud_msg.cpp",
+	"cl_dll/hud_redraw.cpp",
+	"cl_dll/hud_spectator.cpp",
+	"cl_dll/hud_update.cpp",
+	"cl_dll/in_camera.cpp",
+	"cl_dll/input.cpp",
+	"cl_dll/input_goldsource.cpp",
+	"cl_dll/input_mouse.cpp",
+	"cl_dll/input_xash3d.cpp",
+	"cl_dll/menu.cpp",
+	"cl_dll/message.cpp",
+	"cl_dll/overview.cpp",
+	"cl_dll/parsemsg.cpp",
+	"cl_dll/saytext.cpp",
+	"cl_dll/status_icons.cpp",
+	"cl_dll/statusbar.cpp",
+	"cl_dll/studio_util.cpp",
+	"cl_dll/StudioModelRenderer.cpp",
+	"cl_dll/text_message.cpp",
+	"cl_dll/train.cpp",
+	"cl_dll/tri.cpp",
+	"cl_dll/util.cpp",
+	"cl_dll/view.cpp",
+	"cl_dll/scoreboard.cpp",
+	"cl_dll/MOTD.cpp"
+]
+
+WIN32LIBS = \
+[
+	"USER32"
+]
+
+def options(opt):
+	gamelib_common.options(opt)
+
+	grp = opt.add_option_group("Client options")
+
+	grp.add_option("--enable-client-weapons", action = "store_true", dest = "CLIENT_WEAPONS", default = True,
+		help = "Enable clientside weapon prediction [default: %default]")
+
+def configure(conf):
+	gamelib_common.configure(conf)
+
+	conf.env.CLIENT_DIR = "cl_dlls"
+	conf.env.CLIENT_TARGET = "client"
+
+	conf.env.append_unique("DEFINES", DEFINES)
+
+	if conf.options.CLIENT_WEAPONS:
+		conf.define('CLIENT_WEAPONS', '1')
+
+	if conf.env.DEST_OS == 'win32':
+		conf.env.append_unique("USELIBS", WIN32LIBS)
+
+def build(bld):
+	sources = bld.path.parent.ant_glob("game_menu_shared/**/*.cpp") + \
+			  bld.path.ant_glob(SOURCES)
+
+	installPath = os.path.join(bld.env.PREFIX, bld.env.GAMEDIR, bld.env.CLIENT_DIR)
+
+	bld.shlib(
+		source   = sources,
+		target   = bld.env.CLIENT_TARGET,
+		features = 'c cxx',
+		includes = INCLUDE_PATHS,
+		defines  = bld.env.DEFINES,
+		use      = bld.env.USELIBS,
+		install_path = installPath,
+		subsystem = bld.env.MSVC_SUBSYSTEM,
+		idx      = 1002#bld.get_taskgen_count()
+	)
