@@ -260,6 +260,10 @@ def configure(conf):
 			int main(void){ return (int)sin(2.0f); }''',
 			msg='Checking if tgmath.h is usable', mandatory=False)
 		conf.define_cond('HAVE_TGMATH_H', tgmath_usable)
+
+		if conf.env.COMPILER_CC == "msvc" and tgmath_usable:
+			# Stop MSVC complaining.
+			conf.define("_CRT_SILENCE_NONCONFORMING_TGMATH_H", 1)
 	else:
 		conf.undefine('HAVE_TGMATH_H')
 
