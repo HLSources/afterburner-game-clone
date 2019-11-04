@@ -331,7 +331,7 @@ static void Mod_LoadLump( const byte *in, mlumpinfo_t *info, mlumpstat_t *stat, 
 	if( l->filelen % real_entrysize )
 	{
 		if( !FBitSet( flags, LUMP_SILENT ))
-			Con_DPrintf( S_ERROR "Mod_Load%s: Lump size %d was not a multiple of %lu bytes\n", msg2, l->filelen, real_entrysize );
+			Con_DPrintf( S_ERROR "Mod_Load%s: Lump size %d was not a multiple of %u bytes\n", msg2, l->filelen, (uint32_t)real_entrysize );
 		loadstat.numerrors++;
 		return;
 	}
@@ -959,7 +959,7 @@ static mvertex_t *Mod_GetVertexByNumber( model_t *mod, int surfedge )
 		return &mod->vertexes[edge->v[1]];
 	}
 }
-		
+
 /*
 ==================
 Mod_MakeNormalAxial
@@ -1415,7 +1415,7 @@ static qboolean Mod_LoadColoredLighting( dbspmodel_t *bmod )
 
 	if( litdatasize != ( bmod->lightdatasize * 3 ))
 	{
-		Con_Printf( S_ERROR "%s has mismatched size (%li should be %lu)\n", path, litdatasize, bmod->lightdatasize * 3 );
+		Con_Printf( S_ERROR "%s has mismatched size (%li should be %u)\n", path, litdatasize, (uint32_t)(bmod->lightdatasize * 3) );
 		Mem_Free( in );
 		return false;
 	}
@@ -1470,7 +1470,7 @@ static void Mod_LoadDeluxemap( dbspmodel_t *bmod )
 
 	if( deluxdatasize != bmod->lightdatasize )
 	{
-		Con_Reportf( S_ERROR "%s has mismatched size (%li should be %lu)\n", path, deluxdatasize, bmod->lightdatasize );
+		Con_Reportf( S_ERROR "%s has mismatched size (%li should be %u)\n", path, deluxdatasize, (uint32_t)bmod->lightdatasize );
 		Mem_Free( in );
 		return;
 	}
@@ -1937,8 +1937,9 @@ static void LoadTexture(dbspmodel_t* bmod, const int32_t* miptexOffsets, uint32_
 	qboolean custom_palette = false;
 	const mip_t* mt = (const mip_t*)((const byte*)bmod->textures + miptexOffsets[targetIndex]);
 	texture_t* tx = (texture_t*)Mem_Calloc(loadmodel->mempool, sizeof(texture_t));
+	int txFlags = 0;
+
 	loadmodel->textures[targetIndex] = tx;
-    int txFlags = 0;
 
 	if( !mt->name[0] )
 	{
@@ -2292,7 +2293,7 @@ static void LoadPNGTexture(const dpngtexturepath_t* in, texture_t** out)
 	{
 		int width = 0;
 		int height = 0;
-		
+
 		// Not sure if this is the best way to do this?
 		// Really these kinds of implementation details should be handled by the FS loader,
 		// but it seems that there's no way of getting this information right now.
@@ -2626,7 +2627,7 @@ static void Mod_LoadSurfaces( dbspmodel_t *bmod )
 
 			if(( in->firstedge + in->numedges ) > loadmodel->numsurfedges )
 			{
-				Con_Reportf( S_ERROR "bad surface %i from %lu\n", i, bmod->numsurfaces );
+				Con_Reportf( S_ERROR "bad surface %i from %u\n", i, (uint32_t)bmod->numsurfaces );
 				continue;
 			}
 
@@ -2966,7 +2967,7 @@ static void Mod_LoadLightVecs( dbspmodel_t *bmod )
 	if( bmod->deluxdatasize != bmod->lightdatasize )
 	{
 		if( bmod->deluxdatasize > 0 )
-			Con_Printf( S_ERROR "Mod_LoadLightVecs: has mismatched size (%lu should be %i)\n", bmod->deluxdatasize, bmod->lightdatasize );
+			Con_Printf( S_ERROR "Mod_LoadLightVecs: has mismatched size (%u should be %i)\n", bmod->deluxdatasize, bmod->lightdatasize );
 		else Mod_LoadDeluxemap( bmod ); // old method
 		return;
 	}
@@ -2985,7 +2986,7 @@ static void Mod_LoadShadowmap( dbspmodel_t *bmod )
 	if( bmod->shadowdatasize != ( bmod->lightdatasize / 3 ))
 	{
 		if( bmod->shadowdatasize > 0 )
-			Con_Printf( S_ERROR "Mod_LoadShadowmap: has mismatched size (%i should be %lu)\n", bmod->shadowdatasize, bmod->lightdatasize / 3 );
+			Con_Printf( S_ERROR "Mod_LoadShadowmap: has mismatched size (%i should be %u)\n", bmod->shadowdatasize, (uint32_t)(bmod->lightdatasize / 3) );
 		return;
 	}
 

@@ -61,7 +61,7 @@ static size_t currentIndentSize = 0;
 
 #define FMT_HEX_INT "0x%08X"
 
-static const char* String_modtype_t[] =
+static const char* const String_modtype_t[] =
 {
 	"Invalid",
 	"Brush",
@@ -70,7 +70,7 @@ static const char* String_modtype_t[] =
 	"Studio"
 };
 
-static const char* String_planeType[] =
+static const char* const String_planeType[] =
 {
 	"Normal along X",
 	"Normal along Y",
@@ -80,7 +80,7 @@ static const char* String_planeType[] =
 	"Normal closest to Z"
 };
 
-static const char* String_surfaceFlags[] =
+static const char* const String_surfaceFlags[] =
 {
 	"NoCull",
 	"PlaneBack",
@@ -236,7 +236,7 @@ static const char* ArrayString_Int(const void* base, IntegerType_t type, size_t 
 	return buffer;
 }
 
-static const char* FlagsString(unsigned int inFlags, const char** flagStrings, int numFlags)
+static const char* FlagsString(unsigned int inFlags, const char* const* flagStrings, int numFlags)
 {
 	static char buffer[256];
 	static const size_t bufferLength = sizeof(buffer);
@@ -291,13 +291,13 @@ static inline void PrintItems(const model_t* model, const void* items, const int
 	}
 }
 
-static inline void ResetIndent()
+static inline void ResetIndent(void)
 {
 	memset(currentIndent, 0, sizeof(currentIndent));
 	currentIndentSize = 0;
 }
 
-static void IncrementIndent()
+static void IncrementIndent(void)
 {
 	if (currentIndentSize >= MAX_INDENT)
 	{
@@ -308,7 +308,7 @@ static void IncrementIndent()
 	++currentIndentSize;
 }
 
-static void DecrementIndent()
+static void DecrementIndent(void)
 {
 	if (currentIndentSize == 0)
 	{

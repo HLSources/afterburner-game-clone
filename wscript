@@ -196,10 +196,10 @@ def configure(conf):
 		'-Werror=vla',
 		'-Werror=tautological-compare',
 		'-Werror=duplicated-cond',
-		'-Werror=duplicated-branches', # BEWARE: buggy
+		#'-Werror=duplicated-branches', # BEWARE: buggy (also breaks stb_image.h)
 		'-Werror=bool-compare',
 		'-Werror=bool-operation',
-		'-Wdouble-promotion',
+		#'-Wdouble-promotion',	# Removed as it causes super irritating warnings with variadic functions
 		'-Wstrict-aliasing',
 	]
 
@@ -309,7 +309,6 @@ def configure(conf):
 		conf.env.LIBDIR = conf.env.BINDIR = conf.env.PREFIX
 
 	conf.define('XASH_BUILD_COMMIT', conf.env.GIT_VERSION if conf.env.GIT_VERSION else 'notset')
-	conf.define('AFTERBURNER_ENGINE', 1)
 
 	for i in SUBDIRS:
 		if conf.env.SINGLE_BINARY and i.singlebin:

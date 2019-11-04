@@ -923,7 +923,7 @@ void CL_ClearPhysEnts( void );
 void CL_PushPMStates( void );
 void CL_PopPMStates( void );
 void CL_SetUpPlayerPrediction( int dopred, int bIncludeLocalClient );
-msurface_t* CL_GetSurfaceUnderCrosshair();
+msurface_t* CL_GetSurfaceUnderCrosshair(void);
 
 //
 // cl_qparse.c

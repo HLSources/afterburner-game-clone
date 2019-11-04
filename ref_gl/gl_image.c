@@ -1233,7 +1233,7 @@ do specified actions on pixels
 static void GL_ProcessImage( gl_texture_t *tex, rgbdata_t *pic )
 {
 	float	emboss_scale = 0.0f;
-	uint	img_flags = 0; 
+	uint	img_flags = 0;
 
 	// force upload texture as RGB or RGBA (detail textures requires this)
 	if( tex->flags & TF_FORCE_COLOR ) pic->flags |= IMAGE_HAS_COLOR;
@@ -1932,7 +1932,7 @@ void R_InitDlightTexture( void )
 	tr.dlightTexture = GL_LoadTextureInternal( "*dlight", &r_image, TF_NOMIPMAP|TF_CLAMP|TF_ATLAS_PAGE );
 }
 
-static int CreateTraceTexture()
+static int CreateTraceTexture(void)
 {
 	rgbdata_t* pic = GL_FakeImage( 8, 8, 1, IMAGE_HAS_COLOR|IMAGE_HAS_ALPHA );
 	uint* argbBuffer = (uint*)pic->buffer;
@@ -1953,7 +1953,7 @@ static int CreateTraceTexture()
 	return GL_LoadTextureInternal( REF_TRACE_TEXTURE, pic, TF_CLAMP );
 }
 
-static int CreateBulletTraceTexture()
+static int CreateBulletTraceTexture(void)
 {
 	static const byte alphaMap[8][8] =
 	{
@@ -2154,7 +2154,7 @@ void R_TextureList_f( void )
 		case GL_DEPTH_COMPONENT:
 		case GL_DEPTH_COMPONENT24:
 			gEngfuncs.Con_Printf( "DPTH24" );
-			break;			
+			break;
 		case GL_DEPTH_COMPONENT32F:
 			gEngfuncs.Con_Printf( "DPTH32" );
 			break;

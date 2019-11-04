@@ -300,7 +300,7 @@ static unsigned int GetDumpModelFlagFromString(const char* arg)
 	return 0;
 }
 
-static void PrintAllDumpModelArgs()
+static void PrintAllDumpModelArgs(void)
 {
 	int index;
 

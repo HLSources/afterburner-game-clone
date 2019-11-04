@@ -1115,7 +1115,7 @@ qboolean FS_AddZip_Fullpath( const char *zipfile, qboolean *already_loaded, int 
 	zip_t		*zip = NULL;
 	const char	*ext = COM_FileExtension( zipfile );
 	int		errorcode = ZIP_LOAD_COULDNT_OPEN;
-  
+
 	for( search = fs_searchpaths; search; search = search->next )
 	{
 		if( search->pack && !Q_stricmp( search->pack->filename, zipfile ))
@@ -1124,12 +1124,12 @@ qboolean FS_AddZip_Fullpath( const char *zipfile, qboolean *already_loaded, int 
 			return true; // already loaded
 		}
 	}
-  
+
 	if( already_loaded ) *already_loaded = false;
-  
+
 	if( !Q_stricmp( ext, "zip" ) || !Q_stricmp( ext, "pk3" ) )
 		zip = FS_LoadZip( zipfile, &errorcode );
-  
+
 	if( zip )
 	{
 		search = (searchpath_t *)Mem_Calloc( fs_mempool, sizeof( searchpath_t ) );
@@ -1468,7 +1468,7 @@ static void FS_WriteGameInfo( const char *filepath, gameinfo_t *GameInfo )
 		FS_Printf( f, "version\t\t%g\n", GameInfo->version );
 
 	if( GameInfo->size != 0 )
-		FS_Printf( f, "size\t\t%lu\n", GameInfo->size );
+		FS_Printf( f, "size\t\t%u\n", (uint32_t)GameInfo->size );
 
 	if( Q_strlen( GameInfo->game_url ))
 		FS_Printf( f, "url_info\t\t\"%s\"\n", GameInfo->game_url );
@@ -2429,7 +2429,7 @@ static searchpath_t *FS_FindFile( const char *name, int *index, qboolean gamedir
 		}
 		else if( search->wad )
 		{
-			dlumpinfo_t	*lump;	
+			dlumpinfo_t	*lump;
 			signed char		type = W_TypeFromExt( name );
 			qboolean		anywadname = true;
 			string		wadname, wadfolder;

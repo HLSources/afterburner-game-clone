@@ -112,7 +112,7 @@ char *VOX_LookupString( const char *pSentenceName, int *psentencenum )
 	if( Q_isdigit( pSentenceName ) && (i = Q_atoi( pSentenceName )) < g_numSentences )
 	{
 		if( psentencenum ) *psentencenum = i;
-		return (g_Sentences[i].pName + Q_strlen( g_Sentences[i].pName ) + 1 );		
+		return (g_Sentences[i].pName + Q_strlen( g_Sentences[i].pName ) + 1 );
 	}
 
 	for( i = 0; i < g_numSentences; i++ )
@@ -130,7 +130,7 @@ char *VOX_LookupString( const char *pSentenceName, int *psentencenum )
 // parse a null terminated string of text into component words, with
 // pointers to each word stored in rgpparseword
 // note: this code actually alters the passed in string!
-char **VOX_ParseString( char *psz ) 
+char **VOX_ParseString( char *psz )
 {
 	int	i, fdone = 0;
 	char	c, *p = psz;
@@ -148,7 +148,7 @@ char **VOX_ParseString( char *psz )
 		c = *p;
 		while( c && !IsNextWord( c ))
 			c = *(++p);
-			
+
 		// if '(' then scan for matching ')'
 		if( c == '(' )
 		{
@@ -162,7 +162,7 @@ char **VOX_ParseString( char *psz )
 			fdone = 1;
 		}
 		else
-		{	
+		{
 			// if . or , insert pause into rgpparseword,
 			// unless this is the last character
 			if(( c == '.' || c == ',' ) && *(p+1) != '\n' && *(p+1) != '\r' && *(p+1) != 0 )
@@ -234,9 +234,9 @@ float VOX_ModifyPitch( channel_t *ch, float pitch )
 //===============================================================================
 //  Get any pitch, volume, start, end params into voxword
 //  and null out trailing format characters
-//  Format: 
+//  Format:
 //		someword(v100 p110 s10 e20)
-//		
+//
 //		v is volume, 0% to n%
 //		p is pitch shift up 0% to n%
 //		s is start wave offset %
@@ -246,20 +246,20 @@ float VOX_ModifyPitch( channel_t *ch, float pitch )
 //  pass fFirst == 1 if this is the first string in sentence
 //  returns 1 if valid string, 0 if parameter block only.
 //
-//  If a ( xxx ) parameter block does not directly follow a word, 
+//  If a ( xxx ) parameter block does not directly follow a word,
 //  then that 'default' parameter block will be used as the default value
 //  for all following words.  Default parameter values are reset
 //  by another 'default' parameter block.  Default parameter values
 //  for a single word are overridden for that word if it has a parameter block.
-// 
+//
 //===============================================================================
-int VOX_ParseWordParams( char *psz, voxword_t *pvoxword, int fFirst ) 
+int VOX_ParseWordParams( char *psz, voxword_t *pvoxword, int fFirst )
 {
 	char		*pszsave = psz;
 	char		c, ct, sznum[8];
 	static voxword_t	voxwordDefault;
 	int		i;
-			
+
 	// init to defaults if this is the first word in string.
 	if( fFirst )
 	{
@@ -273,12 +273,12 @@ int VOX_ParseWordParams( char *psz, voxword_t *pvoxword, int fFirst )
 
 	*pvoxword = voxwordDefault;
 
-	// look at next to last char to see if we have a 
+	// look at next to last char to see if we have a
 	// valid format:
 	c = *( psz + Q_strlen( psz ) - 1 );
 
 	// no formatting, return
-	if( c != ')' ) return 1; 
+	if( c != ')' ) return 1;
 
 	// scan forward to first '('
 	c = *psz;
@@ -287,7 +287,7 @@ int VOX_ParseWordParams( char *psz, voxword_t *pvoxword, int fFirst )
 
 	// bogus formatting
 	if( c == ')' ) return 0;
-	
+
 	// null terminate
 	*psz = 0;
 	ct = *(++psz);
@@ -297,7 +297,7 @@ int VOX_ParseWordParams( char *psz, voxword_t *pvoxword, int fFirst )
 		// scan until we hit a character in the commandSet
 		while( ct && !IsCommandChar( ct ))
 			ct = *(++psz);
-		
+
 		if( ct == ')' )
 			break;
 
@@ -305,7 +305,7 @@ int VOX_ParseWordParams( char *psz, voxword_t *pvoxword, int fFirst )
 		i = 0;
 
 		c = *(++psz);
-		
+
 		if( !isdigit( c ))
 			break;
 
@@ -356,8 +356,8 @@ void VOX_LoadWord( channel_t *pchan )
 
 			// apply mixer
 			pchan->currentWord = &pchan->pMixer;
-			pchan->currentWord->pData = pSource; 
-				
+			pchan->currentWord->pData = pSource;
+
 			// don't allow overlapped ranges
 			if( end <= start ) end = 0;
 
@@ -408,7 +408,7 @@ void VOX_LoadFirstWord( channel_t *pchan, voxword_t *pwords )
 	{
 		pchan->words[i] = pwords[i];
 		i++;
-	}		
+	}
 	pchan->words[i].sfx = NULL;
 
 	pchan->wordIndex = 0;
@@ -464,7 +464,7 @@ void VOX_LoadSound( channel_t *pchan, const char *pszin )
 	memset( rgvoxword, 0, sizeof( voxword_t ) * CVOXWORDMAX );
 	memset( buffer, 0, sizeof( buffer ));
 
-	// lookup actual string in g_Sentences, 
+	// lookup actual string in g_Sentences,
 	// set pointer to string data
 	psz = VOX_LookupString( pszin, NULL );
 
@@ -491,7 +491,7 @@ void VOX_LoadSound( channel_t *pchan, const char *pszin )
 	VOX_ParseString( psz );
 
 	// for each word in the sentence, construct the filename,
-	// lookup the sfx and save each pointer in a temp array	
+	// lookup the sfx and save each pointer in a temp array
 
 	i = 0;
 	cword = 0;
@@ -524,7 +524,7 @@ void VOX_LoadSound( channel_t *pchan, const char *pszin )
 //			{}.  The string is rewritten in place with those commands removed.
 //
 // Input  : *pSentenceData - sentence data to be modified in place
-//			sentenceIndex - global sentence table index for any data that is 
+//			sentenceIndex - global sentence table index for any data that is
 //							parsed out
 //-----------------------------------------------------------------------------
 void VOX_ParseLineCommands( char *pSentenceData, int sentenceIndex )
@@ -546,21 +546,21 @@ void VOX_ParseLineCommands( char *pSentenceData, int sentenceIndex )
 		length = pNext - pSentenceData;
 		if( tempBufferPos + length > sizeof( tempBuffer ))
 		{
-			Con_Printf( S_ERROR "Sentence too long (max length %lu characters)\n", sizeof(tempBuffer) - 1 );
+			Con_Printf( S_ERROR "Sentence too long (max length %u characters)\n", (uint32_t)sizeof(tempBuffer) - 1 );
 			return;
 		}
 
 		// Copy good string to temp buffer
 		memcpy( tempBuffer + tempBufferPos, pSentenceData, length );
-		
+
 		// move the copy position
 		tempBufferPos += length;
 
 		pSentenceData = pNext;
-		
+
 		// skip ahead of the opening brace
 		if( *pSentenceData ) pSentenceData++;
-		
+
 		// skip whitespace
 		while( *pSentenceData && *pSentenceData <= 32 )
 			pSentenceData++;
@@ -581,7 +581,7 @@ void VOX_ParseLineCommands( char *pSentenceData, int sentenceIndex )
 		}
 
 		pSentenceData = ScanForwardUntil( pSentenceData, '}' );
-		
+
 		// skip the closing brace
 		if( *pSentenceData ) pSentenceData++;
 
@@ -594,7 +594,7 @@ void VOX_ParseLineCommands( char *pSentenceData, int sentenceIndex )
 	{
 		// terminate cleaned up copy
 		tempBuffer[tempBufferPos] = 0;
-		
+
 		// copy it over the original data
 		Q_strcpy( pStart, tempBuffer );
 	}
@@ -658,7 +658,7 @@ void VOX_ReadSentenceFile( const char *psentenceFileName )
 		// scan forward to end of sentence or eof
 		while( pch < pchlast && pch[0] != '\n' && pch[0] != '\r' )
 			pch++;
-	
+
 		// insert null terminator
 		if( pch < pchlast ) *pch++ = 0;
 
