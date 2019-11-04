@@ -33,9 +33,8 @@ SUBDIRS = [
 	Subproject('vgui_support'),
 	Subproject('engine', dedicated=False),
 	Subproject('game_content', dedicated=False),
-	Subproject('game_libs',   dedicated=False),
-	#Subproject('game_libs/cl_dll',   dedicated=False),
-	#Subproject('game_libs/dlls',   dedicated=False),
+	Subproject('game_libs/cl_dll',   dedicated=False),
+	Subproject('game_libs/dlls',   dedicated=False),
 ]
 
 @Configure.conf

@@ -15,25 +15,26 @@ DEFINES = \
 
 INCLUDE_PATHS = \
 [
-	"common",
-	"engine",
-	"pm_shared",
-	"game_shared",
-	"shared_utils/cpp",
-	"public",
-	"game_shared/weapons",
-	"game_shared/weaponattributes",
-	"game_shared/util",
-	"game_shared/gameplay",
-	"../game_menu_shared",
-	"miniutl",
-	"cl_dll",
-	"utils/false_vgui/include"
-	"cl_dll/hl",
-	"cl_dll/events",
-	"cl_dll/projectInterface_client"
+	".",
+	"../common",
+	"../engine",
+	"../pm_shared",
+	"../game_shared",
+	"../shared_utils/cpp",
+	"../public",
+	"../game_shared/weapons",
+	"../game_shared/weaponattributes",
+	"../game_shared/util",
+	"../game_shared/gameplay",
+	"../../game_menu_shared",
+	"../miniutl",
+	"../utils/false_vgui/include"
+	"hl",
+	"events",
+	"projectInterface_client"
 ]
 
+# Relative to game_libs folder
 SOURCES = \
 [
 	"miniutl/**/*.cpp",
@@ -120,8 +121,8 @@ def configure(conf):
 		conf.env.append_unique("USELIBS", WIN32LIBS)
 
 def build(bld):
-	sources = bld.path.parent.ant_glob("game_menu_shared/**/*.cpp") + \
-			  bld.path.ant_glob(SOURCES)
+	sources = bld.path.parent.parent.ant_glob("game_menu_shared/**/*.cpp") + \
+			  bld.path.parent.ant_glob(SOURCES)
 
 	installPath = os.path.join(bld.env.PREFIX, bld.env.GAMEDIR, bld.env.CLIENT_DIR)
 

@@ -15,25 +15,26 @@ DEFINES = \
 
 INCLUDE_PATHS = \
 [
-	"common",
-	"engine",
-	"pm_shared",
-	"game_shared",
-	"shared_utils/cpp",
-	"public",
-	"game_shared/weapons",
-	"game_shared/weaponattributes",
-	"game_shared/util",
-	"game_shared/gameplay",
-	"../game_menu_shared",
-	"miniutl",
-	"dlls",
-	"dlls/bots",
-	"dlls/bots/profiles",
-	"dlls/bots/itemattributes",
-	"dlls/projectInterface_server"
+	".",
+	"../common",
+	"../engine",
+	"../pm_shared",
+	"../game_shared",
+	"../shared_utils/cpp",
+	"../public",
+	"../game_shared/weapons",
+	"../game_shared/weaponattributes",
+	"../game_shared/util",
+	"../game_shared/gameplay",
+	"../../game_menu_shared",
+	"../miniutl",
+	"bots",
+	"bots/profiles",
+	"bots/itemattributes",
+	"projectInterface_server"
 ]
 
+# Relative to game_libs folder
 SOURCES = \
 [
 	"miniutl/**/*.cpp",
@@ -166,11 +167,11 @@ def configure(conf):
 	conf.env.append_unique("DEFINES", DEFINES)
 
 def build(bld):
-	sources = bld.path.parent.ant_glob("game_menu_shared/**/*.cpp") + \
-			  bld.path.ant_glob(SOURCES)
+	sources = bld.path.parent.parent.ant_glob("game_menu_shared/**/*.cpp") + \
+			  bld.path.parent.ant_glob(SOURCES)
 
 	if bld.env.VOICEMGR:
-		sources += [ "game_shared/voice_gamemgr.cpp" ]
+		sources += bld.path.parent.ant_glob("game_shared/voice_gamemgr.cpp")
 
 	installPath = os.path.join(bld.env.PREFIX, bld.env.GAMEDIR, bld.env.SERVER_DIR)
 
