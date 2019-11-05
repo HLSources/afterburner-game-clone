@@ -184,5 +184,5 @@ def build(bld):
 		use      = bld.env.USELIBS,
 		install_path = installPath,
 		subsystem = bld.env.MSVC_SUBSYSTEM,
-		idx      = 1001#bld.get_taskgen_count()
-	)
+		idx      = bld.get_taskgen_count()
+	).env.cxxshlib_PATTERN = "%s.so"
