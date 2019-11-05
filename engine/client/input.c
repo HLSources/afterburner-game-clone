@@ -450,9 +450,9 @@ IN_Init
 */
 void IN_Init( void )
 {
-	cl_forwardspeed	= Cvar_Get( "cl_forwardspeed", "400", FCVAR_ARCHIVE | FCVAR_CLIENTDLL, "Default forward move speed" );
-	cl_backspeed	= Cvar_Get( "cl_backspeed", "400", FCVAR_ARCHIVE | FCVAR_CLIENTDLL, "Default back move speed"  );
-	cl_sidespeed	= Cvar_Get( "cl_sidespeed", "400", FCVAR_ARCHIVE | FCVAR_CLIENTDLL, "Default side move speed"  );
+	cl_forwardspeed	= Cvar_Get( "cl_forwardspeed", "280", FCVAR_ARCHIVE | FCVAR_CLIENTDLL, "Default forward move speed" );
+	cl_backspeed	= Cvar_Get( "cl_backspeed", "280", FCVAR_ARCHIVE | FCVAR_CLIENTDLL, "Default back move speed"  );
+	cl_sidespeed	= Cvar_Get( "cl_sidespeed", "240", FCVAR_ARCHIVE | FCVAR_CLIENTDLL, "Default side move speed"  );
 
 	if( !Host_IsDedicated() )
 	{
@@ -589,7 +589,7 @@ void IN_CollectInput( float *forward, float *side, float *pitch, float *yaw, qbo
 
 	Joy_FinalizeMove( forward, side, yaw, pitch );
 	Touch_GetMove( forward, side, yaw, pitch );
-	
+
 	if( look_filter->value )
 	{
 		*pitch = ( inputstate.lastpitch + *pitch ) / 2;
@@ -625,7 +625,7 @@ void IN_EngineAppendMove( float frametime, void *cmd1, qboolean active )
 		float sensitivity = 1;//( (float)cl.local.scr_fov / (float)90.0f );
 
 		IN_CollectInput( &forward, &side, &pitch, &yaw, in_mouseinitialized && !CVAR_TO_BOOL( m_ignore ), m_enginemouse->value );
-		
+
 		IN_JoyAppendMove( cmd, forward, side );
 
 		if( pitch || yaw )

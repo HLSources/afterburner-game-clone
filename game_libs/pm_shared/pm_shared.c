@@ -27,6 +27,20 @@
 #include <stdlib.h> // atoi
 #include <ctype.h>  // isspace
 
+//#define PM_VERBOSE_LOGGING
+
+#define DPRINTF(...) pmove->Con_DPrintf(__VA_ARGS__)
+#define PRINTF(...) pmove->Con_Printf(__VA_ARGS__)
+
+#define PM_DPRINTF(...) DPRINTF("PM: " __VA_ARGS__)
+#define PM_PRINTF(...) PRINTF("PM: " __VA_ARGS__)
+
+#ifdef PM_VERBOSE_LOGGING
+#define PM_VERBOSE(...) PM_DPRINTF(__VA_ARGS__)
+#else
+#define PM_VERBOSE(...)
+#endif
+
 int g_bhopcap = 1;
 
 #ifdef CLIENT_DLL
@@ -707,7 +721,9 @@ qboolean PM_AddToTouched( pmtrace_t tr, vec3_t impactvelocity )
 	VectorCopy( impactvelocity, tr.deltavelocity );
 
 	if( pmove->numtouch >= MAX_PHYSENTS )
-		pmove->Con_DPrintf( "Too many entities were touched!\n" );
+	{
+		PM_DPRINTF("Too many entities were touched! Touched: %d, Max: %d\n", pmove->numtouch, MAX_PHYSENTS);
+	}
 
 	pmove->touchindex[pmove->numtouch++] = tr;
 	return true;
@@ -732,24 +748,24 @@ void PM_CheckVelocity(void)
 		// See if it's bogus.
 		if( IS_NAN( pmove->velocity[i] ) )
 		{
-			pmove->Con_Printf( "PM  Got a NaN velocity %i\n", i );
+			PM_PRINTF("Got a NaN velocity on axis %i\n", i);
 			pmove->velocity[i] = 0;
 		}
 		if( IS_NAN( pmove->origin[i] ) )
 		{
-			pmove->Con_Printf( "PM  Got a NaN origin on %i\n", i );
+			PM_PRINTF("Got a NaN origin on axis %i\n", i);
 			pmove->origin[i] = 0;
 		}
 
 		// Bound it.
 		if( pmove->velocity[i] > pmove->movevars->maxvelocity )
 		{
-			pmove->Con_DPrintf( "PM  Got a velocity too high on %i\n", i );
+			PM_DPRINTF("Got a velocity too high on axis %i. Velocity: %d, Max: %d\n", i, pmove->velocity[i], pmove->movevars->maxvelocity);
 			pmove->velocity[i] = pmove->movevars->maxvelocity;
 		}
 		else if( pmove->velocity[i] < -pmove->movevars->maxvelocity )
 		{
-			pmove->Con_DPrintf( "PM  Got a velocity too low on %i\n", i );
+			PM_DPRINTF("Got a velocity too low on axis %i. Velocity: %d, Max: %d\n", i, pmove->velocity[i], pmove->movevars->maxvelocity);
 			pmove->velocity[i] = -pmove->movevars->maxvelocity;
 		}
 	}
@@ -1128,6 +1144,14 @@ void PM_WalkMove(void)
 	VectorAdd( pmove->velocity, pmove->basevelocity, pmove->velocity );
 
 	spd = Length( pmove->velocity );
+
+	// We must clamp the actual resultant velocity, as otherwise the wishspeed
+	// can take us over the top of the server's max speed. This is noticeable,
+	// for example, when moving forward + strafing against a wall.
+	if( spd > pmove->maxspeed )
+	{
+		VectorScale( pmove->velocity, pmove->maxspeed / spd, pmove->velocity );
+	}
 
 	if( spd < 1.0f )
 	{
@@ -3028,7 +3052,7 @@ void PM_PlayerMove( qboolean server )
 	switch( pmove->movetype )
 	{
 	default:
-		pmove->Con_DPrintf( "Bogus pmove player movetype %i on (%i) 0=cl 1=sv\n", pmove->movetype, pmove->server );
+		PM_DPRINTF("Unrecognised pmove player movetype %i on %s\n", pmove->movetype, pmove->server == 1 ? "server" : "client");
 		break;
 	case MOVETYPE_NONE:
 		break;
@@ -3304,7 +3328,7 @@ void PM_Move( struct playermove_s *ppmove, int server )
 
 	pmove = ppmove;
 
-	//pmove->Con_Printf( "PM_Move: %g, frametime %g, onground %i\n", pmove->time, pmove->frametime, pmove->onground );
+	//PM_PRINTF( "PM_Move: %g, frametime %g, onground %i\n", pmove->time, pmove->frametime, pmove->onground );
 
 	PM_PlayerMove( ( server != 0 ) ? true : false );
 
