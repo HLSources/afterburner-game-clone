@@ -13,6 +13,7 @@ extern cvar_t bot_chat;
 //cvars for debugging
 extern cvar_t bot_dontshoot; // does not shoot at humans or bots
 extern cvar_t bot_observer; // does not shoot at humans
+extern cvar_t bot_dontmove;
 
 extern cvar_t bot_profile_file;
 

@@ -10,6 +10,7 @@ cvar_t bot_jump = { "bot_jump" , "50" };
 cvar_t bot_chat = { "bot_chat" , "30" };
 cvar_t bot_dontshoot = { "bot_dontshoot" , "0" };
 cvar_t bot_observer = { "bot_observer" , "0" };
+cvar_t bot_dontmove = { "bot_dontmove", "0" };
 cvar_t bot_profile_file = { "bot_profile_file", "bot_profiles.json" };
 
 void Bot_RegisterCVars(void)
@@ -26,5 +27,6 @@ void Bot_RegisterCVars(void)
 	CVAR_REGISTER ( &bot_chat );
 	CVAR_REGISTER ( &bot_dontshoot );
 	CVAR_REGISTER ( &bot_observer );
+	CVAR_REGISTER ( &bot_dontmove );
 	CVAR_REGISTER ( &bot_profile_file );
 }

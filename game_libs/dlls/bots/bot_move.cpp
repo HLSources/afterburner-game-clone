@@ -245,6 +245,11 @@ BOOL CBaseBot::CheckWallOnRight( void )
 
 void CBaseBot::HandleMovement( void )
 {
+	if ( bot_dontmove.value != 0.0f )
+	{
+		return;
+	}
+
 	// face a smoothed out LookAtVec
 	Vector TrueLookAtVec = GetLookAtVec()
 						+ Memory.GetPrev1LookAtVec()
@@ -1206,4 +1211,3 @@ void CBaseBot::SteerSafeWanderImproved( STEER precedence )
 		SetDesiredVelocity( NewDesiredVelocity );
 	}
 }
-
