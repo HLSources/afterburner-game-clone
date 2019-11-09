@@ -125,15 +125,21 @@ private:
 	edict_t *m_pent;
 	int m_serialnumber;
 public:
-	edict_t *Get( void );
+	edict_t *Get( void ) const;
 	edict_t *Set( edict_t *pent );
 
-	operator int ();
+	operator int () const;
 
-	operator CBaseEntity *();
+	operator CBaseEntity*() const;
 
-	CBaseEntity *operator = ( CBaseEntity *pEntity );
-	CBaseEntity *operator ->();
+	CBaseEntity* operator = ( CBaseEntity *pEntity );
+	CBaseEntity* operator ->() const;
+
+	template<typename T>
+	T* EntityCast() const
+	{
+		return dynamic_cast<T*>(operator CBaseEntity*());
+	}
 };
 
 //

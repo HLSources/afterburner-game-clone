@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -107,7 +107,7 @@ int GetEntityAPI( DLL_FUNCTIONS *pFunctionTable, int interfaceVersion )
 	{
 		return FALSE;
 	}
-	
+
 	memcpy( pFunctionTable, &gFunctionTable, sizeof(DLL_FUNCTIONS) );
 	return TRUE;
 }
@@ -155,7 +155,7 @@ int DispatchSpawn( edict_t *pent )
 		}
 
 		// Handle global stuff here
-		if( pEntity && pEntity->pev->globalname ) 
+		if( pEntity && pEntity->pev->globalname )
 		{
 			const globalentity_t *pGlobal = gGlobalState.EntityFromTable( pEntity->pev->globalname );
 			if( pGlobal )
@@ -363,7 +363,7 @@ int DispatchRestore( edict_t *pent, SAVERESTOREDATA *pSaveData, int globalEntity
 		// Again, could be deleted, get the pointer again.
 		pEntity = (CBaseEntity *)GET_PRIVATE( pent );
 #if 0
-		if( pEntity && pEntity->pev->globalname && globalEntity ) 
+		if( pEntity && pEntity->pev->globalname && globalEntity )
 		{
 			ALERT( at_console, "Global %s is %s\n", STRING( pEntity->pev->globalname ), STRING( pEntity->pev->model ) );
 		}
@@ -379,7 +379,7 @@ int DispatchRestore( edict_t *pent, SAVERESTOREDATA *pSaveData, int globalEntity
 				pEntity->OverrideReset();
 			}
 		}
-		else if( pEntity && pEntity->pev->globalname ) 
+		else if( pEntity && pEntity->pev->globalname )
 		{
 			const globalentity_t *pGlobal = gGlobalState.EntityFromTable( pEntity->pev->globalname );
 			if( pGlobal )
@@ -427,16 +427,20 @@ void SaveReadFields( SAVERESTOREDATA *pSaveData, const char *pname, void *pBaseD
 	restoreHelper.ReadFields( pname, pBaseData, pFields, fieldCount );
 }
 
-edict_t *EHANDLE::Get( void ) 
-{ 
+edict_t *EHANDLE::Get( void ) const
+{
 	if( m_pent )
 	{
 		if( m_pent->serialnumber == m_serialnumber )
-			return m_pent; 
+		{
+			return m_pent;
+		}
 		else
+		{
 			return NULL;
+		}
 	}
-	return NULL; 
+	return NULL;
 }
 
 edict_t *EHANDLE::Set( edict_t *pent )
@@ -451,12 +455,12 @@ edict_t *EHANDLE::Set( edict_t *pent )
 		m_pent = NULL;
 		m_serialnumber = 0;
 	}
-	return pent; 
+	return pent;
 }
 
-EHANDLE::operator CBaseEntity *() 
-{ 
-	return (CBaseEntity *)GET_PRIVATE( Get() ); 
+EHANDLE::operator CBaseEntity*() const
+{
+	return (CBaseEntity *)GET_PRIVATE( Get() );
 }
 
 CBaseEntity *EHANDLE::operator = ( CBaseEntity *pEntity )
@@ -475,14 +479,14 @@ CBaseEntity *EHANDLE::operator = ( CBaseEntity *pEntity )
 	return pEntity;
 }
 
-EHANDLE::operator int ()
+EHANDLE::operator int () const
 {
 	return Get() != NULL;
 }
 
-CBaseEntity * EHANDLE::operator -> ()
+CBaseEntity* EHANDLE::operator -> () const
 {
-	return (CBaseEntity *)GET_PRIVATE( Get() ); 
+	return (CBaseEntity *)GET_PRIVATE( Get() );
 }
 
 // give health
@@ -513,10 +517,10 @@ int CBaseEntity::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 		return 0;
 
 	// UNDONE: some entity types may be immune or resistant to some bitsDamageType
-	
+
 	// if Attacker == Inflictor, the attack was a melee or other instant-hit attack.
-	// (that is, no actual entity projectile was involved in the attack so use the shooter's origin). 
-	if( pevAttacker == pevInflictor )	
+	// (that is, no actual entity projectile was involved in the attack so use the shooter's origin).
+	if( pevAttacker == pevInflictor )
 	{
 		vecTemp = pevAttacker->origin - VecBModelOrigin( pev );
 	}
@@ -616,7 +620,7 @@ int CBaseEntity::Restore( CRestore &restore )
 // Initialize absmin & absmax to the appropriate box
 void SetObjectCollisionBox( entvars_t *pev )
 {
-	if( ( pev->solid == SOLID_BSP ) && 
+	if( ( pev->solid == SOLID_BSP ) &&
 		 ( pev->angles.x || pev->angles.y || pev->angles.z ) )
 	{
 		// expand for rotation
@@ -673,7 +677,7 @@ int CBaseEntity::Intersects( CBaseEntity *pOther )
 void CBaseEntity::MakeDormant( void )
 {
 	SetBits( pev->flags, FL_DORMANT );
-	
+
 	// Don't touch
 	pev->solid = SOLID_NOT;
 	// Don't move
@@ -693,7 +697,7 @@ int CBaseEntity::IsDormant( void )
 
 BOOL CBaseEntity::IsInWorld( void )
 {
-	// position 
+	// position
 	if( pev->origin.x >= 4096 )
 		return FALSE;
 	if( pev->origin.y >= 4096 )
