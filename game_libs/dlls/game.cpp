@@ -21,6 +21,7 @@
 #include "bot_commands.h"
 #include "projectInterface/IProjectInterface.h"
 #include "projectInterface_server.h"
+#include "gameresources/GameResources.h"
 
 cvar_t displaysoundlist = {"displaysoundlist","0"};
 
@@ -457,6 +458,7 @@ cvar_t	sk_player_leg3	= { "sk_player_leg3","1" };
 void GameDLLInit( void )
 {
 	IProjectInterface::SetProjectInterfaceImpl(ProjectInterface_Server::StaticInstance());
+	GameResources::StaticInstance().Initialise();
 
 	// Register cvars here:
 

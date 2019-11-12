@@ -39,6 +39,8 @@
 #include "usercmd.h"
 #include "netadr.h"
 #include "pm_shared.h"
+#include "gameresources/GameResources.h"
+#include "prop_playercorpse.h"
 
 extern DLL_GLOBAL ULONG		g_ulModelIndexPlayer;
 extern DLL_GLOBAL BOOL		g_fGameOver;
@@ -145,7 +147,7 @@ void respawn( entvars_t *pev, BOOL fCopyCorpse )
 		if( fCopyCorpse )
 		{
 			// make a copy of the dead body for appearances sake
-			CopyToBodyQue( pev );
+			CPropPlayerCorpse::Create(pev);
 		}
 
 		// respawn player
@@ -852,6 +854,16 @@ void StartFrame( void )
 	}
 }
 
+static inline void PrecacheMultiplayerModels()
+{
+	const CUtlVector<CUtlString>& playerModelList = GameResources::StaticInstance().MultiplayerModelList();
+
+	FOR_EACH_VEC(playerModelList, index)
+	{
+		PRECACHE_MODEL(playerModelList[index].String());
+	}
+}
+
 void ClientPrecache( void )
 {
 	// setup precaches always needed
@@ -944,6 +956,8 @@ void ClientPrecache( void )
 	PRECACHE_SOUND( "player/pl_pain7.wav" );
 
 	PRECACHE_MODEL( "models/player.mdl" );
+
+	PrecacheMultiplayerModels();
 
 	// hud sounds
 	PRECACHE_SOUND( "common/wpn_hudoff.wav" );

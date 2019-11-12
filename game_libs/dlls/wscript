@@ -132,7 +132,8 @@ SOURCES = \
 	"dlls/weapons.cpp",
 	"dlls/world.cpp",
 	"dlls/xen.cpp",
-	"dlls/zombie.cpp"
+	"dlls/zombie.cpp",
+	"dlls/prop_playercorpse.cpp"
 ]
 
 def options(opt):

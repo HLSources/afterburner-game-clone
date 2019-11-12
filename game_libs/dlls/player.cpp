@@ -36,6 +36,8 @@
 #include "game.h"
 #include "pm_shared.h"
 #include "hltv.h"
+#include "gameresources/GameResources.h"
+#include "prop_playercorpse.h"
 
 // #define DUCKFIX
 
@@ -1343,7 +1345,7 @@ void CBasePlayer::StartDeathCam( void )
 			iRand--;
 		}
 
-		CopyToBodyQue( pev );
+		CPropPlayerCorpse::Create(pev);
 
 		UTIL_SetOrigin( pev, pSpot->v.origin );
 		pev->angles = pev->v_angle = pSpot->v.v_angle;
@@ -1352,7 +1354,7 @@ void CBasePlayer::StartDeathCam( void )
 	{
 		// no intermission spot. Push them up in the air, looking down at their corpse
 		TraceResult tr;
-		CopyToBodyQue( pev );
+		CPropPlayerCorpse::Create(pev);
 		UTIL_TraceLine( pev->origin, pev->origin + Vector( 0, 0, 128 ), ignore_monsters, edict(), &tr );
 
 		UTIL_SetOrigin( pev, tr.vecEndPos );
