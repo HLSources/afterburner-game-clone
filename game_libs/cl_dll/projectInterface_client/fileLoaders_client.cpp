@@ -19,3 +19,10 @@ void FileLoader_Client::Free(uint8_t* data)
 		gEngfuncs.COM_FreeFile(data);
 	}
 }
+
+char** FileLoader_Client::ListDirectory(const CUtlString& directoryPath, size_t& numFiles, bool gamedirOnly)
+{
+	// We don't currently support this on the client - there is no way to list a directory.
+	// The engine API needs upating!
+	return nullptr;
+}

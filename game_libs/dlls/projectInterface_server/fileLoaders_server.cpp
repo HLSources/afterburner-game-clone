@@ -18,3 +18,20 @@ void FileLoader_Server::Free(uint8_t* data)
 		FREE_FILE(data);
 	}
 }
+
+char** FileLoader_Server::ListDirectory(const CUtlString& directoryPath, size_t& numFiles, bool gamedirOnly)
+{
+	CUtlString wildcard(directoryPath);
+	wildcard.Append("/*");
+
+	int numFilesInt = 0;
+	char** fileList = g_physfuncs.pfnGetFilesList(wildcard.String(), &numFilesInt, gamedirOnly ? TRUE : FALSE);
+
+	if ( numFilesInt < 1 )
+	{
+		return nullptr;
+	}
+
+	numFiles = static_cast<size_t>(numFilesInt);
+	return fileList;
+}
