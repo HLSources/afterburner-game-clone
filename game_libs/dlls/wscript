@@ -176,7 +176,7 @@ def build(bld):
 
 	installPath = os.path.join(bld.env.PREFIX, bld.env.GAMEDIR, bld.env.SERVER_DIR)
 
-	bld.shlib(
+	task = bld.shlib(
 		source   = sources,
 		target   = bld.env.SERVER_TARGET,
 		features = 'c cxx',
@@ -186,4 +186,8 @@ def build(bld):
 		install_path = installPath,
 		subsystem = bld.env.MSVC_SUBSYSTEM,
 		idx      = bld.get_taskgen_count()
-	).env.cxxshlib_PATTERN = "%s.so"
+	)
+
+	if bld.env.DEST_OS == "linux":
+		# Remove "lib" from beginning of file name.
+		task.env.cxxshlib_PATTERN = "%s.so"

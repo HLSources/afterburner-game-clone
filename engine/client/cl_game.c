@@ -380,7 +380,26 @@ static void SPR_AdjustSize( float *x, float *y, float *w, float *h )
 {
 	float	xscale, yscale;
 
-	if( !x && !y && !w && !h ) return;
+	// scale for screen sizes
+	xscale = refState.width / (float)clgame.scrInfo.iWidth;
+	yscale = refState.height / (float)clgame.scrInfo.iHeight;
+
+	if( x ) *x *= xscale;
+	if( y ) *y *= yscale;
+	if( w ) *w *= xscale;
+	if( h ) *h *= yscale;
+}
+
+/*
+====================
+SPR_AdjustSize
+
+draw hudsprite routine
+====================
+*/
+static void SPR_AdjustSizei( int *x, int *y, int *w, int *h )
+{
+	float	xscale, yscale;
 
 	// scale for screen sizes
 	xscale = refState.width / (float)clgame.scrInfo.iWidth;
@@ -401,19 +420,9 @@ draw hudsprite routine
 */
 void PicAdjustSize( float *x, float *y, float *w, float *h )
 {
-	float	xscale, yscale;
-
 	if( !clgame.ds.adjust_size ) return;
-	if( !x && !y && !w && !h ) return;
 
-	// scale for screen sizes
-	xscale = refState.width / (float)clgame.scrInfo.iWidth;
-	yscale = refState.height / (float)clgame.scrInfo.iHeight;
-
-	if( x ) *x *= xscale;
-	if( y ) *y *= yscale;
-	if( w ) *w *= xscale;
-	if( h ) *h *= yscale;
+	SPR_AdjustSize( x, y, w, h );
 }
 
 static qboolean SPR_Scissor( float *x, float *y, float *width, float *height, float *u0, float *v0, float *u1, float *v1 )
@@ -890,6 +899,7 @@ Render crosshair
 void CL_DrawCrosshair( void )
 {
 	int	x, y, width, height;
+	float xscale, yscale;
 
 	if( !clgame.ds.pCrosshair || !cl_crosshair->value )
 		return;
@@ -922,16 +932,21 @@ void CL_DrawCrosshair( void )
 		y += ( clgame.viewport[3] >> 1 ) * screen[1] + 0.5f;
 	}
 
+	// back to logical sizes
+	xscale = (float)clgame.scrInfo.iWidth / refState.width;
+	yscale = (float)clgame.scrInfo.iHeight / refState.height;
+
+	x *= xscale;
+	y *= yscale;
+
 	// move at center the screen
 	x -= 0.5f * width;
 	y -= 0.5f * height;
 
 	clgame.ds.pSprite = clgame.ds.pCrosshair;
-	*(int *)clgame.ds.spriteColor = *(int *)clgame.ds.rgbaCrosshair;
+	Vector4Copy( clgame.ds.rgbaCrosshair, clgame.ds.spriteColor );
 
-	SPR_EnableScissor( x, y, width, height );
 	pfnSPR_DrawHoles( 0, x, y, &clgame.ds.rcCrosshair );
-	SPR_DisableScissor();
 }
 
 /*
@@ -941,25 +956,20 @@ CL_DrawLoading
 draw loading progress bar
 =============
 */
-static void CL_DrawLoading( float percent )
+static void CL_DrawLoadingOrPaused( qboolean paused, float percent )
 {
 	int	x, y, width, height, right;
-	float	xscale, yscale, step, s2;
 
-	R_GetTextureParms( &width, &height, cls.loadingBar );
+	R_GetTextureParms( &width, &height, paused ? cls.pauseIcon : cls.loadingBar );
 	x = ( clgame.scrInfo.iWidth - width ) >> 1;
 	y = ( clgame.scrInfo.iHeight - height) >> 1;
 
-	xscale = refState.width / (float)clgame.scrInfo.iWidth;
-	yscale = refState.height / (float)clgame.scrInfo.iHeight;
+	SPR_AdjustSizei( &x, &y, &width, &height );
 
-	x *= xscale;
-	y *= yscale;
-	width *= xscale;
-	height *= yscale;
+	if( !paused && cl_allow_levelshots->value )
+	{
+		float	step, s2;
 
-	if( cl_allow_levelshots->value )
-          {
 		ref.dllFuncs.Color4ub( 128, 128, 128, 255 );
 		ref.dllFuncs.GL_SetRenderMode( kRenderTransTexture );
 		ref.dllFuncs.R_DrawStretchPic( x, y, width, height, 0, 0, 1, 1, cls.loadingBar );
@@ -980,35 +990,6 @@ static void CL_DrawLoading( float percent )
 		ref.dllFuncs.GL_SetRenderMode( kRenderTransTexture );
 		ref.dllFuncs.R_DrawStretchPic( x, y, width, height, 0, 0, 1, 1, cls.loadingBar );
 	}
-}
-
-/*
-=============
-CL_DrawPause
-
-draw pause sign
-=============
-*/
-static void CL_DrawPause( void )
-{
-	int	x, y, width, height;
-	float	xscale, yscale;
-
-	R_GetTextureParms( &width, &height, cls.pauseIcon );
-	x = ( clgame.scrInfo.iWidth - width ) >> 1;
-	y = ( clgame.scrInfo.iHeight - height) >> 1;
-
-	xscale = refState.width / (float)clgame.scrInfo.iWidth;
-	yscale = refState.height / (float)clgame.scrInfo.iHeight;
-
-	x *= xscale;
-	y *= yscale;
-	width *= xscale;
-	height *= yscale;
-
-	ref.dllFuncs.Color4ub( 255, 255, 255, 255 );
-	ref.dllFuncs.GL_SetRenderMode( kRenderTransTexture );
-	ref.dllFuncs.R_DrawStretchPic( x, y, width, height, 0, 0, 1, 1, cls.pauseIcon );
 }
 
 void CL_DrawHUD( int state )
@@ -1034,15 +1015,15 @@ void CL_DrawHUD( int state )
 		CL_DrawCrosshair ();
 		CL_DrawCenterPrint ();
 		clgame.dllFuncs.pfnRedraw( cl.time, cl.intermission );
-		CL_DrawPause();
+		CL_DrawLoadingOrPaused( true, 0.0f );
 		break;
 	case CL_LOADING:
-		CL_DrawLoading( scr_loading->value );
+		CL_DrawLoadingOrPaused( false, scr_loading->value );
 		break;
 	case CL_CHANGELEVEL:
 		if( cls.draw_changelevel )
 		{
-			CL_DrawLoading( 100.0f );
+			CL_DrawLoadingOrPaused( false, 100.0f );
 			cls.draw_changelevel = false;
 		}
 		break;
@@ -1988,7 +1969,7 @@ static int pfnGetWindowCenterX( void )
 	}
 #endif
 
-#ifdef XASH_SDL
+#if XASH_SDL == 2
 	SDL_GetWindowPosition( host.hWnd, &x, NULL );
 #endif
 
@@ -2013,7 +1994,7 @@ static int pfnGetWindowCenterY( void )
 	}
 #endif
 
-#ifdef XASH_SDL
+#if XASH_SDL == 2
 	SDL_GetWindowPosition( host.hWnd, NULL, &y );
 #endif
 

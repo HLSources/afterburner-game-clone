@@ -196,20 +196,24 @@ void IN_ToggleClientMouse( int newstate, int oldstate )
 	else if( newstate == key_game )
 	{
 		// reset mouse pos, so cancel effect in game
-#ifdef XASH_SDL
-		if( CVAR_TO_BOOL(touch_enable) )
+#if SDL_VERSION_ATLEAST( 2, 0, 0 )
+		if( CVAR_TO_BOOL( touch_enable ) )
 		{
 			SDL_SetRelativeMouseMode( SDL_FALSE );
 			SDL_SetWindowGrab( host.hWnd, SDL_FALSE );
 		}
 		else
+#endif
 		{
 			Platform_SetMousePos( host.window_center_x, host.window_center_y );
+#if XASH_SDL
 			SDL_SetWindowGrab( host.hWnd, allowGrab ? SDL_TRUE : SDL_FALSE );
+#if SDL_VERSION_ATLEAST( 2, 0, 0 )
 			if( clgame.dllFuncs.pfnLookEvent )
 				SDL_SetRelativeMouseMode( allowGrab ? SDL_TRUE : SDL_FALSE );
-		}
+#endif
 #endif // XASH_SDL
+		}
 		if( cls.initialized )
 			clgame.dllFuncs.IN_ActivateMouse();
 	}
@@ -218,9 +222,11 @@ void IN_ToggleClientMouse( int newstate, int oldstate )
 	{
 #ifdef XASH_SDL
 		SDL_SetWindowGrab(host.hWnd, SDL_FALSE);
+#if SDL_VERSION_ATLEAST( 2, 0, 0 )
 		if( clgame.dllFuncs.pfnLookEvent )
 			SDL_SetRelativeMouseMode( SDL_FALSE );
 #endif
+#endif // XASH_SDL
 #ifdef __ANDROID__
 		Android_ShowMouse( true );
 #endif
@@ -320,7 +326,7 @@ void IN_DeactivateMouse( void )
 	in_mouseactive = false;
 #ifdef XASH_SDL
 	SDL_SetWindowGrab( host.hWnd, SDL_FALSE );
-#endif
+#endif // XASH_SDL
 }
 
 /*
@@ -418,10 +424,12 @@ void IN_MouseEvent( void )
 	}
 	else
 	{
-#if defined(XASH_SDL) && !defined(_WIN32)
+#if XASH_SDL && !defined(_WIN32)
+#if SDL_VERSION_ATLEAST( 2, 0, 0 )
 		SDL_SetRelativeMouseMode( SDL_FALSE );
+#endif // SDL_VERSION_ATLEAST( 2, 0, 0 )
 		SDL_ShowCursor( SDL_TRUE );
-#endif
+#endif // XASH_SDL && !defined(_WIN32)
 		IN_MouseMove();
 	}
 }
