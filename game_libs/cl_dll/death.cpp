@@ -22,6 +22,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include "miniutl.h"
 
 DECLARE_MESSAGE( m_DeathNotice, DeathMsg )
 
@@ -106,7 +107,7 @@ int CHudDeathNotice::Draw( float flTime )
 			continue;
 		}
 
-		rgDeathNoticeList[i].flDisplayTime = MIN( rgDeathNoticeList[i].flDisplayTime, gHUD.m_flTime + DEATHNOTICE_DISPLAY_TIME );
+		rgDeathNoticeList[i].flDisplayTime = Min( rgDeathNoticeList[i].flDisplayTime, gHUD.m_flTime + DEATHNOTICE_DISPLAY_TIME );
 
 		// Only draw if the viewport will let me
 		// vgui dropped out

@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include "hud.h"
 #include "cl_util.h"
+#include "miniutl.h"
 //#include "triangleapi.h"
 
 #define MAX_LOGO_FRAMES 56
@@ -76,7 +77,7 @@ void CHud::Think( void )
 	if( m_iFOV == 0 )
 	{
 		// only let players adjust up in fov,  and only if they are not overriden by something else
-		m_iFOV = MAX( default_fov->value, 90 );
+		m_iFOV = Max( default_fov->value, 90.0f );
 	}
 }
 

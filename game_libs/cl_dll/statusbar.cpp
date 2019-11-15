@@ -26,6 +26,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "miniutl.h"
 
 DECLARE_MESSAGE( m_StatusBar, StatusText )
 DECLARE_MESSAGE( m_StatusBar, StatusValue )
@@ -198,7 +199,7 @@ int CHudStatusBar::Draw( float fTime )
 		// let user set status ID bar centering
 		if( ( i == STATUSBAR_ID_LINE ) && CVAR_GET_FLOAT( "hud_centerid" ) )
 		{
-			x = MAX( 0, MAX( 2, ( ScreenWidth - TextWidth ) ) / 2 );
+			x = Max( 0, Max( 2, ( ScreenWidth - TextWidth ) ) / 2 );
 			y = ( ScreenHeight / 2 ) + ( TextHeight * CVAR_GET_FLOAT( "hud_centerid" ) );
 		}
 

@@ -112,12 +112,12 @@ playermove_t *pmove = NULL;
 #pragma warning(disable : 4244)
 #endif
 
-#ifndef MAX
-#define MAX(a, b)  (((a) > (b)) ? (a) : (b))
+#ifndef MAX_OF
+#define MAX_OF(a, b)  (((a) > (b)) ? (a) : (b))
 #endif
 
-#ifndef MIN
-#define MIN(a, b)  (((a) < (b)) ? (a) : (b))
+#ifndef MIN_OF
+#define MIN_OF(a, b)  (((a) < (b)) ? (a) : (b))
 #endif
 
 // up / down
@@ -239,7 +239,7 @@ void PM_InitTextureTypes(void)
 			continue;
 
 		// null-terminate name and save in sentences array
-		j = MIN( j, CBTEXTURENAMEMAX - 1 + i );
+		j = MIN_OF( j, CBTEXTURENAMEMAX - 1 + i );
 		buffer[j] = 0;
 		strcpy( &( grgszTextureName[gcTextures++][0] ), &( buffer[i] ) );
 	}
@@ -2073,7 +2073,7 @@ void PM_Duck( void )
 				pmove->bInDuck = true;
 			}
 
-			time = MAX( 0.0, ( 1.0 - (float)pmove->flDuckTime / 1000.0 ) );
+			time = MAX_OF( 0.0, ( 1.0 - (float)pmove->flDuckTime / 1000.0 ) );
 
 			if( pmove->bInDuck )
 			{
@@ -2850,7 +2850,7 @@ void PM_DropPunchAngle( vec3_t punchangle )
 
 	len = VectorNormalize( punchangle );
 	len -= ( 10.0 + len * 0.5 ) * pmove->frametime;
-	len = MAX( len, 0.0 );
+	len = MAX_OF( len, 0.0 );
 	VectorScale( punchangle, len, punchangle );
 }
 
@@ -2873,7 +2873,7 @@ void PM_CheckParamters( void )
 	maxspeed = pmove->clientmaxspeed; //atof( pmove->PM_Info_ValueForKey( pmove->physinfo, "maxspd" ) );
 	if( maxspeed != 0.0 )
 	{
-		pmove->maxspeed = MIN( maxspeed, pmove->maxspeed );
+		pmove->maxspeed = MIN_OF( maxspeed, pmove->maxspeed );
 	}
 
 	if( ( spd != 0.0 ) && ( spd > pmove->maxspeed ) )

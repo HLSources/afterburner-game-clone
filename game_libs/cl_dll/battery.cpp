@@ -24,6 +24,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include "miniutl.h"
 
 DECLARE_MESSAGE( m_Battery, Battery )
 
@@ -78,7 +79,7 @@ int CHudBattery::Draw( float flTime )
 	wrect_t rc;
 
 	rc = *m_prc2;
-	rc.top  += m_iHeight * ( (float)( 100 - ( MIN( 100,m_iBat ) ) ) * 0.01 );	// battery can go from 0 to 100 so * 0.01 goes from 0 to 1
+	rc.top  += m_iHeight * ( (float)( 100 - ( Min( 100,m_iBat ) ) ) * 0.01 );	// battery can go from 0 to 100 so * 0.01 goes from 0 to 1
 
 	UnpackRGB( r, g, b, RGB_YELLOWISH );
 

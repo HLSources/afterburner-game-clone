@@ -26,6 +26,7 @@
 
 #include "StudioModelRenderer.h"
 #include "GameStudioModelRenderer.h"
+#include "miniutl.h"
 
 // Predicted values saved off in hl_weapons.cpp
 void Game_GetSequence( int *seq, int *gaitseq );
@@ -292,8 +293,8 @@ void CGameStudioModelRenderer::StudioEstimateGait( entity_state_t *pplayer )
 	vec3_t est_velocity;
 
 	dt = (m_clTime - m_clOldTime);
-	dt = MAX( 0.0, dt );
-	dt = MIN( 1.0, dt );
+	dt = Max( 0.0, dt );
+	dt = Min( 1.0, dt );
 
 	if (dt == 0 || m_pPlayerInfo->renderframe == m_nFrameCount)
 	{
@@ -368,8 +369,8 @@ void CGameStudioModelRenderer::StudioProcessGait( entity_state_t *pplayer )
 	m_pCurrentEntity->latched.prevangles[PITCH] = m_pCurrentEntity->angles[PITCH];
 
 	dt = (m_clTime - m_clOldTime);
-	dt = MAX( 0.0, dt );
-	dt = MIN( 1.0, dt );
+	dt = Max( 0.0, dt );
+	dt = Min( 1.0, dt );
 
 	StudioEstimateGait( pplayer );
 
@@ -403,8 +404,8 @@ void CGameStudioModelRenderer::StudioProcessGait( entity_state_t *pplayer )
 	}
 
 	float blend_yaw = ( flYaw / 90.0 ) * 128.0 + 127.0;
-	blend_yaw = MIN( 255.0, blend_yaw );
-	blend_yaw = MAX( 0.0, blend_yaw );
+	blend_yaw = Min( 255.0, blend_yaw );
+	blend_yaw = Max( 0.0, blend_yaw );
 
 	blend_yaw = 255.0 - blend_yaw;
 
@@ -570,7 +571,7 @@ void CGameStudioModelRenderer::SetupClientAnimation( entity_state_t *pplayer )
 
 	curtime = gEngfuncs.GetClientTime();
 	dt = curtime - oldtime;
-	dt = MIN( 1.0, MAX( 0.0, dt ) );
+	dt = Min( 1.0, Max( 0.0, dt ) );
 
 	oldtime = curtime;
 	st = &g_clientstate;

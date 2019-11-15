@@ -27,6 +27,7 @@
 #include "hltv.h"
 #include "weaponregistry.h"
 #include "weaponatts_collection.h"
+#include "miniutl.h"
 
 // Spectator Mode
 extern "C"
@@ -215,8 +216,8 @@ float V_CalcBob( struct ref_params_s *pparams )
 
 	bob = sqrt( vel[0] * vel[0] + vel[1] * vel[1] ) * cl_bob->value;
 	bob = bob * 0.3 + bob * 0.7 * sin(cycle);
-	bob = MIN( bob, 4 );
-	bob = MAX( bob, -7 );
+	bob = Min( bob, 4.0f );
+	bob = Max( bob, -7.0f );
 	return bob;
 }
 
@@ -710,7 +711,7 @@ void V_CalcNormalRefdef( struct ref_params_s *pparams )
 			if( dt > 0.0 )
 			{
 				frac = ( t - ViewInterp.OriginTime[foundidx & ORIGIN_MASK] ) / dt;
-				frac = MIN( 1.0, frac );
+				frac = Min( 1.0, frac );
 				VectorSubtract( ViewInterp.Origins[( foundidx + 1 ) & ORIGIN_MASK], ViewInterp.Origins[foundidx & ORIGIN_MASK], delta );
 				VectorMA( ViewInterp.Origins[foundidx & ORIGIN_MASK], frac, delta, neworg );
 
@@ -1585,8 +1586,8 @@ void V_DropPunchAngle( float frametime, float *ev_punchangle )
 	float len;
 
 	len = VectorNormalize( ev_punchangle );
-	len -= ( 10.0 + len * 0.5 ) * frametime;
-	len = MAX( len, 0.0 );
+	len -= ( 10.0f + len * 0.5f ) * frametime;
+	len = Max( len, 0.0f );
 	VectorScale( ev_punchangle, len, ev_punchangle );
 }
 

@@ -23,6 +23,7 @@
 #include "decals.h"
 #include "func_break.h"
 #include "shake.h"
+#include "miniutl.h"
 
 #define	SF_GIBSHOOTER_REPEATABLE		1 // allows a gibshooter to be refired
 
@@ -298,12 +299,12 @@ void CBeam::SetObjectCollisionBox( void )
 {
 	const Vector &startPos = GetStartPos(), &endPos = GetEndPos();
 
-	pev->absmin.x = MIN( startPos.x, endPos.x );
-	pev->absmin.y = MIN( startPos.y, endPos.y );
-	pev->absmin.z = MIN( startPos.z, endPos.z );
-	pev->absmax.x = MAX( startPos.x, endPos.x );
-	pev->absmax.y = MAX( startPos.y, endPos.y );
-	pev->absmax.z = MAX( startPos.z, endPos.z );
+	pev->absmin.x = Min( startPos.x, endPos.x );
+	pev->absmin.y = Min( startPos.y, endPos.y );
+	pev->absmin.z = Min( startPos.z, endPos.z );
+	pev->absmax.x = Max( startPos.x, endPos.x );
+	pev->absmax.y = Max( startPos.y, endPos.y );
+	pev->absmax.z = Max( startPos.z, endPos.z );
 }
 #endif
 

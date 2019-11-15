@@ -35,6 +35,7 @@
 #include "weaponregistry.h"
 #include "genericweapon.h"
 #include "weaponatts_collection.h"
+#include "miniutl.h"
 
 extern globalvars_t *gpGlobals;
 extern int g_iUser1;
@@ -347,7 +348,7 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 	{
 #if 0 // FIXME, need ammo on client to make this work right
 		// complete the reload.
-		int j = MIN( iMaxClip() - m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] );
+		int j = Min( iMaxClip() - m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] );
 
 		// Add them to the clip
 		m_iClip += j;

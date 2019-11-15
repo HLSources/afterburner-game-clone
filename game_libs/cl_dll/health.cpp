@@ -29,6 +29,7 @@
 
 #include "mobility_int.h"
 #include "damagedefs.h"
+#include "miniutl.h"
 
 DECLARE_MESSAGE( m_Health, Health )
 DECLARE_MESSAGE( m_Health, Damage )
@@ -274,25 +275,25 @@ void CHudHealth::CalcDamageDirection( vec3_t vecFrom )
 		if( side > 0 )
 		{
 			if( side > 0.3 )
-				m_fAttackFront = MAX( m_fAttackFront, side );
+				m_fAttackFront = Max( m_fAttackFront, side );
 		}
 		else
 		{
 			float f = fabs( side );
 			if( f > 0.3 )
-				m_fAttackRear = MAX( m_fAttackRear, f );
+				m_fAttackRear = Max( m_fAttackRear, f );
 		}
 
 		if( front > 0 )
 		{
 			if( front > 0.3 )
-				m_fAttackRight = MAX( m_fAttackRight, front );
+				m_fAttackRight = Max( m_fAttackRight, front );
 		}
 		else
 		{
 			float f = fabs( front );
 			if( f > 0.3 )
-				m_fAttackLeft = MAX( m_fAttackLeft, f );
+				m_fAttackLeft = Max( m_fAttackLeft, f );
 		}
 	}
 }
@@ -314,28 +315,28 @@ int CHudHealth::DrawPain( float flTime )
 	if( m_fAttackFront > 0.4 )
 	{
 		GetPainColor( r, g, b );
-		shade = a * MAX( m_fAttackFront, 0.5 );
+		shade = a * Max( m_fAttackFront, 0.5f );
 		ScaleColors( r, g, b, shade );
 		SPR_Set( m_hSprite, r, g, b );
 
 		x = ScreenWidth / 2 - SPR_Width( m_hSprite, 0 ) / 2;
 		y = ScreenHeight / 2 - SPR_Height( m_hSprite, 0 ) * 3;
 		SPR_DrawAdditive( 0, x, y, NULL );
-		m_fAttackFront = MAX( 0, m_fAttackFront - fFade );
+		m_fAttackFront = Max( 0.0f, m_fAttackFront - fFade );
 	} else
 		m_fAttackFront = 0;
 
 	if( m_fAttackRight > 0.4 )
 	{
 		GetPainColor( r, g, b );
-		shade = a * MAX( m_fAttackRight, 0.5 );
+		shade = a * Max( m_fAttackRight, 0.5f );
 		ScaleColors( r, g, b, shade );
 		SPR_Set( m_hSprite, r, g, b );
 
 		x = ScreenWidth / 2 + SPR_Width( m_hSprite, 1 ) * 2;
 		y = ScreenHeight / 2 - SPR_Height( m_hSprite,1 ) / 2;
 		SPR_DrawAdditive( 1, x, y, NULL );
-		m_fAttackRight = MAX( 0, m_fAttackRight - fFade );
+		m_fAttackRight = Max( 0.0f, m_fAttackRight - fFade );
 	}
 	else
 		m_fAttackRight = 0;
@@ -343,14 +344,14 @@ int CHudHealth::DrawPain( float flTime )
 	if( m_fAttackRear > 0.4 )
 	{
 		GetPainColor( r, g, b );
-		shade = a * MAX( m_fAttackRear, 0.5 );
+		shade = a * Max( m_fAttackRear, 0.5f );
 		ScaleColors( r, g, b, shade );
 		SPR_Set( m_hSprite, r, g, b );
 
 		x = ScreenWidth / 2 - SPR_Width( m_hSprite, 2 ) / 2;
 		y = ScreenHeight / 2 + SPR_Height( m_hSprite, 2 ) * 2;
 		SPR_DrawAdditive( 2, x, y, NULL );
-		m_fAttackRear = MAX( 0, m_fAttackRear - fFade );
+		m_fAttackRear = Max( 0.0f, m_fAttackRear - fFade );
 	}
 	else
 		m_fAttackRear = 0;
@@ -358,7 +359,7 @@ int CHudHealth::DrawPain( float flTime )
 	if( m_fAttackLeft > 0.4 )
 	{
 		GetPainColor( r, g, b );
-		shade = a * MAX( m_fAttackLeft, 0.5 );
+		shade = a * Max( m_fAttackLeft, 0.5f );
 		ScaleColors( r, g, b, shade );
 		SPR_Set( m_hSprite, r, g, b );
 
@@ -366,7 +367,7 @@ int CHudHealth::DrawPain( float flTime )
 		y = ScreenHeight / 2 - SPR_Height( m_hSprite,3 ) / 2;
 		SPR_DrawAdditive( 3, x, y, NULL );
 
-		m_fAttackLeft = MAX( 0, m_fAttackLeft - fFade );
+		m_fAttackLeft = Max( 0.0f, m_fAttackLeft - fFade );
 	} else
 		m_fAttackLeft = 0;
 
@@ -398,7 +399,7 @@ int CHudHealth::DrawDamage( float flTime )
 			SPR_Set( gHUD.GetSprite( m_HUD_dmg_bio + i ), r, g, b );
 			SPR_DrawAdditive( 0, pdmg->x, pdmg->y, &gHUD.GetSpriteRect( m_HUD_dmg_bio + i ) );
 
-			pdmg->fExpire = MIN( flTime + DMG_IMAGE_LIFE, pdmg->fExpire );
+			pdmg->fExpire = Min( flTime + DMG_IMAGE_LIFE, pdmg->fExpire );
 
 			if( pdmg->fExpire <= flTime		// when the time has expired
 				&& a < 40 )						// and the flash is at the low point of the cycle
