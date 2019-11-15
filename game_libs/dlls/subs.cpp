@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -63,7 +63,7 @@ public:
 private:
 };
 
-// These are the new entry points to entities. 
+// These are the new entry points to entities.
 LINK_ENTITY_TO_CLASS( info_player_deathmatch, CBaseDMStart )
 LINK_ENTITY_TO_CLASS( info_player_start, CPointEntity )
 LINK_ENTITY_TO_CLASS( info_landmark, CPointEntity )
@@ -227,7 +227,7 @@ void CBaseDelay::SUB_UseTargets( CBaseEntity *pActivator, USE_TYPE useType, floa
 	if( m_flDelay != 0 )
 	{
 		// create a temp object to fire at a later time
-		CBaseDelay *pTemp = GetClassPtr( (CBaseDelay *)NULL );
+		CBaseDelay *pTemp = GetClassPtr<CBaseDelay>();
 		pTemp->pev->classname = MAKE_STRING( "DelayedUse" );
 
 		pTemp->pev->nextthink = gpGlobals->time + m_flDelay;
@@ -319,7 +319,7 @@ void CBaseDelay::DelayThink( void )
 
 	if( pev->owner != NULL )		// A player activated this on delay
 	{
-		pActivator = CBaseEntity::Instance( pev->owner );	
+		pActivator = CBaseEntity::Instance( pev->owner );
 	}
 
 	// The use type is cached (and stashed) in pev->button

@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   This source code contains proprietary and confidential information of
@@ -159,7 +159,7 @@ void CFlockingFlyerFlock::Spawn()
 //=========================================================
 void CFlockingFlyerFlock::Precache()
 {
-	//PRECACHE_MODEL( "models/aflock.mdl" );		
+	//PRECACHE_MODEL( "models/aflock.mdl" );
 	PRECACHE_MODEL( "models/boid.mdl" );
 
 	PrecacheFlockSounds();
@@ -187,7 +187,7 @@ void CFlockingFlyerFlock::SpawnFlock( void )
 
 	for( iCount = 0; iCount < m_cFlockSize; iCount++ )
 	{
-		pBoid = GetClassPtr( (CFlockingFlyer *)NULL );
+		pBoid = GetClassPtr<CFlockingFlyer>();
 
 		if( !pLeader )
 		{
@@ -451,7 +451,7 @@ void CFlockingFlyer::FormFlock( void )
 	SetThink( &CFlockingFlyer::IdleThink );// now that flock is formed, go to idle and wait for a player to come along.
 	pev->nextthink = gpGlobals->time;
 }
- 
+
 //=========================================================
 // Searches for boids that are too close and pushes them away
 //=========================================================
@@ -482,7 +482,7 @@ void CFlockingFlyer::SpreadFlock()
 }
 
 //=========================================================
-// Alters the caller's course if he's too close to others 
+// Alters the caller's course if he's too close to others
 //
 // This function should **ONLY** be called when Caller's velocity is normalized!!
 //=========================================================
@@ -553,7 +553,7 @@ BOOL CFlockingFlyer::FPathBlocked()
 	if( !fBlocked && gpGlobals->time - m_flLastBlockedTime > 6 )
 	{
 		// not blocked, and it's been a few seconds since we've actually been blocked.
-		m_flFakeBlockedTime = gpGlobals->time + RANDOM_LONG( 1, 3 ); 
+		m_flFakeBlockedTime = gpGlobals->time + RANDOM_LONG( 1, 3 );
 	}
 
 	return	fBlocked;
@@ -595,7 +595,7 @@ void CFlockingFlyer::FlockLeaderThink( void )
 
 		return;
 	}
-	
+
 	// IF we get this far in the function, the leader's path is blocked!
 	m_fPathBlocked = TRUE;
 
@@ -667,7 +667,7 @@ void CFlockingFlyer::FlockLeaderThink( void )
 //=========================================================
 // follower boids execute this code when flocking
 //=========================================================
-void CFlockingFlyer::FlockFollowerThink( void )	
+void CFlockingFlyer::FlockFollowerThink( void )
 {
 	TraceResult tr;
 	Vector vecDist;
@@ -679,14 +679,14 @@ void CFlockingFlyer::FlockFollowerThink( void )
 
 	if( IsLeader() || !InSquad() )
 	{
-		// the leader has been killed and this flyer suddenly finds himself the leader. 
+		// the leader has been killed and this flyer suddenly finds himself the leader.
 		SetThink( &CFlockingFlyer::FlockLeaderThink );
 		return;
 	}
 
 	vecDirToLeader = ( m_pSquadLeader->pev->origin - pev->origin );
 	flDistToLeader = vecDirToLeader.Length();
-	
+
 	// match heading with leader
 	pev->angles = m_pSquadLeader->pev->angles;
 
@@ -722,7 +722,7 @@ void CFlockingFlyer::FlockFollowerThink( void )
 	if( flDistToLeader > AFLOCK_TOO_FAR )
 	{
 		vecDirToLeader = vecDirToLeader.Normalize();
-		pev->velocity = (pev->velocity + vecDirToLeader) * 0.5; 	
+		pev->velocity = (pev->velocity + vecDirToLeader) * 0.5;
 	}
 
 	// clamp speeds and handle acceleration
@@ -749,7 +749,7 @@ void CFlockingFlyer::FlockFollowerThink( void )
 	// Is this boid's course blocked?
 	if( FBoidPathBlocked( pev ) )
 	{
-		// course is still blocked from last time. Just keep flying along adjusted 
+		// course is still blocked from last time. Just keep flying along adjusted
 		// velocity
 		if( m_fCourseAdjust )
 		{

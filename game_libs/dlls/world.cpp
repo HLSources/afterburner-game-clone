@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -38,8 +38,6 @@
 extern CGraph WorldGraph;
 extern CSoundEnt *pSoundEnt;
 
-extern CBaseEntity				*g_pLastSpawn;
-DLL_GLOBAL edict_t				*g_pBodyQueueHead;
 CGlobalState					gGlobalState;
 extern DLL_GLOBAL int				gDisplayTitle;
 
@@ -49,7 +47,7 @@ extern void W_Precache( void );
 // This must match the list in util.h
 //
 DLL_DECALLIST gDecals[] = {
-	{ "{shot1", 0 },		// DECAL_GUNSHOT1 
+	{ "{shot1", 0 },		// DECAL_GUNSHOT1
 	{ "{shot2", 0 },		// DECAL_GUNSHOT2
 	{ "{shot3", 0 },		// DECAL_GUNSHOT3
 	{ "{shot4", 0 },		// DECAL_GUNSHOT4
@@ -198,64 +196,8 @@ void CDecal::KeyValue( KeyValueData *pkvd )
 // Body queue class here.... It's really just CBaseEntity
 class CCorpse : public CBaseEntity
 {
-	virtual int ObjectCaps( void ) { return FCAP_DONT_SAVE; }	
+	virtual int ObjectCaps( void ) { return FCAP_DONT_SAVE; }
 };
-
-LINK_ENTITY_TO_CLASS( bodyque, CCorpse )
-
-static void InitBodyQue( void )
-{
-	string_t istrClassname = MAKE_STRING( "bodyque" );
-
-	g_pBodyQueueHead = CREATE_NAMED_ENTITY( istrClassname );
-	entvars_t *pev = VARS( g_pBodyQueueHead );
-
-	// Reserve 3 more slots for dead bodies
-	for( int i = 0; i < 3; i++ )
-	{
-		pev->owner = CREATE_NAMED_ENTITY( istrClassname );
-		pev = VARS( pev->owner );
-	}
-
-	pev->owner = g_pBodyQueueHead;
-}
-
-//
-// make a body que entry for the given ent so the ent can be respawned elsewhere
-//
-// GLOBALS ASSUMED SET:  g_eoBodyQueueHead
-//
-void CopyToBodyQue( entvars_t *pev ) 
-{
-	if( pev->effects & EF_NODRAW )
-		return;
-
-	entvars_t *pevHead = VARS( g_pBodyQueueHead );
-
-	pevHead->angles		= pev->angles;
-	pevHead->model		= pev->model;
-	pevHead->modelindex	= pev->modelindex;
-	pevHead->frame		= pev->frame;
-	pevHead->colormap	= pev->colormap;
-	pevHead->movetype	= MOVETYPE_TOSS;
-	pevHead->velocity	= pev->velocity;
-	pevHead->flags		= 0;
-	pevHead->deadflag	= pev->deadflag;
-	pevHead->renderfx	= kRenderFxDeadPlayer;
-	pevHead->renderamt	= ENTINDEX( ENT( pev ) );
-
-	pevHead->effects = pev->effects | EF_NOINTERP;
-	//pevHead->goalstarttime = pev->goalstarttime;
-	//pevHead->goalframe = pev->goalframe;
-	//pevHead->goalendtime = pev->goalendtime ;
-
-	pevHead->sequence = pev->sequence;
-	pevHead->animtime = pev->animtime;
-
-	UTIL_SetOrigin( pevHead, pev->origin );
-	UTIL_SetSize( pevHead, pev->mins, pev->maxs );
-	g_pBodyQueueHead = pevHead->owner;
-}
 
 CGlobalState::CGlobalState( void )
 {
@@ -264,7 +206,7 @@ CGlobalState::CGlobalState( void )
 
 void CGlobalState::Reset( void )
 {
-	m_pList = NULL; 
+	m_pList = NULL;
 	m_listCount = 0;
 }
 
@@ -364,7 +306,7 @@ int CGlobalState::Save( CSave &save )
 
 	if( !save.WriteFields( "GLOBAL", this, m_SaveData, ARRAYSIZE( m_SaveData ) ) )
 		return 0;
-	
+
 	pEntity = m_pList;
 	for( i = 0; i < m_listCount && pEntity; i++ )
 	{
@@ -373,7 +315,7 @@ int CGlobalState::Save( CSave &save )
 
 		pEntity = pEntity->pNext;
 	}
-	
+
 	return 1;
 }
 
@@ -450,7 +392,7 @@ LINK_ENTITY_TO_CLASS( worldspawn, CWorld )
 #define SF_WORLD_FORCETEAM	0x0004		// Force teams
 
 extern DLL_GLOBAL BOOL		g_fGameOver;
-float g_flWeaponCheat; 
+float g_flWeaponCheat;
 
 void CWorld::Spawn( void )
 {
@@ -460,7 +402,6 @@ void CWorld::Spawn( void )
 
 void CWorld::Precache( void )
 {
-	g_pLastSpawn = NULL;
 #if 1
 	CVAR_SET_STRING( "sv_gravity", "800" ); // 67ft/sec
 	CVAR_SET_STRING( "sv_stepsize", "18" );
@@ -479,11 +420,11 @@ void CWorld::Precache( void )
 
 	g_pGameRules = InstallGameRules();
 
-	//!!!UNDONE why is there so much Spawn code in the Precache function? I'll just keep it here 
+	//!!!UNDONE why is there so much Spawn code in the Precache function? I'll just keep it here
 
 	///!!!LATER - do we want a sound ent in deathmatch? (sjb)
 	//pSoundEnt = CBaseEntity::Create( "soundent", g_vecZero, g_vecZero, edict() );
-	pSoundEnt = GetClassPtr( ( CSoundEnt *)NULL );
+	pSoundEnt = GetClassPtr<CSoundEnt>();
 
 	if( pSoundEnt )
 	{
@@ -493,8 +434,6 @@ void CWorld::Precache( void )
 	{
 		ALERT ( at_console, "**COULD NOT CREATE SOUNDENT**\n" );
 	}
-
-	InitBodyQue();
 
 	// init sentence group playback stuff from sentences.txt.
 	// ok to call this multiple times, calls after first are ignored.
@@ -514,7 +453,7 @@ void CWorld::Precache( void )
 
 	PRECACHE_SOUND( "common/bodydrop3.wav" );// dead bodies hitting the ground (animation events)
 	PRECACHE_SOUND( "common/bodydrop4.wav" );
-	
+
 	g_Language = (int)CVAR_GET_FLOAT( "sv_language" );
 	if( g_Language == LANGUAGE_GERMAN )
 	{
@@ -778,7 +717,7 @@ int DispatchPhysicsEntity( edict_t *pEdict )
 
 	if( !pEntity )
 	{
-		//ALERT( at_console, "skip %s [%i] without private data\n", STRING( pEdict->v.classname ), ENTINDEX( pEdict ) ); 
+		//ALERT( at_console, "skip %s [%i] without private data\n", STRING( pEdict->v.classname ), ENTINDEX( pEdict ) );
 		return 0;	// not initialized
 	}
 

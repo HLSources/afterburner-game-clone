@@ -2508,7 +2508,7 @@ CBasePlayer* UTIL_CBasePlayerByIndex( int playerIndex )
 		return NULL;
 	}
 
-	return GetClassPtr((CBasePlayer*)&pPlayerEdict->v);
+	return GetClassPtrFromEdict<CBasePlayer>(pPlayerEdict);
 }
 
 const char* UTIL_GetPlayerNetName(CBasePlayer* player)
@@ -2549,4 +2549,9 @@ CUtlString UTIL_SanitisePlayerNetName(const CUtlString& name)
 
 	out.TrimTrailingWhitespace();
 	return out;
+}
+
+BOOL FNullEnt(CBaseEntity* ent)
+{
+	return !ent || FNullEnt(ent->edict());
 }

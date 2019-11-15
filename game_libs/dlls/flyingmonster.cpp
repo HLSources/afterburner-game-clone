@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   This source code contains proprietary and confidential information of
@@ -22,8 +22,6 @@
 
 #define FLYING_AE_FLAP		(8)
 #define FLYING_AE_FLAPSOUND	(9)
-
-extern DLL_GLOBAL edict_t *g_pBodyQueueHead;
 
 int CFlyingMonster::CheckLocalMove( const Vector &vecStart, const Vector &vecEnd, CBaseEntity *pTarget, float *pflDist )
 {
@@ -63,14 +61,14 @@ BOOL CFlyingMonster::FTriangulate( const Vector &vecStart, const Vector &vecEnd,
 }
 
 Activity CFlyingMonster::GetStoppedActivity( void )
-{ 
+{
 	if( pev->movetype != MOVETYPE_FLY )		// UNDONE: Ground idle here, IDLE may be something else
 		return ACT_IDLE;
 
-	return ACT_HOVER; 
+	return ACT_HOVER;
 }
 
-void CFlyingMonster::Stop( void ) 
+void CFlyingMonster::Stop( void )
 {
 	Activity stopped = GetStoppedActivity();
 	if( m_IdealActivity != stopped )
@@ -120,7 +118,7 @@ void CFlyingMonster::HandleAnimEvent( MonsterEvent_t *pEvent )
 		break;
 	case FLYING_AE_FLAPSOUND:
 		if( m_pFlapSound )
-			EMIT_SOUND( edict(), CHAN_BODY, m_pFlapSound, 1, ATTN_NORM );	
+			EMIT_SOUND( edict(), CHAN_BODY, m_pFlapSound, 1, ATTN_NORM );
 		break;
 	default:
 		CBaseMonster::HandleAnimEvent( pEvent );

@@ -77,9 +77,10 @@ static CMultiplayGameMgrHelper g_GameMgrHelper;
 //*********************************************************
 // Rules for the half-life multiplayer game.
 //*********************************************************
-CHalfLifeMultiplay::CHalfLifeMultiplay()
+CHalfLifeMultiplay::CHalfLifeMultiplay() :
+	CGameRules()
 {
-	m_pBotGameRulesInterface = new CBotGameRulesInterface(this);
+	m_pBotGameRulesInterface = new CBotGameRulesInterface(*this);
 
 #ifndef NO_VOICEGAMEMGR
 	g_VoiceGameMgr.Init( &g_GameMgrHelper, gpGlobals->maxClients );
@@ -136,11 +137,13 @@ CHalfLifeMultiplay::~CHalfLifeMultiplay()
 
 void CHalfLifeMultiplay::ServerActivate(void)
 {
+	CGameRules::ServerActivate();
 	m_pBotGameRulesInterface->ServerActivate();
 }
 
 void CHalfLifeMultiplay::ServerDeactivate(void)
 {
+	CGameRules::ServerDeactivate();
 	m_pBotGameRulesInterface->ServerDeactivate();
 }
 

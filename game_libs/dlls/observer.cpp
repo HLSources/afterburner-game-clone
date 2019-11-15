@@ -25,7 +25,7 @@
 extern int gmsgCurWeapon;
 extern int gmsgSetFOV;
 extern int gmsgTeamInfo;
-         
+
 extern int g_teamplay;
 
 // Find the next client in the game for this player to spectate
@@ -40,7 +40,7 @@ void CBasePlayer::Observer_FindNextPlayer( bool bReverse )
 		iStart = ENTINDEX( edict() );
 	int iCurrent = iStart;
 	m_hObserverTarget = 0;
-	int iDir = bReverse ? -1 : 1; 
+	int iDir = bReverse ? -1 : 1;
 
 	do
 	{
@@ -135,7 +135,7 @@ void CBasePlayer::Observer_CheckTarget()
 
 		if( m_hObserverTarget == 0 )
 		{
-			// no target found at all 
+			// no target found at all
 
 			int lastMode = pev->iuser1;
 
@@ -192,7 +192,7 @@ void CBasePlayer::Observer_CheckProperties()
 			//send weapon update
 			MESSAGE_BEGIN( MSG_ONE, gmsgCurWeapon, NULL, pev );
 				WRITE_BYTE( 1 );	// 1 = current weapon, not on target
-				WRITE_BYTE( m_iObserverWeapon );	
+				WRITE_BYTE( m_iObserverWeapon );
 				WRITE_BYTE( 0 );	// clip
 			MESSAGE_END();
 		}
@@ -207,7 +207,7 @@ void CBasePlayer::Observer_CheckProperties()
 
 			MESSAGE_BEGIN( MSG_ONE, gmsgCurWeapon, NULL, pev );
 				WRITE_BYTE( 1 );	// 1 = current weapon
-				WRITE_BYTE( m_iObserverWeapon );	
+				WRITE_BYTE( m_iObserverWeapon );
 				WRITE_BYTE( 0 );	// clip
 			MESSAGE_END();
 		}
@@ -261,7 +261,7 @@ void CBasePlayer::Observer_SetMode( int iMode )
 		pev->iuser2 = ENTINDEX( m_hObserverTarget->edict() );
 
 	pev->iuser3 = 0;	// clear second target from death cam
-	
+
 	// print spepctaor mode on client screen
 
 	char modemsg[16];
@@ -277,7 +277,7 @@ void CBasePlayer::StopObserver()
 	pev->iuser1 = pev->iuser2 = 0;
 	m_iHideHUD = 0;
 
-	GetClassPtr( (CBasePlayer *)pev )->Spawn();
+	GetClassPtr<CBasePlayer>(pev)->Spawn();
 	pev->nextthink = -1;
 
 	// Update Team Status

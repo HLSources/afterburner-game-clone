@@ -38,6 +38,7 @@
 #include "hltv.h"
 #include "gameresources/GameResources.h"
 #include "prop_playercorpse.h"
+#include "spawnpointmanager.h"
 
 // #define DUCKFIX
 
@@ -51,10 +52,8 @@ extern "C" int g_bhopcap;
 
 BOOL gInitHUD = TRUE;
 
-extern void CopyToBodyQue( entvars_t *pev);
 extern void respawn( entvars_t *pev, BOOL fCopyCorpse );
 extern Vector VecBModelOrigin( entvars_t *pevBModel );
-extern edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer );
 
 // the world node graph
 extern CGraph WorldGraph;
@@ -2643,126 +2642,6 @@ pt_end:
 #endif
 }
 
-// checks if the spot is clear of players
-BOOL IsSpawnPointValid( CBaseEntity *pPlayer, CBaseEntity *pSpot )
-{
-	CBaseEntity *ent = NULL;
-
-	if( !pSpot->IsTriggered( pPlayer ) )
-	{
-		return FALSE;
-	}
-
-	while( ( ent = UTIL_FindEntityInSphere( ent, pSpot->pev->origin, 128 ) ) != NULL )
-	{
-		// if ent is a client, don't spawn on 'em
-		if( ent->IsPlayer() && ent != pPlayer )
-			return FALSE;
-	}
-
-	return TRUE;
-}
-
-DLL_GLOBAL CBaseEntity	*g_pLastSpawn;
-inline int FNullEnt( CBaseEntity *ent ) { return ( ent == NULL ) || FNullEnt( ent->edict() ); }
-
-/*
-============
-EntSelectSpawnPoint
-
-Returns the entity to spawn at
-
-USES AND SETS GLOBAL g_pLastSpawn
-============
-*/
-edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer )
-{
-	CBaseEntity *pSpot;
-	edict_t *player;
-
-	player = pPlayer->edict();
-
-	// choose a info_player_deathmatch point
-	if( g_pGameRules->IsCoOp() )
-	{
-		pSpot = UTIL_FindEntityByClassname( g_pLastSpawn, "info_player_coop" );
-		if( !FNullEnt( pSpot ) )
-			goto ReturnSpot;
-		pSpot = UTIL_FindEntityByClassname( g_pLastSpawn, "info_player_start" );
-		if( !FNullEnt(pSpot) )
-			goto ReturnSpot;
-	}
-	else if( g_pGameRules->IsDeathmatch() )
-	{
-		pSpot = g_pLastSpawn;
-		// Randomize the start spot
-		for( int i = RANDOM_LONG( 1, 5 ); i > 0; i-- )
-			pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_deathmatch" );
-		if( FNullEnt( pSpot ) )  // skip over the null point
-			pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_deathmatch" );
-
-		CBaseEntity *pFirstSpot = pSpot;
-
-		do
-		{
-			if( pSpot )
-			{
-				// check if pSpot is valid
-				if( IsSpawnPointValid( pPlayer, pSpot ) )
-				{
-					if( pSpot->pev->origin == Vector( 0, 0, 0 ) )
-					{
-						pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_deathmatch" );
-						continue;
-					}
-
-					// if so, go to pSpot
-					goto ReturnSpot;
-				}
-			}
-			// increment pSpot
-			pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_deathmatch" );
-		} while( pSpot != pFirstSpot ); // loop if we're not back to the start
-
-		// we haven't found a place to spawn yet,  so kill any guy at the first spawn point and spawn there
-		if( !FNullEnt( pSpot ) )
-		{
-			CBaseEntity *ent = NULL;
-			while( ( ent = UTIL_FindEntityInSphere( ent, pSpot->pev->origin, 128 ) ) != NULL )
-			{
-				// if ent is a client, kill em (unless they are ourselves)
-				if( ent->IsPlayer() && !(ent->edict() == player) )
-					ent->TakeDamage( VARS( INDEXENT( 0 ) ), VARS( INDEXENT( 0 ) ), 300, DMG_GENERIC );
-			}
-			goto ReturnSpot;
-		}
-	}
-
-	// If startspot is set, (re)spawn there.
-	if( FStringNull( gpGlobals->startspot ) || !strlen(STRING( gpGlobals->startspot ) ) )
-	{
-		pSpot = UTIL_FindEntityByClassname( NULL, "info_player_start" );
-		if( !FNullEnt( pSpot ) )
-			goto ReturnSpot;
-	}
-	else
-	{
-		pSpot = UTIL_FindEntityByTargetname( NULL, STRING( gpGlobals->startspot ) );
-		if( !FNullEnt( pSpot ) )
-			goto ReturnSpot;
-	}
-
-ReturnSpot:
-	if( FNullEnt( pSpot ) )
-	{
-		ALERT( at_error, "PutClientInServer: no info_player_start on level" );
-		return INDEXENT( 0 );
-	}
-
-	g_pLastSpawn = pSpot;
-	return pSpot->edict();
-}
-
 void CBasePlayer::Spawn( void )
 {
 	pev->classname = MAKE_STRING( "player" );
@@ -2943,7 +2822,8 @@ int CBasePlayer::Restore( CRestore &restore )
 		ALERT( at_console, "No Landmark:%s\n", pSaveData->szLandmarkName );
 
 		// default to normal spawn
-		edict_t *pentSpawnSpot = EntSelectSpawnPoint( this );
+		ASSERT(g_pGameRules);
+		edict_t *pentSpawnSpot = g_pGameRules->SpawnPointManager()->GetNextSpawnPoint(this)->edict();
 		pev->origin = VARS( pentSpawnSpot )->origin + Vector( 0, 0, 1 );
 		pev->angles = VARS( pentSpawnSpot )->angles;
 	}
@@ -3400,7 +3280,7 @@ void CBasePlayer::ImpulseCommands()
 		{
 			// line hit something, so paint a decal
 			m_flNextDecalTime = gpGlobals->time + decalfrequency.value;
-			CSprayCan *pCan = GetClassPtr( (CSprayCan *)NULL );
+			CSprayCan *pCan = GetClassPtr<CSprayCan>();
 			pCan->Spawn( pev );
 		}
 		break;
@@ -3570,7 +3450,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		if( tr.flFraction != 1.0 )
 		{
 			// line hit something, so paint a decal
-			CBloodSplat *pBlood = GetClassPtr( (CBloodSplat *)NULL );
+			CBloodSplat *pBlood = GetClassPtr<CBloodSplat>();
 			pBlood->Spawn( pev );
 		}
 		break;

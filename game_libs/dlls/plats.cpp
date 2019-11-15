@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -265,7 +265,7 @@ void CFuncPlat::Setup( void )
 		m_flTLength = 80;
 	if( m_flTWidth == 0 )
 		m_flTWidth = 10;
-	
+
 	pev->angles = g_vecZero;
 
 	pev->solid = SOLID_BSP;
@@ -321,9 +321,9 @@ void CFuncPlat::Spawn()
 
 static void PlatSpawnInsideTrigger( entvars_t *pevPlatform )
 {
-	GetClassPtr( (CPlatTrigger *)NULL )->SpawnInsideTrigger( GetClassPtr( (CFuncPlat *)pevPlatform ) );
+	GetClassPtr<CPlatTrigger>()->SpawnInsideTrigger(GetClassPtr<CFuncPlat>(pevPlatform));
 }
-		
+
 //
 // Create a trigger entity for a platform.
 //
@@ -701,7 +701,7 @@ void CFuncTrain::Wait( void )
 	// ALERT( at_console, "%f\n", m_flWait );
 	if( m_flWait != 0 )
 	{
-		// -1 wait will wait forever!		
+		// -1 wait will wait forever!
 		pev->nextthink = pev->ltime + m_flWait;
 		if( pev->noiseMovement )
 			STOP_SOUND( edict(), CHAN_STATIC, STRING( pev->noiseMovement ) );
@@ -716,7 +716,7 @@ void CFuncTrain::Wait( void )
 }
 
 //
-// Train next - path corner needs to change to next target 
+// Train next - path corner needs to change to next target
 //
 void CFuncTrain::Next( void )
 {
@@ -761,7 +761,7 @@ void CFuncTrain::Next( void )
 	else
 	{
 		// Normal linear move.
-		
+
 		// CHANGED this from CHAN_VOICE to CHAN_STATIC around OEM beta time because trains should
 		// use CHAN_STATIC for their movement sounds to prevent sound field problems.
 		// this is not a hack or temporary fix, this is how things should be. (sjb).
@@ -895,7 +895,7 @@ void CFuncTrain::OverrideReset( void )
 //
 // ---------------------------------------------------------------------
 
-TYPEDESCRIPTION	CFuncTrackTrain::m_SaveData[] = 
+TYPEDESCRIPTION	CFuncTrackTrain::m_SaveData[] =
 {
 	DEFINE_FIELD( CFuncTrackTrain, m_ppath, FIELD_CLASSPTR ),
 	DEFINE_FIELD( CFuncTrackTrain, m_length, FIELD_FLOAT ),
@@ -995,7 +995,7 @@ void CFuncTrackTrain::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TY
 		if( pev->speed == 0 )
 		{
 			pev->speed = m_speed * m_dir;
-		
+
 			Next();
 		}
 		else
@@ -1022,7 +1022,7 @@ void CFuncTrackTrain::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TY
 				delta = 0;
 		}
 		pev->speed = m_speed * delta;
-		Next();	
+		Next();
 		ALERT( at_aiconsole, "TRAIN(%s), speed to %.2f\n", STRING( pev->targetname ), pev->speed );
 	}
 }
@@ -1058,7 +1058,7 @@ void CFuncTrackTrain::StopSound( void )
 
 		us_encode = us_sound;
 
-		PLAYBACK_EVENT_FULL( FEV_RELIABLE | FEV_UPDATE, edict(), m_usAdjustPitch, 0.0, 
+		PLAYBACK_EVENT_FULL( FEV_RELIABLE | FEV_UPDATE, edict(), m_usAdjustPitch, 0.0,
 			(float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, us_encode, 0, 1, 0 );
 		/*
 		STOP_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noise ) );
@@ -1070,7 +1070,7 @@ void CFuncTrackTrain::StopSound( void )
 }
 
 // update pitch based on speed, start sound if not playing
-// NOTE: when train goes through transition, m_soundPlaying should go to 0, 
+// NOTE: when train goes through transition, m_soundPlaying should go to 0,
 // which will cause the looped sound to restart.
 void CFuncTrackTrain::UpdateSound( void )
 {
@@ -1087,7 +1087,7 @@ void CFuncTrackTrain::UpdateSound( void )
 		EMIT_SOUND_DYN( ENT( pev ), CHAN_ITEM, "plats/ttrain_start1.wav", m_flVolume, ATTN_NORM, 0, 100 );
 		EMIT_SOUND_DYN( ENT( pev ), CHAN_STATIC, STRING( pev->noise ), m_flVolume, ATTN_NORM, 0, (int)flpitch );
 		m_soundPlaying = 1;
-	} 
+	}
 	else
 	{
 /*
@@ -1125,7 +1125,7 @@ void CFuncTrackTrain::Next( void )
 	//if( !m_ppath )
 	//	m_ppath = CPathTrack::Instance( FIND_ENTITY_BY_TARGETNAME( NULL, STRING( pev->target ) ) );
 	if( !m_ppath )
-	{	
+	{
 		ALERT( at_aiconsole, "TRAIN(%s): Lost path\n", STRING( pev->targetname ) );
 		StopSound();
 		return;
@@ -1188,7 +1188,7 @@ void CFuncTrackTrain::Next( void )
 			CPathTrack *pFire;
 			if( pev->speed >= 0 )
 				pFire = pnext;
-			else 
+			else
 				pFire = m_ppath;
 
 			m_ppath = pnext;
@@ -1410,7 +1410,7 @@ void CFuncTrackTrain::OverrideReset( void )
 }
 
 CFuncTrackTrain *CFuncTrackTrain::Instance( edict_t *pent )
-{ 
+{
 	if( FClassnameIs( pent, "func_tracktrain" ) )
 		return (CFuncTrackTrain *)GET_PRIVATE( pent );
 	return NULL;
@@ -1490,7 +1490,7 @@ void CFuncTrackTrain::Precache( void )
 		break;
 	case 3:
 		pszSound = "plats/ttrain3.wav";
-		break; 
+		break;
 	case 4:
 		pszSound = "plats/ttrain4.wav";
 		break;
@@ -1531,7 +1531,7 @@ void CFuncTrainControls::Find( void )
 {
 	edict_t *pTarget = NULL;
 
-	do 
+	do
 	{
 		pTarget = FIND_ENTITY_BY_TARGETNAME( pTarget, STRING( pev->target ) );
 	} while( !FNullEnt(pTarget) && !FClassnameIs( pTarget, "func_tracktrain" ) );
@@ -2081,7 +2081,7 @@ private:
 
 LINK_ENTITY_TO_CLASS( func_guntarget, CGunTarget )
 
-TYPEDESCRIPTION	CGunTarget::m_SaveData[] = 
+TYPEDESCRIPTION	CGunTarget::m_SaveData[] =
 {
 	DEFINE_FIELD( CGunTarget, m_on, FIELD_BOOLEAN ),
 };
@@ -2171,7 +2171,7 @@ void CGunTarget::Wait( void )
 	SetThink( &CGunTarget::Next );
 	if( m_flWait != 0 )
 	{
-		// -1 wait will wait forever!		
+		// -1 wait will wait forever!
 		pev->nextthink = pev->ltime + m_flWait;
 	}
 	else

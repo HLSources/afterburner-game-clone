@@ -31,7 +31,8 @@ INCLUDE_PATHS = \
 	"bots",
 	"bots/profiles",
 	"bots/itemattributes",
-	"projectInterface_server"
+	"projectInterface_server",
+	"gameplay"
 ]
 
 # Relative to game_libs folder
@@ -40,6 +41,7 @@ SOURCES = \
 	"miniutl/**/*.cpp",
 	"pm_shared/**/*.c",
 	"dlls/bots/**/*.cpp",
+	"dlls/gameplay/**/*.cpp",
 	"dlls/projectInterface_server/**/*.cpp",
 
 	# TODO: Change the folder structure one day so that we can use globs and not have to do this.

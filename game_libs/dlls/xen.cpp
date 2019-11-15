@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -44,13 +44,13 @@ TYPEDESCRIPTION	CActAnimating::m_SaveData[] =
 
 IMPLEMENT_SAVERESTORE( CActAnimating, CBaseAnimating )
 
-void CActAnimating::SetActivity( Activity act ) 
+void CActAnimating::SetActivity( Activity act )
 {
-	int sequence = LookupActivity( act ); 
+	int sequence = LookupActivity( act );
 	if( sequence != ACTIVITY_NOT_AVAILABLE )
 	{
 		pev->sequence = sequence;
-		m_Activity = act; 
+		m_Activity = act;
 		pev->frame = 0;
 		ResetSequenceInfo();
 	}
@@ -218,7 +218,7 @@ LINK_ENTITY_TO_CLASS( xen_ttrigger, CXenTreeTrigger )
 
 CXenTreeTrigger *CXenTreeTrigger::TriggerCreate( edict_t *pOwner, const Vector &position )
 {
-	CXenTreeTrigger *pTrigger = GetClassPtr( (CXenTreeTrigger *)NULL );
+	CXenTreeTrigger *pTrigger = GetClassPtr<CXenTreeTrigger>();
 	pTrigger->pev->origin = position;
 	pTrigger->pev->classname = MAKE_STRING( "xen_ttrigger" );
 	pTrigger->pev->solid = SOLID_TRIGGER;
@@ -248,7 +248,7 @@ public:
 	void Think( void );
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType ) { Attack(); return 0; }
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
-	void Attack( void );	
+	void Attack( void );
 	int Classify( void ) { return CLASS_BARNACLE; }
 
 	virtual int Save( CSave &save );
@@ -441,7 +441,7 @@ public:
 
 CXenHull *CXenHull::CreateHull( CBaseEntity *source, const Vector &mins, const Vector &maxs, const Vector &offset )
 {
-	CXenHull *pHull = GetClassPtr( (CXenHull *)NULL );
+	CXenHull *pHull = GetClassPtr<CXenHull>();
 
 	UTIL_SetOrigin( pHull->pev, source->pev->origin + offset );
 	SET_MODEL( pHull->edict(), STRING( source->pev->model ) );

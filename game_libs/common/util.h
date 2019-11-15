@@ -38,6 +38,8 @@ inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin, ent
 #include "utlstring.h"
 #include "debug_assert.h"
 
+class CBaseEntity;
+
 extern globalvars_t				*gpGlobals;
 
 // Use this instead of ALLOC_STRING on constant strings
@@ -112,7 +114,7 @@ typedef int BOOL;
 // The _declspec forces them to be exported by name so we can do a lookup with GetProcAddress()
 // The function is used to intialize / allocate the object for the entity
 
-#define LINK_ENTITY_TO_CLASS(mapClassName,DLLClassName) extern "C" EXPORT void mapClassName( entvars_t *pev ); void mapClassName( entvars_t *pev ) { GetClassPtr( (DLLClassName *)pev ); }
+#define LINK_ENTITY_TO_CLASS(mapClassName,DLLClassName) extern "C" EXPORT void mapClassName( entvars_t *pev ); void mapClassName( entvars_t *pev ) { GetClassPtr<DLLClassName>(pev); }
 
 //
 // Conversion among the three types of "entity", including identity-conversions.
@@ -167,6 +169,7 @@ inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin, ent
 inline BOOL FNullEnt(EOFFSET eoffset)			{ return eoffset == 0; }
 inline BOOL FNullEnt(const edict_t* pent)	{ return pent == NULL || FNullEnt(OFFSET(pent)); }
 inline BOOL FNullEnt(entvars_t* pev)				{ return pev == NULL || FNullEnt(OFFSET(pev)); }
+BOOL FNullEnt(CBaseEntity* ent);
 
 // Testing strings for nullity
 #define iStringNull 0

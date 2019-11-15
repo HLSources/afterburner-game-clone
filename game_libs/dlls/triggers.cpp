@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -16,7 +16,7 @@
 
 ===== triggers.cpp ========================================================
 
-  spawn and use functions for editor-placed triggers              
+  spawn and use functions for editor-placed triggers
 
 */
 
@@ -239,7 +239,7 @@ void CTriggerRelay::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE
 }
 
 //**********************************************************
-// The Multimanager Entity - when fired, will fire up to 16 targets 
+// The Multimanager Entity - when fired, will fire up to 16 targets
 // at specified times.
 // FLAG:		THREAD (create clones when triggered)
 // FLAG:		CLONE (this is a clone for a threaded execution)
@@ -259,7 +259,7 @@ public:
 	void EXPORT ManagerReport( void );
 #endif
 	BOOL HasTarget( string_t targetname );
-	
+
 	int ObjectCaps( void ) { return CBaseToggle::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 
 	virtual int Save( CSave &save );
@@ -275,11 +275,11 @@ public:
 private:
 	inline BOOL IsClone( void ) { return ( pev->spawnflags & SF_MULTIMAN_CLONE ) ? TRUE : FALSE; }
 	inline BOOL ShouldClone( void )
-	{ 
+	{
 		if( IsClone() )
 			return FALSE;
 
-		return ( pev->spawnflags & SF_MULTIMAN_THREAD ) ? TRUE : FALSE; 
+		return ( pev->spawnflags & SF_MULTIMAN_THREAD ) ? TRUE : FALSE;
 	}
 
 	CMultiManager *Clone( void );
@@ -358,7 +358,7 @@ void CMultiManager::Spawn( void )
 }
 
 BOOL CMultiManager::HasTarget( string_t targetname )
-{ 
+{
 	for( int i = 0; i < m_cTargets; i++ )
 		if( FStrEq( STRING( targetname ), STRING( m_iTargetName[i] ) ) )
 			return TRUE;
@@ -366,7 +366,7 @@ BOOL CMultiManager::HasTarget( string_t targetname )
 	return FALSE;
 }
 
-// Designers were using this to fire targets that may or may not exist -- 
+// Designers were using this to fire targets that may or may not exist --
 // so I changed it to use the standard target fire code, made it a little simpler.
 void CMultiManager::ManagerThink( void )
 {
@@ -387,7 +387,7 @@ void CMultiManager::ManagerThink( void )
 			UTIL_Remove( this );
 			return;
 		}
-		SetUse( &CMultiManager::ManagerUse );// allow manager re-use 
+		SetUse( &CMultiManager::ManagerUse );// allow manager re-use
 	}
 	else
 		pev->nextthink = m_startTime + m_flTargetDelay[m_index];
@@ -395,7 +395,7 @@ void CMultiManager::ManagerThink( void )
 
 CMultiManager *CMultiManager::Clone( void )
 {
-	CMultiManager *pMulti = GetClassPtr( (CMultiManager *)NULL );
+	CMultiManager *pMulti = GetClassPtr<CMultiManager>();
 
 	edict_t *pEdict = pMulti->pev->pContainingEntity;
 	memcpy( pMulti->pev, pev, sizeof(*pev) );
@@ -608,7 +608,7 @@ void CTriggerMonsterJump::Touch( CBaseEntity *pOther )
 {
 	entvars_t *pevOther = pOther->pev;
 
-	if( !FBitSet( pevOther->flags, FL_MONSTER ) ) 
+	if( !FBitSet( pevOther->flags, FL_MONSTER ) )
 	{
 		// touched by a non-monster.
 		return;
@@ -616,7 +616,7 @@ void CTriggerMonsterJump::Touch( CBaseEntity *pOther )
 
 	pevOther->origin.z += 1;
 
-	if( FBitSet( pevOther->flags, FL_ONGROUND ) ) 
+	if( FBitSet( pevOther->flags, FL_ONGROUND ) )
 	{
 		// clear the onground so physics don't bitch
 		pevOther->flags &= ~FL_ONGROUND;
@@ -673,7 +673,7 @@ void PlayCDTrack( int iTrack )
 {
 	edict_t *pClient;
 
-	// manually find the single player. 
+	// manually find the single player.
 	pClient = g_engfuncs.pfnPEntityOfEntIndex( 1 );
 
 	// Can't play if the client is not connected!
@@ -752,7 +752,7 @@ void CTargetCDAudio::Think( void )
 {
 	edict_t *pClient;
 
-	// manually find the single player. 
+	// manually find the single player.
 	pClient = g_engfuncs.pfnPEntityOfEntIndex( 1 );
 
 	// Can't play if the client is not connected!
@@ -765,7 +765,7 @@ void CTargetCDAudio::Think( void )
 		Play();
 }
 
-void CTargetCDAudio::Play( void ) 
+void CTargetCDAudio::Play( void )
 {
 	PlayCDTrack( (int)pev->health );
 	UTIL_Remove( this );
@@ -819,7 +819,7 @@ void CTriggerHurt::RadiationThink( void )
 	Vector view_ofs;
 
 	// check to see if a player is in pvs
-	// if not, continue	
+	// if not, continue
 
 	// set origin to center of trigger so that this check works
 	origin = pev->origin;
@@ -836,7 +836,7 @@ void CTriggerHurt::RadiationThink( void )
 	// reset origin
 	if( !FNullEnt( pentPlayer ) )
 	{
-		pPlayer = GetClassPtr( (CBasePlayer *)VARS( pentPlayer ) );
+		pPlayer = GetClassPtrFromEdict<CBasePlayer>(pentPlayer);
 
 		pevTarget = VARS( pentPlayer );
 
@@ -849,7 +849,7 @@ void CTriggerHurt::RadiationThink( void )
 
 		// if player's current geiger counter range is larger
 		// than range to this trigger hurt, reset player's
-		// geiger counter range 
+		// geiger counter range
 
 		if( pPlayer->m_flgeigerRange >= flRange )
 			pPlayer->m_flgeigerRange = flRange;
@@ -947,7 +947,7 @@ void CBaseTrigger::HurtTouch( CBaseEntity *pOther )
 		}
 	}
 
-	// If this is time_based damage (poison, radiation), override the pev->dmg with a 
+	// If this is time_based damage (poison, radiation), override the pev->dmg with a
 	// default for the given damage type.  Monsters only take time-based damage
 	// while touching the trigger.  Player continues taking damage for a while after
 	// leaving the trigger
@@ -996,7 +996,7 @@ void CBaseTrigger::HurtTouch( CBaseEntity *pOther )
 
 	if( pev->target )
 	{
-		// trigger has a target it wants to fire. 
+		// trigger has a target it wants to fire.
 		if( pev->spawnflags & SF_TRIGGER_HURT_CLIENTONLYFIRE )
 		{
 			// if the toucher isn't a client, don't fire the target!
@@ -1426,7 +1426,7 @@ edict_t *CChangeLevel::FindLandmark( const char *pLandmarkName )
 }
 
 //=========================================================
-// CChangeLevel :: Use - allows level transitions to be 
+// CChangeLevel :: Use - allows level transitions to be
 // triggered by buttons, etc.
 //
 //=========================================================
@@ -1462,7 +1462,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 	// Create an entity to fire the changetarget
 	if( m_changeTarget )
 	{
-		CFireAndDie *pFireAndDie = GetClassPtr( (CFireAndDie *)NULL );
+		CFireAndDie *pFireAndDie = GetClassPtr<CFireAndDie>();
 		if( pFireAndDie )
 		{
 			// Set target and delay
@@ -1505,7 +1505,7 @@ void CChangeLevel::TouchChangeLevel( CBaseEntity *pOther )
 	ChangeLevelNow( pOther );
 }
 
-// Add a transition to the list, but ignore duplicates 
+// Add a transition to the list, but ignore duplicates
 // (a designer may have placed multiple trigger_changelevels with the same landmark)
 int CChangeLevel::AddTransitionToList( LEVELLIST *pLevelList, int listCount, const char *pMapName, const char *pLandmarkName, edict_t *pentLandmark )
 {
@@ -1588,7 +1588,7 @@ int CChangeLevel::ChangeList( LEVELLIST *pLevelList, int maxList )
 	{
 		CChangeLevel *pTrigger;
 
-		pTrigger = GetClassPtr((CChangeLevel *)VARS(pentChangelevel));
+		pTrigger = GetClassPtrFromEdict<CChangeLevel>(pentChangelevel);
 		if( pTrigger )
 		{
 			// Find the corresponding landmark
@@ -1690,11 +1690,11 @@ void NextLevel( void )
 	if( FNullEnt( pent ) )
 	{
 		gpGlobals->mapname = MAKE_STRING( "start" );
-		pChange = GetClassPtr( (CChangeLevel *)NULL );
+		pChange = GetClassPtr<CChangeLevel>();
 		strcpy( pChange->m_szMapName, "start" );
 	}
 	else
-		pChange = GetClassPtr( (CChangeLevel *)VARS( pent ) );
+		pChange = GetClassPtrFromEdict<CChangeLevel>(pent);
 
 	strcpy( st_szNextMap, pChange->m_szMapName );
 	g_fGameOver = TRUE;
@@ -1843,7 +1843,7 @@ void CBaseTrigger::TeleportTouch( CBaseEntity *pOther )
 
 	if( !UTIL_IsMasterTriggered( m_sMaster, pOther ) )
 		return;
- 	
+
 	if( !( pev->spawnflags & SF_TRIGGER_ALLOWMONSTERS ) )
 	{
 		// no monsters allowed!
@@ -1864,7 +1864,7 @@ void CBaseTrigger::TeleportTouch( CBaseEntity *pOther )
 
 	pentTarget = FIND_ENTITY_BY_TARGETNAME( pentTarget, STRING( pev->target ) );
 	if( FNullEnt( pentTarget ) )
-	   return;	
+	   return;
 
 	Vector tmp = VARS( pentTarget )->origin;
 
@@ -2248,7 +2248,7 @@ void CTriggerCamera::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 	{
 		if( m_pentPath->pev->speed != 0 )
 			m_targetSpeed = m_pentPath->pev->speed;
-		
+
 		m_flStopTime += m_pentPath->GetDelay();
 	}
 
@@ -2312,10 +2312,10 @@ void CTriggerCamera::FollowTarget()
 		dx += 360;
 	if( dx > 180 )
 		dx = dx - 360;
-	
-	if( dy < -180 ) 
+
+	if( dy < -180 )
 		dy += 360;
-	if( dy > 180 ) 
+	if( dy > 180 )
 		dy = dy - 360;
 
 	pev->avelocity.x = dx * 40 * gpGlobals->frametime;
@@ -2361,7 +2361,7 @@ void CTriggerCamera::Move()
 		{
 			pev->velocity = g_vecZero;
 		}
-		else 
+		else
 		{
 			if( m_pentPath->pev->speed != 0 )
 				m_targetSpeed = m_pentPath->pev->speed;

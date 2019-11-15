@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   This source code contains proprietary and confidential information of
@@ -112,7 +112,7 @@ public:
 
 	CUSTOM_SCHEDULES
 
-private:	
+private:
 	float m_painTime;
 	float m_healTime;
 	float m_fearTime;
@@ -433,8 +433,8 @@ void CScientist::Scream( void )
 }
 
 Activity CScientist::GetStoppedActivity( void )
-{ 
-	if( m_hEnemy != 0 ) 
+{
+	if( m_hEnemy != 0 )
 		return ACT_EXCITED;
 	return CTalkMonster::GetStoppedActivity();
 }
@@ -564,7 +564,7 @@ void CScientist::RunTask( Task_t *pTask )
 }
 
 //=========================================================
-// Classify - indicates this monster's place in the 
+// Classify - indicates this monster's place in the
 // relationship table.
 //=========================================================
 int CScientist::Classify( void )
@@ -611,7 +611,7 @@ void CScientist::SetYawSpeed( void )
 void CScientist::HandleAnimEvent( MonsterEvent_t *pEvent )
 {
 	switch( pEvent->event )
-	{		
+	{
 	case SCIENTIST_AE_HEAL:		// Heal my target (if within range)
 		Heal();
 		break;
@@ -688,7 +688,7 @@ void CScientist::Precache( void )
 	TalkInit();
 
 	CTalkMonster::Precache();
-}	
+}
 
 // Init talk data
 void CScientist::TalkInit()
@@ -708,7 +708,7 @@ void CScientist::TalkInit()
 	m_szGrp[TLK_HELLO] = "SC_HELLO";
 
 	m_szGrp[TLK_PLHURT1] = "!SC_CUREA";
-	m_szGrp[TLK_PLHURT2] = "!SC_CUREB"; 
+	m_szGrp[TLK_PLHURT2] = "!SC_CUREB";
 	m_szGrp[TLK_PLHURT3] = "!SC_CUREC";
 
 	m_szGrp[TLK_PHELLO] = "SC_PHELLO";
@@ -794,7 +794,7 @@ void CScientist::PainSound( void )
 }
 
 //=========================================================
-// DeathSound 
+// DeathSound
 //=========================================================
 void CScientist::DeathSound( void )
 {
@@ -803,7 +803,7 @@ void CScientist::DeathSound( void )
 
 void CScientist::Killed( entvars_t *pevAttacker, int iGib )
 {
-	SetUse( NULL );	
+	SetUse( NULL );
 	CTalkMonster::Killed( pevAttacker, iGib );
 }
 
@@ -978,7 +978,7 @@ Schedule_t *CScientist::GetSchedule( void )
 	default:
 		break;
 	}
-	
+
 	return CTalkMonster::GetSchedule();
 }
 
@@ -1046,7 +1046,7 @@ MONSTERSTATE CScientist::GetIdealState( void )
 }
 
 BOOL CScientist::CanHeal( void )
-{ 
+{
 	if( ( m_healTime > gpGlobals->time ) || ( m_hTargetEnt == 0 ) || ( m_hTargetEnt->pev->health > ( m_hTargetEnt->pev->max_health * 0.5 ) ) )
 		return FALSE;
 
@@ -1129,7 +1129,7 @@ void CDeadScientist::Spawn()
 
 	// Corpses have less health
 	pev->health = 8;//gSkillData.scientistHealth;
-	
+
 	m_bloodColor = BLOOD_COLOR_RED;
 
 	if( pev->body == -1 )
@@ -1173,7 +1173,7 @@ public:
 	int FriendNumber( int arrayNumber );
 
 	int FIdleSpeak( void );
-	int m_baseSequence;	
+	int m_baseSequence;
 	int m_headTurn;
 	float m_flResponseDelay;
 };
@@ -1189,7 +1189,7 @@ TYPEDESCRIPTION	CSittingScientist::m_SaveData[] =
 
 IMPLEMENT_SAVERESTORE( CSittingScientist, CScientist )
 
-// animation sequence aliases 
+// animation sequence aliases
 typedef enum
 {
 SITTING_ANIM_sitlookleft,
@@ -1215,7 +1215,7 @@ void CSittingScientist::Spawn()
 	pev->movetype = MOVETYPE_STEP;
 	pev->effects = 0;
 	pev->health = 50;
-	
+
 	m_bloodColor = BLOOD_COLOR_RED;
 	m_flFieldOfView = VIEW_FIELD_WIDE; // indicates the width of this monster's forward view cone ( as a dotproduct result )
 
@@ -1301,7 +1301,7 @@ void CSittingScientist::SittingThink( void )
 	{
 		int i = RANDOM_LONG( 0, 99 );
 		m_headTurn = 0;
-		
+
 		if( m_flResponseDelay && gpGlobals->time > m_flResponseDelay )
 		{
 			// respond to question
@@ -1311,7 +1311,7 @@ void CSittingScientist::SittingThink( void )
 		}
 		else if( i < 30 )
 		{
-			pev->sequence = m_baseSequence + SITTING_ANIM_sitting3;	
+			pev->sequence = m_baseSequence + SITTING_ANIM_sitting3;
 
 			// turn towards player or nearest friend and speak
 
@@ -1345,7 +1345,7 @@ void CSittingScientist::SittingThink( void )
 		}
 		else if( i < 60 )
 		{
-			pev->sequence = m_baseSequence + SITTING_ANIM_sitting3;	
+			pev->sequence = m_baseSequence + SITTING_ANIM_sitting3;
 			m_headTurn = RANDOM_LONG( 0, 8 ) * 10 - 40;
 			if( RANDOM_LONG( 0, 99 ) < 5 )
 			{
@@ -1381,7 +1381,7 @@ void CSittingScientist::SetAnswerQuestion( CTalkMonster *pSpeaker )
 // ask question of nearby friend, or make statement
 //=========================================================
 int CSittingScientist::FIdleSpeak( void )
-{ 
+{
 	// try to start a conversation, or make statement
 	int pitch;
 
@@ -1400,7 +1400,7 @@ int CSittingScientist::FIdleSpeak( void )
 
 	if( pentFriend && RANDOM_LONG( 0, 1 ) )
 	{
-		CTalkMonster *pTalkMonster = GetClassPtr( (CTalkMonster *)pentFriend->pev );
+		CTalkMonster *pTalkMonster = GetClassPtr<CTalkMonster>(pentFriend->pev);
 		pTalkMonster->SetAnswerQuestion( this );
 
 		IdleHeadTurn( pentFriend->pev->origin );

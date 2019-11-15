@@ -13,7 +13,7 @@ class CGameRules;
 class CBotGameRulesInterface
 {
 public:
-	CBotGameRulesInterface(CGameRules* parent);
+	CBotGameRulesInterface(CGameRules& parent);
 
 	void ServerActivate();
 	void ServerDeactivate();

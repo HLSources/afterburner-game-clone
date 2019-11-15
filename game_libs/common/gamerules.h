@@ -33,6 +33,7 @@ class CBasePlayerAmmo;
 // This file doesn't currently pull in any headers, so forward-declaring this to avoid
 // adding more dependencies.
 class CBotGameRulesInterface;
+class CSpawnPointManager;
 
 // weapon respawning return codes
 enum
@@ -70,7 +71,8 @@ enum
 class CGameRules
 {
 public:
-	virtual ~CGameRules(){}
+	CGameRules();
+	virtual ~CGameRules();
 
 	virtual void RefreshSkillData( void );// fill skill data struct with proper values
 	virtual void Think( void ) = 0;// GR_Think - runs every server frame, should handle any timer tasks, periodic events, etc.
@@ -86,8 +88,8 @@ public:
 	virtual BOOL IsTeamplay( void ) { return FALSE; };// is this deathmatch game being played with team rules?
 	virtual BOOL IsCoOp( void ) = 0;// is this a coop game?
 	virtual const char *GetGameDescription( void ) { return "Afterburner"; }  // this is the game name that gets seen in the server browser
-	virtual void ServerActivate(void) = 0;	// All clients have been activated by the time this is called.
-	virtual void ServerDeactivate(void) = 0;
+	virtual void ServerActivate(void);	// All clients have been activated by the time this is called.
+	virtual void ServerDeactivate(void);
 
 	// Client connection/disconnection
 	virtual BOOL ClientConnected( edict_t *pEntity, const char *pszName, const char *pszAddress, char szRejectReason[128] ) = 0;// a client just connected to the server (player hasn't spawned yet)
@@ -176,6 +178,10 @@ public:
 	virtual void EndMultiplayerGame( void ) {}
 
 	virtual CBotGameRulesInterface* BotGameRulesInterface() { return NULL; }
+	CSpawnPointManager* SpawnPointManager() { return m_pSpawnPointManager; }
+
+private:
+	CSpawnPointManager* m_pSpawnPointManager;
 };
 
 extern CGameRules *InstallGameRules( void );
@@ -387,6 +393,7 @@ protected:
 
 private:
 	CBotGameRulesInterface* m_pBotGameRulesInterface;
+	CSpawnPointManager* m_pSpawnPointManager;
 };
 
 extern DLL_GLOBAL CGameRules *g_pGameRules;

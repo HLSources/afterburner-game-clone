@@ -18,7 +18,7 @@ void CPropPlayerCorpse::Create(entvars_t* other)
 
 	edict_t* edict = CREATE_NAMED_ENTITY(istrClassname);
 	entvars_t* pev = VARS(edict);
-	CPropPlayerCorpse* ent = GetClassPtr((CPropPlayerCorpse*)pev);
+	CPropPlayerCorpse* ent = GetClassPtr<CPropPlayerCorpse>(pev);
 
 	ent->Spawn();
 	ent->Initialise(other);

@@ -15,8 +15,8 @@
 #include "bot_misc.h"
 #include "botregister.h"
 
-CBotGameRulesInterface::CBotGameRulesInterface(CGameRules* parent) :
-	m_pParent(parent),
+CBotGameRulesInterface::CBotGameRulesInterface(CGameRules& parent) :
+	m_pParent(&parent),
 	m_BotFactory(),
 	m_bSpawnedRegisterBots(false)
 {

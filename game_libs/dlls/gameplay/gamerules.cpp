@@ -27,8 +27,7 @@
 #include	"game.h"
 #include	"weaponregistry.h"
 #include	"weaponatts_collection.h"
-
-extern edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer );
+#include	"spawnpointmanager.h"
 
 DLL_GLOBAL CGameRules *g_pGameRules = NULL;
 extern DLL_GLOBAL BOOL g_fGameOver;
@@ -36,6 +35,25 @@ extern int gmsgDeathMsg;	// client dll messages
 extern int gmsgMOTD;
 
 int g_teamplay = 0;
+
+CGameRules::CGameRules()
+{
+	m_pSpawnPointManager = new CSpawnPointManager(*this);
+}
+
+CGameRules::~CGameRules()
+{
+	delete m_pSpawnPointManager;
+}
+
+void CGameRules::ServerActivate()
+{
+	m_pSpawnPointManager->Initialise();
+}
+
+void CGameRules::ServerDeactivate()
+{
+}
 
 //=========================================================
 //=========================================================
@@ -64,7 +82,14 @@ BOOL CGameRules::CanHaveAmmo( CBasePlayer *pPlayer, const char *pszAmmoName, int
 //=========================================================
 edict_t *CGameRules::GetPlayerSpawnSpot( CBasePlayer *pPlayer )
 {
-	edict_t *pentSpawnSpot = EntSelectSpawnPoint( pPlayer );
+	uint32_t flags = 0;
+
+	if ( IsDeathmatch() )
+	{
+		flags |= CSpawnPointManager::Flag_AvoidDeathSite;
+	}
+
+	edict_t *pentSpawnSpot = m_pSpawnPointManager->GetNextSpawnPoint(pPlayer, flags)->edict();
 
 	pPlayer->pev->origin = VARS( pentSpawnSpot )->origin + Vector( 0, 0, 1 );
 	pPlayer->pev->v_angle  = g_vecZero;
