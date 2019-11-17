@@ -2,7 +2,7 @@
 
 #include <cstdint>
 #include "standard_includes.h"
-#include "SpawnPointList.h"
+#include "spawnpointlist.h"
 #include "gamerules.h"
 
 class CSpawnPointManager

@@ -1,4 +1,4 @@
-#include "SpawnPointList.h"
+#include "spawnpointlist.h"
 
 CSpawnPointList::CSpawnPointList() :
 	m_SpawnPointClassName(),

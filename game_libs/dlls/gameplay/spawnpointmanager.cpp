@@ -1,4 +1,4 @@
-#include "SpawnPointManager.h"
+#include "spawnpointmanager.h"
 #include "debug_assert.h"
 #include "game.h"
 
