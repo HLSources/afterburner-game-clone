@@ -165,8 +165,7 @@ public:
 		bSecondaryFire = newValue;
 	}
 
-	void SetNextShootTime(const float weaponFireInterval,
-						  const float minWaitTime,
+	void SetNextShootTime(const float nextAllowedShootTime,
 						  const float extraWaitMin,
 						  const float extraWaitMax);
 
@@ -313,12 +312,15 @@ public:
 
 class CBaseBot : public CBasePlayer
 {
+private:
+	void ResetFireButtons();
 protected:
 	BOOL		bCalledAimThisFrame;
 	Vector		DesiredVelocity;
 	BOOL		bGoUpOnLadder;
 	Vector		LookAtBiasVec;
 	Vector		LookAtVec;
+	float		fLastThink;
 	float		fNextThink;
 	float		MovedDistance;
 	float		MoveForward;
@@ -338,6 +340,7 @@ protected:
 	float		TimeMSecCheck;
 	TURNING_DIRECTION	TurningDirection;
 	BOOL		bWantToBeInCombat;
+	int			lastButtons;
 
 	void		SetCalledAimThisFrame( const BOOL newValue ) { bCalledAimThisFrame = newValue; }
 	void		SetDesiredVelocity( const Vector &newVec ) { DesiredVelocity = newVec; }
@@ -345,7 +348,7 @@ protected:
 				{
 					pEnemy = newEnemy;
 					FightStyle.SetHoldDownAttack( FALSE );
-					FightStyle.SetNextShootTime (0.0, 0.0f, 0.5, 1.0);
+					FightStyle.SetNextShootTime (gpGlobals->time, 0.5, 1.0);
 				}
 	void		SetGoal( CBaseEntity *newGoal ) { pGoal = newGoal; }
 	void		SetGoUpOnLadder( const BOOL newValue ) { bGoUpOnLadder = newValue; }
@@ -484,4 +487,3 @@ public:
 };
 
 #endif /*RHOBOT_H*/
-

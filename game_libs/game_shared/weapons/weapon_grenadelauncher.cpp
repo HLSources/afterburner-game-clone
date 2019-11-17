@@ -88,13 +88,9 @@ float CWeaponGrenadeLauncher::Bot_CalcDesireToUse(CBaseBot& bot, CBaseEntity& en
 
 void CWeaponGrenadeLauncher::Bot_SetFightStyle(CBaseBotFightStyle& fightStyle) const
 {
-	static constexpr float BOT_REFIRE_DELAY = 0.5f;	// Secs
-
 	fightStyle.SetSecondaryFire(false);
 	fightStyle.SetAimAt(AIM_SPLASH);
-	fightStyle.SetNextShootTime(1.0f / GRENADELAUNCHER_FIRE_RATE,
-								BOT_REFIRE_DELAY,
-								2.0f, 5.0f);
+	fightStyle.SetNextShootTime(m_flNextPrimaryAttack, 0.2f, 2.0f);
 }
 
 void CWeaponGrenadeLauncher::CreateProjectile(const WeaponAtts::WAProjectileAttack& projectileAttack)

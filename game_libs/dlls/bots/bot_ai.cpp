@@ -72,8 +72,10 @@ CBaseBot::CBaseBot():
 	TimeGoalCheckDelay( 0.3 ),
 	TimeMSecCheck( gpGlobals->time ),
 	fNextThink( gpGlobals->time ),
+	fLastThink(gpGlobals->time),
 	TurningDirection( NONE ),
-	bWantToBeInCombat( FALSE )
+	bWantToBeInCombat( FALSE ),
+	lastButtons(0)
 {
 	pEnemy = (CBaseEntity *)NULL;
 	pGoal = (CBaseEntity *)NULL;
@@ -91,55 +93,55 @@ CBaseBot::~CBaseBot()
 void CBaseBot::ActionOpenFire( void )
 {
 	if ( !m_pActiveItem ||
-		!m_pActiveItem->CanDeploy()
-		|| (FightStyle.GetEndShootTime() <= gpGlobals->time  )
-		)
+		 !m_pActiveItem->CanDeploy() ||
+		 FightStyle.GetEndShootTime() <= gpGlobals->time )
 	{
 		ActionChooseWeapon();
 	}
-	else
-	{
-		CBasePlayerWeapon *pActiveWeapon = (CBasePlayerWeapon *)m_pActiveItem;
 
-		if ( pActiveWeapon->pszAmmo1()
-			 && ( pActiveWeapon->m_iClip <= 0 )
-			 && ( pActiveWeapon->iMaxClip() != WEAPON_NOCLIP ) )
+	if ( FightStyle.GetNextShootTime() <= gpGlobals->time )
+	{
+		CBasePlayerWeapon *pActiveWeapon = (CBasePlayerWeapon*)m_pActiveItem;
+
+		if ( pActiveWeapon->m_iClip <= 0 && pActiveWeapon->iMaxClip() != WEAPON_NOCLIP )
 		{
 			ActionReload();
 		}
 		else if ( FightStyle.GetNextShootTime() <= gpGlobals->time && !pActiveWeapon->m_fInReload )
 		{
-			if ( FightStyle.GetSecondaryFire() )
+			// Ensure that, if the attack mode does not support holding down buttons and
+			// the last user command had the buttons set, they are cleared. This should
+			// usually be handled by the frames in between bot think frames, but the code
+			// below caters for the eventuality that we get more than one consecutive
+			// think frame.
+			const bool requiresReleaseButton =
+				!FightStyle.GetHoldDownAttack() &&
+				(lastButtons & (FightStyle.GetSecondaryFire() ? IN_ATTACK2 : IN_ATTACK));
+
+			if ( !requiresReleaseButton )
 			{
-				if ( !pActiveWeapon->pszAmmo1()
-					 || ( pActiveWeapon->iMaxClip() == WEAPON_NOCLIP )
-					 || ( m_rgAmmo[pActiveWeapon->m_iSecondaryAmmoType] != 0 )
-					)
+				if ( FightStyle.GetSecondaryFire() )
 				{
-					pev->button |= IN_ATTACK2;
+					if ( m_rgAmmo[pActiveWeapon->m_iSecondaryAmmoType] > 0 )
+					{
+						ALERT(at_aiconsole, "Setting IN_ATTACK2 from ActionOpenFire()\n");
+						pev->button |= IN_ATTACK2;
+					}
 				}
 				else
 				{
-					pev->button |= IN_ATTACK;
+					if ( pActiveWeapon->iMaxClip() == WEAPON_NOCLIP || pActiveWeapon->m_iClip > 0 )
+					{
+						ALERT(at_aiconsole, "Setting IN_ATTACK from ActionOpenFire()\n");
+						pev->button |= IN_ATTACK;
+					}
 				}
 			}
 			else
 			{
-				if ( !pActiveWeapon->pszAmmo2()
-					 || ( pActiveWeapon->iMaxClip() == WEAPON_NOCLIP )
-					 || ( m_rgAmmo[pActiveWeapon->m_iPrimaryAmmoType] != 0 )
-					)
-				{
-					pev->button |= IN_ATTACK;
-				}
-				else
-				{
-					pev->button |= IN_ATTACK2;
-				}
+				ALERT(at_aiconsole, "ActionOpenFire() requires buttons to be released\n");
 			}
 		}
-
-		pev->button |= IN_ATTACK;
 	}
 }
 
@@ -559,13 +561,13 @@ float CBaseBot::GetBotThinkDelay()
 
 void CBaseBot::BotThink( void )
 {
-
 	if (CheckBotKick())
+	{
 		return;  // Exit if bot has been kicked or is dead
+	}
 
 	if (fNextThink < gpGlobals->time)
 	{
-
 		ThinkStart();
 
 		if ( GetEnemy() != NULL )
@@ -600,10 +602,38 @@ void CBaseBot::BotThink( void )
 	else
 	{
 		HandleTime();
+
+		if ( !FightStyle.GetHoldDownAttack() &&
+			 (lastButtons & (IN_ATTACK | IN_ATTACK2)) &&
+			 gpGlobals->time - fLastThink > 0.1f )
+		{
+			ResetFireButtons();
+		}
+	}
+
+	if ( pev->button & IN_ATTACK )
+	{
+		ALERT(at_aiconsole, "Running player commands with attack button pressed\n");
 	}
 
 	g_engfuncs.pfnRunPlayerMove( edict(), pev->v_angle, GetMoveForward(), GetMoveStrafe(), GetMoveVertical(), pev->button, 0, GetMSec() );
+	lastButtons = pev->button;
 
+}
+
+void CBaseBot::ResetFireButtons()
+{
+	ALERT(at_aiconsole, "Resetting fire buttons\n");
+
+	if ( lastButtons & IN_ATTACK )
+	{
+		pev->button &= ~IN_ATTACK;
+	}
+
+	if ( lastButtons & IN_ATTACK2 )
+	{
+		pev->button &= ~IN_ATTACK2;
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -814,6 +844,7 @@ void CBaseBot::ThinkMood( void )
 void CBaseBot::ThinkStart( void )
 {
 	HandleTime();
+	fLastThink = gpGlobals->time;
 
 	SetCalledAimThisFrame( FALSE );
 

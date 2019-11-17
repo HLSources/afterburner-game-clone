@@ -58,7 +58,7 @@ CBaseBotFightStyle::~CBaseBotFightStyle()
 
 void CBaseBotFightStyle::DispatchWeaponUse(CGenericWeapon& weapon)
 {
-	SetHoldDownAttack(FALSE); // unless the particular weapon sets this TRUE we want it false	
+	SetHoldDownAttack(FALSE); // unless the particular weapon sets this TRUE we want it false
 	weapon.Bot_SetFightStyle(*this);
 }
 
@@ -97,32 +97,40 @@ void CBaseBotFightStyle::RandomizeSecondaryFire( const int SecondaryFirePropensi
 //    The delay parameters are based on Botman's HPB bot
 ///////////////////////////////////////////////////////////////////////////////
 
-void CBaseBotFightStyle::SetNextShootTime(const float weaponFireInterval,
-										  const float minWaitTime,
+void CBaseBotFightStyle::SetNextShootTime(const float nextAllowedShootTime,
 										  const float extraWaitMin,
 										  const float extraWaitMax)
 {
-	float delayFactor = 1.0f - pOwner->Stats.GetTraitReflexes()/100.0f;
-	float tstart = fNextShootTime > gpGlobals->time ? fNextShootTime : gpGlobals->time;
+	float delayFactor = 1.0f - (pOwner->Stats.GetTraitReflexes()/100.0f);
 
-	fNextShootTime = tstart + weaponFireInterval + minWaitTime +
+	fNextShootTime = nextAllowedShootTime +
 		(RANDOM_FLOAT(extraWaitMin, extraWaitMax) * delayFactor);
+
+	fEndShootTime = fNextShootTime > gpGlobals->time ? fNextShootTime : gpGlobals->time;
 
 	if (GetHoldDownAttack()) // for continuous firing, stop every two seconds
 	{
-		fEndShootTime = fNextShootTime + 2.0f;
+		fEndShootTime += 2.0f;
 	}
 	else // Stop shooting 0.1+GetBotThinkDelay seconds after the first shot
 	{
-		fEndShootTime = fNextShootTime + 0.1f + pOwner->GetBotThinkDelay();
+		fEndShootTime += 0.1f + pOwner->GetBotThinkDelay();
 	}
+
+	ALERT(at_aiconsole, "Next shoot time: %s%fs (using rand(%f,%f); End shoot time: %s%f\n",
+		(fNextShootTime - gpGlobals->time) >= 0 ? "+" : "",
+		fNextShootTime - gpGlobals->time,
+		extraWaitMin,
+		extraWaitMax,
+		(fEndShootTime - gpGlobals->time) >= 0 ? "+" : "",
+		fEndShootTime - gpGlobals->time);
 }
 
 void CBaseBotFightStyle::UseWeaponDefault( void )
 {
 	SetSecondaryFire(FALSE);
 	RandomizeAimAtHead(50);
-	SetNextShootTime(0.75, 0.0f, 1.5, 2.2);
+	SetNextShootTime(0.75, 1.5, 2.2);
 }
 
 // Old Half-Life weapon use functions are below, for posterity.

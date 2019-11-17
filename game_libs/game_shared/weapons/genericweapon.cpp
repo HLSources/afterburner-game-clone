@@ -293,8 +293,8 @@ void CGenericWeapon::ItemPostFrame()
 		m_iClip += j;
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= j;
 #else
-	// No idea why this is so arbitrary, but Half Life had it in...
-	m_iClip += 10;
+		// No idea why this is so arbitrary, but Half Life had it in...
+		m_iClip += 10;
 #endif
 
 		m_fInReload = FALSE;
@@ -313,6 +313,11 @@ void CGenericWeapon::ItemPostFrame()
 
 	const bool priAttackIsContinuous = m_pPrimaryAttackMode && m_pPrimaryAttackMode->IsContinuous;
 	const bool secAttackIsContinuous = m_pSecondaryAttackMode && m_pSecondaryAttackMode->IsContinuous;
+
+	if ( m_pPlayer->pev->button & IN_ATTACK )
+	{
+		ALERT(at_aiconsole, "ItemPostFrame with IN_ATTACK pressed\n");
+	}
 
 	if( (m_pPlayer->pev->button & IN_ATTACK2) &&
 		CanAttack(m_flNextSecondaryAttack, gpGlobals->time, UseDecrement()) &&

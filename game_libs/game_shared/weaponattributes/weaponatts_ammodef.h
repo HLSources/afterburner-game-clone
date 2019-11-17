@@ -2,6 +2,7 @@
 
 #include "weaponatts_base.h"
 #include "ammodefs.h"
+#include "weapons.h"
 
 namespace WeaponAtts
 {
@@ -10,7 +11,7 @@ namespace WeaponAtts
 		const CAmmoDef* PrimaryAmmo = nullptr;
 		const CAmmoDef* SecondaryAmmo = nullptr;
 		int PrimaryAmmoOnFirstPickup = 0;
-		int MaxClip = 0;
+		int MaxClip = WEAPON_NOCLIP;
 
 		virtual void Validate() const override
 		{

@@ -2,6 +2,10 @@
 #include "weapon_pref_weights.h"
 #include "weapon_fists_atts.h"
 
+#ifndef CLIENT_DLL
+#include "bot.h"
+#endif
+
 LINK_ENTITY_TO_CLASS(weapon_fists, CWeaponFists);
 LINK_ENTITY_TO_CLASS(weapon_dukes, CWeaponFists);	// For NF compatibility
 
@@ -40,13 +44,15 @@ bool CWeaponFists::InvokeWithAttackMode(WeaponAttackType type, const WeaponAtts:
 #ifndef CLIENT_DLL
 float CWeaponFists::Bot_CalcDesireToUse(CBaseBot& bot, CBaseEntity& enemy, float distanceToEnemy) const
 {
-	// TODO
-	return 0;
+	return static_cast<float>(WeaponPref_Fists) / static_cast<float>(WeaponPref_Max);
 }
 
 void CWeaponFists::Bot_SetFightStyle(CBaseBotFightStyle& fightStyle) const
 {
-	// TODO
+	fightStyle.SetSecondaryFire(false);
+	fightStyle.SetHoldDownAttack(true);
+	fightStyle.RandomizeAimAtHead(40);
+	fightStyle.SetNextShootTime(m_flNextPrimaryAttack, 0.2f, 0.7f);
 }
 #endif
 

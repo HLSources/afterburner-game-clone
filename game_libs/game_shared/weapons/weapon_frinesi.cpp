@@ -240,12 +240,6 @@ float CWeaponFrinesi::Bot_CalcDesireToUse(CBaseBot& bot, CBaseEntity& enemy, flo
 
 void CWeaponFrinesi::Bot_SetFightStyle(CBaseBotFightStyle& fightStyle) const
 {
-	// Go from 1 shot/sec to 1 shot per 1.5 secs
-	static constexpr float BOT_REFIRE_DELAY_PUMP = 1.5f - (1.0f/FRINESI_FIRE_RATE_PUMP);
-
-	// Go from 4 shots/sec to 3 shots/sec
-	static constexpr float BOT_REFIRE_DELAY_AUTO = (1.0f/3.0f) - (1.0f/FRINESI_FIRE_RATE_AUTO);
-
 	static constexpr float SECONDARY_FIRE_PROXIMITY = 700.0f;
 
 	fightStyle.RandomizeAimAtHead(60);
@@ -263,9 +257,7 @@ void CWeaponFrinesi::Bot_SetFightStyle(CBaseBotFightStyle& fightStyle) const
 	}
 
 	fightStyle.RandomizeSecondaryFire(chanceOfSecondaryFire);
-	fightStyle.SetNextShootTime(1.0f / (fightStyle.GetSecondaryFire() ? FRINESI_FIRE_RATE_PUMP : FRINESI_FIRE_RATE_AUTO),
-								fightStyle.GetSecondaryFire() ? BOT_REFIRE_DELAY_PUMP : BOT_REFIRE_DELAY_AUTO,
-								0.8f, 2.0f);
+	fightStyle.SetNextShootTime(fightStyle.GetSecondaryFire() ? m_flNextSecondaryAttack : m_flNextPrimaryAttack, 0.0f, 1.0f);
 }
 #endif
 

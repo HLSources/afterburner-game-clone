@@ -95,11 +95,9 @@ float CWeaponP99::Bot_CalcDesireToUse(CBaseBot& bot, CBaseEntity& enemy, float d
 
 void CWeaponP99::Bot_SetFightStyle(CBaseBotFightStyle& fightStyle) const
 {
-	static constexpr float BOT_REFIRE_DELAY = 1.0f/6.0f;
-
 	fightStyle.SetSecondaryFire(false);
 	fightStyle.RandomizeAimAtHead(80);
-	fightStyle.SetNextShootTime(1.0f / P99_FIRE_RATE, BOT_REFIRE_DELAY, 0.4f, 0.7f);
+	fightStyle.SetNextShootTime(m_flNextPrimaryAttack, 0.2f, 0.7f);
 }
 #endif
 

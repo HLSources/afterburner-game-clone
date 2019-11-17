@@ -34,11 +34,9 @@ float CWeaponRaptor::Bot_CalcDesireToUse(CBaseBot& bot, CBaseEntity& enemy, floa
 
 void CWeaponRaptor::Bot_SetFightStyle(CBaseBotFightStyle& fightStyle) const
 {
-	static constexpr float BOT_REFIRE_DELAY = 0.2f;
-
 	fightStyle.SetSecondaryFire(false);
 	fightStyle.RandomizeAimAtHead(80);
-	fightStyle.SetNextShootTime(1.0f / RAPTOR_FIRE_RATE, BOT_REFIRE_DELAY, 0.2f, 1.0f);
+	fightStyle.SetNextShootTime(m_flNextPrimaryAttack, 0.0f, 0.5f);
 }
 #endif
 
