@@ -34,6 +34,7 @@
 #include "bot_misc.h"
 #include "bot_cvars.h"
 #include "weaponids.h"
+#include "botuserinputsimulator.h"
 
 class CBaseBot;
 class CGenericWeapon;
@@ -132,7 +133,7 @@ private:
 
 	//Scott:  Added next shoot time to determine when the bot should shoot
 	float	fNextShootTime; // time to shoot
-	float	fEndShootTime;  // end time of shot
+	float	fNextEvaluationTime;
 
 
 public:
@@ -185,7 +186,7 @@ public:
 	inline bool GetHoldDownAttack() const { return bHoldDownAttack; }
 	inline bool GetSecondaryFire() { return bSecondaryFire; }
 	inline float GetNextShootTime() const { return fNextShootTime; }
-	inline float GetEndShootTime() const { return fEndShootTime; }
+	inline float GetNextEvaluationTime() const { return fNextEvaluationTime; }
 	CBaseBot* GetOwner() const { return pOwner; }
 
 	void DispatchWeaponUse(CGenericWeapon& activeWeapon);
@@ -312,8 +313,6 @@ public:
 
 class CBaseBot : public CBasePlayer
 {
-private:
-	void ResetFireButtons();
 protected:
 	BOOL		bCalledAimThisFrame;
 	Vector		DesiredVelocity;
@@ -340,7 +339,8 @@ protected:
 	float		TimeMSecCheck;
 	TURNING_DIRECTION	TurningDirection;
 	BOOL		bWantToBeInCombat;
-	int			lastButtons;
+	CBotUserInputSimulator Input;
+	bool		bFiredWeapon;
 
 	void		SetCalledAimThisFrame( const BOOL newValue ) { bCalledAimThisFrame = newValue; }
 	void		SetDesiredVelocity( const Vector &newVec ) { DesiredVelocity = newVec; }
@@ -348,7 +348,7 @@ protected:
 				{
 					pEnemy = newEnemy;
 					FightStyle.SetHoldDownAttack( FALSE );
-					FightStyle.SetNextShootTime (gpGlobals->time, 0.5, 1.0);
+					FightStyle.SetNextShootTime (gpGlobals->time - 0.5f, 0.5f, 1.0f);
 				}
 	void		SetGoal( CBaseEntity *newGoal ) { pGoal = newGoal; }
 	void		SetGoUpOnLadder( const BOOL newValue ) { bGoUpOnLadder = newValue; }

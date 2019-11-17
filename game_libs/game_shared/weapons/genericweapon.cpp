@@ -316,7 +316,7 @@ void CGenericWeapon::ItemPostFrame()
 
 	if ( m_pPlayer->pev->button & IN_ATTACK )
 	{
-		ALERT(at_aiconsole, "ItemPostFrame with IN_ATTACK pressed\n");
+		ALERT(at_aiconsole, "ItemPostFrame with IN_ATTACK pressed for %s\n", m_pPlayer->pev->netname);
 	}
 
 	if( (m_pPlayer->pev->button & IN_ATTACK2) &&

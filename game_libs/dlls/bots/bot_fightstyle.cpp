@@ -106,24 +106,24 @@ void CBaseBotFightStyle::SetNextShootTime(const float nextAllowedShootTime,
 	fNextShootTime = nextAllowedShootTime +
 		(RANDOM_FLOAT(extraWaitMin, extraWaitMax) * delayFactor);
 
-	fEndShootTime = fNextShootTime > gpGlobals->time ? fNextShootTime : gpGlobals->time;
+	fNextEvaluationTime = fNextShootTime > gpGlobals->time ? fNextShootTime : gpGlobals->time;
 
 	if (GetHoldDownAttack()) // for continuous firing, stop every two seconds
 	{
-		fEndShootTime += 2.0f;
+		fNextEvaluationTime += 2.0f;
 	}
 	else // Stop shooting 0.1+GetBotThinkDelay seconds after the first shot
 	{
-		fEndShootTime += 0.1f + pOwner->GetBotThinkDelay();
+		fNextEvaluationTime += 0.1f + pOwner->GetBotThinkDelay();
 	}
 
-	ALERT(at_aiconsole, "Next shoot time: %s%fs (using rand(%f,%f); End shoot time: %s%f\n",
+	ALERT(at_aiconsole, "Next shoot time: %s%fs (using rand(%f,%f); Next eval time: %s%f\n",
 		(fNextShootTime - gpGlobals->time) >= 0 ? "+" : "",
 		fNextShootTime - gpGlobals->time,
 		extraWaitMin,
 		extraWaitMax,
-		(fEndShootTime - gpGlobals->time) >= 0 ? "+" : "",
-		fEndShootTime - gpGlobals->time);
+		(fNextEvaluationTime - gpGlobals->time) >= 0 ? "+" : "",
+		fNextEvaluationTime - gpGlobals->time);
 }
 
 void CBaseBotFightStyle::UseWeaponDefault( void )

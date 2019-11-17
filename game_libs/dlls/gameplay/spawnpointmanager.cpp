@@ -27,23 +27,27 @@ CSpawnPointManager::CSpawnPointManager(CGameRules& gameRules) :
 CBaseEntity* CSpawnPointManager::GetNextSpawnPoint(CBasePlayer* player, uint32_t flags)
 {
 	CBaseEntity* spawnPoint = nullptr;
+	const char* spawnPointClassName = "";
 
 	if ( m_pGameRules->IsCoOp() )
 	{
 		spawnPoint = GetNextCoOpSpawnPoint();
+		spawnPointClassName = SpawnPointClassNames[SP_CoOp];
 	}
 	else if ( m_pGameRules->IsDeathmatch() )
 	{
 		spawnPoint = GetNextDeathmatchSpawnPoint(player, flags);
+		spawnPointClassName = SpawnPointClassNames[SP_Deathmatch];
 	}
 	else
 	{
 		spawnPoint = GetNextDefaultSpawnPoint();
+		spawnPointClassName = SpawnPointClassNames[SP_Default];
 	}
 
 	if ( !spawnPoint )
 	{
-		ALERT(at_error, "Could not find any appropriate spawn points in map.\n");
+		ALERT(at_error, "Could not find any appropriate spawn points (%s) in map.\n", spawnPointClassName);
 		spawnPoint = NullSpawnPoint();
 	}
 

@@ -75,7 +75,7 @@ CBaseBot::CBaseBot():
 	fLastThink(gpGlobals->time),
 	TurningDirection( NONE ),
 	bWantToBeInCombat( FALSE ),
-	lastButtons(0)
+	bFiredWeapon(false)
 {
 	pEnemy = (CBaseEntity *)NULL;
 	pGoal = (CBaseEntity *)NULL;
@@ -94,52 +94,62 @@ void CBaseBot::ActionOpenFire( void )
 {
 	if ( !m_pActiveItem ||
 		 !m_pActiveItem->CanDeploy() ||
-		 FightStyle.GetEndShootTime() <= gpGlobals->time )
+		 FightStyle.GetNextEvaluationTime() <= gpGlobals->time )
 	{
 		ActionChooseWeapon();
+		bFiredWeapon = false;
+		Input.ReleaseButton(IN_ATTACK | IN_ATTACK2);
 	}
 
-	if ( FightStyle.GetNextShootTime() <= gpGlobals->time )
+	if ( FightStyle.GetNextShootTime() > gpGlobals->time || bFiredWeapon )
 	{
-		CBasePlayerWeapon *pActiveWeapon = (CBasePlayerWeapon*)m_pActiveItem;
+		return;
+	}
 
-		if ( pActiveWeapon->m_iClip <= 0 && pActiveWeapon->iMaxClip() != WEAPON_NOCLIP )
-		{
-			ActionReload();
-		}
-		else if ( FightStyle.GetNextShootTime() <= gpGlobals->time && !pActiveWeapon->m_fInReload )
-		{
-			// Ensure that, if the attack mode does not support holding down buttons and
-			// the last user command had the buttons set, they are cleared. This should
-			// usually be handled by the frames in between bot think frames, but the code
-			// below caters for the eventuality that we get more than one consecutive
-			// think frame.
-			const bool requiresReleaseButton =
-				!FightStyle.GetHoldDownAttack() &&
-				(lastButtons & (FightStyle.GetSecondaryFire() ? IN_ATTACK2 : IN_ATTACK));
+	CBasePlayerWeapon *pActiveWeapon = (CBasePlayerWeapon*)m_pActiveItem;
 
-			if ( !requiresReleaseButton )
+	if ( pActiveWeapon->m_iClip <= 0 && pActiveWeapon->iMaxClip() != WEAPON_NOCLIP )
+	{
+		ActionReload();
+		return;
+	}
+
+	if ( FightStyle.GetNextShootTime() <= gpGlobals->time && !pActiveWeapon->m_fInReload )
+	{
+		if ( FightStyle.GetSecondaryFire() )
+		{
+			if ( m_rgAmmo[pActiveWeapon->m_iSecondaryAmmoType] > 0 )
 			{
-				if ( FightStyle.GetSecondaryFire() )
+				ALERT(at_aiconsole, "%s IN_ATTACK2 from ActionOpenFire()\n", FightStyle.GetHoldDownAttack() ? "Holding" : "Pressing");
+
+				if ( FightStyle.GetHoldDownAttack() )
 				{
-					if ( m_rgAmmo[pActiveWeapon->m_iSecondaryAmmoType] > 0 )
-					{
-						ALERT(at_aiconsole, "Setting IN_ATTACK2 from ActionOpenFire()\n");
-						pev->button |= IN_ATTACK2;
-					}
+					Input.HoldButton(IN_ATTACK2);
 				}
 				else
 				{
-					if ( pActiveWeapon->iMaxClip() == WEAPON_NOCLIP || pActiveWeapon->m_iClip > 0 )
-					{
-						ALERT(at_aiconsole, "Setting IN_ATTACK from ActionOpenFire()\n");
-						pev->button |= IN_ATTACK;
-					}
+					Input.PressButton(IN_ATTACK2);
 				}
+
+				bFiredWeapon = true;
 			}
-			else
+		}
+		else
+		{
+			if ( pActiveWeapon->iMaxClip() == WEAPON_NOCLIP || pActiveWeapon->m_iClip > 0 )
 			{
-				ALERT(at_aiconsole, "ActionOpenFire() requires buttons to be released\n");
+				ALERT(at_aiconsole, "%s IN_ATTACK from ActionOpenFire()\n", FightStyle.GetHoldDownAttack() ? "Holding" : "Pressing");
+
+				if ( FightStyle.GetHoldDownAttack() )
+				{
+					Input.HoldButton(IN_ATTACK);
+				}
+				else
+				{
+					Input.PressButton(IN_ATTACK);
+				}
+
+				bFiredWeapon = true;
 			}
 		}
 	}
@@ -198,7 +208,7 @@ void CBaseBot::ActionChooseGoal( void )
 			}
 			else if ( FClassnameIs( pNextEnt->pev, "item_battery" ) )
 			{
-				PickupDesire = MAX_NORMAL_BATTERY - pev->armorvalue; // we want armor proportional to how much we need
+				PickupDesire = MAX_NORMAL_BATTERY - pev->armorvalue; // we want armour proportional to how much we need
 			}
 			else if ( strncmp( "item_", STRING(pNextEnt->pev->classname), 5 ) == 0 )
 			{
@@ -292,6 +302,7 @@ void CBaseBot::ActionChooseWeapon( void )
 	CGenericWeapon* activeWeapon = dynamic_cast<CGenericWeapon*>(m_pActiveItem);
 	if ( activeWeapon )
 	{
+		ALERT(at_aiconsole, "Calling DispatchWeaponUse() for %s\n", STRING(activeWeapon->pev->classname));
 		FightStyle.DispatchWeaponUse(*activeWeapon);
 	}
 	else
@@ -602,38 +613,18 @@ void CBaseBot::BotThink( void )
 	else
 	{
 		HandleTime();
-
-		if ( !FightStyle.GetHoldDownAttack() &&
-			 (lastButtons & (IN_ATTACK | IN_ATTACK2)) &&
-			 gpGlobals->time - fLastThink > 0.1f )
-		{
-			ResetFireButtons();
-		}
 	}
 
-	if ( pev->button & IN_ATTACK )
+	Input.Think();
+	int buttons = pev->button | Input.GetButtons();
+
+	if ( buttons & IN_ATTACK )
 	{
-		ALERT(at_aiconsole, "Running player commands with attack button pressed\n");
+		ALERT(at_aiconsole, "Running player move commands with attack button pressed\n");
 	}
 
-	g_engfuncs.pfnRunPlayerMove( edict(), pev->v_angle, GetMoveForward(), GetMoveStrafe(), GetMoveVertical(), pev->button, 0, GetMSec() );
-	lastButtons = pev->button;
+	g_engfuncs.pfnRunPlayerMove( edict(), pev->v_angle, GetMoveForward(), GetMoveStrafe(), GetMoveVertical(), buttons, 0, GetMSec() );
 
-}
-
-void CBaseBot::ResetFireButtons()
-{
-	ALERT(at_aiconsole, "Resetting fire buttons\n");
-
-	if ( lastButtons & IN_ATTACK )
-	{
-		pev->button &= ~IN_ATTACK;
-	}
-
-	if ( lastButtons & IN_ATTACK2 )
-	{
-		pev->button &= ~IN_ATTACK2;
-	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
