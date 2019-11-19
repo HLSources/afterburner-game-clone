@@ -38,6 +38,15 @@ GNU General Public License for more details.
 // path to default playermodel in Quake
 #define DEFAULT_PLAYER_PATH_QUAKE	"progs/player.mdl"
 
+#define DEFAULT_PLAYER_PATH_AFTERBURNER "models/player/fallback/fallback.mdl"
+
+#ifdef AFTERBURNER_ENGINE
+#define PLAYER_MODEL_PATH DEFAULT_PLAYER_PATH_AFTERBURNER
+#else
+// Default to Half Life - we will never build with Quake support.
+#define PLAYER_MODEL_PATH DEFAULT_PLAYER_PATH_HALFLIFE
+#endif
+
 // debug beams
 #define DEFAULT_LASERBEAM_PATH	"sprites/laserbeam.spr"
 

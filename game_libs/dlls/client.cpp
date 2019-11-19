@@ -67,8 +67,10 @@ void LinkUserMessages( void );
  */
 void set_suicide_frame( entvars_t *pev )
 {
-	if( !FStrEq( STRING( pev->model ), "models/player.mdl" ) )
+	if( !FStrEq( STRING( pev->model ), PLAYER_MODEL_PATH ) )
+	{
 		return; // allready gibbed
+	}
 
 	//pev->frame = $deatha11;
 	pev->solid = SOLID_NOT;
@@ -954,7 +956,7 @@ void ClientPrecache( void )
 	PRECACHE_SOUND( "player/pl_pain6.wav" );
 	PRECACHE_SOUND( "player/pl_pain7.wav" );
 
-	PRECACHE_MODEL( "models/player.mdl" );
+	PRECACHE_MODEL( PLAYER_MODEL_PATH );
 
 	PrecacheMultiplayerModels();
 

@@ -16,7 +16,7 @@
 #include	"schedule.h"
 
 // For holograms, make them not solid so the player can walk through them
-#define	SF_MONSTERPLAYER_NOTSOLID					4 
+#define	SF_MONSTERPLAYER_NOTSOLID					4
 
 //=========================================================
 // Monster's Anim Events Go Here
@@ -36,7 +36,7 @@ public:
 LINK_ENTITY_TO_CLASS( monster_player, CPlayerMonster )
 
 //=========================================================
-// Classify - indicates this monster's place in the 
+// Classify - indicates this monster's place in the
 // relationship table.
 //=========================================================
 int CPlayerMonster::Classify( void )
@@ -92,7 +92,7 @@ void CPlayerMonster::Spawn()
 {
 	Precache();
 
-	SET_MODEL( ENT( pev ), "models/player.mdl" );
+	SET_MODEL( ENT( pev ), PLAYER_MODEL_PATH );
 	UTIL_SetSize( pev, VEC_HULL_MIN, VEC_HULL_MAX );
 
 	pev->solid = SOLID_SLIDEBOX;
@@ -115,7 +115,7 @@ void CPlayerMonster::Spawn()
 //=========================================================
 void CPlayerMonster::Precache()
 {
-	PRECACHE_MODEL( "models/player.mdl" );
+	PRECACHE_MODEL( PLAYER_MODEL_PATH );
 }
 
 //=========================================================

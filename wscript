@@ -102,6 +102,7 @@ def options(opt):
 
 def configure(conf):
 	conf.env.GAMEDIR = "afterburner"
+	conf.env.append_unique("DEFINES", "PLAYER_MODEL_PATH=\"models/player/fallback/fallback.mdl\"")
 
 	enforce_pic = True # modern defaults
 	valid_build_types = ['fastnative', 'fast', 'release', 'debug', 'nooptimize', 'sanitize', 'none']

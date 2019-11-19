@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   This source code contains proprietary and confidential information of
@@ -22,7 +22,7 @@
 #include	"schedule.h"
 
 // For holograms, make them not solid so the player can walk through them
-#define	SF_GENERICMONSTER_NOTSOLID					4 
+#define	SF_GENERICMONSTER_NOTSOLID					4
 
 //=========================================================
 // Monster's Anim Events Go Here
@@ -42,7 +42,7 @@ public:
 LINK_ENTITY_TO_CLASS( monster_generic, CGenericMonster )
 
 //=========================================================
-// Classify - indicates this monster's place in the 
+// Classify - indicates this monster's place in the
 // relationship table.
 //=========================================================
 int CGenericMonster::Classify( void )
@@ -99,13 +99,8 @@ void CGenericMonster::Spawn()
 	Precache();
 
 	SET_MODEL( ENT( pev ), STRING( pev->model ) );
-/*
-	if( FStrEq( STRING( pev->model ), "models/player.mdl" ) )
-		UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
-	else
-		UTIL_SetSize( pev, VEC_HULL_MIN, VEC_HULL_MAX);
-*/
-	if( FStrEq( STRING( pev->model ), "models/player.mdl" ) || FStrEq( STRING( pev->model ), "models/holo.mdl" ) )
+
+	if( FStrEq( STRING( pev->model ), PLAYER_MODEL_PATH ) || FStrEq( STRING( pev->model ), "models/holo.mdl" ) )
 		UTIL_SetSize( pev, VEC_HULL_MIN, VEC_HULL_MAX );
 	else
 		UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
