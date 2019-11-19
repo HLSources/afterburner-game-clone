@@ -72,7 +72,6 @@ CBaseBot::CBaseBot():
 	TimeGoalCheckDelay( 0.3 ),
 	TimeMSecCheck( gpGlobals->time ),
 	fNextThink( gpGlobals->time ),
-	fLastThink(gpGlobals->time),
 	TurningDirection( NONE ),
 	bWantToBeInCombat( FALSE ),
 	bFiredWeapon(false)
@@ -90,6 +89,7 @@ CBaseBot::~CBaseBot()
 // ActionOpenFire
 ///////////////////////////////////////////////////////////////////////////////
 
+// TODO: This is a bit ugly, could probably be refactored.
 void CBaseBot::ActionOpenFire( void )
 {
 	bool releasedButtonsThisFrame = false;
@@ -117,13 +117,13 @@ void CBaseBot::ActionOpenFire( void )
 		return;
 	}
 
-	if ( FightStyle.GetNextShootTime() <= gpGlobals->time && !pActiveWeapon->m_fInReload )
+	if ( FightStyle.GetNextShootTime() <= gpGlobals->time && !pActiveWeapon->m_fInReload && !releasedButtonsThisFrame )
 	{
-		const int currentButtons = Input.GetButtons();
+		const int lastButtons = Input.GetButtons();
 
 		if ( FightStyle.GetSecondaryFire() )
 		{
-			if ( m_rgAmmo[pActiveWeapon->m_iSecondaryAmmoType] > 0 && !(currentButtons & IN_ATTACK2) && !releasedButtonsThisFrame )
+			if ( m_rgAmmo[pActiveWeapon->m_iSecondaryAmmoType] > 0 && !(lastButtons & IN_ATTACK2) )
 			{
 				if ( FightStyle.GetHoldDownAttack() )
 				{
@@ -139,7 +139,7 @@ void CBaseBot::ActionOpenFire( void )
 		}
 		else
 		{
-			if ( (pActiveWeapon->iMaxClip() == WEAPON_NOCLIP || pActiveWeapon->m_iClip > 0) && !(currentButtons & IN_ATTACK) && !releasedButtonsThisFrame )
+			if ( (pActiveWeapon->iMaxClip() == WEAPON_NOCLIP || pActiveWeapon->m_iClip > 0) && !(lastButtons & IN_ATTACK) )
 			{
 				if ( FightStyle.GetHoldDownAttack() )
 				{
@@ -615,6 +615,7 @@ void CBaseBot::BotThink( void )
 		HandleTime();
 	}
 
+	// TODO: One day the input manager should be responsible for all buttons!
 	pev->button &= ~(IN_ATTACK | IN_ATTACK2);
 	Input.Think();
 	pev->button |= Input.GetButtons();
@@ -831,7 +832,6 @@ void CBaseBot::ThinkMood( void )
 void CBaseBot::ThinkStart( void )
 {
 	HandleTime();
-	fLastThink = gpGlobals->time;
 
 	SetCalledAimThisFrame( FALSE );
 

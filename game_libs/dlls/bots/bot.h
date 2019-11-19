@@ -319,7 +319,6 @@ protected:
 	BOOL		bGoUpOnLadder;
 	Vector		LookAtBiasVec;
 	Vector		LookAtVec;
-	float		fLastThink;
 	float		fNextThink;
 	float		MovedDistance;
 	float		MoveForward;
@@ -348,7 +347,7 @@ protected:
 				{
 					pEnemy = newEnemy;
 					FightStyle.SetHoldDownAttack( FALSE );
-					FightStyle.SetNextShootTime (gpGlobals->time - 0.5f, 0.5f, 1.0f);
+					FightStyle.SetNextShootTime (gpGlobals->time, 0.0f, 0.5f);
 				}
 	void		SetGoal( CBaseEntity *newGoal ) { pGoal = newGoal; }
 	void		SetGoUpOnLadder( const BOOL newValue ) { bGoUpOnLadder = newValue; }
