@@ -314,10 +314,6 @@ void CGenericWeapon::ItemPostFrame()
 	const bool priAttackIsContinuous = m_pPrimaryAttackMode && m_pPrimaryAttackMode->IsContinuous;
 	const bool secAttackIsContinuous = m_pSecondaryAttackMode && m_pSecondaryAttackMode->IsContinuous;
 
-	if ( m_pPlayer->pev->button & IN_ATTACK )
-	{
-		ALERT(at_aiconsole, "ItemPostFrame with IN_ATTACK pressed for %s\n", m_pPlayer->pev->netname);
-	}
 
 	if( (m_pPlayer->pev->button & IN_ATTACK2) &&
 		CanAttack(m_flNextSecondaryAttack, gpGlobals->time, UseDecrement()) &&

@@ -4429,12 +4429,17 @@ BOOL CBasePlayer::HasNamedPlayerItem( const char *pszItemName )
 //=========================================================
 BOOL CBasePlayer::SwitchWeapon( CBasePlayerItem *pWeapon )
 {
-	if( !pWeapon->CanDeploy() )
+	if( !pWeapon || !pWeapon->CanDeploy() )
 	{
 		return FALSE;
 	}
 
 	ResetAutoaim();
+
+	if ( pWeapon == m_pActiveItem )
+	{
+		return TRUE;
+	}
 
 	if( m_pActiveItem )
 	{

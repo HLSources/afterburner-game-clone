@@ -117,13 +117,6 @@ void CBaseBotFightStyle::SetNextShootTime(const float nextAllowedShootTime,
 		fNextEvaluationTime += 0.1f + pOwner->GetBotThinkDelay();
 	}
 
-	ALERT(at_aiconsole, "Next shoot time: %s%fs (using rand(%f,%f); Next eval time: %s%f\n",
-		(fNextShootTime - gpGlobals->time) >= 0 ? "+" : "",
-		fNextShootTime - gpGlobals->time,
-		extraWaitMin,
-		extraWaitMax,
-		(fNextEvaluationTime - gpGlobals->time) >= 0 ? "+" : "",
-		fNextEvaluationTime - gpGlobals->time);
 }
 
 void CBaseBotFightStyle::UseWeaponDefault( void )

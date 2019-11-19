@@ -27,13 +27,15 @@ void CBotUserInputSimulator::SetButtons(int flags, float pressDuration)
 	{
 		if ( flags & (1 << index) )
 		{
-			SetIndividualButton(1 << index, pressDuration);
+			SetIndividualButton(index, pressDuration);
 		}
 	}
 }
 
 void CBotUserInputSimulator::SetIndividualButton(uint32_t index, float pressDuration)
 {
+	ASSERT(index < MAX_FLAGS);
+
 	if ( pressDuration <= 0.0f )
 	{
 		m_flButtonReleaseTimes[index] = 0.0f;
