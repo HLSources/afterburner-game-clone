@@ -4,8 +4,25 @@
 
 from waflib import Logs
 import os
+import shutil
 
 top = '.'
+
+def copySDL2(bld):
+	if bld.cmd != "install" or bld.env.DEST_OS != "win32":
+		return
+
+	sdl2Path = bld.all_envs["engine"].LIBPATH_SDL2
+
+	if len(sdl2Path) < 1:
+		return
+
+	# Very crude: we assume that the first element in the list is the desired path.
+	pathToDll = os.path.join(sdl2Path[0], "SDL2.dll")
+	dest = os.path.join(bld.env.BINDIR, "SDL2.dll")
+
+	print("Copying", pathToDll, "to", dest)
+	shutil.copy(pathToDll, dest)
 
 def options(opt):
 	grp = opt.add_option_group('Engine options')
@@ -70,6 +87,8 @@ def configure(conf):
 	conf.define('AFTERBURNER_ENGINE', 1)
 
 def build(bld):
+	bld.add_post_fun(copySDL2)
+
 	is_cxx_link = False
 	libs = [ 'public' ]
 	source = bld.path.ant_glob([
