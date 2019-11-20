@@ -25,10 +25,63 @@ GNU General Public License for more details.
 #include "event_args.h"
 #include "protocol.h"
 #include "client.h"
+#include "server.h"
 
 #define DELTA_PATH		"delta.lst"
 
 static qboolean		delta_init = false;
+
+#ifdef _DEBUG
+// For use when logging debug messages regarding what is being encoded.
+static char encodingSourceName[64];
+
+static inline void ClearDebugSource()
+{
+	encodingSourceName[0] = '\0';
+}
+
+static void SetDebugSourceFromEntityState(entity_state_t* state)
+{
+	edict_t* ent = state ? EDICT_NUM(state->number) : NULL;
+
+	if ( ent )
+	{
+		char source[64];
+		const char* className = STRING(ent->v.classname);
+		Q_snprintf(encodingSourceName, sizeof(encodingSourceName), "%s:%d", className, state->number);
+	}
+	else
+	{
+		ClearDebugSource();
+	}
+}
+
+static void SetDebugSourceFromEvent(event_args_t* event)
+{
+	edict_t* ent = event ? EDICT_NUM(event->entindex) : NULL;
+
+	if ( ent )
+	{
+		char source[64];
+		const char* className = STRING(ent->v.classname);
+		Q_snprintf(encodingSourceName, sizeof(encodingSourceName), "Event: %s:%d", className, event->entindex);
+	}
+	else
+	{
+		ClearDebugSource();
+	}
+}
+
+static void SetDebugSource(const char* string)
+{
+	Q_strncpy(encodingSourceName, string, sizeof(encodingSourceName));
+}
+#define DEBUG_SOURCE_SET(func, ...) func(__VA_ARGS__)
+#define DEBUG_SOURCE_CLEAR() ClearDebugSource()
+#else
+#define DEBUG_SOURCE_SET(...)
+#define DEBUG_SOURCE_CLEAR()
+#endif
 
 // list of all the struct names
 static const delta_field_t cmd_fields[] =
@@ -518,7 +571,7 @@ void Delta_ParseTableField( sizebuf_t *msg )
 	if( !dt )
 		Host_Error( "Delta_ParseTableField: not initialized" );
 
-	nameIndex = MSG_ReadUBitLong( msg, 8 );	// read field name index		
+	nameIndex = MSG_ReadUBitLong( msg, 8 );	// read field name index
 	if( ( nameIndex >= 0 && nameIndex < dt->maxFields ) )
 	{
 		pName = dt->pInfo[nameIndex].name;
@@ -748,7 +801,7 @@ void Delta_InitFields( void )
 {
 	byte *afile;
 	char *pfile;
-	string		encodeDll, encodeFunc, token;	
+	string		encodeDll, encodeFunc, token;
 	delta_info_t	*dt;
 
 	afile = FS_LoadFile( DELTA_PATH, NULL, false );
@@ -894,8 +947,12 @@ int Delta_ClampIntegerField( delta_t *pField, int iValue, qboolean bSigned, int 
 #ifdef _DEBUG
 	if( numbits < 32 && abs( iValue ) >= (uint)BIT( numbits ))
 	{
-		Msg( "Network field value overflow: field '%s' abs value %u is out of range of %d-bit container (max value %u).\n",
-			 pField->name, abs( iValue ), numbits, (uint)BIT( numbits ) - 1);
+		Msg("Network field value overflow (source '%s' field '%s'): abs value %u is out of range of %d-bit container (max value %u).\n",
+			encodingSourceName[0] ? encodingSourceName : "<unknown>",
+			pField->name,
+			abs(iValue),
+			numbits,
+			(uint)BIT(numbits) - 1);
 	}
 #endif
 
@@ -1394,6 +1451,8 @@ void MSG_WriteDeltaEvent( sizebuf_t *msg, event_args_t *from, event_args_t *to )
 	delta_info_t	*dt;
 	int		i;
 
+	DEBUG_SOURCE_SET(SetDebugSourceFromEvent, from);
+
 	dt = Delta_FindStruct( "event_t" );
 	Assert( dt && dt->bInitialized );
 
@@ -1408,6 +1467,8 @@ void MSG_WriteDeltaEvent( sizebuf_t *msg, event_args_t *from, event_args_t *to )
 	{
 		Delta_WriteField( msg, pField, from, to, 0.0f );
 	}
+
+	DEBUG_SOURCE_CLEAR();
 }
 
 /*
@@ -1522,6 +1583,8 @@ void MSG_WriteClientData( sizebuf_t *msg, clientdata_t *from, clientdata_t *to, 
 	int		i, startBit;
 	int		numChanges = 0;
 
+	DEBUG_SOURCE_SET(SetDebugSource, "Player");
+
 	dt = Delta_FindStruct( "clientdata_t" );
 	Assert( dt && dt->bInitialized );
 
@@ -1539,13 +1602,18 @@ void MSG_WriteClientData( sizebuf_t *msg, clientdata_t *from, clientdata_t *to, 
 	for( i = 0; i < dt->numFields; i++, pField++ )
 	{
 		if( Delta_WriteField( msg, pField, from, to, timebase ))
+		{
 			numChanges++;
+		}
 	}
 
-	if( numChanges ) return; // we have updates
+	if( !numChanges )
+	{
+		MSG_SeekToBit( msg, startBit, SEEK_SET );
+		MSG_WriteOneBit( msg, 0 ); // no changes
+	}
 
-	MSG_SeekToBit( msg, startBit, SEEK_SET );
-	MSG_WriteOneBit( msg, 0 ); // no changes
+	DEBUG_SOURCE_CLEAR();
 }
 
 /*
@@ -1681,11 +1749,11 @@ void MSG_WriteDeltaEntity( entity_state_t *from, entity_state_t *to, sizebuf_t *
 	int		i, startBit;
 	int		numChanges = 0;
 
-	if( to == NULL )
-	{
-		int	fRemoveType;
+	DEBUG_SOURCE_SET(SetDebugSourceFromEntityState, from);
 
-		if( from == NULL ) return;
+	if( !to && from )
+	{
+		int	fRemoveType = 1;
 
 		// a NULL to is a delta remove message
 		MSG_WriteUBitLong( msg, from->number, MAX_ENTITY_BITS );
@@ -1694,75 +1762,95 @@ void MSG_WriteDeltaEntity( entity_state_t *from, entity_state_t *to, sizebuf_t *
 		// 0 - keep alive, has delta-update
 		// 1 - remove from delta message (but keep states)
 		// 2 - completely remove from server
-		if( force ) fRemoveType = 2;
-		else fRemoveType = 1;
+		if( force )
+		{
+			fRemoveType = 2;
+		}
 
 		MSG_WriteUBitLong( msg, fRemoveType, 2 );
-		return;
-	}
-
-	startBit = msg->iCurBit;
-
-	if( to->number < 0 || to->number >= GI->max_edicts )
-		Host_Error( "MSG_WriteDeltaEntity: Bad entity number: %i\n", to->number );
-
-	MSG_WriteUBitLong( msg, to->number, MAX_ENTITY_BITS );
-	MSG_WriteUBitLong( msg, 0, 2 ); // alive
-
-	if( baseline != 0 )
-	{
-		MSG_WriteOneBit( msg, 1 );
-		MSG_WriteSBitLong( msg, baseline, 7 );
-	}
-	else MSG_WriteOneBit( msg, 0 );
-
-	if( force || ( to->entityType != from->entityType ))
-	{
-		MSG_WriteOneBit( msg, 1 );
-		MSG_WriteUBitLong( msg, to->entityType, 2 );
-		numChanges++;
-	}
-	else MSG_WriteOneBit( msg, 0 );
-
-	if( FBitSet( to->entityType, ENTITY_BEAM ))
-	{
-		dt = Delta_FindStruct( "custom_entity_state_t" );
-	}
-	else if( delta_type == DELTA_PLAYER )
-	{
-		dt = Delta_FindStruct( "entity_state_player_t" );
 	}
 	else
 	{
-		dt = Delta_FindStruct( "entity_state_t" );
-	}
+		startBit = msg->iCurBit;
 
-	Assert( dt && dt->bInitialized );
+		if( to->number < 0 || to->number >= GI->max_edicts )
+		{
+			Host_Error( "MSG_WriteDeltaEntity: Bad entity number: %i\n", to->number );
+		}
 
-	pField = dt->pFields;
-	Assert( pField != NULL );
+		MSG_WriteUBitLong( msg, to->number, MAX_ENTITY_BITS );
+		MSG_WriteUBitLong( msg, 0, 2 ); // alive
 
-	if( delta_type == DELTA_STATIC )
-	{
-		// static entities won't to be custom encoded
-		for( i = 0; i < dt->numFields; i++ )
-			dt->pFields[i].bInactive = false;
-	}
-	else
-	{
-		// activate fields and call custom encode func
-		Delta_CustomEncode( dt, from, to );
-	}
+		if( baseline != 0 )
+		{
+			MSG_WriteOneBit( msg, 1 );
+			MSG_WriteSBitLong( msg, baseline, 7 );
+		}
+		else
+		{
+			MSG_WriteOneBit( msg, 0 );
+		}
 
-	// process fields
-	for( i = 0; i < dt->numFields; i++, pField++ )
-	{
-		if( Delta_WriteField( msg, pField, from, to, timebase ))
+		if( force || ( to->entityType != from->entityType ))
+		{
+			MSG_WriteOneBit( msg, 1 );
+			MSG_WriteUBitLong( msg, to->entityType, 2 );
 			numChanges++;
+		}
+		else
+		{
+			MSG_WriteOneBit( msg, 0 );
+		}
+
+		if( FBitSet( to->entityType, ENTITY_BEAM ))
+		{
+			dt = Delta_FindStruct( "custom_entity_state_t" );
+		}
+		else if( delta_type == DELTA_PLAYER )
+		{
+			dt = Delta_FindStruct( "entity_state_player_t" );
+		}
+		else
+		{
+			dt = Delta_FindStruct( "entity_state_t" );
+		}
+
+		Assert( dt && dt->bInitialized );
+
+		pField = dt->pFields;
+		Assert( pField != NULL );
+
+		if( delta_type == DELTA_STATIC )
+		{
+			// static entities won't to be custom encoded
+			for( i = 0; i < dt->numFields; i++ )
+			{
+				dt->pFields[i].bInactive = false;
+			}
+		}
+		else
+		{
+			// activate fields and call custom encode func
+			Delta_CustomEncode( dt, from, to );
+		}
+
+		// process fields
+		for( i = 0; i < dt->numFields; i++, pField++ )
+		{
+			if( Delta_WriteField( msg, pField, from, to, timebase ))
+			{
+				numChanges++;
+			}
+		}
+
+		// if we have no changes - kill the message
+		if( !numChanges && !force )
+		{
+			MSG_SeekToBit( msg, startBit, SEEK_SET );
+		}
 	}
 
-	// if we have no changes - kill the message
-	if( !numChanges && !force ) MSG_SeekToBit( msg, startBit, SEEK_SET );
+	DEBUG_SOURCE_CLEAR();
 }
 
 /*
