@@ -857,7 +857,7 @@ void StartFrame( void )
 
 static inline void PrecacheMultiplayerModels()
 {
-	const CUtlVector<CUtlString>& playerModelList = GameResources::StaticInstance().MultiplayerModelList();
+	const CUtlVector<CUtlString>& playerModelList = CGameResources::StaticInstance().MultiplayerModelList();
 
 	FOR_EACH_VEC(playerModelList, index)
 	{

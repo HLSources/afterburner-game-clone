@@ -90,7 +90,7 @@ void CPropPlayerCorpse::SetMultiplayerModel(entvars_t* other)
 {
 	char* info = g_engfuncs.pfnGetInfoKeyBuffer(ENT(other));
 	const char* modelName = g_engfuncs.pfnInfoKeyValue(info, "model");
-	CUtlString fullModelPath = GameResources::MultiplayerModelFullPath(CUtlString(modelName));
+	CUtlString fullModelPath = CGameResources::MultiplayerModelFullPath(CUtlString(modelName));
 
 	SET_MODEL(ENT(pev), fullModelPath.String());
 }

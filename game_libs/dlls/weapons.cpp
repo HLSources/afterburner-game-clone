@@ -33,6 +33,7 @@
 #include "weaponregistry.h"
 #include "weaponinfo.h"
 #include "weaponatts_collection.h"
+#include "gameresources/GameResources.h"
 
 extern CGraph WorldGraph;
 extern int gEvilImpulse101;
@@ -398,14 +399,23 @@ void W_Precache( void )
 	PRECACHE_SOUND( "weapons/debris2.wav" );// explosion aftermaths
 	PRECACHE_SOUND( "weapons/debris3.wav" );// explosion aftermaths
 
-	PRECACHE_SOUND( "weapons/grenade_hit1.wav" );//grenade
-	PRECACHE_SOUND( "weapons/grenade_hit2.wav" );//grenade
-	PRECACHE_SOUND( "weapons/grenade_hit3.wav" );//grenade
-
 	PRECACHE_SOUND( "weapons/bullet_hit1.wav" );	// hit by bullet
 	PRECACHE_SOUND( "weapons/bullet_hit2.wav" );	// hit by bullet
 
 	PRECACHE_SOUND( "items/weapondrop1.wav" );// weapon falls to the ground
+
+	CSoundResources& soundRes = CGameResources::StaticInstance().SoundResources();
+
+	for ( uint32_t soundTypeIndex = 0; soundTypeIndex < CSoundResources::ST__Count; ++soundTypeIndex )
+	{
+		CSoundResources::SoundType soundType = static_cast<CSoundResources::SoundType>(soundTypeIndex);
+		size_t count = soundRes.SoundCount(soundType);
+
+		for ( uint32_t index = 0; index < count; ++index )
+		{
+			PRECACHE_SOUND(soundRes.SoundPath(soundType, index));
+		}
+	}
 }
 
 TYPEDESCRIPTION	CBasePlayerItem::m_SaveData[] =

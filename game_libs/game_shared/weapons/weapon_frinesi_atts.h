@@ -65,7 +65,9 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	vm.ReloadSounds.MinPitch = 98;
 	vm.ReloadSounds.MaxPitch = 102;
 	vm.ReloadSounds.SoundNames << "weapons/weapon_frinesi/frinesi_reload1.wav"
-							   << "weapons/weapon_frinesi/frinesi_reload2.wav";
+							   << "weapons/weapon_frinesi/frinesi_reload2.wav"
+							   << "weapons/weapon_frinesi/frinesi_reload3.wav"
+							   << "weapons/weapon_frinesi/frinesi_reload4.wav";
 
 	WAPlayerModel& pm = obj.PlayerModel;
 	pm.PlayerModelName = "models/weapon_frinesi/p_frinesi.mdl";
@@ -103,9 +105,9 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 
 	priAttack->AttackSounds.MinVolume = 0.95f;
 	priAttack->AttackSounds.MaxVolume = 1.0f;
-	priAttack->AttackSounds.MinPitch = 98;
+	priAttack->AttackSounds.MinPitch = 100;
 	priAttack->AttackSounds.MaxPitch = 102;
-	priAttack->AttackSounds.SoundNames << "weapons/weapon_frinesi/frinesi_fire.wav";
+	priAttack->AttackSounds.SoundNames << "weapons/weapon_frinesi/frinesi_fire1.wav";
 
 	// Pump
 	WAHitscanAttack* secAttack = new WAHitscanAttack();
@@ -122,6 +124,6 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	secAttack->ViewModelAnimList_Attack.Clear();
 	secAttack->ViewModelAnimList_Attack << FRINESI_SHOOT_BIG;
 
-	secAttack->AttackSounds.SoundNames.Clear();
-	secAttack->AttackSounds.SoundNames << "weapons/weapon_frinesi/frinesi_altfire.wav";
+	secAttack->AttackSounds.MinPitch = 90;
+	secAttack->AttackSounds.MaxPitch = 94;
 });

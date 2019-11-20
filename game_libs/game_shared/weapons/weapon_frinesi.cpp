@@ -33,6 +33,9 @@ static constexpr float FRINESI_BASE_DAMAGE_PUMP = 159.0f / static_cast<float>(FR
 static constexpr float FRINESI_BASE_SPREAD_PUMP = 0.1f;
 static constexpr float FRINESI_PUMP_DELAY = 0.42f;
 
+static constexpr float PUMP_SOUND_OFFSET = 0.08f;
+static constexpr float RELOAD_SOUND_OFFSET = 0.1f;
+
 LINK_ENTITY_TO_CLASS(weapon_frinesi, CWeaponFrinesi)
 
 #ifdef AFTERBURNER_GAMEPLAY_PLACEHOLDERS
@@ -46,7 +49,8 @@ CWeaponFrinesi::CWeaponFrinesi()
 	  m_flReloadStartDuration(0.0f),
 	  m_flReloadDuration(0.0f),
 	  m_flPumpDuration(0.0f),
-	  m_flNextPumpTime(0.0f)
+	  m_flNextPumpTime(0.0f),
+	  m_flNextReloadSoundTime(0.0f)
 {
 	m_pPrimaryAttackMode = GetAttackModeFromAttributes<WeaponAtts::WAHitscanAttack>(ATTACKMODE_AUTO);
 	m_pSecondaryAttackMode = GetAttackModeFromAttributes<WeaponAtts::WAHitscanAttack>(ATTACKMODE_PUMP);
@@ -107,6 +111,12 @@ void CWeaponFrinesi::WeaponTick()
 		PlayPumpSound();
 		m_flNextPumpTime = 0.0f;
 	}
+
+	if ( m_flNextReloadSoundTime != 0.0f && m_flNextReloadSoundTime < gpGlobals->time )
+	{
+		PlaySound(WeaponAttributes().ViewModel.ReloadSounds, CHAN_ITEM);
+		m_flNextReloadSoundTime = 0.0f;
+	}
 }
 
 bool CWeaponFrinesi::FlagReloadInterrupt()
@@ -127,6 +137,7 @@ int CWeaponFrinesi::HandleSpecialReload(int currentState)
 	{
 		case RELOAD_IDLE:
 		{
+			m_flNextReloadSoundTime = 0.0f;
 			m_flNextPumpTime = 0.0f;
 			SendWeaponAnim(FRINESI_START_RELOAD);
 
@@ -154,14 +165,15 @@ int CWeaponFrinesi::HandleSpecialReload(int currentState)
 				 m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] < 1 )
 			{
 				// Reloading has finished. Do a pump and delay any further activity until it's finished.
-				m_flNextPumpTime = gpGlobals->time + 0.1f;
+				m_flNextReloadSoundTime = 0.0f;
+				m_flNextPumpTime = gpGlobals->time + PUMP_SOUND_OFFSET;
 				SendWeaponAnim(FRINESI_PUMP);
 				DelayPendingActions(m_flPumpDuration, true);
 
 				return NextReloadState(0, RELOAD_IDLE);
 			}
 
-			PlaySound(WeaponAttributes().ViewModel.ReloadSounds, CHAN_ITEM);
+			m_flNextReloadSoundTime = gpGlobals->time + RELOAD_SOUND_OFFSET;
 			SendWeaponAnim(FRINESI_RELOAD);
 
 			// Go into the increment clip state once this animation has finished.

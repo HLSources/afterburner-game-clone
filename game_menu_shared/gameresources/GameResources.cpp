@@ -1,36 +1,47 @@
 #include "gameresources/GameResources.h"
 #include "filesystemops/FileSystemOps.h"
 
-GameResources& GameResources::StaticInstance()
+CGameResources& CGameResources::StaticInstance()
 {
-	static GameResources* resources = nullptr;
+	static CGameResources* resources = nullptr;
 
 	if ( !resources )
 	{
-		resources = new GameResources();
+		resources = new CGameResources();
 	}
 
 	return *resources;
 }
 
-CUtlString GameResources::MultiplayerModelFullPath(const CUtlString& modelName)
+CSoundResources& CGameResources::SoundResources()
+{
+	return m_SoundResources;
+}
+
+const CSoundResources& CGameResources::SoundResources() const
+{
+	return m_SoundResources;
+}
+
+CUtlString CGameResources::MultiplayerModelFullPath(const CUtlString& modelName)
 {
 	CUtlString path("models/player/");
 	path.AppendFormat("%s/%s.mdl", modelName.String(), modelName.String());
 	return path;
 }
 
-const CUtlVector<CUtlString>& GameResources::MultiplayerModelList() const
+const CUtlVector<CUtlString>& CGameResources::MultiplayerModelList() const
 {
 	return m_MultiplayerModelList;
 }
 
-void GameResources::Initialise()
+void CGameResources::Initialise()
 {
 	InitMultiplayerModelList();
+	m_SoundResources.Initialise();
 }
 
-void GameResources::InitMultiplayerModelList()
+void CGameResources::InitMultiplayerModelList()
 {
 	m_MultiplayerModelList.Purge();
 

@@ -15,3 +15,8 @@ ILogInterface& ProjectInterface_Server::LogInterface()
 {
 	return m_LogInterface;
 }
+
+IRNG& ProjectInterface_Server::RNG()
+{
+	return m_RNG;
+}

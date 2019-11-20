@@ -37,6 +37,7 @@ private:
 	float m_flReloadDuration;
 	float m_flPumpDuration;
 	float m_flNextPumpTime;
+	float m_flNextReloadSoundTime;
 };
 
 namespace WeaponAtts

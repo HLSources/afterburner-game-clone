@@ -2,6 +2,7 @@
 
 #include "IFileLoader.h"
 #include "ILogInterface.h"
+#include "IRNG.h"
 
 class IProjectInterface
 {
@@ -14,6 +15,7 @@ public:
 
 	virtual IFileLoader& FileLoader() = 0;
 	virtual ILogInterface& LogInterface() = 0;
+	virtual IRNG& RNG() = 0;
 
 private:
 	static IProjectInterface* m_StaticProjectInterface;

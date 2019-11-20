@@ -35,7 +35,7 @@ static qboolean		delta_init = false;
 // For use when logging debug messages regarding what is being encoded.
 static char encodingSourceName[64];
 
-static inline void ClearDebugSource()
+static inline void ClearDebugSource(void)
 {
 	encodingSourceName[0] = '\0';
 }

@@ -149,11 +149,20 @@ wavdata_t *S_LoadSound( sfx_t *sfx )
 	if( !sc ) sc = S_CreateDefaultSound();
 
 	if( sc->rate < SOUND_11k ) // some bad sounds
+	{
+		Con_Printf(S_WARN "Sound %s has invalid sample rate of %.2fKHz, resampling to 11KHz.\n", sfx->name, sc->rate / 1000.0f);
 		Sound_Process( &sc, SOUND_11k, sc->width, SOUND_RESAMPLE );
+	}
 	else if( sc->rate > SOUND_11k && sc->rate < SOUND_22k ) // some bad sounds
+	{
+		Con_Printf(S_WARN "Sound %s has invalid sample rate of %.2fKHz, resampling to 22KHz.\n", sfx->name, sc->rate / 1000.0f);
 		Sound_Process( &sc, SOUND_22k, sc->width, SOUND_RESAMPLE );
+	}
 	else if( sc->rate > SOUND_22k && sc->rate <= SOUND_32k ) // some bad sounds
+	{
+		Con_Printf(S_WARN "Sound %s has invalid sample rate of %.2fKHz, resampling to 44KHz.\n", sfx->name, sc->rate / 1000.0f);
 		Sound_Process( &sc, SOUND_44k, sc->width, SOUND_RESAMPLE );
+	}
 
 	sfx->cache = sc;
 
@@ -211,7 +220,7 @@ sfx_t *S_FindName( const char *pname, int *pfInCache )
 			return NULL;
 		s_numSfx++;
 	}
-	
+
 	sfx = &s_knownSfx[i];
 	memset( sfx, 0, sizeof( *sfx ));
 	if( pfInCache ) *pfInCache = false;
@@ -222,7 +231,7 @@ sfx_t *S_FindName( const char *pname, int *pfInCache )
 	// link it in
 	sfx->hashNext = s_sfxHashList[sfx->hashValue];
 	s_sfxHashList[sfx->hashValue] = sfx;
-		
+
 	return sfx;
 }
 
@@ -299,7 +308,7 @@ void S_EndRegistration( void )
 
 	if( !s_registering || !dma.initialized )
 		return;
-	
+
 	// free any sounds not from this registration sequence
 	for( i = 0, sfx = s_knownSfx; i < s_numSfx; i++, sfx++ )
 	{

@@ -461,7 +461,7 @@ cvar_t	sk_player_leg3	= { "sk_player_leg3","1" };
 void GameDLLInit( void )
 {
 	IProjectInterface::SetProjectInterfaceImpl(ProjectInterface_Server::StaticInstance());
-	GameResources::StaticInstance().Initialise();
+	CGameResources::StaticInstance().Initialise();
 
 	// Register cvars here:
 
