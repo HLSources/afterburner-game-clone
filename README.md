@@ -35,7 +35,7 @@ For more information, or a list of all available options, run `python3 ./waf --h
 
 ## Why is Mac not supported any more?
 
-[Apple have deprecated OpenGL support on Mac](https://www.anandtech.com/show/12894/apple-deprecates-opengl-across-all-oses). I'm not gonna lie - this is incredibly irritating, because OpenGL was the easiest way to write graphics-based applications that worked across the three big operating systems. In response, the developers of the Xash3D engine used by Afterburner have decided [not to support the engine on Mac as a response](https://github.com/FWGS/xash3d-fwgs/issues/61), because to do so would now require too much extra work and testing.
+[Apple have deprecated OpenGL support on Mac](https://www.anandtech.com/show/12894/apple-deprecates-opengl-across-all-oses). I'm not gonna lie - this is incredibly irritating, because OpenGL was the easiest way to write graphics-based applications that worked across the three big operating systems. In response, the developers of the Xash3D engine used by Afterburner have decided [not to support the engine on Mac](https://github.com/FWGS/xash3d-fwgs/issues/61), because to do so would now require too much extra work and testing.
 
 If you wish to try compiling the game for Mac then feel free - in theory the engine should be compatible as long as you have a version of MacOS that supports OpenGL. However, I won't be able to help you out, so you'll be on your own.
 
@@ -47,7 +47,7 @@ Since this project is currently only in active development by myself, I don't ha
 
 Many thanks to:
 
-* Gearbox for the original Nightfire assets
+* Gearbox for the original game.
 * The FWGS team for the [Xash3D engine](https://github.com/FWGS/xash3d-fwgs) and [Xash3D version of Half Life SDK](https://github.com/FWGS/hlsdk-xash3d).
 * j-yaniv and others for [Rho-Bot Half Life bots](https://sourceforge.net/projects/rhobot/).
 * Developers of [STB libraries](https://github.com/nothings/stb).
