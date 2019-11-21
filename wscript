@@ -260,7 +260,7 @@ def configure(conf):
 		'-Werror=bool-compare',
 		'-Werror=bool-operation',
 #		'-Wdouble-promotion', # disable warning flood, causes super irritating warnings with variadic functions
-		'-Wstrict-aliasing',
+		#'-Wstrict-aliasing', # Certain C code casts pointers around and causes these warnings
 	]
 
 	c_compiler_optional_flags = [
