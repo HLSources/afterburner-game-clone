@@ -1058,7 +1058,7 @@ int USENTENCEG_PickSequential( int isentenceg, char *szfound, int ipick, int fre
 
 	strcpy( szfound, "!" );
 	strcat( szfound, szgroupname );
-	sprintf( sznum, "%d", ipick );
+	snprintf( sznum, sizeof(sznum), "%d", ipick );
 	strcat( szfound, sznum );
 
 	if( ipick >= count )
@@ -1380,7 +1380,7 @@ int SENTENCEG_Lookup( const char *sample, char *sentencenum )
 			if( sentencenum )
 			{
 				strcpy( sentencenum, "!" );
-				sprintf( sznum, "%d", i );
+				snprintf( sznum, sizeof(sznum), "%d", i );
 				strcat( sentencenum, sznum );
 			}
 			return i;
