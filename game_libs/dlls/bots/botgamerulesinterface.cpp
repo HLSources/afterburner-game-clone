@@ -14,6 +14,7 @@
 #include "botprofiles/botprofiletable.h"
 #include "bot_misc.h"
 #include "botregister.h"
+#include "mp_utils.h"
 
 CBotGameRulesInterface::CBotGameRulesInterface(CGameRules& parent) :
 	m_pParent(&parent),
@@ -68,7 +69,7 @@ void CBotGameRulesInterface::Think()
 {
 	for ( int clientIndex = 1; clientIndex <= gpGlobals->maxClients; ++clientIndex )
 	{
-		CBasePlayer* player = UTIL_CBasePlayerByIndex(clientIndex);
+		CBasePlayer* player = MPUtils::CBasePlayerFromIndex(clientIndex);
 
 		if ( !player )
 		{

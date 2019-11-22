@@ -571,8 +571,4 @@ int UTIL_SharedRandomLong( unsigned int seed, int low, int high );
 float UTIL_SharedRandomFloat( unsigned int seed, float low, float high );
 
 float UTIL_WeaponTimeBase( void );
-
-CBasePlayer* UTIL_CBasePlayerByIndex( int playerIndex );
-const char* UTIL_GetPlayerNetName(CBasePlayer* player);
-CUtlString UTIL_SanitisePlayerNetName(const CUtlString& name);
 #endif // UTIL_H

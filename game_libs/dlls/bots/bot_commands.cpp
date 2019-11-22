@@ -5,6 +5,7 @@
 #include "gamerules.h"
 #include "botgamerulesinterface.h"
 #include "botregister.h"
+#include "mp_utils.h"
 
 namespace BotCommands
 {
@@ -20,9 +21,7 @@ namespace BotCommands
 
 	void Bot_Add(void)
 	{
-		CHalfLifeMultiplay* mpGameRules = dynamic_cast<CHalfLifeMultiplay*>(g_pGameRules);
-
-		if ( !mpGameRules )
+		if ( !g_pGameRules || !g_pGameRules->IsMultiplayer() )
 		{
 			ALERT(at_error, "Cannot add bots when not in multiplayer game.\n");
 			return;
@@ -92,7 +91,7 @@ namespace BotCommands
 
 		for ( int clientIndex = 1; clientIndex <= gpGlobals->maxClients; ++clientIndex )
 		{
-			CBasePlayer* player = UTIL_CBasePlayerByIndex(clientIndex);
+			CBasePlayer* player = MPUtils::CBasePlayerFromIndex(clientIndex);
 
 			if ( !player || !player->IsFakeClient() )
 			{
