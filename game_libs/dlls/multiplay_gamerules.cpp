@@ -36,6 +36,7 @@
 #include	"nodes.h"
 #include "botgamerulesinterface.h"
 #include "weapon_p99.h"
+#include "hitbox_debugging/hitbox_debugData.h"
 
 extern DLL_GLOBAL CGameRules *g_pGameRules;
 extern DLL_GLOBAL BOOL	g_fGameOver;
@@ -81,6 +82,7 @@ CHalfLifeMultiplay::CHalfLifeMultiplay() :
 	CGameRules()
 {
 	m_pBotGameRulesInterface = new CBotGameRulesInterface(*this);
+	m_pHitboxDebugData = new CHitboxDebugData();
 
 #ifndef NO_VOICEGAMEMGR
 	g_VoiceGameMgr.Init( &g_GameMgrHelper, gpGlobals->maxClients );
@@ -133,6 +135,7 @@ CHalfLifeMultiplay::CHalfLifeMultiplay() :
 CHalfLifeMultiplay::~CHalfLifeMultiplay()
 {
 	delete m_pBotGameRulesInterface;
+	delete m_pHitboxDebugData;
 }
 
 void CHalfLifeMultiplay::ServerActivate(void)
@@ -1206,6 +1209,16 @@ void CHalfLifeMultiplay::GoToIntermission( void )
 
 	g_fGameOver = TRUE;
 	m_iEndIntermissionButtonHit = FALSE;
+}
+
+CBotGameRulesInterface* CHalfLifeMultiplay::BotGameRulesInterface()
+{
+	return m_pBotGameRulesInterface;
+}
+
+CHitboxDebugData* CHalfLifeMultiplay::HitboxDebugData()
+{
+	return m_pHitboxDebugData;
 }
 
 #define MAX_RULE_BUFFER 1024

@@ -34,6 +34,7 @@ class CBasePlayerAmmo;
 // adding more dependencies.
 class CBotGameRulesInterface;
 class CSpawnPointManager;
+class CHitboxDebugData;
 
 // weapon respawning return codes
 enum
@@ -177,7 +178,6 @@ public:
 	// Immediately end a multiplayer game
 	virtual void EndMultiplayerGame( void ) {}
 
-	virtual CBotGameRulesInterface* BotGameRulesInterface() { return NULL; }
 	CSpawnPointManager* SpawnPointManager() { return m_pSpawnPointManager; }
 
 private:
@@ -382,7 +382,8 @@ public:
 	// Immediately end a multiplayer game
 	virtual void EndMultiplayerGame( void ) { GoToIntermission(); }
 
-	virtual CBotGameRulesInterface* BotGameRulesInterface() override { return m_pBotGameRulesInterface; }
+	CBotGameRulesInterface* BotGameRulesInterface();
+	CHitboxDebugData* HitboxDebugData();
 
 protected:
 	virtual void ChangeLevel( void );
@@ -393,7 +394,7 @@ protected:
 
 private:
 	CBotGameRulesInterface* m_pBotGameRulesInterface;
-	CSpawnPointManager* m_pSpawnPointManager;
+	CHitboxDebugData* m_pHitboxDebugData;
 };
 
 extern DLL_GLOBAL CGameRules *g_pGameRules;

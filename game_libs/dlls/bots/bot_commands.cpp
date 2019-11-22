@@ -9,6 +9,11 @@
 
 namespace BotCommands
 {
+	static CHalfLifeMultiplay* GetGameRules()
+	{
+		return g_pGameRules ? dynamic_cast<CHalfLifeMultiplay*>(g_pGameRules) : nullptr;
+	}
+
 	void Initialise()
 	{
 		g_engfuncs.pfnAddServerCommand("bot_add", &Bot_Add);
@@ -21,13 +26,15 @@ namespace BotCommands
 
 	void Bot_Add(void)
 	{
-		if ( !g_pGameRules || !g_pGameRules->IsMultiplayer() )
+		CHalfLifeMultiplay* gameRules = GetGameRules();
+
+		if ( !gameRules || !gameRules->IsMultiplayer() )
 		{
 			ALERT(at_error, "Cannot add bots when not in multiplayer game.\n");
 			return;
 		}
 
-		CBotGameRulesInterface* bgri = g_pGameRules ? g_pGameRules->BotGameRulesInterface() : NULL;
+		CBotGameRulesInterface* bgri = g_pGameRules ? gameRules->BotGameRulesInterface() : NULL;
 
 		if ( !bgri )
 		{

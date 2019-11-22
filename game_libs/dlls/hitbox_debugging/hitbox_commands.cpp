@@ -1,3 +1,4 @@
+#include <memory>
 #include "hitbox_commands.h"
 #include "standard_includes.h"
 #include "gamerules.h"
@@ -6,7 +7,17 @@
 
 namespace HitboxDebugging
 {
-	static CHitboxDebugData DebugData;
+	static CHitboxDebugData* GetData()
+	{
+		if ( !g_pGameRules || !g_pGameRules->IsMultiplayer() )
+		{
+			return nullptr;
+		}
+
+		CHalfLifeMultiplay* mpRules = dynamic_cast<CHalfLifeMultiplay*>(g_pGameRules);
+
+		return (mpRules && mpRules->IsMultiplayer()) ? mpRules->HitboxDebugData() : nullptr;
+	}
 
 	static void HitboxDebugClear(void)
 	{
@@ -16,9 +27,17 @@ namespace HitboxDebugging
 			return;
 		}
 
-		if ( DebugData.IsValid() )
+		CHitboxDebugData* debugData = GetData();
+
+		if ( !debugData )
 		{
-			DebugData.Clear();
+			ALERT(at_error, "Hitbox debugging can only be performed in a multiplayer game.\n");
+			return;
+		}
+
+		if ( debugData->IsValid() )
+		{
+			debugData->Clear();
 		}
 
 		ALERT(at_console, "Hitbox debugging turned off.\n");
@@ -32,7 +51,9 @@ namespace HitboxDebugging
 			return;
 		}
 
-		if ( !g_pGameRules || !g_pGameRules->IsMultiplayer() )
+		CHitboxDebugData* debugData = GetData();
+
+		if ( !debugData )
 		{
 			ALERT(at_error, "Hitbox debugging can only be performed in a multiplayer game.\n");
 			return;
@@ -46,7 +67,7 @@ namespace HitboxDebugging
 			return;
 		}
 
-		DebugData.Clear();
+		debugData->Clear();
 
 		for ( int index = 1; index < 3; ++index )
 		{
@@ -78,23 +99,23 @@ namespace HitboxDebugging
 
 			if ( index == 1 )
 			{
-				DebugData.SetAttacker(player);
+				debugData->SetAttacker(player);
 			}
 			else
 			{
-				DebugData.SetVictim(player);
+				debugData->SetVictim(player);
 			}
 		}
 
-		if ( DebugData.IsValid() )
+		if ( debugData->IsValid() )
 		{
 			ALERT(at_console, "Set hitbox debugging attacker '%s' and victim '%s'.\n",
-				MPUtils::PlayerNetName(DebugData.Attacker()),
-				MPUtils::PlayerNetName(DebugData.Victim()));
+				MPUtils::PlayerNetName(debugData->Attacker()),
+				MPUtils::PlayerNetName(debugData->Victim()));
 		}
 		else
 		{
-			DebugData.Clear();
+			debugData->Clear();
 			ALERT(at_console, "Hitbox debugging turned off.\n");
 		}
 	}
@@ -107,6 +128,7 @@ namespace HitboxDebugging
 
 	bool Enabled()
 	{
-		return DebugData.IsValid();
+		CHitboxDebugData* debugData = GetData();
+		return debugData ? debugData->IsValid() : false;
 	}
 }
