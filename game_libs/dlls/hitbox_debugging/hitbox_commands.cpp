@@ -2,13 +2,11 @@
 #include "standard_includes.h"
 #include "gamerules.h"
 #include "mp_utils.h"
+#include "hitbox_debugData.h"
 
 namespace HitboxDebugging
 {
-	// TODO: Make this into a proper class.
-	bool IsEnabled = false;
-	static EHANDLE Attacker;
-	static EHANDLE Victim;
+	static CHitboxDebugData DebugData;
 
 	static void HitboxDebugClear(void)
 	{
@@ -18,11 +16,9 @@ namespace HitboxDebugging
 			return;
 		}
 
-		if ( IsEnabled )
+		if ( DebugData.IsValid() )
 		{
-			Attacker.Set(nullptr);
-			Victim.Set(nullptr);
-			IsEnabled = false;
+			DebugData.Clear();
 		}
 
 		ALERT(at_console, "Hitbox debugging turned off.\n");
@@ -50,19 +46,16 @@ namespace HitboxDebugging
 			return;
 		}
 
-		IsEnabled = false;
+		DebugData.Clear();
 
 		for ( int index = 1; index < 3; ++index )
 		{
 			const char* input = g_engfuncs.pfnCmd_Argv(index);
-			EHANDLE& handle = index == 1 ? Attacker : Victim;
 
 			if ( !input || !input[0] )
 			{
 				ALERT(at_error, "Invalid argument for %s\n", index == 1 ? "attacker" : "victim");
-				Attacker = nullptr;
-				Victim = nullptr;
-				return;
+				break;
 			}
 
 			CBasePlayer* player = nullptr;
@@ -80,19 +73,30 @@ namespace HitboxDebugging
 			if ( !player )
 			{
 				ALERT(at_error, "Could not find %s player '%s'.\n", index == 1 ? "attacker" : "victim", input);
-				Attacker = nullptr;
-				Victim = nullptr;
-				return;
+				break;
 			}
 
-			handle = static_cast<CBaseEntity*>(player);
+			if ( index == 1 )
+			{
+				DebugData.SetAttacker(player);
+			}
+			else
+			{
+				DebugData.SetVictim(player);
+			}
 		}
 
-		IsEnabled = true;
-
-		ALERT(at_console, "Set hitbox debugging attacker '%s' and victim '%s'.\n",
-			MPUtils::PlayerNetName(Attacker.EntityCast<CBasePlayer>()),
-			MPUtils::PlayerNetName(Victim.EntityCast<CBasePlayer>()));
+		if ( DebugData.IsValid() )
+		{
+			ALERT(at_console, "Set hitbox debugging attacker '%s' and victim '%s'.\n",
+				MPUtils::PlayerNetName(DebugData.Attacker()),
+				MPUtils::PlayerNetName(DebugData.Victim()));
+		}
+		else
+		{
+			DebugData.Clear();
+			ALERT(at_console, "Hitbox debugging turned off.\n");
+		}
 	}
 
 	void Initialise()
@@ -103,6 +107,6 @@ namespace HitboxDebugging
 
 	bool Enabled()
 	{
-		return IsEnabled;
+		return DebugData.IsValid();
 	}
 }

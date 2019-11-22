@@ -136,7 +136,13 @@ public:
 	CBaseEntity* operator ->() const;
 
 	template<typename T>
-	T* EntityCast() const
+	T* StaticCast() const
+	{
+		return static_cast<T*>(operator CBaseEntity*());
+	}
+
+	template<typename T>
+	T* DynamicCast() const
 	{
 		return dynamic_cast<T*>(operator CBaseEntity*());
 	}
