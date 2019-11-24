@@ -1,10 +1,10 @@
 #include "prop_playercorpse.h"
 #include "gameresources/GameResources.h"
+#include "game.h"
+#include "miniutl.h"
+#include "mp_utils.h"
 
 static const float THINK_INTERVAL_SECS = 0.1f;
-
-// TODO: Make this into a cvar.
-static const float PERSIST_TIME_SECS = 30.0f;
 
 LINK_ENTITY_TO_CLASS(prop_playercorpse, CPropPlayerCorpse);
 
@@ -76,7 +76,8 @@ void CPropPlayerCorpse::Initialise(entvars_t* other)
 void CPropPlayerCorpse::Think()
 {
 	// TODO: Set render mode and fade out once persist time has passed.
-	if ( m_flInitTime == 0.0f || gpGlobals->time - m_flInitTime >= PERSIST_TIME_SECS )
+	float persistTime = Max(mp_corpse_show_time.value, 0.0f);
+	if ( m_flInitTime == 0.0f || gpGlobals->time - m_flInitTime >= persistTime )
 	{
 		UTIL_Remove(this);
 		return;
@@ -88,9 +89,10 @@ void CPropPlayerCorpse::Think()
 
 void CPropPlayerCorpse::SetMultiplayerModel(entvars_t* other)
 {
-	char* info = g_engfuncs.pfnGetInfoKeyBuffer(ENT(other));
-	const char* modelName = g_engfuncs.pfnInfoKeyValue(info, "model");
-	CUtlString fullModelPath = CGameResources::MultiplayerModelFullPath(CUtlString(modelName));
+	CUtlString fullModelPath = MPUtils::PlayerModelPath(GetClassPtr<CBasePlayer>(other));
 
-	SET_MODEL(ENT(pev), fullModelPath.String());
+	if ( fullModelPath.IsValid() )
+	{
+		SET_MODEL(ENT(pev), fullModelPath.String());
+	}
 }

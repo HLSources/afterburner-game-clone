@@ -1,5 +1,6 @@
 #include "mp_utils.h"
 #include "standard_includes.h"
+#include "gameresources/GameResources.h"
 
 namespace MPUtils
 {
@@ -118,5 +119,17 @@ namespace MPUtils
 
 		out.TrimTrailingWhitespace();
 		return out;
+	}
+
+	CUtlString PlayerModelPath(CBasePlayer* player)
+	{
+		if ( !player )
+		{
+			return CUtlString();
+		}
+
+		char* info = g_engfuncs.pfnGetInfoKeyBuffer(player->edict());
+		const char* modelName = g_engfuncs.pfnInfoKeyValue(info, "model");
+		return CGameResources::MultiplayerModelFullPath(CUtlString(modelName));
 	}
 }

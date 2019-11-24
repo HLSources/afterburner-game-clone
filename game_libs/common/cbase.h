@@ -687,25 +687,30 @@ public:
 // It will allocate the class and entity if necessary
 //
 template <class T>
-T* GetClassPtr(entvars_t *pev = nullptr)
+T* GetClassPtr(entvars_t* pev = nullptr)
 {
-	// allocate entity if necessary
+	// Allocate entity if necessary.
 	if( !pev )
 	{
 		pev = VARS(CREATE_ENTITY());
 	}
 
-	// get the private data
-	T* classPtr = (T*)GET_PRIVATE(ENT( pev ));
+	// Cast to CBaseEntity* first, because this should always be allowed
+	// (we never create any entities that do not derive from CBaseEntity).
+	CBaseEntity* classPtr = reinterpret_cast<CBaseEntity*>(GET_PRIVATE(ENT(pev)));
 
 	if ( !classPtr )
 	{
-		// allocate private data
+		// Allocate private data for the target class.
 		classPtr = new(pev) T;
 		classPtr->pev = pev;
+		return static_cast<T*>(classPtr);
 	}
-
-	return classPtr;
+	else
+	{
+		// Dynamic cast, to check that the entity is actually the class we want.
+		return dynamic_cast<T*>(classPtr);
+	}
 }
 
 template<typename T>
