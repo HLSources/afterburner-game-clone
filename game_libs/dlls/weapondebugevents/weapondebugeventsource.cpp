@@ -62,6 +62,11 @@ void CWeaponDebugEventSource::UnregisterCallback(const CUtlString& id)
 	}
 }
 
+bool CWeaponDebugEventSource::EventHasSubscribers(CWeaponDebugEvent_Base::EventType eventType) const
+{
+	return m_CallbacksByType.Find(eventType) != m_CallbacksByType.InvalidIndex();
+}
+
 void CWeaponDebugEventSource::FireEvent(const CWeaponDebugEvent_Base* event)
 {
 	if ( !event )

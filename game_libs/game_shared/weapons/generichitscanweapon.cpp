@@ -6,7 +6,6 @@
 #ifndef CLIENT_DLL
 #include "weaponregistry.h"
 #include "weapondebugevents/weapondebugevent_hitscanfire.h"
-#include "hitbox_debugging/hitbox_commands.h"
 #endif
 
 void CGenericHitscanWeapon::WeaponIdle()
@@ -173,7 +172,9 @@ Vector CGenericHitscanWeapon::FireBulletsPlayer(const WeaponAtts::WAHitscanAttac
 #ifndef CLIENT_DLL
 void CGenericHitscanWeapon::GenerateHitscanFireEvent(const Vector& start, const TraceResult& tr)
 {
-	if ( !HitboxDebugging::Enabled() )
+	CWeaponDebugEventSource& evSource = CWeaponRegistry::StaticInstance().DebugEventSource();
+
+	if ( !evSource.EventHasSubscribers(CWeaponDebugEvent_Base::EventType::Event_HitscanFire) )
 	{
 		return;
 	}
@@ -181,7 +182,7 @@ void CGenericHitscanWeapon::GenerateHitscanFireEvent(const Vector& start, const 
 	std::unique_ptr<CWeaponDebugEvent_HitscanFire> event(new CWeaponDebugEvent_HitscanFire(*this));
 	event->SetTrace(start, tr.vecEndPos, tr.flFraction);
 
-	CWeaponRegistry::StaticInstance().DebugEventSource().FireEvent(event.get());
+	evSource.FireEvent(event.get());
 }
 #endif
 

@@ -17,6 +17,7 @@ public:
 
 	bool RegisterCallback(const CUtlString& id, CWeaponDebugEvent_Base::EventType eventType, const EventCallback& callback);
 	void UnregisterCallback(const CUtlString& id);
+	bool EventHasSubscribers(CWeaponDebugEvent_Base::EventType eventType) const;
 
 	void FireEvent(const CWeaponDebugEvent_Base* event);
 
