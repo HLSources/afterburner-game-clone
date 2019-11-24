@@ -1,6 +1,13 @@
+#include <memory>
 #include "generichitscanweapon.h"
 #include "weaponatts_hitscanattack.h"
 #include "skill.h"
+
+#ifndef CLIENT_DLL
+#include "weaponregistry.h"
+#include "weapondebugevents/weapondebugevent_hitscanfire.h"
+#include "hitbox_debugging/hitbox_commands.h"
+#endif
 
 void CGenericHitscanWeapon::WeaponIdle()
 {
@@ -140,6 +147,10 @@ Vector CGenericHitscanWeapon::FireBulletsPlayer(const WeaponAtts::WAHitscanAttac
 		vecEnd = vecSrc + vecDir * DEFAULT_BULLET_TRACE_DISTANCE;
 		UTIL_TraceLine(vecSrc, vecEnd, dont_ignore_monsters, ENT(pev), &tr);
 
+#ifndef CLIENT_DLL
+		GenerateHitscanFireEvent(vecSrc, tr);
+#endif
+
 		// do damage, paint decals
 		if( tr.flFraction != 1.0 )
 		{
@@ -158,6 +169,21 @@ Vector CGenericHitscanWeapon::FireBulletsPlayer(const WeaponAtts::WAHitscanAttac
 	return Vector(x * hitscanAttack.SpreadX, y * hitscanAttack.SpreadY, 0.0);
 #endif
 }
+
+#ifndef CLIENT_DLL
+void CGenericHitscanWeapon::GenerateHitscanFireEvent(const Vector& start, const TraceResult& tr)
+{
+	if ( !HitboxDebugging::Enabled() )
+	{
+		return;
+	}
+
+	std::unique_ptr<CWeaponDebugEvent_HitscanFire> event(new CWeaponDebugEvent_HitscanFire(*this));
+	event->SetTrace(start, tr.vecEndPos, tr.flFraction);
+
+	CWeaponRegistry::StaticInstance().DebugEventSource().FireEvent(event.get());
+}
+#endif
 
 #ifdef CLIENT_DLL
 Vector CGenericHitscanWeapon::FireBulletsPlayer_Client(const WeaponAtts::WAHitscanAttack& hitscanAttack)

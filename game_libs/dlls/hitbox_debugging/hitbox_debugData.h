@@ -2,10 +2,13 @@
 
 #include "standard_includes.h"
 
+class CWeaponDebugEvent_HitscanFire;
+
 class CHitboxDebugData
 {
 public:
 	CHitboxDebugData();
+	~CHitboxDebugData();
 
 	bool IsValid() const;
 	void Clear();
@@ -17,6 +20,8 @@ public:
 	void SetVictim(CBasePlayer* victim);
 
 private:
+	void HandleHitscanFire(const CWeaponDebugEvent_HitscanFire* event);
+
 	EHANDLE m_Attacker;
 	EHANDLE m_Victim;
 };

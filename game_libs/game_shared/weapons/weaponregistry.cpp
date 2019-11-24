@@ -53,3 +53,15 @@ void CWeaponRegistry::RegisterCvars()
 		}
 	});
 }
+
+#ifndef CLIENT_DLL
+CWeaponDebugEventSource& CWeaponRegistry::DebugEventSource()
+{
+	return m_DebugEventSource;
+}
+
+const CWeaponDebugEventSource& CWeaponRegistry::DebugEventSource() const
+{
+	return m_DebugEventSource;
+}
+#endif

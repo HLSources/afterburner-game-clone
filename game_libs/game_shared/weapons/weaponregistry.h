@@ -4,6 +4,10 @@
 #include "weaponids.h"
 #include "cdll_dll.h"
 
+#ifndef CLIENT_DLL
+#include "weapondebugevents/weapondebugeventsource.h"
+#endif
+
 namespace WeaponAtts
 {
 	struct WACollection;
@@ -36,8 +40,17 @@ public:
 		}
 	}
 
+#ifndef CLIENT_DLL
+	CWeaponDebugEventSource& DebugEventSource();
+	const CWeaponDebugEventSource& DebugEventSource() const;
+#endif
+
 	static CWeaponRegistry& StaticInstance();
 
 private:
 	const WeaponAtts::WACollection* m_AttributesList[MAX_WEAPONS];
+
+#ifndef CLIENT_DLL
+	CWeaponDebugEventSource m_DebugEventSource;
+#endif
 };

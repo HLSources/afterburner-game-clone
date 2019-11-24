@@ -17,6 +17,10 @@ private:
 							 const Vector& vecSrc,
 							 const Vector& vecDirShooting);
 
+#ifndef CLIENT_DLL
+	void GenerateHitscanFireEvent(const Vector& start, const TraceResult& tr);
+#endif
+
 #ifdef CLIENT_DLL
 	Vector FireBulletsPlayer_Client(const WeaponAtts::WAHitscanAttack& hitscanAttack);
 #endif
