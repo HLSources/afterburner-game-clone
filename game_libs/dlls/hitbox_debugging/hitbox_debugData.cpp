@@ -1,6 +1,7 @@
 #include "hitbox_debugData.h"
 #include "weaponregistry.h"
 #include "weapondebugevents/weapondebugevent_hitscanfire.h"
+#include "hitbox_snapshot.h"
 
 static constexpr const char* EVENT_CALLBACK_ID = "CHitboxDebugData";
 
@@ -19,6 +20,8 @@ CHitboxDebugData::~CHitboxDebugData()
 {
 	CWeaponDebugEventSource& evSource = CWeaponRegistry::StaticInstance().DebugEventSource();
 	evSource.UnregisterCallback(EVENT_CALLBACK_ID);
+
+	RemoveSnapshotEnt();
 }
 
 bool CHitboxDebugData::IsValid() const
@@ -28,6 +31,8 @@ bool CHitboxDebugData::IsValid() const
 
 void CHitboxDebugData::Clear()
 {
+	RemoveSnapshotEnt();
+
 	m_Attacker.Set(nullptr);
 	m_Victim.Set(nullptr);
 }
@@ -59,17 +64,54 @@ void CHitboxDebugData::HandleHitscanFire(const CWeaponDebugEvent_HitscanFire* ev
 		return;
 	}
 
-	// TODO: Implement this
-	const Vector& begin = event->TraceBegin();
-	const Vector& end = event->TraceEnd();
-	float frac = event->TraceHitFraction();
+	if ( !m_Attacker )
+	{
+		ALERT(at_console, "Attacker no longer valid, turning hitbox debugging off.\n");
+		Clear();
+		return;
+	}
 
-	ALERT(at_console, "Hitscan fire event: Begin = (%f %f %f), End = (%f %f %f) (%f%% of trace)\n",
-		  begin[0],
-		  begin[1],
-		  begin[2],
-		  end[0],
-		  end[1],
-		  end[2],
-		  frac);
+	if ( !m_Victim )
+	{
+		ALERT(at_console, "Victim no longer valid, turning hitbox debugging off.\n");
+		Clear();
+		return;
+	}
+
+	if ( event->WeaponOwner() != m_Attacker.StaticCast<CBasePlayer>() || !CreateSnapshotEnt() )
+	{
+		return;
+	}
+
+	CHitboxSnapshot* hb = m_Snapshot.StaticCast<CHitboxSnapshot>();
+	CBasePlayer* victim = m_Victim.StaticCast<CBasePlayer>();
+
+	hb->Set(victim);
+	hb->SetTrace(event->TraceBegin(), event->TraceEnd());
+}
+
+bool CHitboxDebugData::CreateSnapshotEnt()
+{
+	CBasePlayer* victim = m_Victim.StaticCast<CBasePlayer>();
+
+	if ( !victim )
+	{
+		return false;
+	}
+
+	if ( !m_Snapshot )
+	{
+		m_Snapshot = CHitboxSnapshot::Create();
+	}
+
+	return true;
+}
+
+void CHitboxDebugData::RemoveSnapshotEnt()
+{
+	if ( m_Snapshot )
+	{
+		UTIL_Remove(m_Snapshot.StaticCast<CHitboxSnapshot>());
+		m_Snapshot.Set(nullptr);
+	}
 }

@@ -878,7 +878,11 @@ void CBaseBot::ThinkSteering( void )
 		if ( CheckVisible( GetEnemy() ) )
 		{
 			AimAtEnemy();
-			ActionOpenFire();
+
+			if ( bot_dontshoot.value == 0.0f )
+			{
+				ActionOpenFire();
+			}
 
 			Memory.EnemyInSight( GetEnemy() );
 		}

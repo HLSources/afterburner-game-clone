@@ -5,8 +5,10 @@
 class CHitboxSnapshot : public CBaseAnimating
 {
 public:
-	static CHitboxSnapshot* Create(CBasePlayer* other);
+	static CHitboxSnapshot* Create();
 
 	virtual void Spawn() override;
-	void Initialise(CBasePlayer* other);
+	void Set(CBasePlayer* other);
+	void SetTrace(const Vector& begin, const Vector& end);
+	void ClearTrace();
 };

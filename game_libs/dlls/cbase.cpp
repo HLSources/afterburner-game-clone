@@ -469,24 +469,27 @@ CBaseEntity *EHANDLE::operator = ( CBaseEntity *pEntity )
 	{
 		m_pent = ENT( pEntity->pev );
 		if( m_pent )
+		{
 			m_serialnumber = m_pent->serialnumber;
+		}
 	}
 	else
 	{
 		m_pent = NULL;
 		m_serialnumber = 0;
 	}
+
 	return pEntity;
 }
 
-EHANDLE::operator int () const
+EHANDLE::operator bool () const
 {
-	return Get() != NULL;
+	return Get() != nullptr;
 }
 
 CBaseEntity* EHANDLE::operator -> () const
 {
-	return (CBaseEntity *)GET_PRIVATE( Get() );
+	return operator CBaseEntity*();
 }
 
 // give health
