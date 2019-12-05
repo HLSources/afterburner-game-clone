@@ -244,7 +244,7 @@ def configure(conf):
 			'default': ['-O0', '-DNDEBUG']
 		},
 		'nooptimize': {
-			'msvc':    ['/Od', '/MT', '/DNDEBUG'],
+			'msvc':    ['/Od', '/D_DEBUG', '/MTd'],
 			'default': ['-O0', '-DNDEBUG']
 		}
 	}

@@ -209,8 +209,6 @@ public:
 	virtual BOOL IsMultiplayer( void );
 	virtual BOOL IsDeathmatch( void );
 	virtual BOOL IsCoOp( void );
-	virtual void ServerActivate(void) override {}
-	virtual void ServerDeactivate(void) override {}
 
 	// Client connection/disconnection
 	virtual BOOL ClientConnected( edict_t *pEntity, const char *pszName, const char *pszAddress, char szRejectReason[ 128 ] );
