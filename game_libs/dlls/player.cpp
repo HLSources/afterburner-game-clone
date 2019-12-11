@@ -148,6 +148,7 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 	//DEFINE_FIELD( CBasePlayer, m_nCustomSprayFrames, FIELD_INTEGER ), // Don't need to restore
 };
 
+bool userMessagesRegistered = false;
 int giPrecacheGrunt = 0;
 int gmsgShake = 0;
 int gmsgFade = 0;
@@ -192,7 +193,7 @@ int gmsgStatusValue = 0;
 void LinkUserMessages( void )
 {
 	// Already taken care of?
-	if( gmsgSelAmmo )
+	if( userMessagesRegistered )
 	{
 		return;
 	}
@@ -235,6 +236,8 @@ void LinkUserMessages( void )
 
 	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
+
+	userMessagesRegistered = true;
 }
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer )

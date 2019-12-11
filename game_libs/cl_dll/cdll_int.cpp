@@ -278,7 +278,7 @@ void DLLEXPORT HUD_Init( void )
 	InitInput();
 	gHUD.Init();
 
-	gEngfuncs.pfnHookUserMsg( "Bhopcap", __MsgFunc_Bhopcap );
+	HOOK_MESSAGE(Bhopcap);
 }
 
 /*
