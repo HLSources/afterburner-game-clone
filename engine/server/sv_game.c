@@ -3491,6 +3491,35 @@ static void pfnGetBonePosition( const edict_t* pEdict, int iBone, float *rgflOri
 	Mod_GetBonePosition( pEdict, iBone, rgflOrigin, rgflAngles );
 }
 
+static uint32_t pfnGetHitboxCount(const edict_t* edict)
+{
+	if ( !SV_IsValidEdict(edict) )
+	{
+		return 0;
+	}
+
+	return Mod_GetHitboxCount(edict);
+}
+
+static qboolean pfnGetTransformedHitboxPoints(const edict_t* edict, uint32_t hitboxIndex, float* points)
+{
+	if ( !SV_IsValidEdict(edict) )
+	{
+		return false;
+	}
+
+	Mod_BoxPoints boxPoints;
+	memset(&boxPoints, 0, sizeof(boxPoints));
+
+	if ( Mod_GetTransformedHitboxPoints(edict, hitboxIndex, &boxPoints) )
+	{
+		memcpy(points, boxPoints.points, BOX_POINT_COUNT * sizeof(vec3_t));
+		return true;
+	}
+
+	return false;
+}
+
 /*
 =============
 pfnFunctionFromName
@@ -4729,7 +4758,9 @@ static enginefuncs_t gEngfuncs =
 	pfnQueryClientCvarValue,
 	pfnQueryClientCvarValue2,
 	COM_CheckParm,
-	pfnModelSequenceDuration
+	pfnModelSequenceDuration,
+	pfnGetHitboxCount,
+	pfnGetTransformedHitboxPoints
 };
 
 /*

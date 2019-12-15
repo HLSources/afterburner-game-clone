@@ -23,6 +23,7 @@
 #endif // !HLDEMO_BUILD
 
 #include <stdio.h>
+#include <stdint.h>
 #include "custom.h"
 #include "cvardef.h"
 //
@@ -268,7 +269,12 @@ typedef struct enginefuncs_s
 	void	(*pfnQueryClientCvarValue)( const edict_t *player, const char *cvarName );
 	void	(*pfnQueryClientCvarValue2)( const edict_t *player, const char *cvarName, int requestID );
 	int	(*CheckParm)( char *parm, char **ppnext );
+
 	float (*pfnModelSequenceDuration)( int modelIndex, int anim );
+	uint32_t (*pfnGetHitboxCount)(const edict_t* edict);
+
+	// Expects points list to be 8*3 floats long
+	qboolean (*pfnGetTransformedHitboxPoints)(const edict_t* edict, uint32_t hitboxIndex, float* points);
 } enginefuncs_t;
 // ONLY ADD NEW FUNCTIONS TO THE END OF THIS STRUCT.  INTERFACE VERSION IS FROZEN AT 138
 

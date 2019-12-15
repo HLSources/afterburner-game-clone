@@ -298,6 +298,30 @@ hull_t *Mod_HullForStudio( model_t *model, float frame, int sequence, vec3_t ang
 	return studio_hull;
 }
 
+uint32_t Mod_GetHitboxCount(const edict_t* edict)
+{
+	if ( !edict )
+	{
+		return 0;
+	}
+
+	model_t* model = SV_ModelHandle(edict->v.modelindex);
+
+	if ( !model )
+	{
+		return 0;
+	}
+
+	studiohdr_t* mod_studiohdr = (studiohdr_t*)Mod_StudioExtradata(model);
+
+	if( !mod_studiohdr )
+	{
+		return 0;
+	}
+
+	return mod_studiohdr->numhitboxes;
+}
+
 qboolean Mod_GetTransformedHitboxPoints(const edict_t* edict, uint32_t hitboxIndex, Mod_BoxPoints* box)
 {
 	if ( !edict || !box )
