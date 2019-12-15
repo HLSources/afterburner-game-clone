@@ -2,9 +2,7 @@
 
 CWeaponDebugEvent_HitscanFire::CWeaponDebugEvent_HitscanFire(CGenericWeapon& weapon) :
 	CWeaponDebugEvent_Base(weapon),
-	m_TraceBegin(),
-	m_TraceEnd(),
-	m_TraceHitFraction(0.0f)
+	m_TraceList()
 {
 }
 
@@ -13,24 +11,22 @@ CWeaponDebugEvent_Base::EventType CWeaponDebugEvent_HitscanFire::Type() const
 	return CWeaponDebugEvent_Base::EventType::Event_HitscanFire;
 }
 
-const Vector& CWeaponDebugEvent_HitscanFire::TraceBegin() const
+void CWeaponDebugEvent_HitscanFire::AddTrace(const Vector& begin, const TraceResult& tr)
 {
-	return m_TraceBegin;
+	m_TraceList.AddToTail({begin, tr});
 }
 
-const Vector& CWeaponDebugEvent_HitscanFire::TraceEnd() const
+const CWeaponDebugEvent_HitscanFire::Trace* CWeaponDebugEvent_HitscanFire::GetTrace(uint32_t index) const
 {
-	return m_TraceEnd;
+	if ( index >= m_TraceList.Count() )
+	{
+		return nullptr;
+	}
+
+	return &m_TraceList[index];
 }
 
-float CWeaponDebugEvent_HitscanFire::TraceHitFraction() const
+size_t CWeaponDebugEvent_HitscanFire::TraceCount() const
 {
-	return m_TraceHitFraction;
-}
-
-void CWeaponDebugEvent_HitscanFire::SetTrace(const Vector& begin, const Vector& end, float hitFraction)
-{
-	m_TraceBegin = begin;
-	m_TraceEnd = end;
-	m_TraceHitFraction = hitFraction;
+	return m_TraceList.Count();
 }

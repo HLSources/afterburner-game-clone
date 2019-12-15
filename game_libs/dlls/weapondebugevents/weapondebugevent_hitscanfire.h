@@ -2,23 +2,28 @@
 
 #include "weapondebugevent_base.h"
 #include "standard_includes.h"
+#include "utlvector.h"
 
 class CWeaponDebugEvent_HitscanFire : public CWeaponDebugEvent_Base
 {
 public:
+	struct Trace
+	{
+		Vector begin;
+		TraceResult traceResult;
+	};
+
 	CWeaponDebugEvent_HitscanFire(CGenericWeapon& weapon);
 	virtual ~CWeaponDebugEvent_HitscanFire() {}
 
 	virtual CWeaponDebugEvent_Base::EventType Type() const override;
 
-	const Vector& TraceBegin() const;
-	const Vector& TraceEnd() const;
-	float TraceHitFraction() const;
-
-	void SetTrace(const Vector& begin, const Vector& end, float hitFraction);
+	void AddTrace(const Vector& begin, const TraceResult& tr);
+	const Trace* GetTrace(uint32_t index) const;
+	size_t TraceCount() const;
 
 private:
-	Vector m_TraceBegin;
-	Vector m_TraceEnd;
-	float m_TraceHitFraction;
+	typedef CUtlVector<Trace> TraceList;
+
+	TraceList m_TraceList;
 };

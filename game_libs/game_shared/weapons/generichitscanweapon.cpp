@@ -8,6 +8,13 @@
 #include "weapondebugevents/weapondebugevent_hitscanfire.h"
 #endif
 
+CGenericHitscanWeapon::~CGenericHitscanWeapon()
+{
+#ifndef CLIENT_DLL
+	Debug_DeleteHitscanEvent();
+#endif
+}
+
 void CGenericHitscanWeapon::WeaponIdle()
 {
 	if ( m_pPrimaryAttackMode && m_pPrimaryAttackMode->Classify() == WeaponAtts::WABaseAttack::Classification::Hitscan )
@@ -148,9 +155,7 @@ Vector CGenericHitscanWeapon::FireBulletsPlayer(const WeaponAtts::WAHitscanAttac
 
 		ALERT(at_console, "Hit entity: %s\n", tr.pHit ? STRING(tr.pHit->v.classname) : "<none>");
 
-#ifndef CLIENT_DLL
-		GenerateHitscanFireEvent(vecSrc, tr);
-#endif
+		Debug_HitscanBulletFired(vecSrc, tr);
 
 		// do damage, paint decals
 		if( tr.flFraction != 1.0 )
@@ -165,14 +170,18 @@ Vector CGenericHitscanWeapon::FireBulletsPlayer(const WeaponAtts::WAHitscanAttac
 		UTIL_BubbleTrail(vecSrc, tr.vecEndPos, (int)((DEFAULT_BULLET_TRACE_DISTANCE * tr.flFraction) / 64.0));
 	}
 
+	Debug_FinaliseHitscanEvent();
 	ApplyMultiDamage(pev, pevAttacker);
 
 	return Vector(x * hitscanAttack.SpreadX, y * hitscanAttack.SpreadY, 0.0);
 #endif
 }
 
+////////////////////////////////////////////
+// SERVER
+////////////////////////////////////////////
 #ifndef CLIENT_DLL
-void CGenericHitscanWeapon::GenerateHitscanFireEvent(const Vector& start, const TraceResult& tr)
+void CGenericHitscanWeapon::Debug_HitscanBulletFired(const Vector& start, const TraceResult& tr)
 {
 	CWeaponDebugEventSource& evSource = CWeaponRegistry::StaticInstance().DebugEventSource();
 
@@ -181,13 +190,39 @@ void CGenericHitscanWeapon::GenerateHitscanFireEvent(const Vector& start, const 
 		return;
 	}
 
-	std::unique_ptr<CWeaponDebugEvent_HitscanFire> event(new CWeaponDebugEvent_HitscanFire(*this));
-	event->SetTrace(start, tr.vecEndPos, tr.flFraction);
+	if ( !m_pHitscanFireEvent )
+	{
+		m_pHitscanFireEvent = new CWeaponDebugEvent_HitscanFire(*this);
+	}
 
-	evSource.FireEvent(event.get());
+	m_pHitscanFireEvent->AddTrace(start, tr);
+}
+
+void CGenericHitscanWeapon::Debug_FinaliseHitscanEvent()
+{
+	if ( !m_pHitscanFireEvent )
+	{
+		return;
+	}
+
+	// The hitscan fire event will only have been created if we had event subscribers in the first place,
+	// so no need to check this.
+	CWeaponDebugEventSource& evSource = CWeaponRegistry::StaticInstance().DebugEventSource();
+	evSource.FireEvent(m_pHitscanFireEvent);
+
+	Debug_DeleteHitscanEvent();
+}
+
+void CGenericHitscanWeapon::Debug_DeleteHitscanEvent()
+{
+	delete m_pHitscanFireEvent;
+	m_pHitscanFireEvent = nullptr;
 }
 #endif
 
+////////////////////////////////////////////
+// CLIENT
+////////////////////////////////////////////
 #ifdef CLIENT_DLL
 Vector CGenericHitscanWeapon::FireBulletsPlayer_Client(const WeaponAtts::WAHitscanAttack& hitscanAttack)
 {
