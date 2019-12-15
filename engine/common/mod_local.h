@@ -173,6 +173,15 @@ void Mod_ReleaseHullPolygons( void );
 //
 // mod_studio.c
 //
+
+typedef struct
+{
+	// Points should be constructed where the min/max on X
+	// alternates every other index, min/max on Y alternates
+	// every 2 indices, and min/max on Z alternates every 4 indices.
+	vec3_t points[8];
+} Mod_BoxPoints;
+
 void Mod_LoadStudioModel( model_t *mod, const void *buffer, qboolean *loaded );
 void Mod_UnloadStudioModel( model_t *mod );
 void Mod_InitStudioAPI( void );
@@ -183,6 +192,7 @@ qboolean Mod_GetStudioBounds( const char *name, vec3_t mins, vec3_t maxs );
 void Mod_StudioGetAttachment( const edict_t *e, int iAttachment, float *org, float *ang );
 void Mod_GetBonePosition( const edict_t *e, int iBone, float *org, float *ang );
 hull_t *Mod_HullForStudio( model_t *m, float frame, int seq, vec3_t ang, vec3_t org, vec3_t size, byte *pcnt, byte *pbl, int *hitboxes, edict_t *ed );
+qboolean Mod_GetTransformedHitboxPoints(const edict_t* edict, uint32_t hitboxIndex, Mod_BoxPoints* box);
 void R_StudioSlerpBones( int numbones, vec4_t q1[], float pos1[][3], vec4_t q2[], float pos2[][3], float s );
 void R_StudioCalcBoneQuaternion( int frame, float s, mstudiobone_t *pbone, mstudioanim_t *panim, float *adj, vec4_t q );
 void R_StudioCalcBonePosition( int frame, float s, mstudiobone_t *pbone, mstudioanim_t *panim, vec3_t adj, vec3_t pos );

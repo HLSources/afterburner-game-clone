@@ -59,6 +59,14 @@ static int			cache_current;
 static int			cache_current_hull;
 static int			cache_current_plane;
 
+static inline void FixAnglesForQuake(vec3_t angles)
+{
+	if( !FBitSet(host.features, ENGINE_COMPENSATE_QUAKE_BUG) )
+	{
+		angles[PITCH] = -angles[PITCH];
+	}
+}
+
 /*
 ====================
 Mod_InitStudioHull
@@ -258,9 +266,7 @@ hull_t *Mod_HullForStudio( model_t *model, float frame, int sequence, vec3_t ang
 	if( !mod_studiohdr ) return NULL; // probably not a studiomodel
 
 	VectorCopy( angles, angles2 );
-
-	if( !FBitSet( host.features, ENGINE_COMPENSATE_QUAKE_BUG ))
-		angles2[PITCH] = -angles2[PITCH]; // stupid quake bug
+	FixAnglesForQuake(angles2);
 
 	pBlendAPI->SV_StudioSetupBones( model, frame, sequence, angles2, origin, pcontroller, pblending, -1, pEdict );
 	phitbox = (mstudiobbox_t *)((byte *)mod_studiohdr + mod_studiohdr->hitboxindex);
@@ -290,6 +296,58 @@ hull_t *Mod_HullForStudio( model_t *model, float frame, int sequence, vec3_t ang
 		Mod_AddToStudioCache( frame, sequence, angles, origin, size, pcontroller, pblending, model, studio_hull, *numhitboxes );
 
 	return studio_hull;
+}
+
+qboolean Mod_GetTransformedHitboxPoints(const edict_t* edict, uint32_t hitboxIndex, Mod_BoxPoints* box)
+{
+	if ( !edict || !box )
+	{
+		return false;
+	}
+
+	model_t* model = SV_ModelHandle(edict->v.modelindex);
+
+	if ( !model )
+	{
+		return false;
+	}
+
+	studiohdr_t* mod_studiohdr = (studiohdr_t*)Mod_StudioExtradata(model);
+
+	if( !mod_studiohdr || hitboxIndex >= mod_studiohdr->numhitboxes )
+	{
+		return false;
+	}
+
+	vec3_t angles2;
+	VectorCopy(edict->v.angles, angles2);
+	FixAnglesForQuake(angles2);
+
+	pBlendAPI->SV_StudioSetupBones(model,
+								   edict->v.frame,
+								   edict->v.sequence,
+								   angles2,
+								   edict->v.origin,
+								   edict->v.controller,
+								   edict->v.blending,
+								   -1,
+								   edict);
+
+	const mstudiobbox_t* hitbox = (mstudiobbox_t*)((byte*)mod_studiohdr + mod_studiohdr->hitboxindex) + hitboxIndex;
+
+	for ( uint32_t index = 0; index < ARRAYSIZE(box->points); ++index )
+	{
+		vec3_t point;
+
+		// Alternate X quickest, then Y, then Z.
+		point[0] = ((index / 1) % 2 == 1) ? hitbox->bbmax[0] : hitbox->bbmin[0];
+		point[1] = ((index / 2) % 2 == 1) ? hitbox->bbmax[1] : hitbox->bbmin[1];
+		point[2] = ((index / 4) % 2 == 1) ? hitbox->bbmax[2] : hitbox->bbmin[2];
+
+		Matrix3x4_VectorTransform(studio_bones[hitbox->bone], point, box->points[index]);
+	}
+
+	return true;
 }
 
 /*
@@ -772,9 +830,7 @@ void Mod_StudioGetAttachment( const edict_t *e, int iAtt, float *origin, float *
 	pAtt = (mstudioattachment_t *)((byte *)mod_studiohdr + mod_studiohdr->attachmentindex) + iAtt;
 
 	VectorCopy( e->v.angles, angles2 );
-
-	if( !FBitSet( host.features, ENGINE_COMPENSATE_QUAKE_BUG ))
-		angles2[PITCH] = -angles2[PITCH];
+	FixAnglesForQuake(angles2);
 
 	pBlendAPI->SV_StudioSetupBones( mod, e->v.frame, e->v.sequence, angles2, e->v.origin, e->v.controller, e->v.blending, pAtt->bone, e );
 
