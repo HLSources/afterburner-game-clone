@@ -20,8 +20,8 @@ public:
 	void SetVictim(CBasePlayer* victim);
 
 private:
-	bool CreateSnapshotEnt();
-	void RemoveSnapshotEnt();
+	void FireHitboxSnapshotMessages();
+	void FireHitboxSnapshotClearMessage();
 	void HandleHitscanFire(const CWeaponDebugEvent_HitscanFire* event);
 
 	EHANDLE m_Attacker;

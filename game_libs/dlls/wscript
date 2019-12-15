@@ -54,6 +54,7 @@ SOURCES = \
 	"game_shared/weapons/**/*.cpp",
 	"game_shared/gameplay/**/*.cpp",
 	"game_shared/weaponattributes/**/*.cpp",
+	"game_shared/hitbox_debugging/**/*.cpp",
 	"game_shared/studio_utils_shared.cpp",
 	"dlls/agrunt.cpp",
 	"dlls/airtank.cpp",

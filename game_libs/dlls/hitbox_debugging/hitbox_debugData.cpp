@@ -1,7 +1,6 @@
 #include "hitbox_debugData.h"
 #include "weaponregistry.h"
 #include "weapondebugevents/weapondebugevent_hitscanfire.h"
-#include "hitbox_snapshot.h"
 
 static constexpr const char* EVENT_CALLBACK_ID = "CHitboxDebugData";
 
@@ -21,7 +20,7 @@ CHitboxDebugData::~CHitboxDebugData()
 	CWeaponDebugEventSource& evSource = CWeaponRegistry::StaticInstance().DebugEventSource();
 	evSource.UnregisterCallback(EVENT_CALLBACK_ID);
 
-	RemoveSnapshotEnt();
+	FireHitboxSnapshotClearMessage();
 }
 
 bool CHitboxDebugData::IsValid() const
@@ -31,7 +30,7 @@ bool CHitboxDebugData::IsValid() const
 
 void CHitboxDebugData::Clear()
 {
-	RemoveSnapshotEnt();
+	FireHitboxSnapshotClearMessage();
 
 	m_Attacker.Set(nullptr);
 	m_Victim.Set(nullptr);
@@ -78,40 +77,20 @@ void CHitboxDebugData::HandleHitscanFire(const CWeaponDebugEvent_HitscanFire* ev
 		return;
 	}
 
-	if ( event->WeaponOwner() != m_Attacker.StaticCast<CBasePlayer>() || !CreateSnapshotEnt() )
+	if ( event->WeaponOwner() != m_Attacker.StaticCast<CBasePlayer>() )
 	{
 		return;
 	}
 
-	CHitboxSnapshot* hb = m_Snapshot.StaticCast<CHitboxSnapshot>();
-	CBasePlayer* victim = m_Victim.StaticCast<CBasePlayer>();
-
-	hb->Set(victim);
-	hb->SetTrace(event->TraceBegin(), event->TraceEnd());
+	FireHitboxSnapshotMessages();
 }
 
-bool CHitboxDebugData::CreateSnapshotEnt()
+void CHitboxDebugData::FireHitboxSnapshotMessages()
 {
-	CBasePlayer* victim = m_Victim.StaticCast<CBasePlayer>();
-
-	if ( !victim )
-	{
-		return false;
-	}
-
-	if ( !m_Snapshot )
-	{
-		m_Snapshot = CHitboxSnapshot::Create();
-	}
-
-	return true;
+	ALERT(at_warning, "TODO: Fire messages\n");
 }
 
-void CHitboxDebugData::RemoveSnapshotEnt()
+void CHitboxDebugData::FireHitboxSnapshotClearMessage()
 {
-	if ( m_Snapshot )
-	{
-		UTIL_Remove(m_Snapshot.StaticCast<CHitboxSnapshot>());
-		m_Snapshot.Set(nullptr);
-	}
+	ALERT(at_warning, "TODO: Fire message\n");
 }
