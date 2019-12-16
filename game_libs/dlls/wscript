@@ -48,6 +48,7 @@ SOURCES = \
 	"dlls/hitbox_debugging/**/*.cpp",
 	"dlls/utils/**/*cpp",
 	"dlls/weapondebugevents/**/*.cpp",
+	"dlls/customGeometry/**/*.cpp",
 
 	# TODO: Change the folder structure one day so that we can use globs and not have to do this.
 	# Currently we don't want to include absolutely everything...
@@ -56,6 +57,7 @@ SOURCES = \
 	"game_shared/weaponattributes/**/*.cpp",
 	"game_shared/hitbox_debugging/**/*.cpp",
 	"game_shared/studio_utils_shared.cpp",
+	"game_shared/customGeometry/**/*.cpp",
 	"dlls/agrunt.cpp",
 	"dlls/airtank.cpp",
 	"dlls/aflock.cpp",

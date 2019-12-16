@@ -72,6 +72,7 @@ namespace CustomGeometry
 		}
 
 		MESSAGE_END();
+		return true;
 	}
 
 	bool CMessageWriter::WriteClearMessage()
@@ -84,6 +85,8 @@ namespace CustomGeometry
 		WriteMessageBegin();
 		WRITE_BYTE(static_cast<uint8_t>(DrawType::None));
 		MESSAGE_END();
+
+		return true;
 	}
 
 	void CMessageWriter::WriteMessageBegin()
