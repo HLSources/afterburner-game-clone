@@ -39,6 +39,7 @@
 #include "gameresources/GameResources.h"
 #include "prop_playercorpse.h"
 #include "spawnpointmanager.h"
+#include "customGeometry/messageWriter.h"
 
 // #define DUCKFIX
 
@@ -236,6 +237,8 @@ void LinkUserMessages( void )
 
 	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
+
+	CustomGeometry::CMessageWriter::RegisterUserMessage();
 
 	userMessagesRegistered = true;
 }
