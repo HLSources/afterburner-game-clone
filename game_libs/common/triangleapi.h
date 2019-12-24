@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -16,7 +16,7 @@
 #ifndef TRIANGLEAPI_H
 #define TRIANGLEAPI_H
 
-typedef enum 
+typedef enum
 {
 	TRI_FRONT = 0,
 	TRI_NONE = 1
@@ -44,14 +44,14 @@ typedef struct triangleapi_s
 	void	(*Color4f)( float r, float g, float b, float a );
 	void	(*Color4ub)( unsigned char r, unsigned char g, unsigned char b, unsigned char a );
 	void	(*TexCoord2f)( float u, float v );
-	void	(*Vertex3fv)( float *worldPnt );
+	void	(*Vertex3fv)( const float *worldPnt );
 	void	(*Vertex3f)( float x, float y, float z );
 	void	(*Brightness)( float brightness );
-	void	(*CullFace)( TRICULLSTYLE style );	
+	void	(*CullFace)( TRICULLSTYLE style );
 	int	(*SpriteTexture)( struct model_s *pSpriteModel, int frame );
 	int	(*WorldToScreen)( float *world, float *screen );  // Returns 1 if it's z clipped
 	void	(*Fog)( float flFogColor[3], float flStart, float flEnd, int bOn ); //Works just like GL_FOG, flFogColor is r/g/b.
-	void	(*ScreenToWorld)( float *screen, float *world  ); 
+	void	(*ScreenToWorld)( float *screen, float *world  );
 	void	(*GetMatrix)( const int pname, float *matrix );
 	int	(*BoxInPVS)( float *mins, float *maxs );
 	void	(*LightAtPoint)( float *pos, float *value );

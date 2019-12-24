@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include "standard_includes.h"
 #include "utlvector.h"
 #include "customGeometry/sharedDefs.h"
@@ -27,4 +28,6 @@ namespace CustomGeometry
 		uint32_t m_Colour = 0xFFFFFFFF;
 		CUtlVector<Vector> m_Points;
 	};
+
+	typedef std::shared_ptr<CGeometryItem> GeometryItemPtr_t;
 }

@@ -24,6 +24,7 @@
 #include "parsemsg.h"
 #include "projectInterface/IProjectInterface.h"
 #include "projectInterface_client.h"
+#include "customGeometry/geometryStatics.h"
 
 #if defined(GOLDSOURCE_SUPPORT) && (defined(_WIN32) || defined(__linux__) || defined(__APPLE__)) && (defined(__i386) || defined(_M_IX86))
 #define USE_VGUI_FOR_GOLDSOURCE_SUPPORT
@@ -275,6 +276,8 @@ the hud variables.
 
 void DLLEXPORT HUD_Init( void )
 {
+	CustomGeometry::Init();
+
 	InitInput();
 	gHUD.Init();
 
