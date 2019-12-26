@@ -81,6 +81,18 @@ namespace MPUtils
 		return nullptr;
 	}
 
+	CBasePlayer* CBasePlayerFromStringLookup(const char* string)
+	{
+		if ( string[0] == '#' && string[1] != '\0' && isdigit(string[1]) )
+		{
+			return MPUtils::CBasePlayerFromUserId(atoi(++string));
+		}
+		else
+		{
+			return MPUtils::CBasePlayerFromNetName(string);
+		}
+	}
+
 	const char* PlayerNetName(CBasePlayer* player)
 	{
 		return player ? STRING(player->pev->netname) : NULL;

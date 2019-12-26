@@ -38,12 +38,11 @@ namespace CustomGeometry
 		}
 
 		gEngfuncs.pTriAPI->RenderMode(kRenderNormal);
-		gEngfuncs.pTriAPI->Begin(TRI_LINES);
-
 		gEngfuncs.pTriAPI->Color4ub((colour & 0xFF000000) >> 24,
 									(colour & 0x00FF0000) >> 16,
 									(colour & 0x0000FF00) >> 8,
 									(colour & 0x000000FF) >> 0);
+		gEngfuncs.pTriAPI->Begin(TRI_LINES);
 
 		for ( uint32_t index = 0; index < halfCount; ++index )
 		{

@@ -38,6 +38,11 @@ namespace CustomGeometry
 
 		const CUtlVector<Vector>& points = geometry.GetPoints();
 
+		if ( points.Count() < 1 )
+		{
+			return false;
+		}
+
 		if ( points.Count() > MAX_POINTS_PER_MSG )
 		{
 			ALERT(at_warning, "Attempted to send custom geometry message with %d points when max point count is %u.\n",

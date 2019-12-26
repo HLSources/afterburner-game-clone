@@ -23,6 +23,7 @@
 #include "projectInterface_server.h"
 #include "gameresources/GameResources.h"
 #include "hitbox_debugging/hitbox_commands.h"
+#include "customGeometry/commands.h"
 
 cvar_t displaysoundlist = {"displaysoundlist","0"};
 
@@ -882,7 +883,7 @@ void GameDLLInit( void )
 
 	Bot_RegisterCVars();
 	BotCommands::Initialise();
-
+	CustomGeometry::InitialiseCommands();
 	HitboxDebugging::Initialise();
 
 	SERVER_COMMAND( "exec skill.cfg\n" );

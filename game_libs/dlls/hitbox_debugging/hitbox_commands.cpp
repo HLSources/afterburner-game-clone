@@ -79,17 +79,7 @@ namespace HitboxDebugging
 				break;
 			}
 
-			CBasePlayer* player = nullptr;
-
-			if ( input[0] == '#' && input[1] != '\0' && isdigit(input[1]) )
-			{
-				++input;
-				player = MPUtils::CBasePlayerFromUserId(atoi(input));
-			}
-			else
-			{
-				player = MPUtils::CBasePlayerFromNetName(input);
-			}
+			CBasePlayer* player = MPUtils::CBasePlayerFromStringLookup(input);
 
 			if ( !player )
 			{
