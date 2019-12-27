@@ -26,9 +26,6 @@ namespace CustomGeometry
 		bool WriteMessage(const CGeometryItem& geometry);
 		bool WriteClearMessage();
 
-		// Ignores currently set category and writes clear message for all categories.
-		bool WriteClearAllMessage();
-
 	private:
 		static bool CanWriteMessage();
 		static bool IsValidSpecificCategory(Category geomCategory);

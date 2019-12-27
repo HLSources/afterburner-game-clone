@@ -110,17 +110,6 @@ namespace CustomGeometry
 		return true;
 	}
 
-	bool CMessageWriter::WriteClearAllMessage()
-	{
-		if ( !CanWriteMessage() )
-		{
-			return false;
-		}
-
-		WriteClearMessageInternal(Category::None);
-		return true;
-	}
-
 	void CMessageWriter::WriteMessageBegin()
 	{
 		if ( m_pTargetClient )

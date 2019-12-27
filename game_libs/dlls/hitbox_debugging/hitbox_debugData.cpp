@@ -1,6 +1,8 @@
 #include "hitbox_debugData.h"
 #include "weaponregistry.h"
 #include "weapondebugevents/weapondebugevent_hitscanfire.h"
+#include "customGeometry/messageWriter.h"
+#include "geometryConstructors/hitboxGeometryConstructor.h"
 
 static constexpr const char* EVENT_CALLBACK_ID = "CHitboxDebugData";
 
@@ -43,6 +45,7 @@ CBasePlayer* CHitboxDebugData::Attacker() const
 
 void CHitboxDebugData::SetAttacker(CBasePlayer* attacker)
 {
+	FireHitboxSnapshotClearMessage();
 	m_Attacker.Set(attacker ? attacker->edict() : nullptr);
 }
 
@@ -82,15 +85,58 @@ void CHitboxDebugData::HandleHitscanFire(const CWeaponDebugEvent_HitscanFire* ev
 		return;
 	}
 
-	FireHitboxSnapshotMessages();
+	FireHitboxSnapshotMessages(event);
 }
 
-void CHitboxDebugData::FireHitboxSnapshotMessages()
+void CHitboxDebugData::FireHitboxSnapshotMessages(const CWeaponDebugEvent_HitscanFire* event)
 {
-	ALERT(at_warning, "TODO: Fire messages\n");
+	CBasePlayer* victim = m_Victim.StaticCast<CBasePlayer>();
+	CBasePlayer* attacker = m_Attacker.StaticCast<CBasePlayer>();
+
+	if ( !victim || !attacker )
+	{
+		return;
+	}
+
+	uint32_t hitboxCount = g_engfuncs.pfnGetHitboxCount(victim->edict());
+
+	if ( hitboxCount < 1 )
+	{
+		return;
+	}
+
+	{
+		CustomGeometry::CMessageWriter writer(CustomGeometry::Category::HitboxDebugging);
+		writer.SetTargetClient(attacker);
+		writer.WriteClearMessage();
+	}
+
+	for ( uint32_t hitboxIndex = 0; hitboxIndex < hitboxCount; ++hitboxIndex )
+	{
+		CHitboxGeometryConstructor constructor;
+
+		constructor.SetEntity(victim);
+		constructor.SetHitboxIndex(hitboxIndex);
+
+		CustomGeometry::GeometryItemPtr_t hitboxGeometry(new CustomGeometry::CGeometryItem());
+		constructor.AddGeometry(hitboxGeometry);
+
+		CustomGeometry::CMessageWriter writer(CustomGeometry::Category::HitboxDebugging);
+		writer.SetTargetClient(attacker);
+		writer.WriteMessage(*hitboxGeometry);
+	}
 }
 
 void CHitboxDebugData::FireHitboxSnapshotClearMessage()
 {
-	ALERT(at_warning, "TODO: Fire message\n");
+	CBasePlayer* player = m_Attacker.StaticCast<CBasePlayer>();
+
+	if ( !player )
+	{
+		return;
+	}
+
+	CustomGeometry::CMessageWriter writer(CustomGeometry::Category::HitboxDebugging);
+	writer.SetTargetClient(player);
+	writer.WriteClearMessage();
 }
