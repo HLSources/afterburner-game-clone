@@ -285,7 +285,7 @@ typedef struct enginefuncs_s
 	// Expects points list to be 8 points long.
 	qboolean (*pfnGetTransformedHitboxPoints)(const edict_t* edict, uint32_t hitboxIndex, float* points);
 } enginefuncs_t;
-// ONLY ADD NEW FUNCTIONS TO THE END OF THIS STRUCT.  INTERFACE VERSION IS FROZEN AT 138
+// ONLY ADD NEW FUNCTIONS TO THE END OF THIS STRUCT.
 
 // Passed to pfnKeyValue
 typedef struct KeyValueData_s
