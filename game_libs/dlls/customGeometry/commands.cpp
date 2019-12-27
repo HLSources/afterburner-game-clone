@@ -14,7 +14,7 @@ namespace CustomGeometry
 
 		GeometryItemPtr_t item = constructor.Construct();
 
-		CMessageWriter writer;
+		CMessageWriter writer(Category::DebugPlayerBounds);
 		return writer.WriteClearMessage() && writer.WriteMessage(*item);
 	}
 

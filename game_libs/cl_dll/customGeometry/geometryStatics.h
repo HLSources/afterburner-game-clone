@@ -3,5 +3,6 @@
 namespace CustomGeometry
 {
 	void Init();
-	void RenderAll();
+	void RenderAllGeometry();
+	void ClearAllGeometry();
 }

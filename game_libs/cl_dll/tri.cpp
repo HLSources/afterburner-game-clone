@@ -98,7 +98,7 @@ Non-transparent triangles-- add them here
 */
 void DLLEXPORT HUD_DrawNormalTriangles( void )
 {
-	CustomGeometry::RenderAll();
+	CustomGeometry::RenderAllGeometry();
 
 	gHUD.m_Spectator.DrawOverview();
 #if defined( TEST_IT )

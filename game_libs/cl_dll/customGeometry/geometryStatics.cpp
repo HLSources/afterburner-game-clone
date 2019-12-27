@@ -1,6 +1,6 @@
 #include "geometryStatics.h"
 #include "cl_dll.h"
-#include "customGeometry/geometryCollection.h"
+#include "customGeometry/geometryCollectionManager.h"
 #include "customGeometry/geometryRenderer.h"
 #include "customGeometry/sharedDefs.h"
 #include "customGeometry/messageReader.h"
@@ -8,31 +8,57 @@
 
 namespace CustomGeometry
 {
-	static int HandleCustomGeometryMessage(const char* msgName, int size, void* buffer)
+	static void HandleSuccessfullyReceivedMessage(const CMessageReader& reader)
 	{
-		GeometryItemPtr_t item(new CGeometryItem());
-		CMessageReader reader;
+		if ( reader.GetLastReadResult() == CMessageReader::ReadResult::Clear &&
+			 reader.GetGeometryCategory() == Category::None )
+		{
+			ClearAllGeometry();
+			return;
+		}
 
-		switch ( reader.ReadMessage(buffer, size, *item) )
+		CGeometryCollectionManager& manager = CGeometryCollectionManager::StaticInstance();
+		CBaseGeometryCollection* collection = manager.CollectionForCategory(reader.GetGeometryCategory());
+
+		if ( !collection )
+		{
+			return;
+		}
+
+		switch ( reader.GetLastReadResult() )
 		{
 			case CMessageReader::ReadResult::OK:
 			{
-				CGeometryCollection::StaticInstance().AddItem(item);
+				collection->ItemReceived(reader.GetGeometryItem());
 				break;
 			}
 
 			case CMessageReader::ReadResult::Clear:
 			{
-				CGeometryCollection::StaticInstance().Clear();
+				collection->ClearMessageReceived();
 				break;
 			}
 
 			default:
 			{
-				ILogInterface& log = IProjectInterface::ProjectInterfaceImpl()->LogInterface();
-				log.Log(ILogInterface::Level::Error, "Failed to parse custom geometry message.\n");
+				ASSERT(false);
 				break;
 			}
+		}
+	}
+
+	static int HandleCustomGeometryMessage(const char* msgName, int size, void* buffer)
+	{
+		CMessageReader reader;
+
+		if ( reader.ReadMessage(buffer, size) != CMessageReader::ReadResult::Error )
+		{
+			HandleSuccessfullyReceivedMessage(reader);
+		}
+		else
+		{
+			ILogInterface& log = IProjectInterface::ProjectInterfaceImpl()->LogInterface();
+			log.Log(ILogInterface::Level::Error, "Failed to parse custom geometry message.\n");
 		}
 
 		return 1;
@@ -40,25 +66,46 @@ namespace CustomGeometry
 
 	void Init()
 	{
+		CGeometryCollectionManager& manager = CGeometryCollectionManager::StaticInstance();
+
+		// Specify any custom geometry collection factory functions before this call, via manager.SetFactoryFunction().
+		// This is used for providing the manager with custom CBaseGeometryCollection subclasses.
+		manager.Initialise();
+
 		gEngfuncs.pfnHookUserMsg(MESSAGE_NAME, &HandleCustomGeometryMessage);
 	}
 
-	void RenderAll()
+	void RenderAllGeometry()
 	{
-		CGeometryCollection& collection = CGeometryCollection::StaticInstance();
-		const size_t count = collection.Count();
+		CGeometryCollectionManager& manager = CGeometryCollectionManager::StaticInstance();
 
-		for ( uint32_t index = 0; index < count; ++index )
+		for ( uint32_t index = 1; index < CATEGORY_COUNT; ++index )
 		{
-			GeometryItemPtr_t item = collection.ItemAt(index);
+			CBaseGeometryCollection* collection = manager.CollectionForCategory(static_cast<Category>(index));
 
-			if ( !item )
+			if ( !collection )
 			{
 				continue;
 			}
 
-			CGeometryRenderer renderer;
-			renderer.Render(*item);
+			collection->Render();
+		}
+	}
+
+	void ClearAllGeometry()
+	{
+		CGeometryCollectionManager& manager = CGeometryCollectionManager::StaticInstance();
+
+		for ( uint32_t index = 1; index < CATEGORY_COUNT; ++index )
+		{
+			CBaseGeometryCollection* collection = manager.CollectionForCategory(static_cast<Category>(index));
+
+			if ( !collection )
+			{
+				continue;
+			}
+
+			collection->ClearMessageReceived();
 		}
 	}
 }

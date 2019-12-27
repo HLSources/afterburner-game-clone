@@ -5,69 +5,113 @@
 
 namespace CustomGeometry
 {
-	CMessageReader::ReadResult CMessageReader::ReadMessage(void* buffer, int size, CGeometryItem& item)
+	CMessageReader::ReadResult CMessageReader::GetLastReadResult() const
 	{
-		item.Clear();
+		return m_ReadResult;
+	}
 
+	GeometryItemPtr_t CMessageReader::GetGeometryItem() const
+	{
+		return m_GeometryItem;
+	}
+
+	Category CMessageReader::GetGeometryCategory() const
+	{
+		return m_GeomCategory;
+	}
+
+	CMessageReader::ReadResult CMessageReader::ReadMessage(void* buffer, int size)
+	{
+		// Invalidate to start off with.
+		SetErrorState();
+
+		// If anything goes wrong in the process, invalidate before returning.
+		if ( !ReadMessageInternal(buffer, size) )
+		{
+			SetErrorState();
+		}
+
+		return m_ReadResult;
+	}
+
+	bool CMessageReader::ReadMessageInternal(void* buffer, int size)
+	{
 		if ( !buffer || size < 1 )
 		{
-			return ReadResult::Error;
+			return false;
 		}
 
 		BEGIN_READ(buffer, size);
+
+		if ( !ReadGeometryCategory() )
+		{
+			return false;
+		}
 
 		const uint8_t drawType = static_cast<uint8_t>(READ_BYTE());
 
 		if ( drawType == static_cast<uint8_t>(DrawType::None) )
 		{
-			return ReadResult::Clear;
+			m_ReadResult = ReadResult::Clear;
+
+			// Nothing else to read.
+			return true;
 		}
+
+		m_GeometryItem.reset(new CGeometryItem());
 
 		switch ( static_cast<DrawType>(drawType) )
 		{
 			case DrawType::Lines:
 			{
-				item.SetDrawType(static_cast<DrawType>(drawType));
+				m_GeometryItem->SetDrawType(static_cast<DrawType>(drawType));
 				break;
 			}
 
 			default:
 			{
-				item.Clear();
-				return ReadResult::Error;
+				return false;
 			}
 		}
 
-		item.SetColour(READ_LONG());
+		m_GeometryItem->SetColour(READ_LONG());
 
 		const uint16_t pointCount = static_cast<uint16_t>(READ_SHORT());
 
 		if ( pointCount > MAX_POINTS_PER_MSG )
 		{
-			item.Clear();
-			return ReadResult::Error;
+			return false;
 		}
 
 		for ( uint32_t index = 0; index < pointCount; ++index )
 		{
 			Vector vec;
-
-			for ( uint32_t coOrdAxis = 0; coOrdAxis < 3; ++coOrdAxis )
-			{
-				float value = 0;
-				uint8_t* data = reinterpret_cast<uint8_t*>(&value);
-
-				for ( uint32_t dataIndex = 0; dataIndex < sizeof(float); ++dataIndex )
-				{
-					data[dataIndex] = static_cast<uint8_t>(READ_BYTE());
-				}
-
-				vec[coOrdAxis] = value;
-			}
-
-			item.AddPoint(vec);
+			READ_VEC_PRECISE(vec);
+			m_GeometryItem->AddPoint(vec);
 		}
 
-		return ReadResult::OK;
+		m_ReadResult = ReadResult::OK;
+		return true;
+	}
+
+	bool CMessageReader::ReadGeometryCategory()
+	{
+		const uint8_t categoryInt = static_cast<uint8_t>(READ_BYTE());
+
+		if ( categoryInt >= CATEGORY_COUNT )
+		{
+			SetErrorState();
+			return false;
+		}
+
+		m_GeomCategory = static_cast<Category>(categoryInt);
+		return true;
+	}
+
+	void CMessageReader::SetErrorState()
+	{
+		m_GeometryItem.reset();
+		m_GeomCategory = Category::None;
+		m_ReadResult = ReadResult::Error;
 	}
 }

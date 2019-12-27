@@ -6,18 +6,17 @@
 
 namespace CustomGeometry
 {
-	class CGeometryCollection
+	class CBaseGeometryCollection
 	{
 	public:
-		static CGeometryCollection& StaticInstance();
-
 		size_t Count() const;
 		GeometryItemPtr_t ItemAt(uint32_t index) const;
 
-		void AddItem(const GeometryItemPtr_t& item);
-		void Clear();
+		virtual void ItemReceived(const GeometryItemPtr_t& item);
+		virtual void ClearMessageReceived();
+		virtual void Render();
 
-	private:
+	protected:
 		CUtlVector<GeometryItemPtr_t> m_Items;
 	};
 }
