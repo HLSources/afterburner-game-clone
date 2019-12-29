@@ -58,6 +58,7 @@ SOURCES = \
 	"game_shared/hitbox_debugging/**/*.cpp",
 	"game_shared/studio_utils_shared.cpp",
 	"game_shared/customGeometry/**/*.cpp",
+	"game_shared/util/**/*.cpp",
 	"dlls/agrunt.cpp",
 	"dlls/airtank.cpp",
 	"dlls/aflock.cpp",

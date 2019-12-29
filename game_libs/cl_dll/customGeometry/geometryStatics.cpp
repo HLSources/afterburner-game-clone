@@ -5,6 +5,7 @@
 #include "customGeometry/sharedDefs.h"
 #include "customGeometry/messageReader.h"
 #include "projectInterface/IProjectInterface.h"
+#include "customGeometry/logger_client.h"
 
 namespace CustomGeometry
 {
@@ -13,6 +14,7 @@ namespace CustomGeometry
 		if ( reader.GetLastReadResult() == CMessageReader::ReadResult::Clear &&
 			 reader.GetGeometryCategory() == Category::None )
 		{
+			CL_LOG().LogF(ILogInterface::Level::Message, "Received custom geometry ClearAll message.\n");
 			ClearAllGeometry();
 			return;
 		}
@@ -29,12 +31,23 @@ namespace CustomGeometry
 		{
 			case CMessageReader::ReadResult::OK:
 			{
-				collection->ItemReceived(reader.GetGeometryItem());
+				GeometryItemPtr_t item = reader.GetGeometryItem();
+
+				CL_LOG().LogF(ILogInterface::Level::Message,
+					"Received custom geometry for category %u (%d points)\n",
+					static_cast<uint32_t>(reader.GetGeometryCategory()),
+					item->GetPoints().Count());
+
+				collection->ItemReceived(item);
 				break;
 			}
 
 			case CMessageReader::ReadResult::Clear:
 			{
+				CL_LOG().LogF(ILogInterface::Level::Message,
+					"Received custom geometry clear message for category %u\n",
+					static_cast<uint32_t>(reader.GetGeometryCategory()));
+
 				collection->ClearMessageReceived();
 				break;
 			}
