@@ -34,8 +34,8 @@ namespace CustomGeometry
 				GeometryItemPtr_t item = reader.GetGeometryItem();
 
 				CL_LOG().LogF(ILogInterface::Level::Message,
-					"Received custom geometry for category %u (%d points)\n",
-					static_cast<uint32_t>(reader.GetGeometryCategory()),
+					"Received custom geometry for category %s (%d points)\n",
+					CustomGeometry::CategoryName(reader.GetGeometryCategory()),
 					item->GetPoints().Count());
 
 				collection->ItemReceived(item);
@@ -45,8 +45,8 @@ namespace CustomGeometry
 			case CMessageReader::ReadResult::Clear:
 			{
 				CL_LOG().LogF(ILogInterface::Level::Message,
-					"Received custom geometry clear message for category %u\n",
-					static_cast<uint32_t>(reader.GetGeometryCategory()));
+					"Received custom geometry clear message for category %s\n",
+					CustomGeometry::CategoryName(reader.GetGeometryCategory()));
 
 				collection->ClearMessageReceived();
 				break;

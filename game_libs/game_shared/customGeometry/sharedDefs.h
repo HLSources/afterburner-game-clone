@@ -8,16 +8,21 @@ namespace CustomGeometry
 	// For grouping geometry by purpose, eg. visualising hitboxes, drawing overlays, etc.
 	// When sending a "clear" message, only the geometry from the specified category is cleared.
 	// Values must fit in a uint8_t.
+#define CATEGORY_LIST \
+	LIST_ITEM(None = 0, "None") /* Sending this on a clear message clears all geometry. */ \
+	LIST_ITEM(DebugPlayerBounds, "Player Bounds") \
+	LIST_ITEM(HitboxDebugging, "Hitbox Debugging")
+
+#define LIST_ITEM(value, name) value,
 	enum class Category
 	{
-		None = 0,	// Sending this on a clear message clears all geometry.
-		DebugPlayerBounds,
-		HitboxDebugging,
-
+		CATEGORY_LIST
 		CategoryCount
 	};
+#undef LIST_ITEM
 
 	static constexpr size_t CATEGORY_COUNT = static_cast<size_t>(Category::CategoryCount);
+	const char* CategoryName(Category category);
 
 	// Values must fit in a uint8_t;
 	enum class DrawType
