@@ -18,15 +18,29 @@ namespace CustomGeometry
 		uint32_t GetColour() const;
 		void SetColour(uint32_t col);
 
-		void AddPoint(const Vector& p0);
-		void AddLine(const Vector& p0, const Vector& p1);
+		// These add points only.
+		bool AddPoint(const Vector& p0);
+
+		// These add points and relevant indices.
+		bool AddLine(const Vector& p0, const Vector& p1);
+
+		// These only add indices, and assume that the indices are for valid points
+		// (they are not checked).
+		bool AddIndex(uint8_t index);
+		bool AddLineIndices(uint8_t i0, uint8_t i1);
+
+		size_t GetPointCount() const;
 
 		const CUtlVector<Vector>& GetPoints() const;
+		const CUtlVector<uint8_t>& GetIndices() const;
 
 	private:
+		uint8_t CurrentBaseIndex() const;
+
 		DrawType m_DrawType = DrawType::None;
 		uint32_t m_Colour = 0xFFFFFFFF;
 		CUtlVector<Vector> m_Points;
+		CUtlVector<uint8_t> m_Indices;
 	};
 
 	typedef std::shared_ptr<CGeometryItem> GeometryItemPtr_t;

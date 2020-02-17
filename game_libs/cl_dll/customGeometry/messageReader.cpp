@@ -90,6 +90,18 @@ namespace CustomGeometry
 			m_GeometryItem->AddPoint(vec);
 		}
 
+		const uint16_t indexCount = static_cast<uint16_t>(READ_SHORT());
+
+		if ( indexCount > MAX_INDICES_PER_MSG )
+		{
+			return false;
+		}
+
+		for ( uint32_t index = 0; index < indexCount; ++index )
+		{
+			m_GeometryItem->AddIndex(static_cast<uint8_t>(READ_CHAR()));
+		}
+
 		m_ReadResult = ReadResult::OK;
 		return true;
 	}

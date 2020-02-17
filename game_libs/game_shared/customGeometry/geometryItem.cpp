@@ -34,14 +34,70 @@ namespace CustomGeometry
 		return m_Points;
 	}
 
-	void CGeometryItem::AddPoint(const Vector& p0)
+	const CUtlVector<uint8_t>& CGeometryItem::GetIndices() const
 	{
-		m_Points.AddToTail(p0);
+		return m_Indices;
 	}
 
-	void CGeometryItem::AddLine(const Vector& p0, const Vector& p1)
+	bool CGeometryItem::AddPoint(const Vector& p0)
 	{
+		if ( m_Points.Count() + 1 > MAX_POINTS_PER_MSG )
+		{
+			return false;
+		}
+
+		m_Points.AddToTail(p0);
+		return true;
+	}
+
+	bool CGeometryItem::AddLine(const Vector& p0, const Vector& p1)
+	{
+		if ( m_Points.Count() + 2 > MAX_POINTS_PER_MSG )
+		{
+			return false;
+		}
+
+		uint8_t baseIndex = CurrentBaseIndex();
+
 		m_Points.AddToTail(p0);
 		m_Points.AddToTail(p1);
+
+		m_Indices.AddToTail(baseIndex);
+		m_Indices.AddToTail(baseIndex + 1);
+
+		return true;
+	}
+
+	bool CGeometryItem::AddIndex(uint8_t index)
+	{
+		if ( m_Indices.Count() + 1 > MAX_INDICES_PER_MSG )
+		{
+			return false;
+		}
+
+		m_Indices.AddToTail(index);
+		return true;
+	}
+
+	bool CGeometryItem::AddLineIndices(uint8_t i0, uint8_t i1)
+	{
+		if ( m_Indices.Count() + 2 > MAX_INDICES_PER_MSG )
+		{
+			return false;
+		}
+
+		m_Indices.AddToTail(i0);
+		m_Indices.AddToTail(i1);
+		return true;
+	}
+
+	size_t CGeometryItem::GetPointCount() const
+	{
+		return m_Points.Count();
+	}
+
+	uint8_t CGeometryItem::CurrentBaseIndex() const
+	{
+		return static_cast<uint8_t>(m_Points.Count());
 	}
 }

@@ -42,6 +42,8 @@ bool CHitboxGeometryConstructor::AddGeometry(const CustomGeometry::GeometryItemP
 void CHitboxGeometryConstructor::CreateGeometryFromPoints(const CustomGeometry::GeometryItemPtr_t& geom,
 														  const HitboxPoints& points) const
 {
+	uint8_t baseIndex = geom->GetPointCount();
+
 	// Bottom rect
 	CreateRectFromPoints(geom, points, 0);
 
@@ -49,13 +51,10 @@ void CHitboxGeometryConstructor::CreateGeometryFromPoints(const CustomGeometry::
 	CreateRectFromPoints(geom, points, 4);
 
 	// Connect up the corners
-	for ( uint32_t index = 0; index < 4; ++index )
-	{
-		const Vector& p0 = points.points[index];
-		const Vector& p1 = points.points[index + 4];
-
-		geom->AddLine(p0, p1);
-	}
+	geom->AddLineIndices(0, 4);
+	geom->AddLineIndices(1, 5);
+	geom->AddLineIndices(2, 6);
+	geom->AddLineIndices(3, 7);
 }
 
 void CHitboxGeometryConstructor::CreateRectFromPoints(const CustomGeometry::GeometryItemPtr_t& geom,
@@ -64,11 +63,16 @@ void CHitboxGeometryConstructor::CreateRectFromPoints(const CustomGeometry::Geom
 {
 	ASSERT(HitboxPoints::NUM_ELEMENTS - offset >= 4);
 
+	uint8_t baseIndex = geom->GetPointCount();
+
+	geom->AddPoint(points.points[offset]);
+	geom->AddPoint(points.points[offset + 1]);
+	geom->AddPoint(points.points[offset + 2]);
+	geom->AddPoint(points.points[offset + 3]);
+
 	for ( uint32_t index = 0; index < 4; ++index )
 	{
-		const Vector& p0 = points.points[offset + index];
-		const Vector& p1 = points.points[offset + ((index + 1) % 4)];
-		geom->AddLine(p0, p1);
+		geom->AddLineIndices(baseIndex + index, baseIndex + ((index + 1) % 4));
 	}
 }
 

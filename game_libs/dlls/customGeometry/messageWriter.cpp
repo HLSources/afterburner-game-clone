@@ -62,6 +62,8 @@ namespace CustomGeometry
 	// - Colour (uint32)
 	// - Point count (uint16)
 	// - Points (float) [3 * point count]
+	// - Index count (uint16)
+	// - Indices (uint8) [index count]
 	bool CMessageWriter::WriteMessage(const CGeometryItem& geometry)
 	{
 		if ( !CanWriteMessage() || !IsValidSpecificCategory(m_Category) )
@@ -70,6 +72,7 @@ namespace CustomGeometry
 		}
 
 		const CUtlVector<Vector>& points = geometry.GetPoints();
+		const CUtlVector<uint8_t>& indices = geometry.GetIndices();
 
 		if ( points.Count() < 1 )
 		{
@@ -93,6 +96,13 @@ namespace CustomGeometry
 		FOR_EACH_VEC(points, index)
 		{
 			WRITE_VEC_PRECISE(points[index]);
+		}
+
+		WRITE_SHORT(static_cast<uint16_t>(indices.Count()));
+
+		FOR_EACH_VEC(indices, index)
+		{
+			WRITE_CHAR(indices[index]);
 		}
 
 		MESSAGE_END();

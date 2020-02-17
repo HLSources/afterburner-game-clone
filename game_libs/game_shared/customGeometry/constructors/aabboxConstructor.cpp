@@ -88,23 +88,35 @@ namespace CustomGeometry
 		const Vector& min = m_vecMin;
 		const Vector& max = m_vecMax;
 
+		// Bottom rect points
+		geom->AddPoint(Vector(min[0], min[1], min[2]));
+		geom->AddPoint(Vector(max[0], min[1], min[2]));
+		geom->AddPoint(Vector(max[0], max[1], min[2]));
+		geom->AddPoint(Vector(min[0], max[1], min[2]));
+
+		// Top rect points
+		geom->AddPoint(Vector(min[0], min[1], max[2]));
+		geom->AddPoint(Vector(max[0], min[1], max[2]));
+		geom->AddPoint(Vector(max[0], max[1], max[2]));
+		geom->AddPoint(Vector(min[0], max[1], max[2]));
+
 		// Bottom rect
-		geom->AddLine(Vector(min[0], min[1], min[2]), Vector(max[0], min[1], min[2]));
-		geom->AddLine(Vector(max[0], min[1], min[2]), Vector(max[0], max[1], min[2]));
-		geom->AddLine(Vector(max[0], max[1], min[2]), Vector(min[0], max[1], min[2]));
-		geom->AddLine(Vector(min[0], max[1], min[2]), Vector(min[0], min[1], min[2]));
+		geom->AddLineIndices(0, 1);
+		geom->AddLineIndices(1, 2);
+		geom->AddLineIndices(2, 3);
+		geom->AddLineIndices(3, 0);
 
 		// Top rect
-		geom->AddLine(Vector(min[0], min[1], max[2]), Vector(max[0], min[1], max[2]));
-		geom->AddLine(Vector(max[0], min[1], max[2]), Vector(max[0], max[1], max[2]));
-		geom->AddLine(Vector(max[0], max[1], max[2]), Vector(min[0], max[1], max[2]));
-		geom->AddLine(Vector(min[0], max[1], max[2]), Vector(min[0], min[1], max[2]));
+		geom->AddLineIndices(4, 5);
+		geom->AddLineIndices(5, 6);
+		geom->AddLineIndices(6, 7);
+		geom->AddLineIndices(7, 4);
 
 		// Connecting lines
-		geom->AddLine(Vector(min[0], min[1], min[2]), Vector(min[0], min[1], max[2]));
-		geom->AddLine(Vector(max[0], min[1], min[2]), Vector(max[0], min[1], max[2]));
-		geom->AddLine(Vector(max[0], max[1], min[2]), Vector(max[0], max[1], max[2]));
-		geom->AddLine(Vector(min[0], max[1], min[2]), Vector(min[0], max[1], max[2]));
+		geom->AddLineIndices(0, 4);
+		geom->AddLineIndices(1, 5);
+		geom->AddLineIndices(2, 6);
+		geom->AddLineIndices(3, 7);
 	}
 
 	void CAABBoxConstructor::ConstructDegenerateOnOneAxis(GeometryItemPtr_t& geom, uint32_t degenerateAxis) const
@@ -137,9 +149,16 @@ namespace CustomGeometry
 			points[3] = Vector(min[0], max[1], min[2]);
 		}
 
+		uint8_t baseIndex = geom->GetPointCount();
+
 		for ( uint32_t index = 0; index < NUM_POINTS; ++index )
 		{
-			geom->AddLine(points[index], points[(index + 1) % NUM_POINTS]);
+			geom->AddPoint(points[index]);
+		}
+
+		for ( uint32_t index = 0; index < NUM_POINTS; ++index )
+		{
+			geom->AddLineIndices(baseIndex + index, baseIndex + ((index + 1) % NUM_POINTS));
 		}
 	}
 
@@ -148,7 +167,11 @@ namespace CustomGeometry
 		Vector maxPoint = m_vecMin;
 		maxPoint[validAxis] = m_vecMax[validAxis];
 
-		geom->AddLine(m_vecMin, maxPoint);
+		uint8_t baseIndex = geom->GetPointCount();
+
+		geom->AddPoint(m_vecMin);
+		geom->AddPoint(maxPoint);
+		geom->AddLineIndices(baseIndex, baseIndex + 1);
 	}
 
 	uint32_t CAABBoxConstructor::GetDegenerateAxes() const
