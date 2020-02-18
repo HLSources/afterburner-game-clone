@@ -34,9 +34,10 @@ namespace CustomGeometry
 				GeometryItemPtr_t item = reader.GetGeometryItem();
 
 				CL_LOG().LogF(ILogInterface::Level::Message,
-					"Received custom geometry for category %s (%d points)\n",
+					"Received custom geometry for category %s (%d points, %d indices)\n",
 					CustomGeometry::CategoryName(reader.GetGeometryCategory()),
-					item->GetPoints().Count());
+					item->GetPoints().Count(),
+					item->GetIndices().Count());
 
 				collection->ItemReceived(item);
 				break;

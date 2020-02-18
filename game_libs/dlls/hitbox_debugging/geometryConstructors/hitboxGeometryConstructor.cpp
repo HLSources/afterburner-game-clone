@@ -32,6 +32,8 @@ bool CHitboxGeometryConstructor::AddGeometry(const CustomGeometry::GeometryItemP
 		return false;
 	}
 
+	geom->SetDrawType(CustomGeometry::DrawType::Lines);
+
 	HitboxPoints points;
 	HitboxFloatsToPoints(floats, points);
 	CreateGeometryFromPoints(geom, points);
@@ -65,10 +67,12 @@ void CHitboxGeometryConstructor::CreateRectFromPoints(const CustomGeometry::Geom
 
 	uint8_t baseIndex = geom->GetPointCount();
 
+	// Points are specified as (min, min), (max, min), (min, max), (max, max).
+	// Reorder these slightly so that only one component changes on each step.
 	geom->AddPoint(points.points[offset]);
 	geom->AddPoint(points.points[offset + 1]);
-	geom->AddPoint(points.points[offset + 2]);
 	geom->AddPoint(points.points[offset + 3]);
+	geom->AddPoint(points.points[offset + 2]);
 
 	for ( uint32_t index = 0; index < 4; ++index )
 	{
