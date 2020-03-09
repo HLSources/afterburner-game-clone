@@ -64,48 +64,18 @@ void SV_InitBoxHull( void )
 	for( i = 0; i < 6; i++ )
 	{
 		box_clipnodes[i].planenum = i;
-		
+
 		side = i & 1;
-		
+
 		box_clipnodes[i].children[side] = CONTENTS_EMPTY;
 		if( i != 5 ) box_clipnodes[i].children[side^1] = i + 1;
 		else box_clipnodes[i].children[side^1] = CONTENTS_SOLID;
-		
+
 		box_planes[i].type = i>>1;
 		box_planes[i].normal[i>>1] = 1;
 		box_planes[i].signbits = 0;
 	}
-	
-}
 
-/*
-====================
-StudioPlayerBlend
-
-====================
-*/
-void SV_StudioPlayerBlend( mstudioseqdesc_t *pseqdesc, int *pBlend, float *pPitch )
-{
-	// calc up/down pointing
-	*pBlend = (*pPitch * 3);
-
-	if( *pBlend < pseqdesc->blendstart[0] )
-	{
-		*pPitch -= pseqdesc->blendstart[0] / 3.0f;
-		*pBlend = 0;
-	}
-	else if( *pBlend > pseqdesc->blendend[0] )
-	{
-		*pPitch -= pseqdesc->blendend[0] / 3.0f;
-		*pBlend = 255;
-	}
-	else
-	{
-		if( pseqdesc->blendend[0] - pseqdesc->blendstart[0] < 0.1f ) // catch qc error
-			*pBlend = 127;
-		else *pBlend = 255.0f * (*pBlend - pseqdesc->blendstart[0]) / (pseqdesc->blendend[0] - pseqdesc->blendstart[0]);
-		*pPitch = 0;
-	}
 }
 
 /*
@@ -258,7 +228,7 @@ hull_t *SV_HullForBsp( edict_t *ent, const vec3_t mins, const vec3_t maxs, vec3_
 		if( size[0] <= 8.0f || ent->v.solid == SOLID_PORTAL )
 		{
 			hull = &model->hulls[0];
-			VectorCopy( hull->clip_mins, offset ); 
+			VectorCopy( hull->clip_mins, offset );
 		}
 		else
 		{
@@ -309,7 +279,7 @@ hull_t *SV_HullForEntity( edict_t *ent, vec3_t mins, vec3_t maxs, vec3_t offset 
 		VectorSubtract( ent->v.mins, maxs, hullmins );
 		VectorSubtract( ent->v.maxs, mins, hullmaxs );
 		hull = SV_HullForBox( hullmins, hullmaxs );
-		
+
 		VectorCopy( ent->v.origin, offset );
 	}
 
@@ -377,7 +347,7 @@ hull_t *SV_HullForStudioModel( edict_t *ent, vec3_t mins, vec3_t maxs, vec3_t of
 			pseqdesc = (mstudioseqdesc_t *)((byte *)pstudio + pstudio->seqindex) + ent->v.sequence;
 			VectorCopy( ent->v.angles, angles );
 
-			SV_StudioPlayerBlend( pseqdesc, &iBlend, &angles[PITCH] );
+			Mod_StudioPlayerBlend( pseqdesc, &iBlend, &angles[PITCH] );
 
 			controller[0] = controller[1] = 0x7F;
 			controller[2] = controller[3] = 0x7F;
@@ -428,25 +398,25 @@ areanode_t *SV_CreateAreaNode( int depth, vec3_t mins, vec3_t maxs )
 	ClearLink( &anode->trigger_edicts );
 	ClearLink( &anode->solid_edicts );
 	ClearLink( &anode->portal_edicts );
-	
+
 	if( depth == AREA_DEPTH )
 	{
 		anode->axis = -1;
 		anode->children[0] = anode->children[1] = NULL;
 		return anode;
 	}
-	
+
 	VectorSubtract( maxs, mins, size );
 	if( size[0] > size[1] )
 		anode->axis = 0;
 	else anode->axis = 1;
-	
+
 	anode->dist = 0.5f * ( maxs[anode->axis] + mins[anode->axis] );
-	VectorCopy( mins, mins1 );	
-	VectorCopy( mins, mins2 );	
-	VectorCopy( maxs, maxs1 );	
-	VectorCopy( maxs, maxs2 );	
-	
+	VectorCopy( mins, mins1 );
+	VectorCopy( mins, mins2 );
+	VectorCopy( maxs, maxs1 );
+	VectorCopy( maxs, maxs2 );
+
 	maxs1[anode->axis] = mins2[anode->axis] = anode->dist;
 	anode->children[0] = SV_CreateAreaNode( depth+1, mins2, maxs2 );
 	anode->children[1] = SV_CreateAreaNode( depth+1, mins1, maxs1 );
@@ -571,10 +541,10 @@ void SV_TouchLinks( edict_t *ent, areanode_t *node )
 			svgame.dllFuncs.pfnTouch( touch, ent );
 		}
 	}
-	
+
 	// recurse down both sides
 	if( node->axis == -1 ) return;
-	
+
 	if( ent->v.absmax[node->axis] > node->dist )
 		SV_TouchLinks( ent, node->children[0] );
 	if( ent->v.absmin[node->axis] < node->dist )
@@ -594,7 +564,7 @@ void SV_FindTouchedLeafs( edict_t *ent, mnode_t *node, int *headnode )
 
 	if( node->contents == CONTENTS_SOLID )
 		return;
-	
+
 	// add an efrag if the node is a leaf
 	if( node->contents < 0 )
 	{
@@ -608,17 +578,17 @@ void SV_FindTouchedLeafs( edict_t *ent, mnode_t *node, int *headnode )
 		{
 			leaf = (mleaf_t *)node;
 			ent->leafnums[ent->num_leafs] = leaf->cluster;
-			ent->num_leafs++;			
+			ent->num_leafs++;
 		}
 		return;
 	}
-	
+
 	// NODE_MIXED
 	sides = BOX_ON_PLANE_SIDE( ent->v.absmin, ent->v.absmax, node->plane );
 
 	if(( sides == 3 ) && ( *headnode == -1 ))
 		*headnode = node - sv.worldmodel->nodes;
-	
+
 	// recurse down the contacted sides
 	if( sides & 1 ) SV_FindTouchedLeafs( ent, node->children[0], headnode );
 	if( sides & 2 ) SV_FindTouchedLeafs( ent, node->children[1], headnode );
@@ -681,8 +651,8 @@ void SV_LinkEdict( edict_t *ent, qboolean touch_triggers )
 			node = node->children[1];
 		else break; // crosses the node
 	}
-	
-	// link it in	
+
+	// link it in
 	if( ent->v.solid == SOLID_TRIGGER )
 		InsertLinkBefore( &ent->area, &node->trigger_edicts );
 	else if( ent->v.solid == SOLID_PORTAL )
@@ -763,10 +733,10 @@ void SV_WaterLinks( const vec3_t origin, int *pCont, areanode_t *node )
 		if( RankForContents( touch->v.skin ) > RankForContents( *pCont ))
 			*pCont = touch->v.skin; // new content has more priority
 	}
-	
+
 	// recurse down both sides
 	if( node->axis == -1 ) return;
-	
+
 	if( origin[node->axis] > node->dist )
 		SV_WaterLinks( origin, pCont, node->children[0] );
 	if( origin[node->axis] < node->dist )
@@ -827,7 +797,7 @@ qboolean SV_TestEntityPosition( edict_t *ent, edict_t *blocker )
 	if( FBitSet( ent->v.flags, FL_CLIENT|FL_FAKECLIENT ))
 	{
 		// to avoid falling through tracktrain update client mins\maxs here
-		if( FBitSet( ent->v.flags, FL_DUCKING )) 
+		if( FBitSet( ent->v.flags, FL_DUCKING ))
 			SV_SetMinMaxSize( ent, svgame.pmove->player_mins[1], svgame.pmove->player_maxs[1], true );
 		else SV_SetMinMaxSize( ent, svgame.pmove->player_mins[0], svgame.pmove->player_maxs[0], true );
 	}
@@ -1007,7 +977,7 @@ void SV_PortalCSG( edict_t *portal, const vec3_t trace_mins, const vec3_t trace_
 	int	hitplane;
 	model_t	*model;
 	float	portalradius;
-	
+
 	// only run this code if we impacted on the portal's parent.
 	if( trace->fraction == 1.0f && !trace->startsolid )
 		return;
@@ -1049,7 +1019,7 @@ void SV_PortalCSG( edict_t *portal, const vec3_t trace_mins, const vec3_t trace_
 		if( !plane )
 		{
 			planes[plane][3] -= DotProduct( nearest, planes[plane] );
-		}	
+		}
 		else if( plane > 1 )
 		{
 			// side planes get nearer with size
@@ -1584,7 +1554,7 @@ static qboolean SV_RecursiveLightPoint( model_t *model, mnode_t *node, const vec
 
 	VectorLerp( start, frac, end, mid );
 
-	// co down front side	
+	// co down front side
 	if( SV_RecursiveLightPoint( model, node->children[side], start, mid ))
 		return true; // hit something
 
@@ -1612,7 +1582,7 @@ static qboolean SV_RecursiveLightPoint( model_t *model, mnode_t *node, const vec
 
 		ds = s - info->lightmapmins[0];
 		dt = t - info->lightmapmins[1];
-		
+
 		if ( ds > info->lightextents[0] || dt > info->lightextents[1] )
 			continue;
 

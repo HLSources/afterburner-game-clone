@@ -118,11 +118,7 @@ void CHitboxDebugData::FireHitboxSnapshotMessages(const CWeaponDebugEvent_Hitsca
 		return;
 	}
 
-	{
-		CustomGeometry::CMessageWriter writer(CustomGeometry::Category::HitboxDebugging);
-		writer.SetTargetClient(attacker);
-		writer.WriteClearMessage();
-	}
+	FireHitboxSnapshotClearMessage();
 
 	for ( uint32_t hitboxIndex = 0; hitboxIndex < hitboxCount; ++hitboxIndex )
 	{
