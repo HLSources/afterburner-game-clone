@@ -138,6 +138,19 @@ void CHitboxDebugData::FireHitboxSnapshotMessages(const CWeaponDebugEvent_Hitsca
 		writer.SetTargetClient(attacker);
 		writer.WriteMessage(*hitboxGeometry);
 	}
+
+	CustomGeometry::GeometryItemPtr_t tracelineGeometry(new CustomGeometry::CGeometryItem());
+	tracelineGeometry->SetDrawType(CustomGeometry::DrawType::Lines);
+
+	for ( uint32_t traceIndex = 0; traceIndex < event->TraceCount(); ++traceIndex )
+	{
+		const CWeaponDebugEvent_HitscanFire::Trace* trace = event->GetTrace(traceIndex);
+		tracelineGeometry->AddLine(trace->begin, trace->traceResult.vecEndPos);
+	}
+
+	CustomGeometry::CMessageWriter writer(CustomGeometry::Category::HitboxDebugging);
+	writer.SetTargetClient(attacker);
+	writer.WriteMessage(*tracelineGeometry);
 }
 
 void CHitboxDebugData::FireHitboxSnapshotClearMessage()
