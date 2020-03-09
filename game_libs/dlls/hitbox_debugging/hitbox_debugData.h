@@ -13,11 +13,15 @@ public:
 	bool IsValid() const;
 	void Clear();
 
-	CBasePlayer* Attacker() const;
-	void SetAttacker(CBasePlayer* attacker);
+	CBasePlayer* AttackerPlayer() const;
+	void SetAttackerPlayer(CBasePlayer* attacker);
 
-	CBasePlayer* Victim() const;
-	void SetVictim(CBasePlayer* victim);
+	// The target can either be a player or a general entity with a model.
+	CBasePlayer* TargetPlayer() const;
+	void SetTargetPlayer(CBasePlayer* victim);
+
+	CBaseAnimating* TargetEnt() const;
+	void SetTargetEnt(CBaseAnimating* ent);
 
 private:
 	void FireHitboxSnapshotMessages(const CWeaponDebugEvent_HitscanFire* event);
@@ -25,5 +29,5 @@ private:
 	void HandleHitscanFire(const CWeaponDebugEvent_HitscanFire* event);
 
 	EHANDLE m_Attacker;
-	EHANDLE m_Victim;
+	EHANDLE m_Target;
 };

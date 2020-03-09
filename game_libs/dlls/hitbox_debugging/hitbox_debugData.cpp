@@ -27,7 +27,7 @@ CHitboxDebugData::~CHitboxDebugData()
 
 bool CHitboxDebugData::IsValid() const
 {
-	return m_Attacker.Get() && m_Victim.Get();
+	return m_Attacker.Get() && m_Target.Get();
 }
 
 void CHitboxDebugData::Clear()
@@ -35,28 +35,41 @@ void CHitboxDebugData::Clear()
 	FireHitboxSnapshotClearMessage();
 
 	m_Attacker.Set(nullptr);
-	m_Victim.Set(nullptr);
+	m_Target.Set(nullptr);
 }
 
-CBasePlayer* CHitboxDebugData::Attacker() const
+CBasePlayer* CHitboxDebugData::AttackerPlayer() const
 {
 	return m_Attacker.StaticCast<CBasePlayer>();
 }
 
-void CHitboxDebugData::SetAttacker(CBasePlayer* attacker)
+void CHitboxDebugData::SetAttackerPlayer(CBasePlayer* attacker)
 {
 	FireHitboxSnapshotClearMessage();
 	m_Attacker.Set(attacker ? attacker->edict() : nullptr);
 }
 
-CBasePlayer* CHitboxDebugData::Victim() const
+CBasePlayer* CHitboxDebugData::TargetPlayer() const
 {
-	return m_Victim.StaticCast<CBasePlayer>();
+	// Entity may not be a player, so dynamic cast is needed.
+	return m_Target.DynamicCast<CBasePlayer>();
 }
 
-void CHitboxDebugData::SetVictim(CBasePlayer* victim)
+void CHitboxDebugData::SetTargetPlayer(CBasePlayer* victim)
 {
-	m_Victim.Set(victim ? victim->edict() : nullptr);
+	m_Target.Set(victim ? victim->edict() : nullptr);
+}
+
+CBaseAnimating* CHitboxDebugData::TargetEnt() const
+{
+	// Any entity set should always be a subclass of CBaseAnimating,
+	// so only static cast is needed.
+	return m_Target.StaticCast<CBaseAnimating>();
+}
+
+void CHitboxDebugData::SetTargetEnt(CBaseAnimating* ent)
+{
+	m_Target.Set(ent ? ent->edict() : nullptr);
 }
 
 void CHitboxDebugData::HandleHitscanFire(const CWeaponDebugEvent_HitscanFire* event)
@@ -73,7 +86,7 @@ void CHitboxDebugData::HandleHitscanFire(const CWeaponDebugEvent_HitscanFire* ev
 		return;
 	}
 
-	if ( !m_Victim )
+	if ( !m_Target )
 	{
 		ALERT(at_console, "Victim no longer valid, turning hitbox debugging off.\n");
 		Clear();
@@ -90,15 +103,15 @@ void CHitboxDebugData::HandleHitscanFire(const CWeaponDebugEvent_HitscanFire* ev
 
 void CHitboxDebugData::FireHitboxSnapshotMessages(const CWeaponDebugEvent_HitscanFire* event)
 {
-	CBasePlayer* victim = m_Victim.StaticCast<CBasePlayer>();
+	CBaseAnimating* target = m_Target.DynamicCast<CBaseAnimating>();
 	CBasePlayer* attacker = m_Attacker.StaticCast<CBasePlayer>();
 
-	if ( !victim || !attacker )
+	if ( !target || !attacker )
 	{
 		return;
 	}
 
-	uint32_t hitboxCount = g_engfuncs.pfnGetHitboxCount(victim->edict());
+	uint32_t hitboxCount = g_engfuncs.pfnGetHitboxCount(target->edict());
 
 	if ( hitboxCount < 1 )
 	{
@@ -115,7 +128,7 @@ void CHitboxDebugData::FireHitboxSnapshotMessages(const CWeaponDebugEvent_Hitsca
 	{
 		CHitboxGeometryConstructor constructor;
 
-		constructor.SetEntity(victim);
+		constructor.SetEntity(target);
 		constructor.SetHitboxIndex(hitboxIndex);
 
 		CustomGeometry::GeometryItemPtr_t hitboxGeometry(new CustomGeometry::CGeometryItem());

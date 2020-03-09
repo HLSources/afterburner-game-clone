@@ -178,6 +178,15 @@ public:
 	// Immediately end a multiplayer game
 	virtual void EndMultiplayerGame( void ) {}
 
+	// TODO: We should probably re-evaluate where things like this are kept.
+	// There should be a collection of resources that is instantiated when
+	// a server is created and destroyed at the end. I don't like having
+	// instances of persistent things kept in the gamerules.
+	virtual CHitboxDebugData* HitboxDebugData()
+	{
+		return nullptr;
+	}
+
 	CSpawnPointManager* SpawnPointManager() { return m_pSpawnPointManager; }
 
 private:
@@ -195,7 +204,7 @@ class CHalfLifeRules : public CGameRules
 {
 public:
 	CHalfLifeRules ( void );
-	virtual ~CHalfLifeRules() {}
+	virtual ~CHalfLifeRules();
 
 	// GR_Think
 	virtual void Think( void );
@@ -273,6 +282,11 @@ public:
 	// Teamplay stuff
 	virtual const char *GetTeamID( CBaseEntity *pEntity ) {return "";};
 	virtual int PlayerRelationship( CBaseEntity *pPlayer, CBaseEntity *pTarget );
+
+	virtual CHitboxDebugData* HitboxDebugData() override;
+
+private:
+	CHitboxDebugData* m_pHitboxDebugData;
 };
 
 //=========================================================
@@ -380,8 +394,9 @@ public:
 	// Immediately end a multiplayer game
 	virtual void EndMultiplayerGame( void ) { GoToIntermission(); }
 
+	virtual CHitboxDebugData* HitboxDebugData() override;
+
 	CBotGameRulesInterface* BotGameRulesInterface();
-	CHitboxDebugData* HitboxDebugData();
 
 protected:
 	virtual void ChangeLevel( void );
