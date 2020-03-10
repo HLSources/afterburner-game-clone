@@ -204,6 +204,7 @@ void Mod_StudioComputeBounds( void *buffer, vec3_t mins, vec3_t maxs, qboolean i
 int Mod_HitgroupForStudioHull( int index );
 void Mod_ClearStudioCache( void );
 float Mod_StudioGetSequenceDuration( model_t* model, int anim);
+void Mod_StudioPlayerBlend( mstudioseqdesc_t *pseqdesc, int *pBlend, float *pPitch );
 
 //
 // mod_sprite.c

@@ -322,8 +322,13 @@ uint32_t Mod_GetHitboxCount(const edict_t* edict)
 	return mod_studiohdr->numhitboxes;
 }
 
-static void MakeMeCommon_StudioPlayerBlend( mstudioseqdesc_t *pseqdesc, int *pBlend, float *pPitch )
+void Mod_StudioPlayerBlend( mstudioseqdesc_t *pseqdesc, int *pBlend, float *pPitch )
 {
+	if ( !pseqdesc || !pBlend || !pPitch )
+	{
+		return;
+	}
+
 	// calc up/down pointing
 	*pBlend = (*pPitch * 3);
 
@@ -365,7 +370,7 @@ static void SetUpBones(const edict_t* edict, model_t* mod)
 	pseqdesc = (mstudioseqdesc_t *)((byte *)pstudio + pstudio->seqindex) + edict->v.sequence;
 	VectorCopy( edict->v.angles, angles );
 
-	MakeMeCommon_StudioPlayerBlend( pseqdesc, &iBlend, &angles[PITCH] );
+	Mod_StudioPlayerBlend( pseqdesc, &iBlend, &angles[PITCH] );
 
 	controller[0] = controller[1] = 0x7F;
 	controller[2] = controller[3] = 0x7F;
