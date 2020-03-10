@@ -406,20 +406,6 @@ qboolean Mod_GetTransformedHitboxPoints(const edict_t* edict, uint32_t hitboxInd
 		return false;
 	}
 
-	// vec3_t angles2;
-	// VectorCopy(edict->v.angles, angles2);
-	// FixAnglesForQuake(angles2);
-
-	// pBlendAPI->SV_StudioSetupBones(model,
-	// 							   edict->v.frame,
-	// 							   edict->v.sequence,
-	// 							   angles2,
-	// 							   edict->v.origin,
-	// 							   edict->v.controller,
-	// 							   edict->v.blending,
-	// 							   -1,
-	// 							   edict);
-
 	SetUpBones(edict, model);
 
 	const mstudiobbox_t* hitbox = (mstudiobbox_t*)((byte*)mod_studiohdr + mod_studiohdr->hitboxindex) + hitboxIndex;
@@ -437,6 +423,31 @@ qboolean Mod_GetTransformedHitboxPoints(const edict_t* edict, uint32_t hitboxInd
 	}
 
 	return true;
+}
+
+int Mod_GetHitboxHitGroup(const edict_t* edict, uint32_t hitboxIndex)
+{
+	if ( !edict )
+	{
+		return -1;
+	}
+
+	model_t* model = SV_ModelHandle(edict->v.modelindex);
+
+	if ( !model )
+	{
+		return -1;
+	}
+
+	studiohdr_t* mod_studiohdr = (studiohdr_t*)Mod_StudioExtradata(model);
+
+	if( !mod_studiohdr || hitboxIndex >= mod_studiohdr->numhitboxes )
+	{
+		return -1;
+	}
+
+	const mstudiobbox_t* hitbox = (mstudiobbox_t*)((byte*)mod_studiohdr + mod_studiohdr->hitboxindex) + hitboxIndex;
+	return hitbox->group;
 }
 
 /*

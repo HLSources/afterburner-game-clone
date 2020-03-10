@@ -3,6 +3,7 @@
 #include "weapondebugevents/weapondebugevent_hitscanfire.h"
 #include "customGeometry/messageWriter.h"
 #include "geometryConstructors/hitboxGeometryConstructor.h"
+#include "hitbox_messageConstructor.h"
 
 static constexpr const char* EVENT_CALLBACK_ID = "CHitboxDebugData";
 
@@ -98,59 +99,11 @@ void CHitboxDebugData::HandleHitscanFire(const CWeaponDebugEvent_HitscanFire* ev
 		return;
 	}
 
-	FireHitboxSnapshotMessages(event);
-}
-
-void CHitboxDebugData::FireHitboxSnapshotMessages(const CWeaponDebugEvent_HitscanFire* event)
-{
 	CBaseAnimating* target = m_Target.DynamicCast<CBaseAnimating>();
 	CBasePlayer* attacker = m_Attacker.StaticCast<CBasePlayer>();
+	CHitboxMessageConstructor messageConstructor(attacker, target);
 
-	if ( !target || !attacker )
-	{
-		return;
-	}
-
-	uint32_t hitboxCount = g_engfuncs.pfnGetHitboxCount(target->edict());
-
-	if ( hitboxCount < 1 )
-	{
-		return;
-	}
-
-	{
-		CustomGeometry::CMessageWriter writer(CustomGeometry::Category::HitboxDebugging);
-		writer.SetTargetClient(attacker);
-		writer.WriteClearMessage();
-	}
-
-	for ( uint32_t hitboxIndex = 0; hitboxIndex < hitboxCount; ++hitboxIndex )
-	{
-		CHitboxGeometryConstructor constructor;
-
-		constructor.SetEntity(target);
-		constructor.SetHitboxIndex(hitboxIndex);
-
-		CustomGeometry::GeometryItemPtr_t hitboxGeometry(new CustomGeometry::CGeometryItem());
-		constructor.AddGeometry(hitboxGeometry);
-
-		CustomGeometry::CMessageWriter writer(CustomGeometry::Category::HitboxDebugging);
-		writer.SetTargetClient(attacker);
-		writer.WriteMessage(*hitboxGeometry);
-	}
-
-	CustomGeometry::GeometryItemPtr_t tracelineGeometry(new CustomGeometry::CGeometryItem());
-	tracelineGeometry->SetDrawType(CustomGeometry::DrawType::Lines);
-
-	for ( uint32_t traceIndex = 0; traceIndex < event->TraceCount(); ++traceIndex )
-	{
-		const CWeaponDebugEvent_HitscanFire::Trace* trace = event->GetTrace(traceIndex);
-		tracelineGeometry->AddLine(trace->begin, trace->traceResult.vecEndPos);
-	}
-
-	CustomGeometry::CMessageWriter writer(CustomGeometry::Category::HitboxDebugging);
-	writer.SetTargetClient(attacker);
-	writer.WriteMessage(*tracelineGeometry);
+	messageConstructor.FireMessages(*event);
 }
 
 void CHitboxDebugData::FireHitboxSnapshotClearMessage()
@@ -162,7 +115,6 @@ void CHitboxDebugData::FireHitboxSnapshotClearMessage()
 		return;
 	}
 
-	CustomGeometry::CMessageWriter writer(CustomGeometry::Category::HitboxDebugging);
-	writer.SetTargetClient(player);
-	writer.WriteClearMessage();
+	CHitboxMessageConstructor messageConstructor(player);
+	messageConstructor.FireClearMessage();
 }

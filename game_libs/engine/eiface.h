@@ -275,6 +275,8 @@ typedef struct enginefuncs_s
 
 	// Expects points list to be 8*3 floats long
 	qboolean (*pfnGetTransformedHitboxPoints)(const edict_t* edict, uint32_t hitboxIndex, float* points);
+
+	int (*pfnGetHitboxHitGroup)(const edict_t* edict, uint32_t hitboxIndex);
 } enginefuncs_t;
 // ONLY ADD NEW FUNCTIONS TO THE END OF THIS STRUCT.
 

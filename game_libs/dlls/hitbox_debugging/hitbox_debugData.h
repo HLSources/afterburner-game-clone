@@ -24,7 +24,6 @@ public:
 	void SetTargetEnt(CBaseAnimating* ent);
 
 private:
-	void FireHitboxSnapshotMessages(const CWeaponDebugEvent_HitscanFire* event);
 	void FireHitboxSnapshotClearMessage();
 	void HandleHitscanFire(const CWeaponDebugEvent_HitscanFire* event);
 

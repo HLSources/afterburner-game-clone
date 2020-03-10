@@ -3520,6 +3520,16 @@ static qboolean pfnGetTransformedHitboxPoints(const edict_t* edict, uint32_t hit
 	return false;
 }
 
+static int pfnGetHitboxHitGroup(const edict_t* edict, uint32_t hitboxIndex)
+{
+	if ( !SV_IsValidEdict(edict) )
+	{
+		return -1;
+	}
+
+	return Mod_GetHitboxHitGroup(edict, hitboxIndex);
+}
+
 /*
 =============
 pfnFunctionFromName
@@ -4760,7 +4770,8 @@ static enginefuncs_t gEngfuncs =
 	COM_CheckParm,
 	pfnModelSequenceDuration,
 	pfnGetHitboxCount,
-	pfnGetTransformedHitboxPoints
+	pfnGetTransformedHitboxPoints,
+	pfnGetHitboxHitGroup
 };
 
 /*
