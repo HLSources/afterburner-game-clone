@@ -322,6 +322,69 @@ uint32_t Mod_GetHitboxCount(const edict_t* edict)
 	return mod_studiohdr->numhitboxes;
 }
 
+static void MakeMeCommon_StudioPlayerBlend( mstudioseqdesc_t *pseqdesc, int *pBlend, float *pPitch )
+{
+	// calc up/down pointing
+	*pBlend = (*pPitch * 3);
+
+	if( *pBlend < pseqdesc->blendstart[0] )
+	{
+		*pPitch -= pseqdesc->blendstart[0] / 3.0f;
+		*pBlend = 0;
+	}
+	else if( *pBlend > pseqdesc->blendend[0] )
+	{
+		*pPitch -= pseqdesc->blendend[0] / 3.0f;
+		*pBlend = 255;
+	}
+	else
+	{
+		if( pseqdesc->blendend[0] - pseqdesc->blendstart[0] < 0.1f ) // catch qc error
+		{
+			*pBlend = 127;
+		}
+		else
+		{
+			*pBlend = 255.0f * (*pBlend - pseqdesc->blendstart[0]) / (pseqdesc->blendend[0] - pseqdesc->blendstart[0]);
+		}
+
+		*pPitch = 0;
+	}
+}
+
+static void SetUpBones(const edict_t* edict, model_t* mod)
+{
+	studiohdr_t* pstudio;
+	mstudioseqdesc_t* pseqdesc;
+	byte controller[4];
+	byte blending[2];
+	vec3_t angles;
+	int iBlend;
+
+	pstudio = Mod_StudioExtradata( mod );
+	pseqdesc = (mstudioseqdesc_t *)((byte *)pstudio + pstudio->seqindex) + edict->v.sequence;
+	VectorCopy( edict->v.angles, angles );
+
+	MakeMeCommon_StudioPlayerBlend( pseqdesc, &iBlend, &angles[PITCH] );
+
+	controller[0] = controller[1] = 0x7F;
+	controller[2] = controller[3] = 0x7F;
+	blending[0] = (byte)iBlend;
+	blending[1] = 0;
+
+	FixAnglesForQuake(angles);
+
+	pBlendAPI->SV_StudioSetupBones(mod,
+								   edict->v.frame,
+								   edict->v.sequence,
+								   angles,
+								   edict->v.origin,
+								   controller,
+								   blending,
+								   -1,
+								   edict);
+}
+
 qboolean Mod_GetTransformedHitboxPoints(const edict_t* edict, uint32_t hitboxIndex, Mod_BoxPoints* box)
 {
 	if ( !edict || !box )
@@ -343,19 +406,21 @@ qboolean Mod_GetTransformedHitboxPoints(const edict_t* edict, uint32_t hitboxInd
 		return false;
 	}
 
-	vec3_t angles2;
-	VectorCopy(edict->v.angles, angles2);
-	FixAnglesForQuake(angles2);
+	// vec3_t angles2;
+	// VectorCopy(edict->v.angles, angles2);
+	// FixAnglesForQuake(angles2);
 
-	pBlendAPI->SV_StudioSetupBones(model,
-								   edict->v.frame,
-								   edict->v.sequence,
-								   angles2,
-								   edict->v.origin,
-								   edict->v.controller,
-								   edict->v.blending,
-								   -1,
-								   edict);
+	// pBlendAPI->SV_StudioSetupBones(model,
+	// 							   edict->v.frame,
+	// 							   edict->v.sequence,
+	// 							   angles2,
+	// 							   edict->v.origin,
+	// 							   edict->v.controller,
+	// 							   edict->v.blending,
+	// 							   -1,
+	// 							   edict);
+
+	SetUpBones(edict, model);
 
 	const mstudiobbox_t* hitbox = (mstudiobbox_t*)((byte*)mod_studiohdr + mod_studiohdr->hitboxindex) + hitboxIndex;
 
