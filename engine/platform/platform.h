@@ -28,6 +28,9 @@ GNU General Public License for more details.
 
 ==============================================================================
 */
+
+void Platform_Init( void );
+void Platform_Shutdown( void );
 double Platform_DoubleTime( void );
 void Platform_Sleep( int msec );
 void Platform_ShellExecute( const char *path, const char *parms );
@@ -36,7 +39,7 @@ void Platform_MessageBox( const char *title, const char *message, qboolean paren
 // see system.c
 // qboolean Sys_DebuggerPresent( void );
 
-#ifdef __ANDROID__
+#if XASH_ANDROID
 const char *Android_GetAndroidID( void );
 const char *Android_LoadID( void );
 void Android_SaveID( const char *id );
@@ -69,6 +72,7 @@ void Platform_RunEvents( void );
 void Platform_GetMousePos( int *x, int *y );
 void Platform_SetMousePos( int x, int y );
 void Platform_PreCreateMove( void );
+void Platform_MouseMove( float *x, float *y );
 // Clipboard
 void Platform_GetClipboardText( char *buffer, size_t size );
 void Platform_SetClipboardText( const char *buffer, size_t size );
@@ -83,7 +87,7 @@ void Platform_SetClipboardText( const char *buffer, size_t size );
 #define SDL_VERSION_ATLEAST( x, y, z ) 0
 #endif
 
-#ifdef __ANDROID__
+#if XASH_ANDROID
 void Android_ShowMouse( qboolean show );
 void Android_MouseMove( float *x, float *y );
 #endif

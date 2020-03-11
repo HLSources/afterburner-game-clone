@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 #include "common.h"
 #include "netchan.h"
-#include "mathlib.h"
+#include "xash3d_mathlib.h"
 #include "net_encode.h"
 #include "protocol.h"
 
@@ -1312,7 +1312,7 @@ Netchan_UpdateProgress
 */
 void Netchan_UpdateProgress( netchan_t *chan )
 {
-#ifndef XASH_DEDICATED
+#if !XASH_DEDICATED
 	fragbuf_t *p;
 	int	i, c = 0;
 	int	total = 0;

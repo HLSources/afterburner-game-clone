@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 #include "common.h"
 #include "netchan.h"
-#include "mathlib.h"
+#include "xash3d_mathlib.h"
 #include "net_encode.h"
 #include "event_api.h"
 #include "usercmd.h"
@@ -1625,7 +1625,7 @@ Read the clientdata
 */
 void MSG_ReadClientData( sizebuf_t *msg, clientdata_t *from, clientdata_t *to, float timebase )
 {
-#ifndef XASH_DEDICATED
+#if !XASH_DEDICATED
 	delta_t		*pField;
 	delta_info_t	*dt;
 	int		i;
@@ -1866,7 +1866,7 @@ Can go from either a baseline or a previous packet_entity
 */
 qboolean MSG_ReadDeltaEntity( sizebuf_t *msg, entity_state_t *from, entity_state_t *to, int number, int delta_type, float timebase )
 {
-#ifndef XASH_DEDICATED
+#if !XASH_DEDICATED
 	delta_info_t	*dt = NULL;
 	delta_t		*pField;
 	int		i, fRemoveType;
@@ -1965,7 +1965,7 @@ qboolean MSG_ReadDeltaEntity( sizebuf_t *msg, entity_state_t *from, entity_state
 
 =============================================================================
 */
-void Delta_AddEncoder( char *name, pfnDeltaEncode encodeFunc )
+void GAME_EXPORT Delta_AddEncoder( char *name, pfnDeltaEncode encodeFunc )
 {
 	delta_info_t	*dt;
 
@@ -1987,7 +1987,7 @@ void Delta_AddEncoder( char *name, pfnDeltaEncode encodeFunc )
 	dt->userCallback = encodeFunc;
 }
 
-int Delta_FindField( delta_t *pFields, const char *fieldname )
+int GAME_EXPORT Delta_FindField( delta_t *pFields, const char *fieldname )
 {
 	delta_info_t	*dt;
 	delta_t		*pField;
@@ -2005,7 +2005,7 @@ int Delta_FindField( delta_t *pFields, const char *fieldname )
 	return -1;
 }
 
-void Delta_SetField( delta_t *pFields, const char *fieldname )
+void GAME_EXPORT Delta_SetField( delta_t *pFields, const char *fieldname )
 {
 	delta_info_t	*dt;
 	delta_t		*pField;
@@ -2025,7 +2025,7 @@ void Delta_SetField( delta_t *pFields, const char *fieldname )
 	}
 }
 
-void Delta_UnsetField( delta_t *pFields, const char *fieldname )
+void GAME_EXPORT Delta_UnsetField( delta_t *pFields, const char *fieldname )
 {
 	delta_info_t	*dt;
 	delta_t		*pField;
@@ -2045,7 +2045,7 @@ void Delta_UnsetField( delta_t *pFields, const char *fieldname )
 	}
 }
 
-void Delta_SetFieldByIndex( delta_t *pFields, int fieldNumber )
+void GAME_EXPORT Delta_SetFieldByIndex( delta_t *pFields, int fieldNumber )
 {
 	delta_info_t	*dt;
 
@@ -2056,7 +2056,7 @@ void Delta_SetFieldByIndex( delta_t *pFields, int fieldNumber )
 	dt->pFields[fieldNumber].bInactive = false;
 }
 
-void Delta_UnsetFieldByIndex( delta_t *pFields, int fieldNumber )
+void GAME_EXPORT Delta_UnsetFieldByIndex( delta_t *pFields, int fieldNumber )
 {
 	delta_info_t	*dt;
 

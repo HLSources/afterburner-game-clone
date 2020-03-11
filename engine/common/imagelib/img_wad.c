@@ -14,7 +14,7 @@ GNU General Public License for more details.
 */
 
 #include "imagelib.h"
-#include "mathlib.h"
+#include "xash3d_mathlib.h"
 #include "wadfile.h"
 #include "studio.h"
 #include "sprite.h"
@@ -199,8 +199,9 @@ Image_LoadSPR
 */
 qboolean Image_LoadSPR( const char *name, const byte *buffer, fs_offset_t filesize )
 {
-	dspriteframe_t	*pin;	// identical for q1\hl sprites
+	dspriteframe_t	pin;	// identical for q1\hl sprites
 	qboolean		truecolor = false;
+	byte *fin;
 
 	if( image.hint == IL_HINT_HL )
 	{
@@ -217,9 +218,9 @@ qboolean Image_LoadSPR( const char *name, const byte *buffer, fs_offset_t filesi
 		return false;
 	}
 
-	pin = (dspriteframe_t *)buffer;
-	image.width = pin->width;
-	image.height = pin->height;
+	memcpy( &pin, buffer, sizeof(dspriteframe_t) );
+	image.width = pin.width;
+	image.height = pin.height;
 
 	if( filesize < image.width * image.height )
 		return false;
@@ -237,23 +238,25 @@ qboolean Image_LoadSPR( const char *name, const byte *buffer, fs_offset_t filesi
 	{
 	case LUMP_MASKED:
 		SetBits( image.flags, IMAGE_ONEBIT_ALPHA );
+		// intentionally fallthrough
 	case LUMP_GRADIENT:
 	case LUMP_QUAKE1:
 		SetBits( image.flags, IMAGE_HAS_ALPHA );
 		break;
 	}
+	
+	fin =  (byte *)(buffer + sizeof(dspriteframe_t));
 
 	if( truecolor )
 	{
 		// spr32 support
 		image.size = image.width * image.height * 4;
 		image.rgba = Mem_Malloc( host.imagepool, image.size );
-		memcpy( image.rgba, (byte *)(pin + 1), image.size );
+		memcpy( image.rgba, fin, image.size );
 		SetBits( image.flags, IMAGE_HAS_COLOR ); // Color. True Color!
 		return true;
 	}
-
-	return Image_AddIndexedImageToPack( (byte *)(pin + 1), image.width, image.height );
+	return Image_AddIndexedImageToPack( fin, image.width, image.height );
 }
 
 /*

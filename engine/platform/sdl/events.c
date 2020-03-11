@@ -12,8 +12,7 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
-
-#if defined( XASH_SDL ) && !defined( XASH_DEDICATED )
+#if defined( XASH_SDL ) && !XASH_DEDICATED
 #include <SDL.h>
 #include <ctype.h>
 
@@ -573,7 +572,6 @@ static void SDLash_EventFilter( SDL_Event *event )
 				break;
 
 			VID_SaveWindowSize( event->window.data1, event->window.data2 );
-			SCR_VidInit(); // tell the client.dll that vid_mode has changed
 			break;
 		}
 		default:
@@ -582,8 +580,7 @@ static void SDLash_EventFilter( SDL_Event *event )
 #else
 	case SDL_VIDEORESIZE:
 		VID_SaveWindowSize( event->resize.w, event->resize.h );
-		SCR_VidInit();
-		break; // tell the client.dll that vid_mode has changed
+		break;
 	case SDL_ACTIVEEVENT:
 		SDLash_ActiveEvent( event->active.gain );
 		break;
@@ -627,4 +624,4 @@ void Platform_PreCreateMove( void )
 	}
 }
 
-#endif //  defined( XASH_SDL ) && !defined( XASH_DEDICATED )
+#endif //  defined( XASH_SDL ) && !XASH_DEDICATED

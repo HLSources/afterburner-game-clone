@@ -18,13 +18,22 @@ class Subproject:
 	dedicated = True  # if true will be ignored when building dedicated server
 	singlebin = False # if true will be ignored when singlebinary is set
 	ignore    = False # if true will be ignored, set by user request
+	mandatory  = False
 
-	def __init__(self, name, dedicated=True, singlebin=False):
+	def __init__(self, name, dedicated=True, singlebin=False, mandatory = False):
 		self.name = name
 		self.dedicated = dedicated
 		self.singlebin = singlebin
+		self.mandatory = mandatory
 
 	def is_enabled(self, ctx):
+		if not self.mandatory:
+			if self.name in ctx.env.IGNORE_PROJECTS:
+				self.ignore = True
+
+		if self.ignore:
+			return False
+
 		if ctx.env.SINGLE_BINARY and self.singlebin:
 			return False
 
@@ -37,12 +46,15 @@ class Subproject:
 		return True
 
 SUBDIRS = [
-	Subproject('public',      dedicated=False),
+	Subproject('public',      dedicated=False, mandatory = True),
 	Subproject('game_launch', singlebin=True),
-	Subproject('ref_gl'),
-#rsw	Subproject('ref_soft'),
+	Subproject('ref_gl',),
+	Subproject('ref_soft'),
 	Subproject('mainui'),
 	Subproject('vgui_support'),
+	Subproject('stub/server', dedicated=False),
+	Subproject('stub/client'),
+	Subproject('dllemu'),
 	Subproject('engine', dedicated=False),
 	Subproject('game_content', dedicated=False),
 	Subproject('game_libs/cl_dll',   dedicated=False),
@@ -91,11 +103,20 @@ def options(opt):
 	grp.add_option('--enable-magx', action = 'store_true', dest = 'MAGX', default = False,
 		help = 'enable targetting for MotoMAGX phones [default: %default]')
 
+	grp.add_option('--ignore-projects', action = 'store', dest = 'IGNORE_PROJECTS', default = None,
+		help = 'disable selected projects from build [default: %default]')
+
 	opt.load('subproject')
 
-	opt.add_subproject(subdirs())
+	for i in SUBDIRS:
+		if not i.mandatory and not opt.path.find_node(i.name+'/wscript'):
+			i.ignore = True
+			continue
 
-	opt.load('xcompile compiler_cxx compiler_c sdl2 clang_compilation_database strip_on_install waf_unit_test')
+		opt.add_subproject(i.name)
+
+
+	opt.load('xshlib xcompile compiler_cxx compiler_c sdl2 clang_compilation_database strip_on_install waf_unit_test')
 	if sys.platform == 'win32':
 		opt.load('msvc msdev msvs')
 	opt.load('reconfigure')
@@ -107,13 +128,16 @@ def configure(conf):
 	enforce_pic = True # modern defaults
 	valid_build_types = ['fastnative', 'fast', 'release', 'debug', 'nooptimize', 'sanitize', 'none']
 	conf.load('fwgslib reconfigure')
+	if conf.options.IGNORE_PROJECTS:
+		conf.env.IGNORE_PROJECTS = conf.options.IGNORE_PROJECTS.split(',')
+
 	conf.start_msg('Build type')
 	if conf.options.BUILD_TYPE == None:
 		conf.end_msg('not set', color='RED')
 		conf.fatal('Please set a build type, for example "-T release"')
 	elif not conf.options.BUILD_TYPE in valid_build_types:
 		conf.end_msg(conf.options.BUILD_TYPE, color='RED')
-		conf.fatal('Invalid build type. Valid are: %s' % valid_build_types.join(', '))
+		conf.fatal('Invalid build type. Valid are: %s' % ', '.join(valid_build_types))
 	conf.end_msg(conf.options.BUILD_TYPE)
 
 	# -march=native should not be used
@@ -127,7 +151,7 @@ def configure(conf):
 	conf.env.MSVC_TARGETS = ['x86'] # explicitly request x86 target for MSVC
 	if sys.platform == 'win32':
 		conf.load('msvc msvc_pdb msdev msvs')
-	conf.load('subproject xcompile compiler_c compiler_cxx gitversion clang_compilation_database strip_on_install waf_unit_test')
+	conf.load('xshlib subproject xcompile compiler_c compiler_cxx gitversion clang_compilation_database strip_on_install waf_unit_test')
 
 	try:
 		conf.env.CC_VERSION[0]
@@ -140,6 +164,9 @@ def configure(conf):
 		conf.options.NANOGL = True
 		conf.options.GLWES  = True
 		conf.options.GL     = False
+
+	if conf.env.STATIC_LINKING:
+		enforce_pic = False # PIC may break static linking
 
 	conf.env.MAGX = conf.options.MAGX
 	if conf.options.MAGX:
@@ -167,10 +194,14 @@ def configure(conf):
 			conf.env.append_unique('CFLAGS_cstlib', '-fPIC')
 			conf.env.append_unique('CXXFLAGS_cxxstlib', '-fPIC')
 	else:
-		conf.env.CFLAGS_cshlib.remove('-fPIC')
-		conf.env.CXXFLAGS_cxxshlib.remove('-fPIC')
-		conf.env.CFLAGS_MACBUNDLE.remove('-fPIC')
-		conf.env.CXXFLAGS_MACBUNDLE.remove('-fPIC')
+		if '-fPIC' in conf.env.CFLAGS_cshlib:
+			conf.env.CFLAGS_cshlib.remove('-fPIC')
+		if '-fPIC' in conf.env.CXXFLAGS_cshlib:
+			conf.env.CXXFLAGS_cxxshlib.remove('-fPIC')
+		if '-fPIC' in conf.env.CFLAGS_MACBUNDLE:
+			conf.env.CFLAGS_MACBUNDLE.remove('-fPIC')
+		if '-fPIC' in conf.env.CXXFLAGS_MACBUNDLE:
+			conf.env.CXXFLAGS_MACBUNDLE.remove('-fPIC')
 
 	# We restrict 64-bit builds ONLY for Win/Linux/OSX running on Intel architecture
 	# Because compatibility with original GoldSrc
@@ -186,7 +217,8 @@ def configure(conf):
 	linker_flags = {
 		'common': {
 			'msvc':  ['/DEBUG', '/WX'], # always create PDB, doesn't affect result binaries
-			'gcc':   ['-Wl,--no-undefined']
+			'gcc':   ['-Wl,--no-undefined'],
+			'owcc':  ['-Wl,option stack=512k']
 		},
 		'sanitize': {
 			'clang': ['-fsanitize=undefined', '-fsanitize=address'],
@@ -197,21 +229,10 @@ def configure(conf):
 	compiler_c_cxx_flags = {
 		'common': {
 			# disable thread-safe local static initialization for C++11 code, as it cause crashes on Windows XP
-			'msvc':    ['/D_USING_V110_SDK71_', '/Zi', '/FS', '/Zc:threadSafeInit-', '/WX', '/wd4005', '/EHsc'],
-			'clang': [
-				'-g',
-				'-gdwarf-2',
-				'-fvisibility=hidden',
-				'-Werror',
-				'-Wno-format-truncation'
-			],
-			'gcc': [
-				'-g',
-				'-fvisibility=hidden',
-				'-fdiagnostics-color=always',
-				'-Werror',
-				'-Wno-format-truncation'
-			]
+			'msvc':    ['/D_USING_V110_SDK71_', '/Zi', '/FS', '/Zc:threadSafeInit-', '/MT'],
+			'clang':   ['-g', '-gdwarf-2', '-fvisibility=hidden', '-Werror', '-Wno-format-truncation'],
+			'gcc':     ['-g', '-fvisibility=hidden', '-fdiagnostics-color=always', '-Werror', '-Wno-format-truncation'],
+			'owcc':	   ['-fno-short-enum', '-ffloat-store', '-g3']
 		},
 		'fast': {
 			'msvc':    ['/O2', '/Oy', '/DNDEBUG'],
@@ -229,12 +250,14 @@ def configure(conf):
 			'default': ['-O3', '-DNDEBUG']
 		},
 		'release': {
-			'msvc':    ['/O2', '/DNDEBUG', '/MT'],
+			'msvc':    ['/O2', '/DNDEBUG'],
+			'owcc':    ['-O3', '-foptimize-sibling-calls', '-fomit-leaf-frame-pointer', '-fomit-frame-pointer', '-fschedule-insns', '-funsafe-math-optimizations', '-funroll-loops', '-frerun-optimizer', '-finline-functions', '-finline-limit=512', '-fguess-branch-probability', '-fno-strict-aliasing', '-floop-optimize'],
 			'default': ['-O3', '-DNDEBUG']
 		},
 		'debug': {
-			'msvc':    ['/O1', '/D_DEBUG', '/MTd'],
+			'msvc':    ['/O1', '/D_DEBUG'],
 			'gcc':     ['-Og', '-D_DEBUG'],
+			'owcc':    ['-O0', '-fno-omit-frame-pointer', '-funwind-tables', '-fno-omit-leaf-frame-pointer'],
 			'default': ['-O1', '-D_DEBUG']
 		},
 		'sanitize': {
@@ -250,6 +273,7 @@ def configure(conf):
 	}
 
 	compiler_optional_flags = [
+#		'-Wall', '-Wextra', '-Wpedantic',
 		'-fdiagnostics-color=always',
 		'-Werror=return-type',
 		'-Werror=parentheses',
@@ -259,18 +283,24 @@ def configure(conf):
 		#'-Werror=duplicated-branches', # BEWARE: buggy (also breaks stb_image.h)
 		'-Werror=bool-compare',
 		'-Werror=bool-operation',
+		'-Wuninitialized',
+		'-Winit-self',
+		'-Werror=implicit-fallthrough=2', # clang incompatible without "=2"
 #		'-Wdouble-promotion', # disable warning flood, causes super irritating warnings with variadic functions
 		#'-Wstrict-aliasing', # Certain C code casts pointers around and causes these warnings
 	]
 
 	c_compiler_optional_flags = [
+		'-Werror=incompatible-pointer-types',
 		'-Werror=implicit-function-declaration',
 		'-Werror=int-conversion',
 		'-Werror=implicit-int',
 		'-Werror=strict-prototypes',
 		'-Werror=old-style-declaration',
 		'-Werror=old-style-definition',
-		'-Werror=declaration-after-statement'
+		'-Werror=declaration-after-statement',
+		'-Werror=enum-conversion',
+		'-fnonconst-initializers' # owcc
 	]
 
 	linkflags = conf.get_flags_by_type(linker_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC, conf.env.CC_VERSION[0])
@@ -304,8 +334,12 @@ def configure(conf):
 	# And here C++ flags starts to be treated separately
 	cxxflags = list(cflags)
 	if conf.env.COMPILER_CC != 'msvc':
-		conf.check_cc(cflags=cflags, msg= 'Checking for required C flags')
-		conf.check_cxx(cxxflags=cflags, msg= 'Checking for required C++ flags')
+		conf.check_cc(cflags=cflags, linkflags=linkflags, msg= 'Checking for required C flags')
+		conf.check_cxx(cxxflags=cflags, linkflags=linkflags, msg= 'Checking for required C++ flags')
+
+		conf.env.append_unique('CFLAGS', cflags)
+		conf.env.append_unique('CXXFLAGS', cxxflags)
+		conf.env.append_unique('LINKFLAGS', linkflags)
 
 		cxxflags += conf.filter_cxxflags(compiler_optional_flags, cflags)
 		cflags += conf.filter_cflags(compiler_optional_flags + c_compiler_optional_flags, cflags)
@@ -327,6 +361,8 @@ def configure(conf):
 
 	conf.env.DEDICATED     = conf.options.DEDICATED
 	conf.env.SINGLE_BINARY = conf.options.SINGLE_BINARY or conf.env.DEDICATED
+	if conf.env.DEST_OS == 'dos':
+		conf.env.SINGLE_BINARY = True
 
 	if conf.env.DEST_OS != 'win32':
 		conf.check_cc(lib='dl', mandatory=False)
@@ -377,6 +413,7 @@ def configure(conf):
 		conf.add_subproject(i.name)
 
 def build(bld):
+	bld.load('xshlib')
 	for i in SUBDIRS:
 		if not i.is_enabled(bld):
 			continue

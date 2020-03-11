@@ -14,7 +14,7 @@ GNU General Public License for more details.
 */
 
 #include "imagelib.h"
-#include "mathlib.h"
+#include "xash3d_mathlib.h"
 #include "mod_local.h"
 
 #define LERPBYTE( i )	r = resamplerow1[i]; out[i] = (byte)(((( resamplerow2[i] - r ) * lerp)>>16 ) + r )
@@ -1247,7 +1247,7 @@ qboolean Image_Decompress( const byte *data )
 			else Image_GetPaletteLMP( image.palette, LUMP_MASKED );
 		}
 		else Image_GetPaletteLMP( image.palette, LUMP_NORMAL );
-		// intentional falltrough
+		// intentionally fallthrough
 	case PF_INDEXED_32:
 		if( !image.d_currentpal ) image.d_currentpal = (uint *)image.palette;
 		if( !Image_Copy8bitRGBA( fin, fout, image.width * image.height ))

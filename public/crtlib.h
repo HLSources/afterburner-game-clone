@@ -21,8 +21,10 @@ GNU General Public License for more details.
 
 #ifdef __GNUC__
 #define _format(x) __attribute__((format(printf, x, x+1)))
+#define NORETURN __attribute__((noreturn))
 #else
 #define _format(x)
+#define NORETURN
 #endif
 
 // timestamp modes
@@ -80,6 +82,8 @@ void COM_ReplaceExtension( char *path, const char *extension );
 void COM_ExtractFilePath( const char *path, char *dest );
 const char *COM_FileWithoutPath( const char *in );
 void COM_StripExtension( char *path );
+void COM_RemoveLineFeed( char *str );
+void COM_PathSlashFix( char *path );
 #define COM_CheckString( string ) ( ( !string || !*string ) ? 0 : 1 )
 int matchpattern( const char *in, const char *pattern, qboolean caseinsensitive );
 int matchpattern_with_separator( const char *in, const char *pattern, qboolean caseinsensitive, const char *separators, qboolean wildcard_least_one );

@@ -113,7 +113,7 @@ static qboolean Cvar_UpdateInfo( convar_t *var, const char *value, qboolean noti
 			Info_SetValueForKey( SV_Serverinfo(), var->name, value, MAX_SERVERINFO_STRING ),
 			SV_BroadcastCommand( "fullserverinfo \"%s\"\n", SV_Serverinfo( ));
 		}
-#ifndef XASH_DEDICATED
+#if !XASH_DEDICATED
 		else
 		{
 			if( !Info_SetValueForKey( CL_Userinfo(), var->name, value, MAX_INFO_STRING ))
@@ -588,9 +588,18 @@ void Cvar_FullSet( const char *var_name, const char *value, int flags )
 Cvar_Set
 ============
 */
-void Cvar_Set( const char *var_name, const char *value )
+void GAME_EXPORT Cvar_Set( const char *var_name, const char *value )
 {
-	convar_t	*var = Cvar_FindVar( var_name );
+	convar_t	*var;
+
+	if( !var_name )
+	{
+		// there is an error in C code if this happens
+		Con_Printf( "Cvar_Set: passed NULL variable name\n" );
+		return;
+	}
+
+	var = Cvar_FindVar( var_name );
 
 	if( !var )
 	{
@@ -607,7 +616,7 @@ void Cvar_Set( const char *var_name, const char *value )
 Cvar_SetValue
 ============
 */
-void Cvar_SetValue( const char *var_name, float value )
+void GAME_EXPORT Cvar_SetValue( const char *var_name, float value )
 {
 	char	val[32];
 	
@@ -633,9 +642,16 @@ void Cvar_Reset( const char *var_name )
 Cvar_VariableValue
 ============
 */
-float Cvar_VariableValue( const char *var_name )
+float GAME_EXPORT Cvar_VariableValue( const char *var_name )
 {
 	convar_t	*var;
+
+	if( !var_name )
+	{
+		// there is an error in C code if this happens
+		Con_Printf( "Cvar_VariableValue: passed NULL variable name\n" );
+		return 0.0f;
+	}
 
 	var = Cvar_FindVar( var_name );
 	if( !var ) return 0.0f;
@@ -666,6 +682,13 @@ Cvar_VariableString
 const char *Cvar_VariableString( const char *var_name )
 {
 	convar_t	*var;
+
+	if( !var_name )
+	{
+		// there is an error in C code if this happens
+		Con_Printf( "Cvar_VariableString: passed NULL variable name\n" );
+		return "";
+	}
 
 	var = Cvar_FindVar( var_name );
 	if( !var ) return "";

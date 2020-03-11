@@ -484,7 +484,7 @@ qboolean Cmd_GetSoundList( const char *s, char *completedname, int length )
 	return true;
 }
 
-#ifndef XASH_DEDICATED
+#if !XASH_DEDICATED
 /*
 =====================================
 Cmd_GetItemsList
@@ -969,7 +969,7 @@ qboolean Cmd_CheckMapsList_R( qboolean fRefresh, qboolean onlyingamedir )
 	return false;
 }
 
-int Cmd_CheckMapsList( int fRefresh )
+int GAME_EXPORT Cmd_CheckMapsList( int fRefresh )
 {
 	return Cmd_CheckMapsList_R( fRefresh, true );
 }
@@ -989,7 +989,7 @@ autocomplete_list_t cmd_list[] =
 { "music", 1, Cmd_GetMusicList, },
 { "movie", 1, Cmd_GetMovieList },
 { "exec", 1, Cmd_GetConfigList },
-#ifndef XASH_DEDICATED
+#if !XASH_DEDICATED
 { "give", 1, Cmd_GetItemsList },
 { "drop", 1, Cmd_GetItemsList },
 { "bind", 1, Cmd_GetKeysList },
@@ -1317,9 +1317,7 @@ void Cmd_WriteOpenGLVariables( file_t *f )
 	Cvar_LookupVars( FCVAR_GLCONFIG, NULL, f, (setpair_t)Cmd_WriteOpenGLCvar );
 }
 
-#ifndef XASH_DEDICATED
-
-
+#if !XASH_DEDICATED
 void Host_FinalizeConfig( file_t *f, const char *config )
 {
 	string backup, newcfg;
@@ -1391,7 +1389,7 @@ Host_WriteServerConfig
 save serverinfo variables into server.cfg (using for dedicated server too)
 ===============
 */
-void Host_WriteServerConfig( const char *name )
+void GAME_EXPORT Host_WriteServerConfig( const char *name )
 {
 	file_t	*f;
 	string newconfigfile;

@@ -16,9 +16,13 @@ GNU General Public License for more details.
 #define MINIZ_HEADER_FILE_ONLY
 #include "miniz.h"
 #include "imagelib.h"
-#include "mathlib.h"
-#ifndef _WIN32
-#include <netinet/in.h>
+#include "xash3d_mathlib.h"
+#include "img_png.h"
+
+#if defined(XASH_NO_NETWORK)
+	#include "platform/stub/net_stub.h"
+#elif !XASH_WIN32
+	#include <netinet/in.h>
 #endif
 
 static const char png_sign[] = {0x89, 'P', 'N', 'G', '\r', '\n', 0x1a, '\n'};
@@ -201,6 +205,7 @@ qboolean Image_LoadPNG( const char *name, const byte *buffer, fs_offset_t filesi
 	{
 		Con_DPrintf( S_ERROR "Image_LoadPNG: IEND chunk has wrong size (%s)\n", name );
 		Mem_Free( idat_buf );
+		return false;
 	}
 
 	if( oldsize == 0 )
@@ -216,6 +221,10 @@ qboolean Image_LoadPNG( const char *name, const byte *buffer, fs_offset_t filesi
 		break;
 	case PNG_CT_RGBA:
 		pixel_size = 4;
+		break;
+	default:
+		pixel_size = 0; // make compiler happy
+		ASSERT( false );
 		break;
 	}
 
@@ -407,9 +416,11 @@ qboolean Image_SavePNG( const char *name, rgbdata_t *pix )
 	if( FS_FileExists( name, false ) && !Image_CheckFlag( IL_ALLOW_OVERWRITE ))
 		return false; // already existed
 
+	// bogus parameter check
 	if( !pix->buffer )
 		return false;
 
+	// get image description
 	switch( pix->type )
 	{
 	case PF_RGB_24:

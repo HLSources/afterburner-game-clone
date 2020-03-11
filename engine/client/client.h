@@ -17,7 +17,7 @@ GNU General Public License for more details.
 #define CLIENT_H
 
 #include "xash3d_types.h"
-#include "mathlib.h"
+#include "xash3d_mathlib.h"
 #include "cdll_int.h"
 #include "menu_int.h"
 #include "cl_entity.h"
@@ -710,7 +710,7 @@ dlight_t *CL_GetEntityLight( int number );
 //
 // cl_cmds.c
 //
-void CL_Quit_f( void );
+void CL_Quit_f( void ) NORETURN;
 void CL_ScreenShot_f( void );
 void CL_SnapShot_f( void );
 void CL_PlayCDTrack_f( void );
@@ -955,9 +955,9 @@ void CL_EmitEntities( void );
 // cl_remap.c
 //
 remap_info_t *CL_GetRemapInfoForEntity( cl_entity_t *e );
-void CL_AllocRemapInfo( int topcolor, int bottomcolor );
+void CL_AllocRemapInfo( cl_entity_t *ent, int topcolor, int bottomcolor );
 void CL_FreeRemapInfo( remap_info_t *info );
-void CL_UpdateRemapInfo( int topcolor, int bottomcolor );
+void CL_UpdateRemapInfo( cl_entity_t *ent, int topcolor, int bottomcolor );
 void CL_ClearAllRemaps( void );
 
 //
