@@ -39,8 +39,8 @@ GNU General Public License for more details.
 #define offsetof(s,m)       (size_t)&(((s *)0)->m)
 #endif // offsetof
 
-#define ASSERT(x) if(!( x )) gEngfuncs.Host_Error( "assert failed at %s:%i\n", __FILE__, __LINE__ )
-#define Assert(x) if(!( x )) gEngfuncs.Host_Error( "assert failed at %s:%i\n", __FILE__, __LINE__ )
+#define ASSERT(x) if(!( x )) gEngfuncs.Host_Error( "assert %s failed at %s:%i\n", #x, __FILE__, __LINE__ )
+#define Assert(x) ASSERT(x)
 
 #include <stdio.h>
 

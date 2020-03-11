@@ -229,13 +229,13 @@ def configure(conf):
 	compiler_c_cxx_flags = {
 		'common': {
 			# disable thread-safe local static initialization for C++11 code, as it cause crashes on Windows XP
-			'msvc':    ['/D_USING_V110_SDK71_', '/Zi', '/FS', '/Zc:threadSafeInit-', '/MT'],
+			'msvc':    ['/D_USING_V110_SDK71_', '/Zi', '/FS', '/Zc:threadSafeInit-', '/EHsc'],
 			'clang':   ['-g', '-gdwarf-2', '-fvisibility=hidden', '-Werror', '-Wno-format-truncation'],
 			'gcc':     ['-g', '-fvisibility=hidden', '-fdiagnostics-color=always', '-Werror', '-Wno-format-truncation'],
 			'owcc':	   ['-fno-short-enum', '-ffloat-store', '-g3']
 		},
 		'fast': {
-			'msvc':    ['/O2', '/Oy', '/DNDEBUG'],
+			'msvc':    ['/O2', '/Oy', '/DNDEBUG', '/MT'],
 			'gcc': {
 				'3':       ['-O3', '-fomit-frame-pointer', '/DNDEBUG'],
 				'default': ['-Ofast', '-funsafe-math-optimizations', '-funsafe-loop-optimizations', '-fomit-frame-pointer', '/DNDEBUG']
@@ -250,12 +250,12 @@ def configure(conf):
 			'default': ['-O3', '-DNDEBUG']
 		},
 		'release': {
-			'msvc':    ['/O2', '/DNDEBUG'],
+			'msvc':    ['/O2', '/DNDEBUG', '/MT'],
 			'owcc':    ['-O3', '-foptimize-sibling-calls', '-fomit-leaf-frame-pointer', '-fomit-frame-pointer', '-fschedule-insns', '-funsafe-math-optimizations', '-funroll-loops', '-frerun-optimizer', '-finline-functions', '-finline-limit=512', '-fguess-branch-probability', '-fno-strict-aliasing', '-floop-optimize'],
 			'default': ['-O3', '-DNDEBUG']
 		},
 		'debug': {
-			'msvc':    ['/O1', '/D_DEBUG'],
+			'msvc':    ['/O1', '/D_DEBUG', '/MTd'],
 			'gcc':     ['-Og', '-D_DEBUG'],
 			'owcc':    ['-O0', '-fno-omit-frame-pointer', '-funwind-tables', '-fno-omit-leaf-frame-pointer'],
 			'default': ['-O1', '-D_DEBUG']
