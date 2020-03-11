@@ -45,7 +45,7 @@ XASH SPECIFIC			- sort of hack that works only in Xash3D not in GoldSrc
 #include <stdlib.h> // rand, adbs
 #include <stdarg.h> // va
 
-#ifndef _WIN32
+#if !XASH_WIN32
 #include <stddef.h> // size_t
 #else
 #include <sys/types.h> // off_t
@@ -60,7 +60,7 @@ XASH SPECIFIC			- sort of hack that works only in Xash3D not in GoldSrc
 	#error "Please select timer backend"
 #endif
 
-#ifndef XASH_DEDICATED
+#if !XASH_DEDICATED
 	#if XASH_VIDEO == VIDEO_NULL
 		#error "Please select video backend"
 	#endif
@@ -119,7 +119,8 @@ typedef enum
 #include "con_nprint.h"
 #include "crclib.h"
 
-#define XASH_VERSION	"0.99"		// engine current version
+#define XASH_VERSION        "0.20" // engine current version
+#define XASH_COMPAT_VERSION "0.99" // version we are based on
 
 // PERFORMANCE INFO
 #define MIN_FPS         20.0f		// host minimum fps value for maxfps.
@@ -441,9 +442,9 @@ typedef struct host_parm_s
 	qboolean		movevars_changed;
 	qboolean		renderinfo_changed;
 
-	char		rootdir[256];	// member root directory
-	char		rodir[256];		// readonly root
-	char		gamefolder[MAX_QPATH];	// it's a default gamefolder
+	char		rootdir[MAX_OSPATH];	// member root directory
+	char		rodir[MAX_OSPATH];		// readonly root
+	char		gamefolder[MAX_QPATH];	// it's a default gamefolder	
 	byte		*imagepool;	// imagelib mempool
 	byte		*soundpool;	// soundlib mempool
 
@@ -665,6 +666,7 @@ uint Sound_GetApproxWavePlayLen( const char *filepath );
 // build.c
 //
 int Q_buildnum( void );
+int Q_buildnum_compat( void );
 const char *Q_buildos( void );
 const char *Q_buildarch( void );
 const char *Q_buildcommit( void );

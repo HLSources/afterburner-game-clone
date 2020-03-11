@@ -12,7 +12,7 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
-#ifndef XASH_DEDICATED
+#if !XASH_DEDICATED
 #include <SDL.h>
 #include "common.h"
 #include "client.h"
@@ -598,7 +598,7 @@ void VID_RestoreScreenResolution( void )
 #endif // SDL_VERSION_ATLEAST( 2, 0, 0 )
 }
 
-#if defined(_WIN32) && !defined(XASH_64BIT) // ICO support only for Win32
+#if XASH_WIN32 && !XASH_64BIT // ICO support only for Win32
 #include "SDL_syswm.h"
 static void WIN_SetWindowIcon( HICON ico )
 {
@@ -686,7 +686,7 @@ qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
 		VID_RestoreScreenResolution();
 	}
 
-#if defined(_WIN32) && !defined(XASH_64BIT) // ICO support only for Win32
+#if XASH_WIN32 && !XASH_64BIT // ICO support only for Win32
 	if( FS_FileExists( GI->iconpath, true ) )
 	{
 		HICON ico;
@@ -728,7 +728,7 @@ qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
 		}
 	}
 
-#if defined(_WIN32) && !defined(XASH_64BIT) // ICO support only for Win32
+#if XASH_WIN32 && !XASH_64BIT // ICO support only for Win32
 	if( !iconLoaded )
 	{
 		WIN_SetWindowIcon( LoadIcon( host.hInst, MAKEINTRESOURCE( 101 ) ) );
@@ -897,7 +897,10 @@ int GL_SetAttribute( int attr, int val )
 	case REF_GL_CONTEXT_PROFILE_MASK:
 #ifdef SDL_HINT_OPENGL_ES_DRIVER
 		if( val == REF_GL_CONTEXT_PROFILE_ES )
+		{
 			SDL_SetHint(SDL_HINT_OPENGL_ES_DRIVER, "1");
+			SDL_SetHint( "SDL_VIDEO_X11_FORCE_EGL", "1" );
+		}
 #endif // SDL_HINT_OPENGL_ES_DRIVER
 		return SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, val );
 #endif
@@ -972,13 +975,15 @@ qboolean R_Init_Video( const int type )
 	refState.desktopBitsPixel = 16;
 #endif
 
-#if SDL_VERSION_ATLEAST( 2, 0, 0 ) && !defined(_WIN32)
+#if SDL_VERSION_ATLEAST( 2, 0, 0 ) && !XASH_WIN32
 	SDL_SetHint( "SDL_VIDEO_X11_XRANDR", "1" );
 	SDL_SetHint( "SDL_VIDEO_X11_XVIDMODE", "1" );
+	if( Sys_CheckParm( "-egl" ) )
+		SDL_SetHint( "SDL_VIDEO_X11_FORCE_EGL", "1" );
 #endif
 
 	// must be initialized before creating window
-#ifdef _WIN32
+#if XASH_WIN32
 	WIN_SetDPIAwareness();
 #endif
 

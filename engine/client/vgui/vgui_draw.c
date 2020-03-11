@@ -12,9 +12,6 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
-
-#ifndef XASH_DEDICATED
-
 #include <string.h>
 #include "common.h"
 #include "client.h"
@@ -321,7 +318,7 @@ void VGui_Startup( const char *clientlib, int width, int height )
 		width = 1280;
 	else if( width <= 1600 )
 		width = 1600;
-#ifdef DLL_LOADER
+#ifdef XASH_DLL_LOADER
 	else if ( Q_strstr( vguiloader, ".dll" ) )
 		width = 1600;
 #endif
@@ -551,4 +548,3 @@ void *GAME_EXPORT VGui_GetPanel( void )
 		return vgui.GetPanel();
 	return NULL;
 }
-#endif

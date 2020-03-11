@@ -13,7 +13,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 #include "gl_local.h"
-#include "mathlib.h"
+#include "xash3d_mathlib.h"
 #include "const.h"
 #include "r_studioint.h"
 #include "triangleapi.h"
@@ -227,7 +227,7 @@ for the model, which holds for all frames
 */
 void BuildTris( void )
 {
-	int	len, bestlen, besttype;
+	int	len, bestlen, besttype = 0;
 	int	bestverts[1024];
 	int	besttris[1024];
 	int	type, startv;
@@ -1005,11 +1005,11 @@ R_AliasSetRemapColors
 */
 void R_AliasSetRemapColors( int newTop, int newBottom )
 {
-	gEngfuncs.CL_AllocRemapInfo( newTop, newBottom );
+	gEngfuncs.CL_AllocRemapInfo( RI.currententity, newTop, newBottom );
 
 	if( gEngfuncs.CL_GetRemapInfoForEntity( RI.currententity ))
 	{
-		gEngfuncs.CL_UpdateRemapInfo( newTop, newBottom );
+		gEngfuncs.CL_UpdateRemapInfo( RI.currententity, newTop, newBottom );
 		m_fDoRemap = true;
 	}
 }

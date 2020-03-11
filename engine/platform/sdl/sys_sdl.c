@@ -44,3 +44,28 @@ void Platform_MessageBox( const char *title, const char *message, qboolean paren
 	SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, title, message, parentMainWindow ? host.hWnd : NULL );
 }
 #endif // XASH_MESSAGEBOX == MSGBOX_SDL
+void Posix_Daemonize( void );
+void Platform_Init( void )
+{
+#ifndef SDL_INIT_EVENTS
+#define SDL_INIT_EVENTS 0
+#endif
+
+	if( SDL_Init( SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_EVENTS ) )
+	{
+		Sys_Warn( "SDL_Init failed: %s", SDL_GetError() );
+		host.type = HOST_DEDICATED;
+	}
+
+#if XASH_SDL == 2
+	SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "0");
+	SDL_StopTextInput();
+#endif // XASH_SDL == 2
+#if XASH_POSIX
+	Posix_Daemonize();
+#endif
+}
+
+void Platform_Shutdown( void )
+{
+}

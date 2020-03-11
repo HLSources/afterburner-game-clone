@@ -135,7 +135,7 @@ static void IN_ActivateCursor( void )
 	}
 }
 
-void IN_SetCursor( void *hCursor )
+void GAME_EXPORT IN_SetCursor( void *hCursor )
 {
 	in_mousecursor = hCursor;
 
@@ -227,7 +227,7 @@ void IN_ToggleClientMouse( int newstate, int oldstate )
 			SDL_SetRelativeMouseMode( SDL_FALSE );
 #endif
 #endif // XASH_SDL
-#ifdef __ANDROID__
+#if XASH_ANDROID
 		Android_ShowMouse( true );
 #endif
 #ifdef XASH_USE_EVDEV
@@ -236,7 +236,7 @@ void IN_ToggleClientMouse( int newstate, int oldstate )
 	}
 	else
 	{
-#ifdef __ANDROID__
+#if XASH_ANDROID
 		Android_ShowMouse( false );
 #endif
 #ifdef XASH_USE_EVDEV
@@ -424,12 +424,12 @@ void IN_MouseEvent( void )
 	}
 	else
 	{
-#if XASH_SDL && !defined(_WIN32)
+#if XASH_SDL && !XASH_WIN32
 #if SDL_VERSION_ATLEAST( 2, 0, 0 )
 		SDL_SetRelativeMouseMode( SDL_FALSE );
 #endif // SDL_VERSION_ATLEAST( 2, 0, 0 )
 		SDL_ShowCursor( SDL_TRUE );
-#endif // XASH_SDL && !defined(_WIN32)
+#endif // XASH_SDL && !XASH_WIN32
 		IN_MouseMove();
 	}
 }
@@ -572,6 +572,7 @@ void IN_CollectInput( float *forward, float *side, float *pitch, float *yaw, qbo
 	if( includeMouse )
 	{
 #if XASH_INPUT == INPUT_SDL
+		/// TODO: check if we may move this to platform
 		if( includeSdlMouse )
 		{
 			int x, y;
@@ -579,16 +580,12 @@ void IN_CollectInput( float *forward, float *side, float *pitch, float *yaw, qbo
 			*pitch += y * m_pitch->value;
 			*yaw   -= x * m_yaw->value;
 		}
-#endif // INPUT_SDL
-
-#ifdef __ANDROID__
-		{
-			float x, y;
-			Android_MouseMove( &x, &y );
-			*pitch += y * m_pitch->value;
-			*yaw   -= x * m_yaw->value;
-		}
-#endif // ANDROID
+#else
+		float x, y;
+		Platform_MouseMove( &x, &y );
+		*pitch += y * m_pitch->value;
+		*yaw   -= x * m_yaw->value;
+#endif // SDL
 
 #ifdef XASH_USE_EVDEV
 		IN_EvdevMove( yaw, pitch );

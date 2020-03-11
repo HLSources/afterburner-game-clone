@@ -21,7 +21,7 @@ GNU General Public License for more details.
 #include "ref_common.h"
 
 typedef int (*PHYSICAPI)( int, server_physics_api_t*, physics_interface_t* );
-#ifndef XASH_DEDICATED
+#if !XASH_DEDICATED
 extern triangleapi_t gTriApi;
 #endif
 
@@ -409,7 +409,8 @@ float SV_Submerged( edict_t *ent )
 		svs.groupmask = ent->v.groupinfo;
 		if( SV_PointContents( point ) == CONTENTS_WATER )
 			return (ent->v.maxs[2] - ent->v.mins[2]);
-	case 2:	// intentionally fallthrough
+		// intentionally fallthrough
+	case 2:
 		bottom = SV_RecursiveWaterLevel( center, ent->v.absmax[2] - center[2], 0.0f, 0 );
 		return bottom - start;
 	}
@@ -1966,7 +1967,7 @@ pfnPointContents
 
 =============
 */
-static int pfnPointContents( const float *pos, int groupmask )
+static int GAME_EXPORT pfnPointContents( const float *pos, int groupmask )
 {
 	int	oldmask, cont;
 
@@ -2005,7 +2006,7 @@ const char* pfnGetModelName( int modelindex )
 
 static const byte *GL_TextureData( unsigned int texnum )
 {
-#ifndef XASH_DEDICATED
+#if !XASH_DEDICATED
 	return Host_IsDedicated() ? NULL : ref.dllFuncs.GL_TextureData( texnum );
 #else // XASH_DEDICATED
 	return NULL;
@@ -2021,7 +2022,7 @@ static server_physics_api_t gPhysicsAPI =
 	SV_GetHeadNode,
 	SV_ServerState,
 	Host_Error,
-#ifndef XASH_DEDICATED
+#if !XASH_DEDICATED
 	&gTriApi,	// ouch!
 	pfnDrawConsoleString,
 	pfnDrawSetTextColor,

@@ -131,7 +131,7 @@ qboolean Info_IsValid( const char *s )
 	return true;
 }
 
-#ifndef XASH_DEDICATED
+#if !XASH_DEDICATED
 /*
 ==============
 Info_WriteVars
@@ -233,7 +233,7 @@ const char *Info_ValueForKey( const char *s, const char *key )
 	}
 }
 
-qboolean Info_RemoveKey( char *s, const char *key )
+qboolean GAME_EXPORT Info_RemoveKey( char *s, const char *key )
 {
 	char	*start;
 	char	pkey[MAX_KV_SIZE];
