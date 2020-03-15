@@ -229,7 +229,7 @@ def configure(conf):
 	compiler_c_cxx_flags = {
 		'common': {
 			# disable thread-safe local static initialization for C++11 code, as it cause crashes on Windows XP
-			'msvc':    ['/D_USING_V110_SDK71_', '/Zi', '/FS', '/Zc:threadSafeInit-', '/EHsc'],
+			'msvc':    ['/D_USING_V110_SDK71_', '/Zi', '/FS', '/Zc:threadSafeInit-', '/EHsc', '/WX'],
 			'clang':   ['-g', '-gdwarf-2', '-fvisibility=hidden', '-Werror', '-Wno-format-truncation'],
 			'gcc':     ['-g', '-fvisibility=hidden', '-fdiagnostics-color=always', '-Werror', '-Wno-format-truncation'],
 			'owcc':	   ['-fno-short-enum', '-ffloat-store', '-g3']
