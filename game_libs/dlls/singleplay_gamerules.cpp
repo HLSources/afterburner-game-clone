@@ -25,7 +25,6 @@
 #include	"skill.h"
 #include	"items.h"
 #include "weapon_fists.h"
-#include "hitbox_debugging/hitbox_debugData.h"
 
 extern DLL_GLOBAL CGameRules	*g_pGameRules;
 extern DLL_GLOBAL BOOL	g_fGameOver;
@@ -38,17 +37,10 @@ extern int gmsgMOTD;
 CHalfLifeRules::CHalfLifeRules( void )
 {
 	RefreshSkillData();
-	m_pHitboxDebugData = new CHitboxDebugData();
 }
 
 CHalfLifeRules::~CHalfLifeRules()
 {
-	delete m_pHitboxDebugData;
-}
-
-CHitboxDebugData* CHalfLifeRules::HitboxDebugData()
-{
-	return m_pHitboxDebugData;
 }
 
 //=========================================================

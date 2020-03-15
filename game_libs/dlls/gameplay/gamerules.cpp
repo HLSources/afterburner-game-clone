@@ -27,6 +27,8 @@
 #include	"game.h"
 #include	"weaponregistry.h"
 #include	"weaponatts_collection.h"
+#include	"gameplay/gameplaySystems.h"
+#include	"gameplay/gameplaySystemsBase.h"
 #include	"spawnpointmanager.h"
 
 DLL_GLOBAL CGameRules *g_pGameRules = NULL;
@@ -38,17 +40,14 @@ int g_teamplay = 0;
 
 CGameRules::CGameRules()
 {
-	m_pSpawnPointManager = new CSpawnPointManager(*this);
 }
 
 CGameRules::~CGameRules()
 {
-	delete m_pSpawnPointManager;
 }
 
 void CGameRules::ServerActivate()
 {
-	m_pSpawnPointManager->Initialise();
 }
 
 void CGameRules::ServerDeactivate()
@@ -82,14 +81,23 @@ BOOL CGameRules::CanHaveAmmo( CBasePlayer *pPlayer, const char *pszAmmoName, int
 //=========================================================
 edict_t *CGameRules::GetPlayerSpawnSpot( CBasePlayer *pPlayer )
 {
+	CSpawnPointManager::SpawnPointType spType = CSpawnPointManager::SP_Default;
 	uint32_t flags = 0;
 
 	if ( IsDeathmatch() )
 	{
+		spType = CSpawnPointManager::SP_Deathmatch;
+		flags |= CSpawnPointManager::Flag_AvoidDeathSite;
+	}
+	else if ( IsTeamplay() )
+	{
+		spType = CSpawnPointManager::SP_CoOp;
 		flags |= CSpawnPointManager::Flag_AvoidDeathSite;
 	}
 
-	edict_t *pentSpawnSpot = m_pSpawnPointManager->GetNextSpawnPoint(pPlayer, flags)->edict();
+	CGameplaySystemsBase* gpSys = GameplaySystems::GetBase();
+
+	edict_t *pentSpawnSpot = gpSys->SpawnPointManager().GetNextSpawnPoint(pPlayer, spType, flags)->edict();
 
 	pPlayer->pev->origin = VARS( pentSpawnSpot )->origin + Vector( 0, 0, 1 );
 	pPlayer->pev->v_angle  = g_vecZero;

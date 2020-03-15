@@ -7,7 +7,6 @@ class CWeaponDebugEvent_HitscanFire;
 class CHitboxDebugData
 {
 public:
-	CHitboxDebugData();
 	~CHitboxDebugData();
 
 	bool IsValid() const;
@@ -24,9 +23,13 @@ public:
 	void SetTargetEnt(CBaseAnimating* ent);
 
 private:
+	void UpdateEventSubscription();
+	void SubscribeToEvents();
+	void UnsubscribeFromEvents();
 	void FireHitboxSnapshotClearMessage();
 	void HandleHitscanFire(const CWeaponDebugEvent_HitscanFire* event);
 
 	EHANDLE m_Attacker;
 	EHANDLE m_Target;
+	bool m_Subscribed = false;
 };

@@ -33,8 +33,6 @@ class CBasePlayerAmmo;
 // This file doesn't currently pull in any headers, so forward-declaring this to avoid
 // adding more dependencies.
 class CBotGameRulesInterface;
-class CSpawnPointManager;
-class CHitboxDebugData;
 
 // weapon respawning return codes
 enum
@@ -177,20 +175,6 @@ public:
 
 	// Immediately end a multiplayer game
 	virtual void EndMultiplayerGame( void ) {}
-
-	// TODO: We should probably re-evaluate where things like this are kept.
-	// There should be a collection of resources that is instantiated when
-	// a server is created and destroyed at the end. I don't like having
-	// instances of persistent things kept in the gamerules.
-	virtual CHitboxDebugData* HitboxDebugData()
-	{
-		return nullptr;
-	}
-
-	CSpawnPointManager* SpawnPointManager() { return m_pSpawnPointManager; }
-
-private:
-	CSpawnPointManager* m_pSpawnPointManager;
 };
 
 extern CGameRules *InstallGameRules( void );
@@ -282,11 +266,6 @@ public:
 	// Teamplay stuff
 	virtual const char *GetTeamID( CBaseEntity *pEntity ) {return "";};
 	virtual int PlayerRelationship( CBaseEntity *pPlayer, CBaseEntity *pTarget );
-
-	virtual CHitboxDebugData* HitboxDebugData() override;
-
-private:
-	CHitboxDebugData* m_pHitboxDebugData;
 };
 
 //=========================================================
@@ -394,8 +373,6 @@ public:
 	// Immediately end a multiplayer game
 	virtual void EndMultiplayerGame( void ) { GoToIntermission(); }
 
-	virtual CHitboxDebugData* HitboxDebugData() override;
-
 	CBotGameRulesInterface* BotGameRulesInterface();
 
 protected:
@@ -407,7 +384,6 @@ protected:
 
 private:
 	CBotGameRulesInterface* m_pBotGameRulesInterface;
-	CHitboxDebugData* m_pHitboxDebugData;
 };
 
 extern DLL_GLOBAL CGameRules *g_pGameRules;

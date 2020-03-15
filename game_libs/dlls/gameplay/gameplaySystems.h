@@ -2,6 +2,7 @@
 
 #include <memory>
 
+class CGameplaySystemsBase;
 class CGameplaySystemsSingleplayer;
 class CGameplaySystemsMultiplayer;
 
@@ -15,6 +16,7 @@ namespace GameplaySystems
 	void NotifyServerActivated();
 	void NotifyServerDeactivated();
 
+	CGameplaySystemsBase* GetBase();
 	CGameplaySystemsSingleplayer* GetSingleplayer();
 	CGameplaySystemsMultiplayer* GetMultiplayer();
 }

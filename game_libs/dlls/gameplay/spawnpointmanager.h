@@ -3,7 +3,6 @@
 #include <cstdint>
 #include "standard_includes.h"
 #include "spawnpointlist.h"
-#include "gamerules.h"
 
 class CSpawnPointManager
 {
@@ -14,13 +13,6 @@ public:
 		Flag_IgnoreNearbyPlayers = 1 << 1
 	};
 
-	CSpawnPointManager(CGameRules& gameRules);
-
-	void Initialise();
-
-	CBaseEntity* GetNextSpawnPoint(CBasePlayer* player, uint32_t flags = 0);
-
-private:
 	enum SpawnPointType
 	{
 		SP_Default = 0,
@@ -30,6 +22,11 @@ private:
 		SP__Count
 	};
 
+	void Initialise();
+
+	CBaseEntity* GetNextSpawnPoint(CBasePlayer* player, SpawnPointType spType = SP_Default, uint32_t flags = 0);
+
+private:
 	static bool SpawnPointValid(CBaseEntity* spawnPoint, CBasePlayer* player, uint32_t flags);
 	static void KillPlayersAtPoint(const vec3_t& origin, CBasePlayer* player);
 
@@ -40,6 +37,5 @@ private:
 
 	static const char* const SpawnPointClassNames[SP__Count];
 
-	CGameRules* m_pGameRules;
 	CSpawnPointList m_Lists[SP__Count];
 };

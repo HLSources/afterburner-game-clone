@@ -51,6 +51,11 @@ namespace GameplaySystems
 		}
 	}
 
+	CGameplaySystemsBase* GetBase()
+	{
+		return StaticInstance.get();
+	}
+
 	CGameplaySystemsSingleplayer* GetSingleplayer()
 	{
 		return dynamic_cast<CGameplaySystemsSingleplayer*>(StaticInstance.get());

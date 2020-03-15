@@ -7,23 +7,9 @@
 
 static constexpr const char* EVENT_CALLBACK_ID = "CHitboxDebugData";
 
-CHitboxDebugData::CHitboxDebugData()
-{
-	CWeaponDebugEventSource& evSource = CWeaponRegistry::StaticInstance().DebugEventSource();
-
-	evSource.RegisterCallback(EVENT_CALLBACK_ID, CWeaponDebugEvent_Base::EventType::Event_HitscanFire,
-	[this](const CWeaponDebugEvent_Base* event)
-	{
-		HandleHitscanFire(dynamic_cast<const CWeaponDebugEvent_HitscanFire*>(event));
-	});
-}
-
 CHitboxDebugData::~CHitboxDebugData()
 {
-	CWeaponDebugEventSource& evSource = CWeaponRegistry::StaticInstance().DebugEventSource();
-	evSource.UnregisterCallback(EVENT_CALLBACK_ID);
-
-	FireHitboxSnapshotClearMessage();
+	Clear();
 }
 
 bool CHitboxDebugData::IsValid() const
@@ -37,6 +23,8 @@ void CHitboxDebugData::Clear()
 
 	m_Attacker.Set(nullptr);
 	m_Target.Set(nullptr);
+
+	UpdateEventSubscription();
 }
 
 CBasePlayer* CHitboxDebugData::AttackerPlayer() const
@@ -47,7 +35,9 @@ CBasePlayer* CHitboxDebugData::AttackerPlayer() const
 void CHitboxDebugData::SetAttackerPlayer(CBasePlayer* attacker)
 {
 	FireHitboxSnapshotClearMessage();
+
 	m_Attacker.Set(attacker ? attacker->edict() : nullptr);
+	UpdateEventSubscription();
 }
 
 CBasePlayer* CHitboxDebugData::TargetPlayer() const
@@ -59,6 +49,7 @@ CBasePlayer* CHitboxDebugData::TargetPlayer() const
 void CHitboxDebugData::SetTargetPlayer(CBasePlayer* victim)
 {
 	m_Target.Set(victim ? victim->edict() : nullptr);
+	UpdateEventSubscription();
 }
 
 CBaseAnimating* CHitboxDebugData::TargetEnt() const
@@ -71,6 +62,7 @@ CBaseAnimating* CHitboxDebugData::TargetEnt() const
 void CHitboxDebugData::SetTargetEnt(CBaseAnimating* ent)
 {
 	m_Target.Set(ent ? ent->edict() : nullptr);
+	UpdateEventSubscription();
 }
 
 void CHitboxDebugData::HandleHitscanFire(const CWeaponDebugEvent_HitscanFire* event)
@@ -89,7 +81,7 @@ void CHitboxDebugData::HandleHitscanFire(const CWeaponDebugEvent_HitscanFire* ev
 
 	if ( !m_Target )
 	{
-		ALERT(at_console, "Victim no longer valid, turning hitbox debugging off.\n");
+		ALERT(at_console, "Target no longer valid, turning hitbox debugging off.\n");
 		Clear();
 		return;
 	}
@@ -117,4 +109,48 @@ void CHitboxDebugData::FireHitboxSnapshotClearMessage()
 
 	CHitboxMessageConstructor messageConstructor(player);
 	messageConstructor.FireClearMessage();
+}
+
+void CHitboxDebugData::UpdateEventSubscription()
+{
+	if ( IsValid() && !m_Subscribed )
+	{
+		SubscribeToEvents();
+	}
+	else if ( !IsValid() && m_Subscribed )
+	{
+		UnsubscribeFromEvents();
+	}
+}
+
+void CHitboxDebugData::SubscribeToEvents()
+{
+	if ( m_Subscribed )
+	{
+		return;
+	}
+
+	CWeaponDebugEventSource& evSource = CWeaponRegistry::StaticInstance().DebugEventSource();
+
+	evSource.RegisterCallback(EVENT_CALLBACK_ID, CWeaponDebugEvent_Base::EventType::Event_HitscanFire,
+	[this](const CWeaponDebugEvent_Base* event)
+	{
+		HandleHitscanFire(dynamic_cast<const CWeaponDebugEvent_HitscanFire*>(event));
+	});
+
+	m_Subscribed = true;
+}
+
+void CHitboxDebugData::UnsubscribeFromEvents()
+{
+	if ( !m_Subscribed )
+	{
+		return;
+	}
+
+	CWeaponDebugEventSource& evSource = CWeaponRegistry::StaticInstance().DebugEventSource();
+	evSource.UnregisterCallback(EVENT_CALLBACK_ID);
+
+	FireHitboxSnapshotClearMessage();
+	m_Subscribed = false;
 }

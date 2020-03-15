@@ -4,14 +4,11 @@
 #include "gamerules.h"
 #include "mp_utils.h"
 #include "hitbox_debugData.h"
+#include "gameplay/gameplaySystems.h"
+#include "gameplay/gameplaySystemsBase.h"
 
 namespace HitboxDebugging
 {
-	static inline bool IsMultiplayer()
-	{
-		return g_pGameRules && g_pGameRules->IsMultiplayer();
-	}
-
 	static CHitboxDebugData* GetData()
 	{
 		if ( CVAR_GET_FLOAT("sv_cheats") == 0.0f )
@@ -20,15 +17,7 @@ namespace HitboxDebugging
 			return nullptr;
 		}
 
-		CHitboxDebugData* debugData = g_pGameRules ? g_pGameRules->HitboxDebugData() : nullptr;
-
-		if ( !debugData )
-		{
-			ALERT(at_error, "Hitbox debugging is not supported in the current game.\n");
-			return nullptr;
-		}
-
-		return debugData;
+		return &(GameplaySystems::GetBase()->HitboxDebugData());
 	}
 
 	static void HitboxDebugSetMultiplayer(CHitboxDebugData& debugData)
@@ -139,10 +128,7 @@ namespace HitboxDebugging
 			return;
 		}
 
-		if ( debugData->IsValid() )
-		{
-			debugData->Clear();
-		}
+		debugData->Clear();
 
 		ALERT(at_console, "Hitbox debugging turned off.\n");
 	}
@@ -156,7 +142,7 @@ namespace HitboxDebugging
 			return;
 		}
 
-		if ( IsMultiplayer() )
+		if ( GameplaySystems::IsMultiplayer() )
 		{
 			HitboxDebugSetMultiplayer(*debugData);
 		}

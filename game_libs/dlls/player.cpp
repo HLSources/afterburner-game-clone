@@ -40,6 +40,9 @@
 #include "prop_playercorpse.h"
 #include "spawnpointmanager.h"
 #include "customGeometry/messageWriter.h"
+#include "gameplay/gameplaySystems.h"
+#include "gameplay/gameplaySystemsBase.h"
+#include "gameplay/spawnpointmanager.h"
 
 // #define DUCKFIX
 
@@ -2829,7 +2832,8 @@ int CBasePlayer::Restore( CRestore &restore )
 
 		// default to normal spawn
 		ASSERT(g_pGameRules);
-		edict_t *pentSpawnSpot = g_pGameRules->SpawnPointManager()->GetNextSpawnPoint(this)->edict();
+		CGameplaySystemsBase* gpSys = GameplaySystems::GetBase();
+		edict_t *pentSpawnSpot = gpSys->SpawnPointManager().GetNextSpawnPoint(this)->edict();
 		pev->origin = VARS( pentSpawnSpot )->origin + Vector( 0, 0, 1 );
 		pev->angles = VARS( pentSpawnSpot )->angles;
 	}

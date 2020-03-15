@@ -153,8 +153,6 @@ Vector CGenericHitscanWeapon::FireBulletsPlayer(const WeaponAtts::WAHitscanAttac
 		vecEnd = vecSrc + vecDir * DEFAULT_BULLET_TRACE_DISTANCE;
 		UTIL_TraceLine(vecSrc, vecEnd, dont_ignore_monsters, ENT(pev), &tr);
 
-		ALERT(at_console, "Hit entity: %s\n", tr.pHit ? STRING(tr.pHit->v.classname) : "<none>");
-
 		Debug_HitscanBulletFired(vecSrc, tr);
 
 		// do damage, paint decals
