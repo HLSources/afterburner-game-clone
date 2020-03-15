@@ -41,6 +41,7 @@
 #include "pm_shared.h"
 #include "gameresources/GameResources.h"
 #include "prop_playercorpse.h"
+#include "gameplay/gameplaySystems.h"
 
 extern DLL_GLOBAL ULONG		g_ulModelIndexPlayer;
 extern DLL_GLOBAL BOOL		g_fGameOver;
@@ -729,6 +730,9 @@ void ServerDeactivate( void )
 	{
 		g_pGameRules->ServerDeactivate();
 	}
+
+	GameplaySystems::NotifyServerDeactivated();
+	GameplaySystems::Destroy();
 }
 
 void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
@@ -745,11 +749,15 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	for( i = 0; i < edictCount; i++ )
 	{
 		if( pEdictList[i].free )
+		{
 			continue;
+		}
 
 		// Clients aren't necessarily initialized until ClientPutInServer()
 		if( i < clientMax || !pEdictList[i].pvPrivateData )
+		{
 			continue;
+		}
 
 		pClass = CBaseEntity::Instance( &pEdictList[i] );
 		// Activate this entity if it's got a class & isn't dormant
@@ -768,6 +776,9 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 
 	if ( g_pGameRules )
 	{
+		GameplaySystems::Create(g_pGameRules->IsMultiplayer());
+		GameplaySystems::NotifyServerActivated();
+
 		g_pGameRules->ServerActivate();
 	}
 }
