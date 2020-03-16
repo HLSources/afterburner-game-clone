@@ -113,6 +113,7 @@ typedef struct hud_player_info_s
 struct screenfade_s;
 struct tagPOINT;
 struct event_args_s;
+struct event_fire_args_s;
 
 typedef struct cl_enginefuncs_s
 {
@@ -207,7 +208,7 @@ typedef struct cl_enginefuncs_s
 	void	(*pfnPlaySoundByNameAtLocation)( char *szSound, float volume, float *origin );
 
 	unsigned short (*pfnPrecacheEvent)( int type, const char* psz );
-	void	(*pfnPlaybackEvent)( int flags, const struct edict_s *pInvoker, unsigned short eventindex, float delay, float *origin, float *angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2 );
+	void	(*pfnPlaybackEvent)( const struct event_fire_args_s* args );
 	void	(*pfnWeaponAnim)( int iAnim, int body );
 	float	(*pfnRandomFloat)( float flLow, float flHigh );
 	int	(*pfnRandomLong)( int lLow, int lHigh );

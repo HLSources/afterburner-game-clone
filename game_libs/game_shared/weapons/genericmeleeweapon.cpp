@@ -2,6 +2,7 @@
 #include "util.h"
 #include "weaponatts_meleeattack.h"
 #include "gamerules.h"
+#include "eventConstructor/eventConstructor.h"
 
 namespace
 {
@@ -239,18 +240,16 @@ bool CGenericMeleeWeapon::CheckForContact(const WeaponAtts::WAMeleeAttack* melee
 
 void CGenericMeleeWeapon::FireEvent(const WeaponAtts::WAMeleeAttack* meleeAttack)
 {
-	PLAYBACK_EVENT_FULL(DefaultEventFlags(),
-						m_pPlayer->edict(),
-						m_AttackModeEvents[meleeAttack->Signature()->Index],
-						0.0,
-						(float*)&g_vecZero,
-						(float*)&g_vecZero,
-						0,
-						0,
-						0,
-						0,
-						0,
-						0);
+	using namespace EventConstructor;
+	CEventConstructor event;
+
+	event
+		<< Flags(DefaultEventFlags())
+		<< Invoker(m_pPlayer->edict())
+		<< EventIndex(m_AttackModeEvents[meleeAttack->Signature()->Index])
+		;
+
+	event.Send();
 }
 
 void CGenericMeleeWeapon::InitTraceVecs(const WeaponAtts::WAMeleeAttack* meleeAttack)

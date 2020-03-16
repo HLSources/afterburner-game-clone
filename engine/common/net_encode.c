@@ -161,6 +161,9 @@ static const delta_field_t ev_fields[] =
 { EVNT_DEF( iparam2 )	},
 { EVNT_DEF( bparam1 )	},
 { EVNT_DEF( bparam2 )	},
+{ EVNT_DEF( vecparam1[0] )	},
+{ EVNT_DEF( vecparam1[1] )	},
+{ EVNT_DEF( vecparam1[2] )	},
 { NULL },
 };
 

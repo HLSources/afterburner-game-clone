@@ -255,5 +255,8 @@ event_t none
 	DEFINE_DELTA( angles[0], DT_SIGNED | DT_FLOAT, 16, 8.0 ),
 	DEFINE_DELTA( angles[1], DT_SIGNED | DT_FLOAT, 16, 8.0 ),
 	DEFINE_DELTA( angles[2], DT_SIGNED | DT_FLOAT, 16, 8.0 ),
-	DEFINE_DELTA( ducking, DT_INTEGER, 1, 1.0 )
+	DEFINE_DELTA( ducking, DT_INTEGER, 1, 1.0 ),
+	DEFINE_DELTA( vecparam1[0], DT_SIGNED | DT_FLOAT, 16, 8.0 ),
+	DEFINE_DELTA( vecparam1[1], DT_SIGNED | DT_FLOAT, 16, 8.0 ),
+	DEFINE_DELTA( vecparam1[2], DT_SIGNED | DT_FLOAT, 16, 8.0 )
 }

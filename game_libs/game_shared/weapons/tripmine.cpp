@@ -23,6 +23,8 @@
 #include "effects.h"
 #include "gamerules.h"
 #include "ammodefs.h"
+#include "event_args.h"
+#include "eventConstructor/eventConstructor.h"
 
 #define	TRIPMINE_PRIMARY_VOLUME		450
 
@@ -445,7 +447,17 @@ void CTripmine::PrimaryAttack( void )
 #else
 	flags = 0;
 #endif
-	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usTripFire, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 0, 0 );
+
+	using namespace EventConstructor;
+	CEventConstructor event;
+
+	event
+		<< Flags(flags)
+		<< Invoker(m_pPlayer->edict())
+		<< EventIndex(m_usTripFire)
+		;
+
+	event.Send();
 
 	if( tr.flFraction < 1.0 )
 	{

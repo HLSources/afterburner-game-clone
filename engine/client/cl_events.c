@@ -452,46 +452,63 @@ CL_PlaybackEvent
 
 =============
 */
-void GAME_EXPORT CL_PlaybackEvent( int flags, const edict_t *pInvoker, word eventindex, float delay, float *origin,
-	float *angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2 )
+void GAME_EXPORT CL_PlaybackEvent( const struct event_fire_args_s* inArgs )
 {
 	event_args_t	args;
+	int localFlags = 0;
+	float localDelay = 0.0f;
 
-	if( FBitSet( flags, FEV_SERVER ))
+	if ( !inArgs )
+	{
 		return;
+	}
+
+	localFlags = inArgs->flags;
+	localDelay = inArgs->delay;
+
+	if( FBitSet( localFlags, FEV_SERVER ))
+	{
+		return;
+	}
 
 	// first check event for out of bounds
-	if( eventindex < 1 || eventindex > MAX_EVENTS )
+	if( inArgs->eventIndex < 1 || inArgs->eventIndex > MAX_EVENTS )
 	{
-		Con_DPrintf( S_ERROR "CL_PlaybackEvent: invalid eventindex %i\n", eventindex );
+		Con_DPrintf( S_ERROR "CL_PlaybackEvent: invalid eventindex %i\n", inArgs->eventIndex );
 		return;
 	}
 
 	// check event for precached
-	if( !CL_EventIndex( cl.event_precache[eventindex] ))
+	if( !CL_EventIndex( cl.event_precache[inArgs->eventIndex] ))
 	{
-		Con_DPrintf( S_ERROR "CL_PlaybackEvent: event %i was not precached\n", eventindex );
+		Con_DPrintf( S_ERROR "CL_PlaybackEvent: event %i was not precached\n", inArgs->eventIndex );
 		return;
 	}
 
-	SetBits( flags, FEV_CLIENT ); // it's a client event
-	ClearBits( flags, FEV_NOTHOST|FEV_HOSTONLY|FEV_GLOBAL );
-	if( delay < 0.0f ) delay = 0.0f; // fixup negative delays
+	SetBits( localFlags, FEV_CLIENT ); // it's a client event
+	ClearBits( localFlags, FEV_NOTHOST|FEV_HOSTONLY|FEV_GLOBAL );
+
+	if( localDelay < 0.0f )
+	{
+		localDelay = 0.0f; // fixup negative delays
+	}
 
 	memset( &args, 0, sizeof( args ));
 
-	VectorCopy( origin, args.origin );
-	VectorCopy( angles, args.angles );
+	VectorCopy( inArgs->vec3Origin, args.origin );
+	VectorCopy( inArgs->vec3Angles, args.angles );
 	VectorCopy( cl.simvel, args.velocity );
 	args.entindex = cl.playernum + 1;
 	args.ducking = ( cl.local.usehull == 1 );
 
-	args.fparam1 = fparam1;
-	args.fparam2 = fparam2;
-	args.iparam1 = iparam1;
-	args.iparam2 = iparam2;
-	args.bparam1 = bparam1;
-	args.bparam2 = bparam2;
+	args.fparam1 = inArgs->fparam1;
+	args.fparam2 = inArgs->fparam2;
+	args.iparam1 = inArgs->iparam1;
+	args.iparam2 = inArgs->iparam2;
+	args.bparam1 = inArgs->bparam1;
+	args.bparam2 = inArgs->bparam2;
 
-	CL_QueueEvent( flags, eventindex, delay, &args );
+	VectorCopy(inArgs->vec3param1, args.vecparam1);
+
+	CL_QueueEvent( localFlags, inArgs->eventIndex, localDelay, &args );
 }

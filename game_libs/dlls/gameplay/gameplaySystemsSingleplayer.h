@@ -11,4 +11,6 @@ public:
 
 	virtual void OnServerActivated() override;
 	virtual void OnServerDeactivated() override;
+
+	// Nothing else unique to this class yet.
 };

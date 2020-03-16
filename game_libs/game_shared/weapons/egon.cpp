@@ -27,6 +27,8 @@
 #include "ammodefs.h"
 #include "weaponinfo.h"
 #include "radialdamage.h"
+#include "event_args.h"
+#include "eventConstructor/eventConstructor.h"
 
 #define	EGON_PRIMARY_VOLUME		450
 #define EGON_BEAM_SPRITE		"sprites/xbeam1.spr"
@@ -200,7 +202,19 @@ void CEgon::Attack( void )
 
 			m_flAmmoUseTime = gpGlobals->time;// start using ammo ASAP.
 
-			PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usEgonFire, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, m_fireState, m_fireMode, 1, 0 );
+			using namespace EventConstructor;
+			CEventConstructor event;
+
+			event
+				<< Flags(flags)
+				<< Invoker(m_pPlayer->edict())
+				<< EventIndex(m_usEgonFire)
+				<< IntParam1(m_fireState)
+				<< IntParam2(m_fireMode)
+				<< BoolParam1(true)
+				;
+
+			event.Send();
 
 			m_shakeTime = 0;
 
@@ -219,7 +233,19 @@ void CEgon::Attack( void )
 
 			if( pev->fuser1 <= UTIL_WeaponTimeBase() )
 			{
-				PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usEgonFire, 0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, m_fireState, m_fireMode, 0, 0 );
+				using namespace EventConstructor;
+				CEventConstructor event;
+
+				event
+					<< Flags(flags)
+					<< Invoker(m_pPlayer->edict())
+					<< EventIndex(m_usEgonFire)
+					<< IntParam1(m_fireState)
+					<< IntParam2(m_fireMode)
+					;
+
+				event.Send();
+
 				pev->fuser1 = 1000;
 			}
 
@@ -516,7 +542,20 @@ void CEgon::EndAttack( void )
 	if( m_fireState != FIRE_OFF ) //Checking the button just in case!.
 		 bMakeNoise = true;
 
-	PLAYBACK_EVENT_FULL( FEV_GLOBAL | FEV_RELIABLE, m_pPlayer->edict(), m_usEgonStop, 0, (float *)&m_pPlayer->pev->origin, (float *)&m_pPlayer->pev->angles, 0.0, 0.0, bMakeNoise, 0, 0, 0 );
+	using namespace EventConstructor;
+	CEventConstructor event;
+
+	event
+		<< Flags(FEV_GLOBAL | FEV_RELIABLE)
+		<< Invoker(m_pPlayer->edict())
+		<< EventIndex(m_usEgonStop)
+		<< Origin(m_pPlayer->pev->origin)
+		<< Angles(m_pPlayer->pev->angles)
+		<< IntParam1(bMakeNoise)
+		<< BoolParam1(true)
+		;
+
+	event.Send();
 
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.0;
 	m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;

@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -38,7 +38,7 @@ typedef struct event_api_s
 	void	( *EV_PlayerTrace )( float *start, float *end, int traceFlags, int ignore_pe, struct pmtrace_s *tr );
 	void	( *EV_WeaponAnimation )( int sequence, int body );
 	unsigned short ( *EV_PrecacheEvent )( int type, const char* psz );
-	void	( *EV_PlaybackEvent )( int flags, const struct edict_s *pInvoker, unsigned short eventindex, float delay, float *origin, float *angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2 );
+	void	( *EV_PlaybackEvent )( const struct event_fire_args_s* inArgs );
 	const char *( *EV_TraceTexture )( int ground, float *vstart, float *vend );
 	void	( *EV_StopAllSounds )( int entnum, int entchannel );
 	void	( *EV_KillEvents )( int entnum, const char *eventname );

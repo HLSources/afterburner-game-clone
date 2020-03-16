@@ -91,6 +91,7 @@ typedef struct
 } CDStatus;
 
 typedef unsigned int	CRC32_t;
+struct event_fire_args_s;
 
 // Engine hands this to DLLs for functionality callbacks
 typedef struct enginefuncs_s
@@ -220,7 +221,7 @@ typedef struct enginefuncs_s
 	void	(*pfnSetPhysicsKeyValue)( const edict_t *pClient, const char *key, const char *value );
 	const char *(*pfnGetPhysicsInfoString)( const edict_t *pClient );
 	unsigned short (*pfnPrecacheEvent)( int type, const char*psz );
-	void	(*pfnPlaybackEvent)( int flags, const edict_t *pInvoker, unsigned short eventindex, float delay, float *origin, float *angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2 );
+	void	(*pfnPlaybackEvent)( const struct event_fire_args_s* args );
 
 	unsigned char *(*pfnSetFatPVS)( float *org );
 	unsigned char *(*pfnSetFatPAS)( float *org );

@@ -3976,8 +3976,7 @@ pfnPlaybackEvent
 
 =============
 */
-void GAME_EXPORT SV_PlaybackEventFull( int flags, const edict_t *pInvoker, word eventindex, float delay, float *origin,
-	float *angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2 )
+void GAME_EXPORT SV_PlaybackEventFull( const struct event_fire_args_s* inArgs )
 {
 	sv_client_t	*cl;
 	event_state_t	*es;
@@ -3987,64 +3986,85 @@ void GAME_EXPORT SV_PlaybackEventFull( int flags, const edict_t *pInvoker, word 
 	int		invokerIndex;
 	byte		*mask = NULL;
 	vec3_t		pvspoint;
+	int localFlags = 0;
+	float localDelay = 0;
 
-	if( FBitSet( flags, FEV_CLIENT ))
-		return;	// someone stupid joke
+	if ( !inArgs )
+	{
+		return;
+	}
+
+	localFlags = inArgs->flags;
+	localDelay = inArgs->delay;
+
+	if( FBitSet( localFlags, FEV_CLIENT ))
+	{
+		return;
+	}
 
 	// first check event for out of bounds
-	if( eventindex < 1 || eventindex > MAX_EVENTS )
+	if( inArgs->eventIndex < 1 || inArgs->eventIndex > MAX_EVENTS )
 	{
-		Con_Printf( S_ERROR "EV_Playback: invalid eventindex %i\n", eventindex );
+		Con_Printf( S_ERROR "EV_Playback: invalid eventindex %i\n", inArgs->eventIndex );
 		return;
 	}
 
 	// check event for precached
-	if( !COM_CheckString( sv.event_precache[eventindex] ))
+	if( !COM_CheckString( sv.event_precache[inArgs->eventIndex] ))
 	{
-		Con_Printf( S_ERROR "EV_Playback: event %i was not precached\n", eventindex );
+		Con_Printf( S_ERROR "EV_Playback: event %i was not precached\n", inArgs->eventIndex );
 		return;
 	}
 
 	memset( &args, 0, sizeof( args ));
 
-	if( origin && !VectorIsNull( origin ))
+	if( inArgs->vec3Origin && !VectorIsNull( inArgs->vec3Origin ))
 	{
-		VectorCopy( origin, args.origin );
+		VectorCopy( inArgs->vec3Origin, args.origin );
 		args.flags |= FEVENT_ORIGIN;
 	}
 
-	if( angles && !VectorIsNull( angles ))
+	if( inArgs->vec3Angles && !VectorIsNull( inArgs->vec3Angles ))
 	{
-		VectorCopy( angles, args.angles );
+		VectorCopy( inArgs->vec3Angles, args.angles );
 		args.flags |= FEVENT_ANGLES;
 	}
 
 	// copy other parms
-	args.fparam1 = fparam1;
-	args.fparam2 = fparam2;
-	args.iparam1 = iparam1;
-	args.iparam2 = iparam2;
-	args.bparam1 = bparam1;
-	args.bparam2 = bparam2;
+	args.fparam1 = inArgs->fparam1;
+	args.fparam2 = inArgs->fparam2;
+	args.iparam1 = inArgs->iparam1;
+	args.iparam2 = inArgs->iparam2;
+	args.bparam1 = inArgs->bparam1;
+	args.bparam2 = inArgs->bparam2;
+
+	if ( inArgs->vec3param1 )
+	{
+		VectorCopy(inArgs->vec3param1, args.vecparam1);
+	}
 
 	VectorClear( pvspoint );
 
-	if( SV_IsValidEdict( pInvoker ))
+	if( SV_IsValidEdict( inArgs->invoker ))
 	{
 		// add the view_ofs to avoid problems with crossed contents line
-		VectorAdd( pInvoker->v.origin, pInvoker->v.view_ofs, pvspoint );
-		args.entindex = invokerIndex = NUM_FOR_EDICT( pInvoker );
+		VectorAdd( inArgs->invoker->v.origin, inArgs->invoker->v.view_ofs, pvspoint );
+		args.entindex = invokerIndex = NUM_FOR_EDICT( inArgs->invoker );
 
 		// g-cont. allow 'ducking' param for all entities
-		args.ducking = FBitSet( pInvoker->v.flags, FL_DUCKING ) ? true : false;
+		args.ducking = FBitSet( inArgs->invoker->v.flags, FL_DUCKING ) ? true : false;
 
 		// this will be send only for reliable event
 		if( !FBitSet( args.flags, FEVENT_ORIGIN ))
-			VectorCopy( pInvoker->v.origin, args.origin );
+		{
+			VectorCopy( inArgs->invoker->v.origin, args.origin );
+		}
 
 		// this will be send only for reliable event
 		if( !FBitSet( args.flags, FEVENT_ANGLES ))
-			VectorCopy( pInvoker->v.angles, args.angles );
+		{
+			VectorCopy( inArgs->invoker->v.angles, args.angles );
+		}
 	}
 	else
 	{
@@ -4053,38 +4073,42 @@ void GAME_EXPORT SV_PlaybackEventFull( int flags, const edict_t *pInvoker, word 
 		invokerIndex = -1;
 	}
 
-	if( !FBitSet( flags, FEV_GLOBAL ) && VectorIsNull( pvspoint ))
+	if( !FBitSet( localFlags, FEV_GLOBAL ) && VectorIsNull( pvspoint ))
 	{
-		Con_DPrintf( S_ERROR "%s: not a FEV_GLOBAL event missing origin. Ignored.\n", sv.event_precache[eventindex] );
+		Con_DPrintf( S_ERROR "%s: not a FEV_GLOBAL event missing origin. Ignored.\n", sv.event_precache[inArgs->eventIndex] );
 		return;
 	}
 
 	// check event for some user errors
-	if( FBitSet( flags, FEV_NOTHOST|FEV_HOSTONLY ))
+	if( FBitSet( localFlags, FEV_NOTHOST|FEV_HOSTONLY ))
 	{
-		if( !SV_ClientFromEdict( pInvoker, true ))
+		if( !SV_ClientFromEdict( inArgs->invoker, true ))
 		{
-			const char *ev_name = sv.event_precache[eventindex];
+			const char *ev_name = sv.event_precache[inArgs->eventIndex];
 
-			if( FBitSet( flags, FEV_NOTHOST ))
+			if( FBitSet( localFlags, FEV_NOTHOST ))
 			{
 				Con_DPrintf( S_WARN "%s: specified FEV_NOTHOST when invoker not a client\n", ev_name );
-				ClearBits( flags, FEV_NOTHOST );
+				ClearBits( localFlags, FEV_NOTHOST );
 			}
 
-			if( FBitSet( flags, FEV_HOSTONLY ))
+			if( FBitSet( localFlags, FEV_HOSTONLY ))
 			{
 				Con_DPrintf( S_WARN "%s: specified FEV_HOSTONLY when invoker not a client\n", ev_name );
-				ClearBits( flags, FEV_HOSTONLY );
+				ClearBits( localFlags, FEV_HOSTONLY );
 			}
 		}
 	}
 
-	SetBits( flags, FEV_SERVER );		// it's a server event!
-	if( delay < 0.0f ) delay = 0.0f;	// fixup negative delays
+	SetBits( localFlags, FEV_SERVER );		// it's a server event!
+
+	if( localDelay < 0.0f )
+	{
+		localDelay = 0.0f;	// fixup negative delays
+	}
 
 	// setup pvs cluster for invoker
-	if( !FBitSet( flags, FEV_GLOBAL ))
+	if( !FBitSet( localFlags, FEV_GLOBAL ))
 	{
 		Mod_FatPVS( pvspoint, FATPHS_RADIUS, fatphs, world.fatbytes, false, ( svs.maxclients == 1 ));
 		mask = fatphs; // using the FatPVS like a PHS
@@ -4094,36 +4118,45 @@ void GAME_EXPORT SV_PlaybackEventFull( int flags, const edict_t *pInvoker, word 
 	for( slot = 0, cl = svs.clients; slot < svs.maxclients; slot++, cl++ )
 	{
 		if( cl->state != cs_spawned || !cl->edict || FBitSet( cl->flags, FCL_FAKECLIENT ))
+		{
 			continue;
-
-		if( SV_IsValidEdict( pInvoker ) && pInvoker->v.groupinfo && cl->edict->v.groupinfo )
-		{
-			if( svs.groupop == GROUP_OP_AND && !FBitSet( cl->edict->v.groupinfo, pInvoker->v.groupinfo ))
-				continue;
-
-			if( svs.groupop == GROUP_OP_NAND && FBitSet( cl->edict->v.groupinfo, pInvoker->v.groupinfo ))
-				continue;
 		}
 
-		if( SV_IsValidEdict( pInvoker ))
+		if( SV_IsValidEdict( inArgs->invoker ) && inArgs->invoker->v.groupinfo && cl->edict->v.groupinfo )
 		{
-			if( !SV_CheckClientVisiblity( cl, mask ))
+			if( svs.groupop == GROUP_OP_AND && !FBitSet( cl->edict->v.groupinfo, inArgs->invoker->v.groupinfo ))
+			{
 				continue;
+			}
+
+			if( svs.groupop == GROUP_OP_NAND && FBitSet( cl->edict->v.groupinfo, inArgs->invoker->v.groupinfo ))
+			{
+				continue;
+			}
 		}
 
-		if( FBitSet( flags, FEV_NOTHOST ) && cl == sv.current_client && FBitSet( cl->flags, FCL_LOCAL_WEAPONS ))
+		if( SV_IsValidEdict( inArgs->invoker ) && !SV_CheckClientVisiblity( cl, mask ))
+		{
+			continue;
+		}
+
+		if( FBitSet( localFlags, FEV_NOTHOST ) && cl == sv.current_client && FBitSet( cl->flags, FCL_LOCAL_WEAPONS ))
+		{
 			continue;	// will be played on client side
+		}
 
-		if( FBitSet( flags, FEV_HOSTONLY ) && cl->edict != pInvoker )
+		if( FBitSet( localFlags, FEV_HOSTONLY ) && cl->edict != inArgs->invoker )
+		{
 			continue;	// sending only to invoker
+		}
 
 		// all checks passed, send the event
 
 		// reliable event
-		if( FBitSet( flags, FEV_RELIABLE ))
+		if( FBitSet( localFlags, FEV_RELIABLE ))
 		{
 			// skipping queue, write direct into reliable datagram
-			SV_PlaybackReliableEvent( &cl->netchan.message, eventindex, delay, &args );
+			SV_PlaybackReliableEvent( &cl->netchan.message, inArgs->eventIndex, localDelay, &args );
 			continue;
 		}
 
@@ -4131,13 +4164,13 @@ void GAME_EXPORT SV_PlaybackEventFull( int flags, const edict_t *pInvoker, word 
 		es = &cl->events;
 		bestslot = -1;
 
-		if( FBitSet( flags, FEV_UPDATE ))
+		if( FBitSet( localFlags, FEV_UPDATE ))
 		{
 			for( j = 0; j < MAX_EVENT_QUEUE; j++ )
 			{
 				ei = &es->ei[j];
 
-				if( ei->index == eventindex && invokerIndex != -1 && invokerIndex == ei->entity_index )
+				if( ei->index == inArgs->eventIndex && invokerIndex != -1 && invokerIndex == ei->entity_index )
 				{
 					bestslot = j;
 					break;
@@ -4161,14 +4194,17 @@ void GAME_EXPORT SV_PlaybackEventFull( int flags, const edict_t *pInvoker, word 
 		}
 
 		// no slot found for this player, oh well
-		if( bestslot == -1 ) continue;
+		if( bestslot == -1 )
+		{
+			continue;
+		}
 
 		// add event to queue
-		ei->index = eventindex;
-		ei->fire_time = delay;
+		ei->index = inArgs->eventIndex;
+		ei->fire_time = localDelay;
 		ei->entity_index = invokerIndex;
 		ei->packet_index = -1;
-		ei->flags = flags;
+		ei->flags = localFlags;
 		ei->args = args;
 	}
 }

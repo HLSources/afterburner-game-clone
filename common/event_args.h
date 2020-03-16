@@ -15,6 +15,8 @@
 #ifndef EVENT_ARGS_H
 #define EVENT_ARGS_H
 
+typedef struct edict_s edict_t;
+
 // Event was invoked with stated origin
 #define FEVENT_ORIGIN	( 1<<0 )
 
@@ -43,7 +45,26 @@ typedef struct event_args_s
 	int		bparam1;
 	int		bparam2;
 
+	float vecparam1[3];
+
 	void* localUserData;	// Static data passed in on the client.
 } event_args_t;
+
+typedef struct event_fire_args_s
+{
+	int flags;
+	const edict_t* invoker;
+	unsigned short eventIndex;
+	float delay;
+	const float* vec3Origin;
+	const float* vec3Angles;
+	float fparam1;
+	float fparam2;
+	int iparam1;
+	int iparam2;
+	int bparam1;
+	int bparam2;
+	const float* vec3param1;
+} event_fire_args_t;
 
 #endif//EVENT_ARGS_H

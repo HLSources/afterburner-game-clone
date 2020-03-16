@@ -23,6 +23,8 @@
 #include "soundent.h"
 #include "gamerules.h"
 #include "ammodefs.h"
+#include "event_args.h"
+#include "eventConstructor/eventConstructor.h"
 
 LINK_ENTITY_TO_CLASS( weapon_mp5, CMP5 )
 LINK_ENTITY_TO_CLASS( weapon_9mmAR, CMP5 )
@@ -160,11 +162,25 @@ void CMP5::PrimaryAttack()
 #else
 	flags = 0;
 #endif
-	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usMP5, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0 );
+
+	using namespace EventConstructor;
+	CEventConstructor event;
+
+	event
+		<< Flags(flags)
+		<< Invoker(m_pPlayer->edict())
+		<< EventIndex(m_usMP5)
+		<< FloatParam1(vecDir.x)
+		<< FloatParam1(vecDir.y)
+		;
+
+	event.Send();
 
 	if( !m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 )
+	{
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 );
+	}
 
 	m_flNextPrimaryAttack = GetNextAttackDelay( 0.1 );
 
@@ -214,7 +230,13 @@ void CMP5::SecondaryAttack( void )
 #else
 	flags = 0;
 #endif
-	PLAYBACK_EVENT( flags, m_pPlayer->edict(), m_usMP52 );
+
+	using namespace EventConstructor;
+
+	CEventConstructor event;
+	event.InitSimple(flags, m_pPlayer->edict(), m_usMP52);
+
+	event.Send();
 
 	m_flNextPrimaryAttack = GetNextAttackDelay( 1 );
 	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1;

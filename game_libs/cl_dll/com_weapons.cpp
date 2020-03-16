@@ -127,19 +127,28 @@ HUD_PlaybackEvent
 Directly queue up an event on the client
 =====================
 */
-void HUD_PlaybackEvent( int flags, const edict_t *pInvoker, unsigned short eventindex, float delay,
-	float *origin, float *angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2 )
+void HUD_PlaybackEvent( const struct event_fire_args_s* args )
 {
 	vec3_t org;
 	vec3_t ang;
 
-	if( !g_runfuncs || !g_finalstate )
-	     return;
+	if( !args || !g_runfuncs || !g_finalstate )
+	{
+		return;
+	}
 
-	// Weapon prediction events are assumed to occur at the player's origin
-	org			= g_finalstate->playerstate.origin;
-	ang			= v_angles;
-	gEngfuncs.pfnPlaybackEvent( flags, pInvoker, eventindex, delay, (float *)&org, (float *)&ang, fparam1, fparam2, iparam1, iparam2, bparam1, bparam2 );
+	// Weapon prediction events are assumed to occur at the player's origin.
+	org = g_finalstate->playerstate.origin;
+	ang = v_angles;
+
+	event_fire_args_t modifiedArgs;
+	memset(&modifiedArgs, 0, sizeof(modifiedArgs));
+
+	modifiedArgs = *args;
+	modifiedArgs.vec3Origin = org;
+	modifiedArgs.vec3Angles = ang;
+
+	gEngfuncs.pfnPlaybackEvent(&modifiedArgs);
 }
 
 /*

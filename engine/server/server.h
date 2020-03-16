@@ -131,7 +131,7 @@ typedef struct server_s
 
 	int		hostflags;	// misc server flags: predicting etc
 	CRC32_t		worldmapCRC;	// check crc for catch cheater maps
-	int		progsCRC;		// this is used with feature ENGINE_QUAKE_COMPATIBLE 
+	int		progsCRC;		// this is used with feature ENGINE_QUAKE_COMPATIBLE
 
 	char		name[MAX_QPATH];	// map name
 	char		startspot[MAX_QPATH];
@@ -216,7 +216,7 @@ typedef struct sv_client_s
 	int		chokecount;			// number of messages rate supressed
 	int		delta_sequence;		// -1 = no compression.
 
-	double		next_messagetime;		// time when we should send next world state update  
+	double		next_messagetime;		// time when we should send next world state update
 	double		next_checkpingtime;		// time to send all players pings to client
 	double		next_sendinfotime;		// time to send info about all players
 	double		cl_updaterate;		// client requested updaterate
@@ -595,8 +595,7 @@ void SV_CopyTraceToGlobal( trace_t *trace );
 qboolean SV_CheckEdict( const edict_t *e, const char *file, const int line );
 void SV_SetMinMaxSize( edict_t *e, const float *min, const float *max, qboolean relink );
 edict_t* SV_FindEntityByString( edict_t *pStartEdict, const char *pszField, const char *pszValue );
-void SV_PlaybackEventFull( int flags, const edict_t *pInvoker, word eventindex, float delay, float *origin,
-	float *angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2 );
+void SV_PlaybackEventFull( const struct event_fire_args_s* args );
 void SV_PlaybackReliableEvent( sizebuf_t *msg, word eventindex, float delay, event_args_t *args );
 int SV_BuildSoundMsg( sizebuf_t *msg, edict_t *ent, int chan, const char *sample, int vol, float attn, int flags, int pitch, const vec3_t pos );
 qboolean SV_BoxInPVS( const vec3_t org, const vec3_t absmin, const vec3_t absmax );

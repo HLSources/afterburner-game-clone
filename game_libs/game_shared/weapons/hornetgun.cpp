@@ -24,6 +24,8 @@
 #include "hornet.h"
 #include "gamerules.h"
 #include "ammodefs.h"
+#include "event_args.h"
+#include "eventConstructor/eventConstructor.h"
 
 enum hgun_e
 {
@@ -151,7 +153,18 @@ void CHgun::PrimaryAttack()
 #else
 	flags = 0;
 #endif
-	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usHornetFire, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, FIREMODE_TRACK, 0, 0, 0 );
+
+	using namespace EventConstructor;
+	CEventConstructor event;
+
+	event
+		<< Flags(flags)
+		<< Invoker(m_pPlayer->edict())
+		<< EventIndex(m_usHornetFire)
+		<< IntParam1(FIREMODE_TRACK)
+		;
+
+	event.Send();
 
 	// player "shoot" animation
 	m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
@@ -232,7 +245,18 @@ void CHgun::SecondaryAttack( void )
 #else
 	flags = 0;
 #endif
-	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usHornetFire, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, FIREMODE_FAST, 0, 0, 0 );
+
+	using namespace EventConstructor;
+	CEventConstructor event;
+
+	event
+		<< Flags(flags)
+		<< Invoker(m_pPlayer->edict())
+		<< EventIndex(m_usHornetFire)
+		<< IntParam1(FIREMODE_FAST)
+		;
+
+	event.Send();
 
 	m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
 	m_pPlayer->m_iWeaponVolume = NORMAL_GUN_VOLUME;
