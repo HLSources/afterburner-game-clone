@@ -39,7 +39,7 @@ namespace CustomGeometry
 					item->GetPoints().Count(),
 					item->GetIndices().Count());
 
-				collection->ItemReceived(item);
+				collection->AddItem(item);
 				break;
 			}
 
@@ -49,7 +49,7 @@ namespace CustomGeometry
 					"Received custom geometry clear message for category %s\n",
 					CustomGeometry::CategoryName(reader.GetGeometryCategory()));
 
-				collection->ClearMessageReceived();
+				collection->Clear();
 				break;
 			}
 
@@ -119,7 +119,7 @@ namespace CustomGeometry
 				continue;
 			}
 
-			collection->ClearMessageReceived();
+			collection->Clear();
 		}
 	}
 }

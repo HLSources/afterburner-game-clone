@@ -13,7 +13,7 @@ namespace CustomGeometry
 		return index < m_Items.Count() ? m_Items[index] : GeometryItemPtr_t();
 	}
 
-	void CBaseGeometryCollection::ItemReceived(const GeometryItemPtr_t& item)
+	void CBaseGeometryCollection::AddItem(const GeometryItemPtr_t& item)
 	{
 		if ( !item || item->GetDrawType() == DrawType::None )
 		{
@@ -23,7 +23,7 @@ namespace CustomGeometry
 		m_Items.AddToTail(item);
 	}
 
-	void CBaseGeometryCollection::ClearMessageReceived()
+	void CBaseGeometryCollection::Clear()
 	{
 		m_Items.Purge();
 	}

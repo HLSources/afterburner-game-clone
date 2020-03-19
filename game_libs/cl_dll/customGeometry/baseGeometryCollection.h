@@ -12,8 +12,11 @@ namespace CustomGeometry
 		size_t Count() const;
 		GeometryItemPtr_t ItemAt(uint32_t index) const;
 
-		virtual void ItemReceived(const GeometryItemPtr_t& item);
-		virtual void ClearMessageReceived();
+		// Default behaviour: add item to tail of list, clear list
+		// of all items, render all items. Create a subclass to
+		// override this behaviour.
+		virtual void AddItem(const GeometryItemPtr_t& item);
+		virtual void Clear();
 		virtual void Render();
 
 	protected:
