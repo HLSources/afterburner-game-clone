@@ -21,7 +21,9 @@ void CDebugLogger::RegisterCvar()
 	m_pEnableCvar = &m_EnableCvar;
 	CVAR_REGISTER(m_pEnableCvar);
 #else
+	ASSERT(!m_pEnableCvar);
 	m_pEnableCvar = gEngfuncs.pfnRegisterVariable(m_EnableCvar.name, m_EnableCvar.string, 0);
+	ASSERT(m_pEnableCvar);
 #endif
 }
 

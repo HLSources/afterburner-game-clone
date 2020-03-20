@@ -277,6 +277,9 @@ the hud variables.
 
 void DLLEXPORT HUD_Init( void )
 {
+	// We don't have any robust event-like system for the game DLLs to know when a user is connecting,
+	// when they're disconnecting, when they're changing map, etc.
+	// We just use this init function to re-initialise things when they connect to a server.
 	CustomGeometry::Init();
 	CustomGeometry::CLogger_Client::StaticInstance().RegisterCvar();
 
