@@ -1,8 +1,7 @@
 $cd "."
-$cdtexture "." "..\w_raptor"
-$modelname "p_raptor.mdl"
+$modelname "w_ammo_l9a61.mdl"
 
-$root "Bip01"
+$root "ammo"
 
 $flags 0
 $origin 0.000000 0.000000 0.000000
@@ -10,11 +9,15 @@ $eyeposition 0.000000 0.000000 0.000000
 $bbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
 $cbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
 
+
+
 $bodygroup "studio"
 {
-	studio "p_raptor_REFERENCE_ref"
+	studio "w_ammo_sniper_REFERENCE_ref"
 }
 
-$hbox 0 "gun" -10.660000 -2.130000 -0.090000 2.380000 4.840000 1.370000
+
+
+$hbox 0 "ammo" -2.200000 -2.570000 -1.250000 1.940000 1.960000 0.000000
 
 $sequence "idle1" "idle1_ani"

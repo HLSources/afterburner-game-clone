@@ -1,6 +1,6 @@
 $cd "."
-$cdtexture "." "..\w_raptor"
-$modelname "p_raptor.mdl"
+$cdtexture "." "..\w_l9a61"
+$modelname "p_l96a1.mdl"
 
 $root "Bip01"
 
@@ -10,11 +10,15 @@ $eyeposition 0.000000 0.000000 0.000000
 $bbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
 $cbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
 
+
+
 $bodygroup "studio"
 {
-	studio "p_raptor_REFERENCE_ref"
+	studio "p_l96_sniper_REFERENCE_ref"
 }
 
-$hbox 0 "gun" -10.660000 -2.130000 -0.090000 2.380000 4.840000 1.370000
+
+
+$hbox 0 "W_GUN" -42.810000 -2.670000 -0.490000 10.830000 8.260000 2.670000
 
 $sequence "idle1" "idle1_ani"
