@@ -2,7 +2,7 @@
 
 namespace CustomGeometry
 {
-	void Init();
+	void Initialise();
 	void RenderAllGeometry();
 	void ClearAllGeometry();
 }

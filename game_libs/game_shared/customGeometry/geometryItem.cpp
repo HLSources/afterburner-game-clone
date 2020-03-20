@@ -7,6 +7,12 @@ namespace CustomGeometry
 		m_Colour = 0xFFFFFFFF;
 		m_DrawType = DrawType::None;
 		m_Points.Purge();
+		m_Indices.Purge();
+	}
+
+	bool CGeometryItem::IsEmpty() const
+	{
+		return m_Points.Count() < 1 && m_Indices.Count() < 1;
 	}
 
 	DrawType CGeometryItem::GetDrawType() const

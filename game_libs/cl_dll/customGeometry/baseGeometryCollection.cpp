@@ -43,4 +43,9 @@ namespace CustomGeometry
 			renderer.Render(*item);
 		}
 	}
+
+	bool CBaseGeometryCollection::IsEmpty() const
+	{
+		return m_Items.Count() < 1;
+	}
 }

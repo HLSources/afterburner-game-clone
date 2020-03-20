@@ -78,7 +78,7 @@ namespace CustomGeometry
 		return 1;
 	}
 
-	void Init()
+	void Initialise()
 	{
 		CGeometryCollectionManager& manager = CGeometryCollectionManager::StaticInstance();
 

@@ -19,6 +19,8 @@ namespace CustomGeometry
 		virtual void Clear();
 		virtual void Render();
 
+		bool IsEmpty() const;
+
 	protected:
 		CUtlVector<GeometryItemPtr_t> m_Items;
 	};

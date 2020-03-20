@@ -26,6 +26,7 @@
 #include "projectInterface_client.h"
 #include "customGeometry/geometryStatics.h"
 #include "customGeometry/logger_client.h"
+#include "events/eventCommands.h"
 
 #if defined(GOLDSOURCE_SUPPORT) && (defined(_WIN32) || defined(__linux__) || defined(__APPLE__)) && (defined(__i386) || defined(_M_IX86))
 #define USE_VGUI_FOR_GOLDSOURCE_SUPPORT
@@ -280,8 +281,9 @@ void DLLEXPORT HUD_Init( void )
 	// We don't have any robust event-like system for the game DLLs to know when a user is connecting,
 	// when they're disconnecting, when they're changing map, etc.
 	// We just use this init function to re-initialise things when they connect to a server.
-	CustomGeometry::Init();
+	CustomGeometry::Initialise();
 	CustomGeometry::CLogger_Client::StaticInstance().RegisterCvar();
+	EventCommands::Initialise();
 
 	InitInput();
 	gHUD.Init();

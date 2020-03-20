@@ -13,6 +13,35 @@
 #include "ev_hldm.h"
 #include "rapidjson/document.h"
 #include "rapidjson_helpers/rapidjson_helpers.h"
+#include "debugging/hitscanweapondebugging.h"
+#include "eventCommands.h"
+
+namespace
+{
+	static inline void Debug_BeginBatch()
+	{
+		if ( EventCommands::HitscanEventDebuggingEnabled() )
+		{
+			HitscanWeaponDebugging::BeginBatch();
+		}
+	}
+
+	static inline void Debug_AddTrace(const Vector& begin, const Vector& end)
+	{
+		if ( EventCommands::HitscanEventDebuggingEnabled() )
+		{
+			HitscanWeaponDebugging::AddTraceToBatch(begin, end);
+		}
+	}
+
+	static inline void Debug_EndBatch()
+	{
+		if ( EventCommands::HitscanEventDebuggingEnabled() )
+		{
+			HitscanWeaponDebugging::EndBatch();
+		}
+	}
+}
 
 void HitscanWeaponEventPlayer::EventStart()
 {
@@ -31,6 +60,9 @@ void HitscanWeaponEventPlayer::EventStart()
 void HitscanWeaponEventPlayer::CreateBulletTracers()
 {
 	const uint32_t numShots = m_pHitscanAttack->BulletsPerShot;
+
+	HitscanWeaponDebugging::Clear();
+	Debug_BeginBatch();
 
 	for ( uint32_t shot = 0; shot < numShots; ++shot )
 	{
@@ -87,6 +119,8 @@ void HitscanWeaponEventPlayer::CreateBulletTracers()
 			EV_HLDM_DecalGunshot(&traceResult, BULLET_GENERIC);
 		}
 
+		Debug_AddTrace(m_vecGunPosition, traceResult.endpos);
+
 		if ( m_iTracerStride > 1 )
 		{
 			m_iShotsFired = (m_iShotsFired + 1) % m_iTracerStride;
@@ -94,6 +128,8 @@ void HitscanWeaponEventPlayer::CreateBulletTracers()
 
 		gEngfuncs.pEventAPI->EV_PopPMStates();
 	}
+
+	Debug_EndBatch();
 }
 
 bool HitscanWeaponEventPlayer::Initialise()

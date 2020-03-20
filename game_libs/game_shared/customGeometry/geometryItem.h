@@ -11,6 +11,7 @@ namespace CustomGeometry
 	{
 	public:
 		void Clear();
+		bool IsEmpty() const;
 
 		DrawType GetDrawType() const;
 		void SetDrawType(DrawType type);
