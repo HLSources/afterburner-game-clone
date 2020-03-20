@@ -94,8 +94,6 @@ bool CGenericHitscanWeapon::InvokeWithAttackMode(const CGenericWeapon::WeaponAtt
 			<< Flags(DefaultEventFlags())
 			<< Invoker(m_pPlayer->edict())
 			<< EventIndex(m_AttackModeEvents[hitscanAttack->Signature()->Index])
-			<< FloatParam1(vecDir.x)
-			<< FloatParam2(vecDir.y)
 			<< IntParam1(m_pPlayer->random_seed)
 			<< BoolParam1(m_iClip == 0)
 			;
@@ -137,7 +135,7 @@ Vector CGenericHitscanWeapon::FireBulletsPlayer(const WeaponAtts::WAHitscanAttac
 	gMultiDamage.type = DMG_BULLET | DMG_NEVERGIB;
 
 	const uint32_t numShots = hitscanAttack.BulletsPerShot;
-	for( uint32_t shot = 1; shot <= numShots; shot++ )
+	for( uint32_t shot = 0; shot < numShots; shot++ )
 	{
 		float damagePerShot = 1.0f;
 		const WeaponAtts::WASkillRecord::SkillDataEntryPtr dmgPtr = hitscanAttack.BaseDamagePerShot;
@@ -151,6 +149,7 @@ Vector CGenericHitscanWeapon::FireBulletsPlayer(const WeaponAtts::WAHitscanAttac
 		Vector vecDir = vecDirShooting +
 						(x * hitscanAttack.SpreadX * vecRight) +
 						(y * hitscanAttack.SpreadY * vecUp);
+
 		Vector vecEnd;
 
 		vecEnd = vecSrc + vecDir * DEFAULT_BULLET_TRACE_DISTANCE;
@@ -227,14 +226,11 @@ void CGenericHitscanWeapon::Debug_DeleteHitscanEvent()
 #ifdef CLIENT_DLL
 Vector CGenericHitscanWeapon::FireBulletsPlayer_Client(const WeaponAtts::WAHitscanAttack& hitscanAttack)
 {
-	float x = 0, y = 0;
+	float x = 0.0f;
+	float y = 0.0f;
 
-	const uint32_t numShots = hitscanAttack.BulletsPerShot;
-	for( uint32_t shot = 1; shot <= numShots; shot++ )
-	{
-		GetSharedCircularGaussianSpread(shot, m_pPlayer->random_seed, x, y);
-	}
-
+	// Just return the last vector we would have generated.
+	GetSharedCircularGaussianSpread(hitscanAttack.BulletsPerShot - 1, m_pPlayer->random_seed, x, y);
 	return Vector(x * hitscanAttack.SpreadX, y * hitscanAttack.SpreadY, 0.0);
 }
 #endif

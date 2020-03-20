@@ -41,7 +41,7 @@ public:
 #endif
 
 	static constexpr float DEFAULT_BULLET_TRACE_DISTANCE = 8192;
-	static void GetSharedCircularGaussianSpread(uint32_t shot, int shared_rand, float& x, float& y);
+	static void GetSharedCircularGaussianSpread(uint32_t shotIndex, int shared_rand, float& x, float& y);
 
 protected:
 	enum class WeaponAttackType

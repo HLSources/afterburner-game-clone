@@ -67,28 +67,16 @@ void HitscanWeaponEventPlayer::CreateBulletTracers()
 	for ( uint32_t shot = 0; shot < numShots; ++shot )
 	{
 		vec3_t shotDir;
+		float spreadX = 0.0f;
+		float spreadY = 0.0f;
 
-		if ( numShots == 1 )
+		CGenericWeapon::GetSharedCircularGaussianSpread(shot, m_iRandomSeed, spreadX, spreadY);
+
+		for ( uint8_t axis = 0; axis < 3; ++axis )
 		{
-			for ( uint8_t axis = 0; axis < 3; ++axis )
-			{
-				shotDir[axis] = m_vecFwd[axis] + (m_flSpreadX * m_vecRight[axis]) + (m_flSpreadY * m_vecUp [axis]);
-			}
-		}
-		else
-		{
-			// We are firing multiple shots, so we need to generate the spread for each one.
-			float spreadX = 0.0f;
-			float spreadY = 0.0f;
-
-			CGenericWeapon::GetSharedCircularGaussianSpread(shot, m_iRandomSeed, spreadX, spreadY);
-
-			for ( uint8_t axis = 0; axis < 3; ++axis )
-			{
-				shotDir[axis] = m_vecFwd[axis] +
-					(spreadX * m_pHitscanAttack->SpreadX * m_vecRight[axis]) +
-					(spreadY * m_pHitscanAttack->SpreadY * m_vecUp[axis]);
-			}
+			shotDir[axis] = m_vecFwd[axis] +
+				(spreadX * m_pHitscanAttack->SpreadX * m_vecRight[axis]) +
+				(spreadY * m_pHitscanAttack->SpreadY * m_vecUp[axis]);
 		}
 
 		vec3_t traceEnd = m_vecGunPosition + (CGenericWeapon::DEFAULT_BULLET_TRACE_DISTANCE * shotDir);
@@ -146,8 +134,6 @@ bool HitscanWeaponEventPlayer::Initialise()
 	}
 
 	m_iShellModelIndex = gEngfuncs.pEventAPI->EV_FindModelIndex(m_pHitscanAttack->ShellModelName);
-	m_flSpreadX = m_pEventArgs->fparam1;
-	m_flSpreadY = m_pEventArgs->fparam2;
 	m_iRandomSeed = m_pEventArgs->iparam1;
 
 	return true;

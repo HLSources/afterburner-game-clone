@@ -80,7 +80,7 @@ namespace EventCommands
 
 	void Initialise()
 	{
-		gEngfuncs.pfnAddCommand("debug_event_hitscan", &SetHitscanEventDebug);
+		gEngfuncs.pfnAddCommand("event_hitscan_debug", &SetHitscanEventDebug);
 	}
 
 	bool HitscanEventDebuggingEnabled()
