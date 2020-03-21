@@ -56,7 +56,7 @@ void CGenericWeapon::Spawn()
 	}
 	else
 	{
-		Materialize(); roonwashere
+		Materialize();
 	}
 }
 
