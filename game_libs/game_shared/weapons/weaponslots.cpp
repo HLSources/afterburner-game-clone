@@ -24,7 +24,8 @@ const int WEAPON_HUD_SLOTS[MAX_WEAPON_SLOTS][MAX_WEAPON_POSITIONS] =
 		WEAPON_MP5,
 		WEAPON_SHOTGUN,
 		WEAPON_CROSSBOW,
-		static_cast<int>(WeaponId_e::WeaponFrinesi)
+		static_cast<int>(WeaponId_e::WeaponFrinesi),
+		static_cast<int>(WeaponId_e::Weapon_L96A1)
 	},
 
 	// Slot 4

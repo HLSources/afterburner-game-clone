@@ -1,3 +1,5 @@
+#pragma once
+
 #include "weapon_p99.h"
 #include "weaponatts_collection.h"
 #include "weapon_pref_weights.h"
@@ -35,7 +37,7 @@ enum P99AttackMode_e
 // Rounds per second:
 static constexpr float P99_FIRE_RATE = 6.0f;
 
-static const CAmmoDef Ammo_P99 =
+static constexpr CAmmoDef Ammo_P99 =
 {
 	"ammo_p99",	// ClassName
 	"ammodef_p99",	// AmmoName

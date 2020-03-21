@@ -12,7 +12,8 @@ enum WeaponPreferenceWeight
 	WeaponPref_Raptor,
 	WeaponPref_Frinesi,
 	WeaponPref_GrenadeLauncher,
-	WeaponPref_Max = WeaponPref_GrenadeLauncher
+	WeaponPref_L96A1,
+	WeaponPref_Max = WeaponPref_L96A1
 	// Most preferable
 };
 

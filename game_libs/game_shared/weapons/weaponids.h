@@ -7,5 +7,6 @@ enum class WeaponId_e
 	WeaponFrinesi,
 	WeaponGrenadeLauncher,
 	WeaponRaptor,
-	WeaponFists
+	WeaponFists,
+	Weapon_L96A1
 };

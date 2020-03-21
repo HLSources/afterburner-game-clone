@@ -1,5 +1,5 @@
 $cd "."
-$cdtexture "." "..\w_l9a61"
+$cdtexture "." "..\w_l96a1"
 $modelname "p_l96a1.mdl"
 
 $root "Bip01"

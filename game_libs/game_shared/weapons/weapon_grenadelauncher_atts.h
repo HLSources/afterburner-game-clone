@@ -1,3 +1,5 @@
+#pragma once
+
 #include "weapon_grenadelauncher.h"
 #include "weaponatts_collection.h"
 #include "weapon_pref_weights.h"
@@ -30,7 +32,7 @@ DEV_CVAR(grenadelauncher_launch_speed, "1000");
 DEV_CVAR(grenadelauncher_launch_pitch_adjust, "5");
 #undef DEV_CVAR
 
-static const CAmmoDef Ammo_GrenadeLauncher =
+static constexpr CAmmoDef Ammo_GrenadeLauncher =
 {
 	"ammo_grenadelauncher",	// ClassName
 	"ammodef_grenadelauncher",	// AmmoName

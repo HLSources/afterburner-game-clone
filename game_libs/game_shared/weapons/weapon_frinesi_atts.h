@@ -32,7 +32,7 @@ static constexpr float FRINESI_FIRE_RATE_AUTO = 4.0f;
 
 static constexpr uint8_t FRINESI_PELLETS_PER_SHOT = 6;
 
-static const CAmmoDef Ammo_Frinesi =
+static constexpr CAmmoDef Ammo_Frinesi =
 {
 	"ammo_frinesi",	// ClassName
 	"ammodef_frinesi",	// AmmoName

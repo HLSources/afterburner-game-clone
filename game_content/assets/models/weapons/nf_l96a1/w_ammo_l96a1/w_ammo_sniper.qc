@@ -1,5 +1,5 @@
 $cd "."
-$modelname "w_ammo_l9a61.mdl"
+$modelname "w_ammo_l96a1.mdl"
 
 $root "ammo"
 

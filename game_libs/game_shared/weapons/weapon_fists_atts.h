@@ -1,3 +1,5 @@
+#pragma once
+
 #include "weapon_fists.h"
 #include "weaponatts_collection.h"
 #include "weapon_pref_weights.h"
