@@ -36,8 +36,8 @@ static constexpr CAmmoDef Ammo_Frinesi =
 {
 	"ammo_frinesi",	// ClassName
 	"ammodef_frinesi",	// AmmoName
-	72,	// MaxCarry
-	125	// AmmoBoxGive
+	125,	// MaxCarry
+	72	// AmmoBoxGive
 };
 
 static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACollection& obj)
