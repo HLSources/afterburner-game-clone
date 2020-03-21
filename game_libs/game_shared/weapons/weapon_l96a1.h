@@ -6,6 +6,8 @@
 class CWeaponL96A1 : public CGenericHitscanWeapon
 {
 public:
+	CWeaponL96A1();
+
 	virtual const WeaponAtts::WACollection& WeaponAttributes() const override;
 
 #ifndef CLIENT_DLL

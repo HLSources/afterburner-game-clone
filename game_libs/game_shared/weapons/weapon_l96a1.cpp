@@ -1,9 +1,6 @@
 #include "weapon_l96a1.h"
-#include "weaponregistry.h"
-#include "weaponinfo.h"
 #include "skill.h"
 #include "gamerules.h"
-#include "weapon_pref_weights.h"
 #include "weapon_l96a1_atts.h"
 
 #ifndef CLIENT_DLL
@@ -11,6 +8,12 @@
 #endif
 
 LINK_ENTITY_TO_CLASS(weapon_l96a1, CWeaponL96A1)
+
+CWeaponL96A1::CWeaponL96A1() :
+	CGenericHitscanWeapon()
+{
+	m_pPrimaryAttackMode = GetAttackModeFromAttributes<WeaponAtts::WAHitscanAttack>(ATTACKMODE_NORMAL);
+}
 
 const WeaponAtts::WACollection& CWeaponL96A1::WeaponAttributes() const
 {

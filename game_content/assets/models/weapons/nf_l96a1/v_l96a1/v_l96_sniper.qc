@@ -41,15 +41,17 @@ $hbox 0 "R_Arm_bone" -2.520000 -2.150000 -1.840000 10.940000 1.810000 1.710000
 
 $sequence "idle1" "idle1_ani" fps 10
 $sequence "idle2" "idle2_ani" fps 10
-$sequence "fire" "fire_ani" fps 35
+$sequence "fire" "fire_ani" fps 35 {
+	event 5005 22 "weapons/weapon_l96a1/l96a1_bolt_pull.wav"
+}
 $sequence "fire_last" "fire_last_ani"
 $sequence "reload" "reload_ani" {
-	event 5004 0 "weapons/l96_reload.wav"
+	event 5005 0 "weapons/weapon_l96a1/l96a1_reload.wav"
 }
 $sequence "reload_charge" "reload_charge_ani" {
-	event 5004 0 "weapons/l96_reload_empty.wav"
+	event 5005 0 "weapons/weapon_l96a1/l96a1_reload_empty.wav"
 }
 $sequence "holster" "holster_ani"
 $sequence "draw" "draw_ani" {
-	event 5004 0 "weapons/sniper_draw.wav"
+	event 5005 0 "weapons/weapon_l96a1/l96a1_draw.wav"
 }
