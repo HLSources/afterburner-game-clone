@@ -91,6 +91,10 @@ def compileAndCopyToOutput(qcFilePath : list):
 	targetWeaponModelPath = os.path.join(outputDir, weaponModelName)
 
 	print("Copying compiled weapon model to", targetWeaponModelPath)
+
+	if not os.path.isdir(outputDir):
+		os.makedirs(outputDir)
+
 	shutil.copyfile(localWeaponModelPath, targetWeaponModelPath)
 
 	print("Deleting local compiled model", localWeaponModelPath)
