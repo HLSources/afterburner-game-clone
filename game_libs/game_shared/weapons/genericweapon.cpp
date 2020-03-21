@@ -50,7 +50,14 @@ void CGenericWeapon::Spawn()
 
 	m_iDefaultAmmo = WeaponAttributes().Ammo.PrimaryAmmoOnFirstPickup;
 
-	FallInit();// get ready to fall down.
+	if ( !(pev->spawnflags & SF_DontDrop) )
+	{
+		FallInit();
+	}
+	else
+	{
+		Materialize(); roonwashere
+	}
 }
 
 void CGenericWeapon::Precache()

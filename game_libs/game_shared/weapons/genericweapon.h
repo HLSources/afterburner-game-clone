@@ -14,6 +14,11 @@ class CBaseBotFightStyle;
 class CGenericWeapon : public CBasePlayerWeapon
 {
 public:
+	enum SpawnFlag
+	{
+		SF_DontDrop = (1 << 0)
+	};
+
 	CGenericWeapon();
 	virtual ~CGenericWeapon();
 	virtual void Spawn() override;
@@ -154,6 +159,11 @@ private:
 class CGenericAmmo : public CBasePlayerAmmo
 {
 public:
+	enum SpawnFlag
+	{
+		SF_DontDrop = (1 << 0)
+	};
+
 	CGenericAmmo(const char* modelName, const CAmmoDef& ammoDef, const char* pickupSoundName = NULL)
 		: CBasePlayerAmmo(),
 		  m_szModelName(modelName),
@@ -168,6 +178,11 @@ public:
 		Precache();
 		SET_MODEL(ENT(pev), m_szModelName);
 		CBasePlayerAmmo::Spawn();
+
+		if ( pev->spawnflags & SF_DontDrop )
+		{
+			pev->movetype = MOVETYPE_NONE;
+		}
 	}
 
 	void Precache()
