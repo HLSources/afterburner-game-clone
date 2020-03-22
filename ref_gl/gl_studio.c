@@ -3714,6 +3714,17 @@ void R_DrawViewModel( void )
 	if( !RI.currententity->model )
 		return;
 
+	const float oldX = RI.fov_x;
+	const float oldY = RI.fov_y;
+	const qboolean differentFOV = RI.fov_x != RI.viewmodelfov_x || RI.fov_y != RI.viewmodelfov_y;
+
+	if ( differentFOV )
+	{
+		RI.fov_x = RI.viewmodelfov_x;
+		RI.fov_y = RI.viewmodelfov_y;
+		R_SetupGL(true);
+	}
+
 	// adjust the depth range to prevent view model from poking into walls
 	pglDepthRange( gldepthmin, gldepthmin + 0.3f * ( gldepthmax - gldepthmin ));
 	RI.currentmodel = RI.currententity->model;
@@ -3738,6 +3749,13 @@ void R_DrawViewModel( void )
 
 	// restore depth range
 	pglDepthRange( gldepthmin, gldepthmax );
+
+	if ( differentFOV )
+	{
+		RI.fov_x = oldX;
+		RI.fov_y = oldY;
+		R_SetupGL(true);
+	}
 
 	// backface culling for left-handed weapons
 	if( R_AllowFlipViewModel( RI.currententity ) || g_iBackFaceCull )

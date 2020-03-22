@@ -29,6 +29,7 @@ convar_t *cl_allow_levelshots;
 convar_t *cl_levelshot_name;
 convar_t *cl_envshot_size;
 convar_t *v_dark;
+convar_t *viewmodel_fov;
 
 typedef struct
 {
@@ -57,7 +58,7 @@ void SCR_DrawFPS( int height )
 	int		offset;
 
 	if( cls.state != ca_active || !cl_showfps->value || cl.background )
-		return; 
+		return;
 
 	switch( cls.scrshot_action )
 	{
@@ -203,7 +204,7 @@ void SCR_RSpeeds( void )
 			y += height;
 
 			// handle '\n\n'
-			if( *p == '\n' ) 
+			if( *p == '\n' )
 				y += height;
 			if( end ) p = end + 1;
 			else break;
@@ -306,7 +307,7 @@ void SCR_MakeScreenShot( void )
 	// report
 	if( iRet )
 	{
-		// snapshots don't writes message about image		
+		// snapshots don't writes message about image
 		if( cls.scrshot_action != scrshot_snapshot )
 			Con_Reportf( "Write %s\n", cls.shotname );
 	}
@@ -461,7 +462,7 @@ void SCR_TileClear( void )
 	right = left + clgame.viewport[2] - 1;
 
 	if( clear.y1 < top )
-	{	
+	{
 		// clear above view screen
 		i = clear.y2 < top-1 ? clear.y2 : top - 1;
 		ref.dllFuncs.R_DrawTileClear( cls.tileImage, clear.x1, clear.y1, clear.x2 - clear.x1 + 1, i - clear.y1 + 1 );
@@ -469,7 +470,7 @@ void SCR_TileClear( void )
 	}
 
 	if( clear.y2 > bottom )
-	{	
+	{
 		// clear below view screen
 		i = clear.y1 > bottom + 1 ? clear.y1 : bottom + 1;
 		ref.dllFuncs.R_DrawTileClear( cls.tileImage, clear.x1, i, clear.x2 - clear.x1 + 1, clear.y2 - i + 1 );
@@ -485,7 +486,7 @@ void SCR_TileClear( void )
 	}
 
 	if( clear.x2 > right )
-	{	
+	{
 		// clear left of view screen
 		i = clear.x1 > right + 1 ? clear.x1 : right + 1;
 		ref.dllFuncs.R_DrawTileClear( cls.tileImage, i, clear.y1, clear.x2 - i + 1, clear.y2 - clear.y1 + 1 );
@@ -578,7 +579,7 @@ qboolean SCR_LoadVariableWidthFont( const char *fontname )
 	// half-life font with variable chars witdh
 	buffer = FS_LoadFile( fontname, &length, false );
 
-	// setup creditsfont	
+	// setup creditsfont
 	if( buffer && length >= sizeof( qfont_t ))
 	{
 		src = (qfont_t *)buffer;
@@ -697,7 +698,7 @@ void SCR_RegisterTextures( void )
 			cls.loadingBar = ref.dllFuncs.GL_LoadTexture( "gfx/loading.lmp", NULL, 0, TF_IMAGE|TF_LUMINANCE );
 		else cls.loadingBar = ref.dllFuncs.GL_LoadTexture( "gfx/loading.lmp", NULL, 0, TF_IMAGE );
 	}
-	
+
 	cls.tileImage = ref.dllFuncs.GL_LoadTexture( "gfx/backtile.lmp", NULL, 0, TF_NOMIPMAP );
 }
 
@@ -750,7 +751,7 @@ void SCR_VidInit( void )
 	VGui_Startup( NULL, refState.width, refState.height ); // initialized already, so pass NULL
 
 	CL_ClearSpriteTextures(); // now all hud sprites are invalid
-	
+
 	// vid_state has changed
 	if( gameui.hInstance ) gameui.dllFuncs.pfnVidInit();
 	if( clgame.hInstance ) clgame.dllFuncs.pfnVidInit();
@@ -777,7 +778,8 @@ void SCR_Init( void )
 	cl_envshot_size = Cvar_Get( "cl_envshot_size", "256", FCVAR_ARCHIVE, "envshot size of cube side" );
 	v_dark = Cvar_Get( "v_dark", "0", 0, "starts level from dark screen" );
 	scr_viewsize = Cvar_Get( "viewsize", "120", FCVAR_ARCHIVE, "screen size" );
-	
+	viewmodel_fov = Cvar_Get("viewmodel_fov", "60", FCVAR_ARCHIVE, "FOV for rendering view models (clientside only).");
+
 	// register our commands
 	Cmd_AddCommand( "skyname", CL_SetSky_f, "set new skybox by basename" );
 	Cmd_AddCommand( "loadsky", CL_SetSky_f, "set new skybox by basename" );

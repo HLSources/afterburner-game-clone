@@ -135,6 +135,7 @@ typedef struct
 	qboolean		drawOrtho;	// draw world as orthogonal projection
 
 	float		fov_x, fov_y;	// current view fov
+	float		viewmodelfov_x, viewmodelfov_y;
 
 	cl_entity_t	*currententity;
 	model_t		*currentmodel;

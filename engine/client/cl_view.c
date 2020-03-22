@@ -35,7 +35,7 @@ void V_CalcViewRect( void )
 	int	sb_lines;
 	float	size;
 
-	// intermission is always full screen	
+	// intermission is always full screen
 	if( cl.intermission ) size = 120.0f;
 	else size = scr_viewsize->value;
 
@@ -220,6 +220,25 @@ void V_RefApplyOverview( ref_viewpass_t *rvp )
 	ref.dllFuncs.GL_OrthoBounds( mins, maxs );
 }
 
+static void InitialiseFOV(const float inFov, float* fov_x, float* fov_y)
+{
+	if ( !fov_x || !fov_y )
+	{
+		return;
+	}
+
+	*fov_x = bound( 10.0f, inFov, 150.0f ); // this is a final fov value
+
+	// first we need to compute FOV and other things that needs for frustum properly work
+	*fov_y = V_CalcFov( fov_x, clgame.viewport[2], clgame.viewport[3] );
+
+	// adjust FOV for widescreen
+	if( refState.wideScreen && r_adjust_fov->value )
+	{
+		V_AdjustFov( fov_x, fov_y, clgame.viewport[2], clgame.viewport[3], false );
+	}
+}
+
 /*
 =============
 V_GetRefParams
@@ -248,15 +267,9 @@ void V_GetRefParams( ref_params_t *fd, ref_viewpass_t *rvp )
 
 	rvp->viewentity = fd->viewentity;
 
-	// calc FOV
-	rvp->fov_x = bound( 10.0f, cl.local.scr_fov, 150.0f ); // this is a final fov value
-
-	// first we need to compute FOV and other things that needs for frustum properly work
-	rvp->fov_y = V_CalcFov( &rvp->fov_x, clgame.viewport[2], clgame.viewport[3] );
-
-	// adjust FOV for widescreen
-	if( refState.wideScreen && r_adjust_fov->value )
-		V_AdjustFov( &rvp->fov_x, &rvp->fov_y, clgame.viewport[2], clgame.viewport[3], false );
+	// Client and viewmodel-specific FOV:
+	InitialiseFOV(cl.local.scr_fov, &rvp->fov_x, &rvp->fov_y);
+	InitialiseFOV(viewmodel_fov->value, &rvp->viewmodelfov_x, &rvp->viewmodelfov_y);
 
 	rvp->flags = 0;
 
