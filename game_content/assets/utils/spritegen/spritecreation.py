@@ -17,9 +17,14 @@ class SingleFrameSpriteData:
 		outFile.write(self.data)
 
 def imageToBytes(imageFile : Image):
-	# Enforce RGBA for now.
-	if imageFile.mode != "RGBA":
-		raise ValueError("Expected an image in RGBA format.")
+	numChannels = 0
+
+	if imageFile.mode == "RGBA":
+		numChannels = 4
+	elif imageFile.mode == "RGB":
+		numChannels = 3
+	else:
+		raise ValueError(f"Unsupported image format {imageFile.mode}.")
 
 	imageData = imageFile.getdata()
 	rawData = bytearray(4 * len(imageData))
@@ -31,7 +36,11 @@ def imageToBytes(imageFile : Image):
 		rawData[outIndex + 0] = pixel[0]
 		rawData[outIndex + 1] = pixel[1]
 		rawData[outIndex + 2] = pixel[2]
-		rawData[outIndex + 3] = pixel[3]
+
+		if numChannels == 4:
+			rawData[outIndex + 3] = pixel[3]
+		else:
+			rawData[outIndex + 3] = 255
 
 	return bytes(rawData)
 
