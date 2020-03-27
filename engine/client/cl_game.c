@@ -1491,16 +1491,21 @@ static void GAME_EXPORT pfnSPR_DrawAdditive( int frame, int x, int y, const wrec
 #endif
 }
 
-static void GAME_EXPORT pfnSPR_DrawTranslucent( int frame, int x, int y, const wrect_t *prc )
+static void GAME_EXPORT pfnSPR_DrawCustom( const sprite_draw_args_t* args )
 {
+	if ( !args )
+	{
+		return;
+	}
+
 #if 1 // REFTODO
-	ref.dllFuncs.GL_SetRenderMode( kRenderTransTexture );
+	ref.dllFuncs.GL_SetRenderMode( args->renderMode );
 #else
 	pglEnable( GL_BLEND );
 	pglBlendFunc( GL_ONE, GL_ONE );
 #endif
 
-	SPR_DrawGeneric( frame, x, y, -1, -1, prc );
+	SPR_DrawGeneric( args->frame, args->x, args->y, args->width, args->height, args->prc );
 
 #if 1 // REFTODO
 	ref.dllFuncs.GL_SetRenderMode( kRenderNormal );
@@ -3781,7 +3786,7 @@ static cl_enginefunc_t gEngfuncs =
 	pfnSPR_Draw,
 	pfnSPR_DrawHoles,
 	pfnSPR_DrawAdditive,
-	pfnSPR_DrawTranslucent,
+	pfnSPR_DrawCustom,
 	SPR_EnableScissor,
 	SPR_DisableScissor,
 	pfnSPR_GetList,
