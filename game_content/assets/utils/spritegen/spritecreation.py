@@ -7,12 +7,33 @@ class SingleFrameSpriteData:
 	def __init__(self):
 		self.header = None
 		self.frameType = None
+		self.frame = None
 		self.data = None
 
-def imageToByteArray(imageFile : Image):
-	imgIO = io.BytesIO()
-	imageFile.save(imgIO, format=imageFile.format)
-	return imgIO.getvalue()
+	def write(self, outFile):
+		outFile.write(self.header)
+		outFile.write(self.frameType)
+		outFile.write(self.frame)
+		outFile.write(self.data)
+
+def imageToBytes(imageFile : Image):
+	# Enforce RGBA for now.
+	if imageFile.mode != "RGBA":
+		raise ValueError("Expected an image in RGBA format.")
+
+	imageData = imageFile.getdata()
+	rawData = bytearray(4 * len(imageData))
+
+	for i in range(0, len(imageData)):
+		outIndex = 4 * i
+		pixel = imageData[i]
+
+		rawData[outIndex + 0] = pixel[0]
+		rawData[outIndex + 1] = pixel[1]
+		rawData[outIndex + 2] = pixel[2]
+		rawData[outIndex + 3] = pixel[3]
+
+	return bytes(rawData)
 
 def createSingleFrameSprite(imageFile : Image):
 	# Required:
@@ -40,5 +61,6 @@ def createSingleFrameSprite(imageFile : Image):
 								format_defs.SPRITE_SYNCTYPE_RAND)
 
 	sprite.frameType = struct.pack(format_defs.SPRITE_FRAMETYPE_FORMAT, format_defs.SPRITE_FRAMETYPE_SINGLE)
-	sprite.data = imageToByteArray(imageFile)
+	sprite.frame = struct.pack(format_defs.SPRITE_FRAME_FORMAT, 0, 0, imageFile.width, imageFile.height)
+	sprite.data = imageToBytes(imageFile)
 	return sprite

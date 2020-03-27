@@ -24,15 +24,20 @@ def convertFile(input : str, output : str):
 		raise OSError(f"File {input} was not found.")
 
 	image = Image.open(input)
-	print("Image data:", len(image.getdata()), "bytes.")
+	imageData = image.getdata()
+
+	if len(imageData) < 1:
+		raise ValueError("Image file was empty.")
+
+	numBytes = len(imageData) * len(imageData[0])
+
+	print("Image data:", float(numBytes) / 1024.0, "KB uncompressed.")
 
 	sprite = spritecreation.createSingleFrameSprite(image)
 	print("Writing:", output)
 
 	with open(output, "wb") as outFile:
-		outFile.write(sprite.header)
-		outFile.write(sprite.frameType)
-		outFile.write(sprite.data)
+		sprite.write(outFile)
 
 	print("Written successfully.")
 

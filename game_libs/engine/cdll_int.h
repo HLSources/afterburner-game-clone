@@ -128,6 +128,7 @@ typedef struct cl_enginefuncs_s
 	void	(*pfnSPR_Draw)( int frame, int x, int y, const wrect_t *prc );
 	void	(*pfnSPR_DrawHoles)( int frame, int x, int y, const wrect_t *prc );
 	void	(*pfnSPR_DrawAdditive)( int frame, int x, int y, const wrect_t *prc );
+	void	(*pfnSPR_DrawTranslucent)( int frame, int x, int y, const wrect_t *prc );
 	void	(*pfnSPR_EnableScissor)( int x, int y, int width, int height );
 	void	(*pfnSPR_DisableScissor)( void );
 	client_sprite_t *(*pfnSPR_GetList)( const char *psz, int *piCount );

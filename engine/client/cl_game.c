@@ -1491,6 +1491,24 @@ static void GAME_EXPORT pfnSPR_DrawAdditive( int frame, int x, int y, const wrec
 #endif
 }
 
+static void GAME_EXPORT pfnSPR_DrawTranslucent( int frame, int x, int y, const wrect_t *prc )
+{
+#if 1 // REFTODO
+	ref.dllFuncs.GL_SetRenderMode( kRenderTransTexture );
+#else
+	pglEnable( GL_BLEND );
+	pglBlendFunc( GL_ONE, GL_ONE );
+#endif
+
+	SPR_DrawGeneric( frame, x, y, -1, -1, prc );
+
+#if 1 // REFTODO
+	ref.dllFuncs.GL_SetRenderMode( kRenderNormal );
+#else
+	pglDisable( GL_BLEND );
+#endif
+}
+
 /*
 =========
 pfnSPR_GetList
@@ -3583,7 +3601,7 @@ void GAME_EXPORT Voice_EndVoiceTweakMode( void )
 Voice_SetControlFloat
 
 =================
-*/	
+*/
 void GAME_EXPORT Voice_SetControlFloat( VoiceTweakControl iControl, float value )
 {
 }
@@ -3763,6 +3781,7 @@ static cl_enginefunc_t gEngfuncs =
 	pfnSPR_Draw,
 	pfnSPR_DrawHoles,
 	pfnSPR_DrawAdditive,
+	pfnSPR_DrawTranslucent,
 	SPR_EnableScissor,
 	SPR_DisableScissor,
 	pfnSPR_GetList,
