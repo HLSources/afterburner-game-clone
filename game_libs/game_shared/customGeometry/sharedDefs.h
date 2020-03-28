@@ -30,6 +30,7 @@ namespace CustomGeometry
 	enum class DrawType
 	{
 		None = 0,	// For clearing previously drawn geometry.
-		Lines
+		Lines,
+		TriangleFan
 	};
 }

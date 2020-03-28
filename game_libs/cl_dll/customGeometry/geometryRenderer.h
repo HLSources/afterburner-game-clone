@@ -13,7 +13,9 @@ namespace CustomGeometry
 		void Render(const CGeometryItem& item);
 
 	private:
+		void Prepare(int renderMode, uint32_t colour);
 		void DrawLines(const CGeometryItem& item);
+		void DrawTriangleFan(const CGeometryItem& item);
 
 		HSPRITE m_ColourSprite = 0;
 	};
