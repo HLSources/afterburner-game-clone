@@ -43,6 +43,7 @@ SOURCES = \
 	"cl_dll/hl/**/*.cpp",
 	"cl_dll/projectInterface_client/**/*.cpp",
 	"cl_dll/customGeometry/**/*.cpp",
+	"cl_dll/ui/**/*.cpp",
 
 	# TODO: Change the folder structure one day so that we can use globs and not have to do this.
 	# Currently we don't want to include absolutely everything...

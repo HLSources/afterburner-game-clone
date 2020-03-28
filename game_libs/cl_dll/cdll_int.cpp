@@ -40,6 +40,9 @@ extern "C"
 }
 
 #include <string.h>
+#include "cl_dll.h"
+#include "ui/screenOverlays/ScreenOverlayContainer.h"
+#include "ui/screenOverlays/DebugCommands.h"
 
 cl_enginefunc_t gEngfuncs;
 CHud gHUD;
@@ -243,6 +246,7 @@ so the HUD can reinitialize itself.
 
 int DLLEXPORT HUD_VidInit( void )
 {
+	CScreenOverlayContainer::StaticInstance().VidInit();
 	gHUD.VidInit();
 #ifdef USE_VGUI_FOR_GOLDSOURCE_SUPPORT
 	vgui::Panel* root=(vgui::Panel*)gEngfuncs.VGui_GetPanel();
@@ -284,8 +288,15 @@ void DLLEXPORT HUD_Init( void )
 	CustomGeometry::Initialise();
 	CustomGeometry::CLogger_Client::StaticInstance().RegisterCvar();
 	EventCommands::Initialise();
+	ScreenOverlays::InitialiseDebugCommands();
 
 	InitInput();
+
+	CScreenOverlayContainer& container = CScreenOverlayContainer::StaticInstance();
+	container.RegisterOverlays();
+	container.Precache();
+	container.VidInit();
+
 	gHUD.Init();
 
 	HOOK_MESSAGE(Bhopcap);
@@ -302,6 +313,7 @@ redraw the HUD.
 
 int DLLEXPORT HUD_Redraw( float time, int intermission )
 {
+	CScreenOverlayContainer::StaticInstance().DrawCurrentOverlay(time);
 	gHUD.Redraw( time, intermission );
 
 	return 1;
@@ -337,6 +349,7 @@ Called at start and end of demos to restore to "non"HUD state.
 
 void DLLEXPORT HUD_Reset( void )
 {
+	CScreenOverlayContainer::StaticInstance().VidInit();
 	gHUD.VidInit();
 }
 

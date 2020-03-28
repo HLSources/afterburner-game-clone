@@ -29,6 +29,7 @@
 #include "wrect.h"
 #include "cl_dll.h"
 #include "ammo.h"
+#include "ui/drawable/BaseUIDrawable.h"
 
 #define DHN_DRAWZERO 1
 #define DHN_2DIGITS  2
@@ -66,19 +67,13 @@ typedef struct cvar_s cvar_t;
 //
 //-----------------------------------------------------
 //
-class CHudBase
+class CHudBase : public CBaseUIDrawable
 {
 public:
 	POSITION  m_pos;
 	int   m_type;
 	int	  m_iFlags; // active, moving,
 	virtual		~CHudBase() {}
-	virtual int Init( void ) { return 0; }
-	virtual int VidInit( void ) { return 0; }
-	virtual int Draw( float flTime ) { return 0; }
-	virtual void Think( void ) { return; }
-	virtual void Reset( void ) { return; }
-	virtual void InitHUDData( void ) {}		// called every time a server is connected to
 };
 
 struct HUDLIST
