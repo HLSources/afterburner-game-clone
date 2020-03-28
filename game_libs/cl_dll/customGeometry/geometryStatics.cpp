@@ -1,3 +1,4 @@
+#include <memory>
 #include "geometryStatics.h"
 #include "cl_dll.h"
 #include "customGeometry/geometryCollectionManager.h"
@@ -9,6 +10,8 @@
 
 namespace CustomGeometry
 {
+	static std::unique_ptr<CGeometryRenderer> AdHocRenderer;
+
 	static void HandleSuccessfullyReceivedMessage(const CMessageReader& reader)
 	{
 		if ( reader.GetLastReadResult() == CMessageReader::ReadResult::Clear &&
@@ -85,6 +88,7 @@ namespace CustomGeometry
 		// Specify any custom geometry collection factory functions before this call, via manager.SetFactoryFunction().
 		// This is used for providing the manager with custom CBaseGeometryCollection subclasses.
 		manager.Initialise();
+		AdHocRenderer.reset(new CGeometryRenderer());
 
 		gEngfuncs.pfnHookUserMsg(MESSAGE_NAME, &HandleCustomGeometryMessage);
 	}
@@ -103,6 +107,14 @@ namespace CustomGeometry
 			}
 
 			collection->Render();
+		}
+	}
+
+	void RenderAdHocGeometry(const GeometryItemPtr_t& item)
+	{
+		if ( AdHocRenderer && item )
+		{
+			AdHocRenderer->Render(*item);
 		}
 	}
 

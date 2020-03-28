@@ -4,10 +4,6 @@ CBaseScreenOverlay::~CBaseScreenOverlay()
 {
 }
 
-void CBaseScreenOverlay::Precache()
-{
-}
-
 void CBaseScreenOverlay::VidInit()
 {
 }

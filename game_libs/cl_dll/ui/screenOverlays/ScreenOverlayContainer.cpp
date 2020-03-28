@@ -16,15 +16,8 @@ CScreenOverlayContainer::CScreenOverlayContainer()
 void CScreenOverlayContainer::RegisterOverlays()
 {
 	MapIdToClass<CSniperScopeOverlay>();
-}
 
-void CScreenOverlayContainer::Precache()
-{
-	ForEachValidOverlay([](ScreenOverlays::OverlayId id, CBaseScreenOverlay* overlay)
-	{
-		overlay->Precache();
-	},
-	true);
+	CreateAllOverlays();
 }
 
 void CScreenOverlayContainer::VidInit()
@@ -58,17 +51,27 @@ void CScreenOverlayContainer::ResetCurrentOverlay()
 	m_CurrentOverlay = ScreenOverlays::Overlay_None;
 }
 
-CBaseScreenOverlay* CScreenOverlayContainer::GetOverlay(ScreenOverlays::OverlayId id, bool create)
+CBaseScreenOverlay* CScreenOverlayContainer::GetOverlay(ScreenOverlays::OverlayId id)
 {
-	if ( id <= ScreenOverlays::Overlay_None || id >= ScreenOverlays::Overlay__Count )
+	if ( id > ScreenOverlays::Overlay_None && id < ScreenOverlays::Overlay__Count )
 	{
-		return nullptr;
+		return m_Overlays[id].get();
 	}
 
-	if ( create && m_FactoryFunctions[id] )
-	{
-		m_Overlays[id].reset(m_FactoryFunctions[id]());
-	}
+	return nullptr;
+}
 
-	return m_Overlays[id].get();
+void CScreenOverlayContainer::CreateAllOverlays()
+{
+	using namespace ScreenOverlays;
+
+	for ( OverlayId id = static_cast<OverlayId>(Overlay_None + 1);
+		  id < Overlay__Count;
+		  id = static_cast<OverlayId>(id + 1) )
+	{
+		if ( m_FactoryFunctions[id] )
+		{
+			m_Overlays[id].reset(m_FactoryFunctions[id]());
+		}
+	}
 }

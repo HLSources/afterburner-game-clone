@@ -29,6 +29,18 @@ namespace CustomGeometry
 				break;
 			}
 
+			case DrawType::TriangleFan:
+			{
+				DrawTriangleFan(item);
+				break;
+			}
+
+			case DrawType::TriangleStrip:
+			{
+				DrawTriangleStrip(item);
+				break;
+			}
+
 			default:
 			{
 				break;
@@ -92,6 +104,16 @@ namespace CustomGeometry
 
 	void CGeometryRenderer::DrawTriangleFan(const CGeometryItem& item)
 	{
+		DrawTriangleChainGeneric(item, TRI_TRIANGLE_FAN);
+	}
+
+	void CGeometryRenderer::DrawTriangleStrip(const CGeometryItem& item)
+	{
+		DrawTriangleChainGeneric(item, TRI_TRIANGLE_STRIP);
+	}
+
+	void CGeometryRenderer::DrawTriangleChainGeneric(const CGeometryItem& item, int glDrawMode)
+	{
 		const CUtlVector<Vector>& points = item.GetPoints();
 		const CUtlVector<uint8_t>& indices = item.GetIndices();
 		const size_t count = indices.Count();
@@ -104,11 +126,11 @@ namespace CustomGeometry
 
 		Prepare(kRenderNormal, colour);
 
-		gEngfuncs.pTriAPI->Begin(TRI_TRIANGLE_FAN);
+		gEngfuncs.pTriAPI->Begin(glDrawMode);
 
 		for ( uint32_t index = 0; index < count; ++index )
 		{
-			uint8_t pointIndex = indices[count];
+			uint8_t pointIndex = indices[index];
 
 			ASSERTSZ(pointIndex < static_cast<size_t>(points.Count()), "Index was out of range.");
 

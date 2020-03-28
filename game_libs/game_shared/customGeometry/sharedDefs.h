@@ -31,6 +31,7 @@ namespace CustomGeometry
 	{
 		None = 0,	// For clearing previously drawn geometry.
 		Lines,
-		TriangleFan
+		TriangleFan,
+		TriangleStrip
 	};
 }

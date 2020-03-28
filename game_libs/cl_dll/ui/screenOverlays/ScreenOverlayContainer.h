@@ -7,8 +7,6 @@
 class CScreenOverlayContainer
 {
 public:
-	using FactoryFunc = CBaseScreenOverlay* (*)(void);
-
 	static CScreenOverlayContainer& StaticInstance();
 
 	CScreenOverlayContainer();
@@ -16,10 +14,6 @@ public:
 	// This is called once on client initialisation.
 	// Any overlays supported in the game should be registered within this function.
 	void RegisterOverlays();
-
-	// Called when the client connects to a server.
-	// All overlays are recreated and have their own Precache() functions called.
-	void Precache();
 
 	// Called whenever the video settings change, eg. monitor resolution.
 	// All existing overlays are informed.
@@ -32,19 +26,21 @@ public:
 	void ResetCurrentOverlay();
 
 private:
+	using FactoryFunc = CBaseScreenOverlay* (*)(void);
 	using ScreenOverlayPtr = std::unique_ptr<CBaseScreenOverlay>;
 
 	template<typename T>
 	inline void MapIdToClass()
 	{
-		if ( T::OVERLAY_ID > ScreenOverlays::Overlay_None && T::OVERLAY_ID < ScreenOverlays::Overlay__Count )
+		volatile ScreenOverlays::OverlayId id = T::OVERLAY_ID;
+		if ( id > ScreenOverlays::Overlay_None && id < ScreenOverlays::Overlay__Count )
 		{
-			m_FactoryFunctions[T::OVERLAY_ID] = [](){ return static_cast<CBaseScreenOverlay*>(new T()); };
+			m_FactoryFunctions[id] = [](){ return static_cast<CBaseScreenOverlay*>(new T()); };
 		}
 	}
 
 	template<typename FUNC>
-	inline void ForEachValidOverlay(FUNC callback, bool create = false)
+	inline void ForEachValidOverlay(FUNC callback)
 	{
 		using namespace ScreenOverlays;
 
@@ -52,7 +48,7 @@ private:
 			  id < Overlay__Count;
 			  id = static_cast<OverlayId>(id + 1) )
 		{
-			CBaseScreenOverlay* overlay = GetOverlay(id, create);
+			CBaseScreenOverlay* overlay = GetOverlay(id);
 
 			if ( overlay )
 			{
@@ -61,7 +57,8 @@ private:
 		}
 	}
 
-	CBaseScreenOverlay* GetOverlay(ScreenOverlays::OverlayId id, bool create = false);
+	void CreateAllOverlays();
+	CBaseScreenOverlay* GetOverlay(ScreenOverlays::OverlayId id);
 
 	ScreenOverlayPtr m_Overlays[ScreenOverlays::Overlay__Count];
 	FactoryFunc m_FactoryFunctions[ScreenOverlays::Overlay__Count];
