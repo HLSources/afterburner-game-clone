@@ -5,228 +5,67 @@
 #include "triangleapi.h"
 #include "customGeometry/geometryStatics.h"
 #include "coreutil/coreutil.h"
-
-// TODO: Properly integrate these, then remove.
-/*static inline void DrawSniperScopeOverlay()
-{
-	static int scopeHandle = 0;
-
-	if ( scopeHandle == 0 )
-	{
-		scopeHandle = SPR_Load("sprites/sniper_scope.spr");
-
-		if ( scopeHandle == 0 )
-		{
-			return;
-		}
-	}
-
-	SPR_Set(scopeHandle, 255, 255, 255);
-
-	sprite_draw_args_t args;
-	memset(&args, 0, sizeof(args));
-
-	args.x = 448;
-	args.y = 28;
-	args.width = 1024;
-	args.height = 1024;
-	args.renderMode = kRenderTransTexture;
-
-	SPR_DrawCustom(&args);
-}*/
-
-static inline void DrawSolidQuad(int x, int y, int width, int height)
-{
-	gEngfuncs.pTriAPI->Begin(TRI_QUADS);
-
-	gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
-	gEngfuncs.pTriAPI->Vertex3f(x, y, 0);
-
-	gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
-	gEngfuncs.pTriAPI->Vertex3f(x + width, y, 0);
-
-	gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
-	gEngfuncs.pTriAPI->Vertex3f(x + width, y + height, 0);
-
-	gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
-	gEngfuncs.pTriAPI->Vertex3f(x, y + height, 0);
-
-	gEngfuncs.pTriAPI->End();
-}
-
-static inline void SetUpSolidQuadDrawing()
-{
-	static int whiteHandle = 0;
-
-	if ( whiteHandle == 0 )
-	{
-		whiteHandle = SPR_Load("sprites/white.spr");
-
-		if ( whiteHandle == 0 )
-		{
-			return;
-		}
-	}
-
-	const model_s* sprite = gEngfuncs.GetSpritePointer(whiteHandle);
-
-	if ( !sprite )
-	{
-		return;
-	}
-
-	gEngfuncs.pTriAPI->SpriteTexture(const_cast<model_s*>(sprite), 0);
-	gEngfuncs.pTriAPI->RenderMode(kRenderNormal);
-	gEngfuncs.pTriAPI->Color4ub(0, 0, 0, 255);
-}
-
-static inline void DrawSniperScopeSurroundings()
-{
-	DrawSolidQuad(0, 0, 1920, 28);
-	DrawSolidQuad(0, 28 + 1024, 1920, 28);
-	DrawSolidQuad(0, 28, 448, 1024);
-	DrawSolidQuad(448 + 1024, 28, 448, 1024);
-}
-
-static inline void DrawSniperScopeCrosshair(int width)
-{
-	DrawSolidQuad((1920 / 2) - (width / 2), 0, width, 1080);
-	DrawSolidQuad(0, (1080 / 2) - (width / 2), 1920, width);
-}
-
-static inline void GetCirclePointCoOrds(int point, int segmentCount, float radius, float& x, float& y)
-{
-	static constexpr float LOCAL_2PI = 2.0f * 3.1415926f;
-
-	const float theta = (LOCAL_2PI * (float)point) / (float)segmentCount;
-	x = radius * cosf(theta);
-	y = radius * sinf(theta);
-}
-
-static void DrawCircleWithLines(int x, int y, float radius, int segmentCount)
-{
-	gEngfuncs.pTriAPI->Begin(TRI_LINES);
-
-	for ( int point = 0; point < segmentCount; ++point )
-	{
-		float vx = 0.0f;
-		float vy = 0.0f;
-
-		GetCirclePointCoOrds(point, segmentCount, radius, vx, vy);
-
-		gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
-		gEngfuncs.pTriAPI->Vertex3f((float)x + vx, (float)y + vy, 0);
-
-		GetCirclePointCoOrds((point + 1) % segmentCount, segmentCount, radius, vx, vy);
-
-		gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
-		gEngfuncs.pTriAPI->Vertex3f((float)x + vx, (float)y + vy, 0);
-	}
-
-	gEngfuncs.pTriAPI->End();
-}
-
-static void DrawCircleWithQuads(int x, int y, float outerRadius, float innerRadius, int segmentCount)
-{
-	typedef struct
-	{
-		float x;
-		float y;
-	} CoOrd;
-
-	gEngfuncs.pTriAPI->Begin(TRI_QUADS);
-
-	for ( int point = 0; point < segmentCount; ++point )
-	{
-		CoOrd quadPoints[4];
-
-		const int nextPoint = (point + 1) % segmentCount;
-		GetCirclePointCoOrds(point, segmentCount, innerRadius, quadPoints[0].x, quadPoints[0].y);
-		GetCirclePointCoOrds(point, segmentCount, outerRadius, quadPoints[1].x, quadPoints[1].y);
-		GetCirclePointCoOrds(nextPoint, segmentCount, outerRadius, quadPoints[2].x, quadPoints[2].y);
-		GetCirclePointCoOrds(nextPoint, segmentCount, innerRadius, quadPoints[3].x, quadPoints[3].y);
-
-		for ( int index = 0; index < 4; ++index )
-		{
-			gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
-			gEngfuncs.pTriAPI->Vertex3f((float)x + quadPoints[index].x, (float)y + quadPoints[index].y, 0);
-		}
-	}
-
-	gEngfuncs.pTriAPI->End();
-}
-
-static inline void DrawSniperScopeExtraBars()
-{
-	static constexpr size_t BAR_HEIGHT = 75;
-	static constexpr size_t BAR_WIDTH = 2;
-
-	DrawSolidQuad((1920 / 2) - 250, (1080 / 2) - (BAR_HEIGHT / 2), BAR_WIDTH, BAR_HEIGHT);
-	DrawSolidQuad((1920 / 2) + 250, (1080 / 2) - (BAR_HEIGHT / 2), BAR_WIDTH, BAR_HEIGHT);
-}
-
-static inline void DrawSniperScopeOuterNotches()
-{
-	static constexpr size_t NOTCH_WIDTH = 34;
-	static constexpr size_t NOTCH_HEIGHT = 150;
-	static constexpr size_t NOTCH_TIP_HEIGHT = 20;
-
-	// Top
-	{
-		const int baseY = (1080 / 2) - 512;
-
-		DrawSolidQuad((1920 / 2) - (NOTCH_WIDTH / 2), baseY, NOTCH_WIDTH, NOTCH_HEIGHT - NOTCH_TIP_HEIGHT);
-
-		gEngfuncs.pTriAPI->Begin(TRI_TRIANGLES);
-
-		gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
-		gEngfuncs.pTriAPI->Vertex3f((1920 / 2) - (NOTCH_WIDTH / 2), baseY + NOTCH_HEIGHT - NOTCH_TIP_HEIGHT, 0);
-
-		gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
-		gEngfuncs.pTriAPI->Vertex3f((1920 / 2) + 1, baseY + NOTCH_HEIGHT, 0);
-
-		gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
-		gEngfuncs.pTriAPI->Vertex3f((1920 / 2) + (NOTCH_WIDTH / 2), baseY + NOTCH_HEIGHT - NOTCH_TIP_HEIGHT, 0);
-
-		gEngfuncs.pTriAPI->End();
-	}
-
-	// Bottom
-	{
-		const int baseY = (1080 / 2) + 512 - NOTCH_HEIGHT;
-
-		DrawSolidQuad((1920 / 2) - (NOTCH_WIDTH / 2), baseY + NOTCH_TIP_HEIGHT, NOTCH_WIDTH, NOTCH_HEIGHT - NOTCH_TIP_HEIGHT);
-
-		gEngfuncs.pTriAPI->Begin(TRI_TRIANGLES);
-
-		gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
-		gEngfuncs.pTriAPI->Vertex3f((1920 / 2) + (NOTCH_WIDTH / 2), baseY + NOTCH_TIP_HEIGHT, 0);
-
-		gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
-		gEngfuncs.pTriAPI->Vertex3f((1920 / 2) + 1, baseY, 0);
-
-		gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
-		gEngfuncs.pTriAPI->Vertex3f((1920 / 2) - (NOTCH_WIDTH / 2), baseY + NOTCH_TIP_HEIGHT, 0);
-
-		gEngfuncs.pTriAPI->End();
-	}
-
-	// Left
-	{
-		DrawSolidQuad((1920 / 2) - 512, (1080 / 2) - (NOTCH_WIDTH / 2), NOTCH_HEIGHT - NOTCH_TIP_HEIGHT, NOTCH_WIDTH);
-	}
-
-	// Right
-	{
-		DrawSolidQuad((1920 / 2) + 512 - (NOTCH_HEIGHT - NOTCH_TIP_HEIGHT), (1080 / 2) - (NOTCH_WIDTH / 2), NOTCH_HEIGHT - NOTCH_TIP_HEIGHT, NOTCH_WIDTH);
-	}
-}
+#include "standard_includes.h"
 
 namespace
 {
 	// How much of the short edge of the screen should the base scope image take up?
 	// This must be in the interval (0 1], otherwise you're in for bad times.
 	static constexpr float SCREEN_SHORTEDGE_FACTOR = 0.95f;
+
+	// How many line segments should be used to create the scope ring circle.
+	static constexpr size_t SCOPE_RING_DIVISIONS = 40;
+
+	// What proportion of the scope image the ring diameter should take up.
+	static constexpr float SCOPE_RING_FACTOR = 0.6f;
+
+	// How many pixels thick the scope ring should be.
+	static constexpr float SCOPE_RING_WIDTH = 3;
+
+	// How many pixels thick the crosshair lines should be.
+	static constexpr size_t CROSSHAIR_WIDTH = 1;
+
+	// Height of the extra bars on the horizontal crosshair line.
+	static constexpr size_t EXTRABAR_HEIGHT = 75;
+
+	// Width of these bars.
+	static constexpr size_t EXTRABAR_WIDTH = 2;
+
+	// How far the bars are away from the centre of the crosshair.
+	// 0 = at the centre, 1 = at the edge of the crosshair image.
+	static constexpr float EXTRABAR_DISPLACEMENT_FACTOR = 0.5f;
+
+	// Width of the spikes that are placed around the scope circle.
+	// Should be an odd number, so that the triangle tip lines up with the crosshair line.
+	static constexpr size_t SPIKE_WIDTH = 33;
+
+	// Height of the spike tip.
+	static constexpr size_t SPIKE_TIP_HEIGHT = 20;
+
+	// Height of the whole spike.
+	static constexpr size_t SPIKE_TOTAL_HEIGHT = 150;
+
+	static inline void GetCirclePointCoOrds(uint32_t point, size_t segmentCount, float radius, float& x, float& y)
+	{
+		static constexpr float TWO_PI = 2.0f * M_PI;
+
+		const float theta = (TWO_PI * static_cast<float>(point)) / static_cast<float>(segmentCount);
+		x = radius * cosf(theta);
+		y = radius * sinf(theta);
+	}
+
+	static inline Vector P2V(const UIVec2& p)
+	{
+		return Vector(p.x, p.y, 0);
+	}
+
+	static inline void AddPointsToGeometryItem(const CustomGeometry::GeometryItemPtr_t& item, const UIVec2* array, size_t length)
+	{
+		for ( uint32_t index = 0; index < length; ++index )
+		{
+			item->AddPoint(P2V(array[index]));
+		}
+	}
 }
 
 CSniperScopeOverlay::~CSniperScopeOverlay()
@@ -252,42 +91,27 @@ void CSniperScopeOverlay::VidInit()
 
 	m_ScreenDim.x = screenInfo.iWidth;
 	m_ScreenDim.y = screenInfo.iHeight;
-	m_ScreenHalfDim = m_ScreenDim / 2;
+
+	// We take away 1 so that the screen centre matches what the engine crosshair sprites actually use.
+	m_ScreenHalfDim = (m_ScreenDim / 2) - UIVec2(1,1);
 
 	CalculateScopeSpriteParameters();
 	ConstructGeometry();
 }
 
-void CSniperScopeOverlay::CalculateScopeSpriteParameters()
-{
-	const size_t shortEdge = m_ScreenDim.y < m_ScreenDim.x ? m_ScreenDim.y : m_ScreenDim.x;
-	const size_t scopeImageDim = static_cast<size_t>(static_cast<float>(shortEdge) * SCREEN_SHORTEDGE_FACTOR);
-
-	m_ScopeImageDim = UIVec2(scopeImageDim, scopeImageDim);
-
-	// We do dim + 1 to make sure that the image position is always closer to the top left if the dimension is odd.
-	const size_t scopeImageHalfDim = (scopeImageDim + 1) / 2;
-	m_ScopeImagePos = m_ScreenHalfDim - UIVec2(scopeImageHalfDim, scopeImageHalfDim);
-}
-
 void CSniperScopeOverlay::ConstructGeometry()
 {
 	ConstructSurroundingBlocks();
-}
-
-CustomGeometry::GeometryItemPtr_t CSniperScopeOverlay::CreateNewGeometryItem(CustomGeometry::DrawType drawType)
-{
-	CustomGeometry::GeometryItemPtr_t item(new CustomGeometry::CGeometryItem());
-	item->SetColour(0x000000FF);
-	item->SetDrawType(drawType);
-
-	return item;
+	ConstructScopeRing();
+	ConstructCrosshairItems();
 }
 
 void CSniperScopeOverlay::Draw(float time)
 {
 	DrawScopeBackgroundSprite();
 	CustomGeometry::RenderAdHocGeometry(m_SurroundingBlocks);
+	CustomGeometry::RenderAdHocGeometry(m_ScopeRing);
+	CustomGeometry::RenderAdHocGeometry(m_CrosshairItems);
 }
 
 void CSniperScopeOverlay::DrawScopeBackgroundSprite()
@@ -334,4 +158,180 @@ void CSniperScopeOverlay::ConstructSurroundingBlocks()
 	// We need two extra indices to form the last two triangles.
 	m_SurroundingBlocks->AddIndex(0);
 	m_SurroundingBlocks->AddIndex(1);
+}
+
+void CSniperScopeOverlay::ConstructScopeRing()
+{
+	m_ScopeRing = CreateNewGeometryItem(CustomGeometry::DrawType::TriangleStrip);
+
+	const UIVec2 scopeRingCentre(m_ScopeImagePos + (m_ScopeImageDim / 2));
+	const float scopeRingOuterRadius = (static_cast<float>(m_ScopeImageDim.x) * SCOPE_RING_FACTOR) / 2.0f;
+
+	if ( scopeRingOuterRadius < 1.0f )
+	{
+		return;
+	}
+
+	const float scopeRingInnerRadius = scopeRingOuterRadius - SCOPE_RING_WIDTH;
+
+	if ( scopeRingInnerRadius < 1.0f )
+	{
+		return;
+	}
+
+	for ( uint32_t index = 0; index < SCOPE_RING_DIVISIONS; ++index )
+	{
+		float outerX = 0.0f;
+		float outerY = 0.0f;
+		float innerX = 0.0f;
+		float innerY = 0.0f;
+
+		GetCirclePointCoOrds(index, SCOPE_RING_DIVISIONS, scopeRingOuterRadius, outerX, outerY);
+		GetCirclePointCoOrds(index, SCOPE_RING_DIVISIONS, scopeRingInnerRadius, innerX, innerY);
+
+		m_ScopeRing->AddPointAndIndex(Vector(scopeRingCentre.x + outerX, scopeRingCentre.y + outerY, 0));
+		m_ScopeRing->AddPointAndIndex(Vector(scopeRingCentre.x + innerX, scopeRingCentre.y + innerY, 0));
+	}
+
+	// Add the first two points again to complete the triangle strip.
+	m_ScopeRing->AddIndex(0);
+	m_ScopeRing->AddIndex(1);
+}
+
+void CSniperScopeOverlay::ConstructCrosshairItems()
+{
+	m_CrosshairItems = CreateNewGeometryItem(CustomGeometry::DrawType::Triangles);
+
+	ConstructCrosshair();
+	ConstructExtraBars();
+	ConstructSpikes();
+}
+
+void CSniperScopeOverlay::ConstructCrosshair()
+{
+	// Vertical line
+	m_CrosshairItems->AddTriangleQuad(Vector(m_ScreenHalfDim.x, 0, 0),
+									  Vector(m_ScreenHalfDim.x, m_ScreenDim.y, 0),
+									  Vector(m_ScreenHalfDim.x + CROSSHAIR_WIDTH, m_ScreenDim.y, 0),
+									  Vector(m_ScreenHalfDim.x + CROSSHAIR_WIDTH, 0, 0));
+
+	// Horizontal line
+	m_CrosshairItems->AddTriangleQuad(Vector(0, m_ScreenHalfDim.y, 0),
+									  Vector(0, m_ScreenHalfDim.y + CROSSHAIR_WIDTH, 0),
+									  Vector(m_ScreenDim.x, m_ScreenHalfDim.y + CROSSHAIR_WIDTH, 0),
+									  Vector(m_ScreenDim.x, m_ScreenHalfDim.y, 0));
+}
+
+void CSniperScopeOverlay::ConstructExtraBars()
+{
+	const size_t displacementFromCentre = static_cast<size_t>(EXTRABAR_DISPLACEMENT_FACTOR * (static_cast<float>(m_ScopeImageDim.x) / 2.0f));
+
+	// Left bar
+	m_CrosshairItems->AddTriangleQuad(Vector(m_ScreenHalfDim.x - displacementFromCentre - EXTRABAR_WIDTH, m_ScreenHalfDim.y - (EXTRABAR_HEIGHT / 2), 0),
+									  Vector(m_ScreenHalfDim.x - displacementFromCentre - EXTRABAR_WIDTH, m_ScreenHalfDim.y + (EXTRABAR_HEIGHT / 2), 0),
+									  Vector(m_ScreenHalfDim.x - displacementFromCentre, m_ScreenHalfDim.y + (EXTRABAR_HEIGHT / 2), 0),
+									  Vector(m_ScreenHalfDim.x - displacementFromCentre, m_ScreenHalfDim.y - (EXTRABAR_HEIGHT / 2), 0));
+
+	// Right bar
+	m_CrosshairItems->AddTriangleQuad(Vector(m_ScreenHalfDim.x + displacementFromCentre, m_ScreenHalfDim.y - (EXTRABAR_HEIGHT / 2), 0),
+									  Vector(m_ScreenHalfDim.x + displacementFromCentre, m_ScreenHalfDim.y + (EXTRABAR_HEIGHT / 2), 0),
+									  Vector(m_ScreenHalfDim.x + displacementFromCentre + EXTRABAR_WIDTH, m_ScreenHalfDim.y + (EXTRABAR_HEIGHT / 2), 0),
+									  Vector(m_ScreenHalfDim.x + displacementFromCentre + EXTRABAR_WIDTH, m_ScreenHalfDim.y - (EXTRABAR_HEIGHT / 2), 0));
+}
+
+void CSniperScopeOverlay::ConstructSpikes()
+{
+	// Iteration 0 is top and bottom, iteration 1 is left and right.
+	for ( uint32_t iteration = 0; iteration < 2; ++iteration )
+	{
+		static constexpr size_t HALF_SPIKE_WIDTH = SPIKE_WIDTH / 2;
+		static constexpr size_t NUM_POINTS_IN_SPIKE = 5;
+
+		UIVec2 minPoints[NUM_POINTS_IN_SPIKE];
+		UIVec2 maxPoints[NUM_POINTS_IN_SPIKE];
+
+		const size_t xIndex = iteration == 0 ? 0 : 1;
+		const size_t yIndex = iteration == 0 ? 1 : 0;
+
+		// Spike at lower extent of the axis:
+		minPoints[0][xIndex] = m_ScreenHalfDim[xIndex] - HALF_SPIKE_WIDTH;
+		minPoints[0][yIndex] = m_ScopeImagePos[yIndex];
+
+		minPoints[1][xIndex] = minPoints[0][xIndex];
+		minPoints[1][yIndex] = minPoints[0][yIndex] + SPIKE_TOTAL_HEIGHT - SPIKE_TIP_HEIGHT;
+
+		minPoints[2][xIndex] = minPoints[1][xIndex] + SPIKE_WIDTH;
+		minPoints[2][yIndex] = minPoints[1][yIndex];
+
+		minPoints[3][xIndex] = minPoints[2][xIndex];
+		minPoints[3][yIndex] = minPoints[0][yIndex];
+
+		minPoints[4][xIndex] = m_ScreenHalfDim[xIndex];
+		minPoints[4][yIndex] = minPoints[0][yIndex] + SPIKE_TOTAL_HEIGHT;
+
+		// Spike at upper extent of axis:
+		// Note that HALF_SPIKE_WIDTH is not quite half if the width is odd (which it should be).
+		// To make sure these points line up with those computed above, we take away half the width
+		// for X, and then add the full width.
+		maxPoints[0][xIndex] = m_ScreenHalfDim[xIndex] - HALF_SPIKE_WIDTH + SPIKE_WIDTH;
+		maxPoints[0][yIndex] = m_ScopeImagePos[yIndex] + m_ScopeImageDim[yIndex];
+
+		maxPoints[1][xIndex] = maxPoints[0][xIndex];
+		maxPoints[1][yIndex] = maxPoints[0][yIndex] - (SPIKE_TOTAL_HEIGHT - SPIKE_TIP_HEIGHT);
+
+		maxPoints[2][xIndex] = maxPoints[1][xIndex] - SPIKE_WIDTH;
+		maxPoints[2][yIndex] = maxPoints[1][yIndex];
+
+		maxPoints[3][xIndex] = maxPoints[2][xIndex];
+		maxPoints[3][yIndex] = maxPoints[0][yIndex];
+
+		maxPoints[4][xIndex] = m_ScreenHalfDim[xIndex];
+		maxPoints[4][yIndex] = maxPoints[0][yIndex] - SPIKE_TOTAL_HEIGHT;
+
+		const uint8_t indexBase = m_CrosshairItems->GetPointCount();
+
+		AddPointsToGeometryItem(m_CrosshairItems, minPoints, NUM_POINTS_IN_SPIKE);
+		AddPointsToGeometryItem(m_CrosshairItems, maxPoints, NUM_POINTS_IN_SPIKE);
+
+		for ( uint32_t subIteration = 0; subIteration < 2; ++subIteration )
+		{
+			const size_t offset = indexBase + (subIteration * NUM_POINTS_IN_SPIKE);
+
+			// Triangle 1 in quad:
+			m_CrosshairItems->AddIndex(offset + 0);
+			m_CrosshairItems->AddIndex(offset + 1);
+			m_CrosshairItems->AddIndex(offset + 2);
+
+			// Triangle 2 in quad:
+			m_CrosshairItems->AddIndex(offset + 0);
+			m_CrosshairItems->AddIndex(offset + 2);
+			m_CrosshairItems->AddIndex(offset + 3);
+
+			// Triangle for spike tip:
+			m_CrosshairItems->AddIndex(offset + 1);
+			m_CrosshairItems->AddIndex(offset + 4);
+			m_CrosshairItems->AddIndex(offset + 2);
+		}
+	}
+}
+
+void CSniperScopeOverlay::CalculateScopeSpriteParameters()
+{
+	const size_t shortEdge = m_ScreenDim.y < m_ScreenDim.x ? m_ScreenDim.y : m_ScreenDim.x;
+	const size_t scopeImageDim = static_cast<size_t>(static_cast<float>(shortEdge) * SCREEN_SHORTEDGE_FACTOR);
+
+	m_ScopeImageDim = UIVec2(scopeImageDim, scopeImageDim);
+
+	// We do dim + 1 to make sure that the image position is always closer to the top left if the dimension is odd.
+	const size_t scopeImageHalfDim = (scopeImageDim + 1) / 2;
+	m_ScopeImagePos = m_ScreenHalfDim - UIVec2(scopeImageHalfDim, scopeImageHalfDim);
+}
+
+CustomGeometry::GeometryItemPtr_t CSniperScopeOverlay::CreateNewGeometryItem(CustomGeometry::DrawType drawType)
+{
+	CustomGeometry::GeometryItemPtr_t item(new CustomGeometry::CGeometryItem());
+	item->SetColour(0x000000FF);
+	item->SetDrawType(drawType);
+
+	return item;
 }

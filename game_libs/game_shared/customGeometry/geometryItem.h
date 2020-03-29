@@ -24,6 +24,11 @@ namespace CustomGeometry
 
 		// These add points and relevant indices.
 		bool AddLine(const Vector& p0, const Vector& p1);
+		bool AddPointAndIndex(const Vector& p0);
+
+		// Expects a quad with vertices specified in consecutive order around the perimeter.
+		// The direction that the perimeter is traversed defines the winding of the quad.
+		bool AddTriangleQuad(const Vector& p0, const Vector& p1, const Vector& p2, const Vector& p3);
 
 		// These only add indices, and assume that the indices are for valid points
 		// (they are not checked).

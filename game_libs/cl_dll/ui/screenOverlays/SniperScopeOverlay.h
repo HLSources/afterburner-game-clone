@@ -22,6 +22,11 @@ private:
 	void CalculateScopeSpriteParameters();
 	void ConstructGeometry();
 	void ConstructSurroundingBlocks();
+	void ConstructScopeRing();
+	void ConstructCrosshairItems();
+	void ConstructCrosshair();
+	void ConstructExtraBars();
+	void ConstructSpikes();
 
 	void DrawScopeBackgroundSprite();
 
@@ -29,6 +34,8 @@ private:
 	UIVec2 m_ScreenHalfDim;
 	HSPRITE m_hScopeImage = 0;
 	CustomGeometry::GeometryItemPtr_t m_SurroundingBlocks;
+	CustomGeometry::GeometryItemPtr_t m_ScopeRing;
+	CustomGeometry::GeometryItemPtr_t m_CrosshairItems;
 
 	// Convenience values for each edge of the scope sprite.
 	UIVec2 m_ScopeImagePos;

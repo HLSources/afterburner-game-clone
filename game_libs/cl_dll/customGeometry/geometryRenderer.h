@@ -17,6 +17,7 @@ namespace CustomGeometry
 		void DrawLines(const CGeometryItem& item);
 		void DrawTriangleFan(const CGeometryItem& item);
 		void DrawTriangleStrip(const CGeometryItem& item);
+		void DrawTriangles(const CGeometryItem& item);
 		void DrawTriangleChainGeneric(const CGeometryItem& item, int glDrawMode);
 
 		HSPRITE m_ColourSprite = 0;

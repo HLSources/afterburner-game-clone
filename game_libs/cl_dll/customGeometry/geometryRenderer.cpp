@@ -41,6 +41,12 @@ namespace CustomGeometry
 				break;
 			}
 
+			case DrawType::Triangles:
+			{
+				DrawTriangles(item);
+				break;
+			}
+
 			default:
 			{
 				break;
@@ -110,6 +116,47 @@ namespace CustomGeometry
 	void CGeometryRenderer::DrawTriangleStrip(const CGeometryItem& item)
 	{
 		DrawTriangleChainGeneric(item, TRI_TRIANGLE_STRIP);
+	}
+
+	// TODO: All of these drawing functions could be made into a single function
+	// where the halfCount/thirdCount turns into a divisor parameter.
+	void CGeometryRenderer::DrawTriangles(const CGeometryItem& item)
+	{
+		const CUtlVector<Vector>& points = item.GetPoints();
+		const CUtlVector<uint8_t>& indices = item.GetIndices();
+		const size_t thirdCount = indices.Count() / 3;
+		const uint32_t colour = item.GetColour();
+
+		if ( thirdCount < 1 )
+		{
+			return;
+		}
+
+		Prepare(kRenderNormal, colour);
+
+		gEngfuncs.pTriAPI->Begin(TRI_TRIANGLES);
+
+		for ( uint32_t index = 0; index < thirdCount; ++index )
+		{
+			uint8_t pointIndex0 = indices[3 * index];
+			uint8_t pointIndex1 = indices[(3 * index) + 1];
+			uint8_t pointIndex2 = indices[(3 * index) + 2];
+
+			ASSERTSZ(pointIndex0 < static_cast<size_t>(points.Count()), "Index was out of range.");
+			ASSERTSZ(pointIndex1 < static_cast<size_t>(points.Count()), "Index was out of range.");
+			ASSERTSZ(pointIndex2 < static_cast<size_t>(points.Count()), "Index was out of range.");
+
+			gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
+			gEngfuncs.pTriAPI->Vertex3fv(points[pointIndex0]);
+
+			gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
+			gEngfuncs.pTriAPI->Vertex3fv(points[pointIndex1]);
+
+			gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
+			gEngfuncs.pTriAPI->Vertex3fv(points[pointIndex2]);
+		}
+
+		gEngfuncs.pTriAPI->End();
 	}
 
 	void CGeometryRenderer::DrawTriangleChainGeneric(const CGeometryItem& item, int glDrawMode)
