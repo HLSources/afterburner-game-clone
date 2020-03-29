@@ -137,16 +137,16 @@ void CSniperScopeOverlay::ConstructSurroundingBlocks()
 	UIVec2 points[8];
 
 	// Points are added in the correct order for a triangle strip that surrounds the scope sprite.
-	// The strip begins at the top left and alternates between outer and inner points, proceeding clockwise.
+	// The strip begins at the top left and alternates between outer and inner points, proceeding anticlockwise.
 	points[0] = UIVec2(0,0);
-	points[2] = UIVec2(m_ScreenDim.x, 0);
+	points[2] = UIVec2(0, m_ScreenDim.y);
 	points[4] = m_ScreenDim;
-	points[6] = UIVec2(0, m_ScreenDim.y);
+	points[6] = UIVec2(m_ScreenDim.x, 0);
 
 	points[1] = m_ScopeImagePos;
-	points[3] = m_ScopeImagePos + UIVec2(m_ScopeImageDim.x, 0);
+	points[3] = m_ScopeImagePos + UIVec2(0, m_ScopeImageDim.y);
 	points[5] = m_ScopeImagePos + m_ScopeImageDim;
-	points[7] = m_ScopeImagePos + UIVec2(0, m_ScopeImageDim.y);
+	points[7] = m_ScopeImagePos + UIVec2(m_ScopeImageDim.x, 0);
 
 	// Add points and indices to the geometry.
 	for ( uint8_t index = 0; index < CoreUtil::ArraySize(points); ++index )
