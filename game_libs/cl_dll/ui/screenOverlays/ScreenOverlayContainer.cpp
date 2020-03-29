@@ -1,5 +1,5 @@
-#include <cstring>
 #include "ScreenOverlayContainer.h"
+
 #include "SniperScopeOverlay.h"
 
 CScreenOverlayContainer& CScreenOverlayContainer::StaticInstance()
@@ -30,7 +30,7 @@ void CScreenOverlayContainer::VidInit()
 
 void CScreenOverlayContainer::DrawCurrentOverlay(float time)
 {
-	CBaseScreenOverlay* overlay = GetCurrentOverlayFromStack();
+	CBaseScreenOverlay* overlay = GetOverlay(m_CurrentOverlay);
 
 	if ( overlay )
 	{
@@ -38,50 +38,17 @@ void CScreenOverlayContainer::DrawCurrentOverlay(float time)
 	}
 }
 
-bool CScreenOverlayContainer::PushOverlayOntoStack(const char* source, ScreenOverlays::OverlayId id)
+void CScreenOverlayContainer::SetCurrentOverlay(ScreenOverlays::OverlayId id)
 {
-	if ( !source ||
-		 id <= ScreenOverlays::Overlay_None ||
-		 id >= ScreenOverlays::Overlay__Count ||
-		 m_OverlayStack.Count() >= MAX_OVERLAY_STACK_DEPTH )
+	if ( id < ScreenOverlays::Overlay__Count )
 	{
-		return false;
+		m_CurrentOverlay = id;
 	}
-
-	m_OverlayStack.AddToTail({source, id});
-	return true;
 }
 
-bool CScreenOverlayContainer::PopOverlayFromStack(const char* source)
+void CScreenOverlayContainer::ResetCurrentOverlay()
 {
-	if ( !source )
-	{
-		return false;
-	}
-
-	int foundIndex = -1;
-
-	for ( int index = 0; index < m_OverlayStack.Count(); ++index )
-	{
-		if ( strcmp(source, m_OverlayStack[index].source) == 0 )
-		{
-			foundIndex = index;
-			break;
-		}
-	}
-
-	if ( foundIndex < 0 )
-	{
-		return false;
-	}
-
-	m_OverlayStack.Remove(foundIndex);
-	return true;
-}
-
-void CScreenOverlayContainer::ClearOverlayStack()
-{
-	m_OverlayStack.Purge();
+	m_CurrentOverlay = ScreenOverlays::Overlay_None;
 }
 
 CBaseScreenOverlay* CScreenOverlayContainer::GetOverlay(ScreenOverlays::OverlayId id)
@@ -92,16 +59,6 @@ CBaseScreenOverlay* CScreenOverlayContainer::GetOverlay(ScreenOverlays::OverlayI
 	}
 
 	return nullptr;
-}
-
-CBaseScreenOverlay* CScreenOverlayContainer::GetCurrentOverlayFromStack()
-{
-	if ( m_OverlayStack.Count() < 1 )
-	{
-		return nullptr;
-	}
-
-	return GetOverlay(m_OverlayStack[m_OverlayStack.Count() - 1].id);
 }
 
 void CScreenOverlayContainer::CreateAllOverlays()

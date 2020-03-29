@@ -247,7 +247,6 @@ so the HUD can reinitialize itself.
 int DLLEXPORT HUD_VidInit( void )
 {
 	CScreenOverlayContainer::StaticInstance().VidInit();
-
 	gHUD.VidInit();
 #ifdef USE_VGUI_FOR_GOLDSOURCE_SUPPORT
 	vgui::Panel* root=(vgui::Panel*)gEngfuncs.VGui_GetPanel();
@@ -295,7 +294,6 @@ void DLLEXPORT HUD_Init( void )
 
 	CScreenOverlayContainer& container = CScreenOverlayContainer::StaticInstance();
 	container.RegisterOverlays();
-	container.ClearOverlayStack();
 
 	gHUD.Init();
 
@@ -349,10 +347,7 @@ Called at start and end of demos to restore to "non"HUD state.
 
 void DLLEXPORT HUD_Reset( void )
 {
-	CScreenOverlayContainer& container = CScreenOverlayContainer::StaticInstance();
-	container.ClearOverlayStack();
-	container.VidInit();
-
+	CScreenOverlayContainer::StaticInstance().VidInit();
 	gHUD.VidInit();
 }
 

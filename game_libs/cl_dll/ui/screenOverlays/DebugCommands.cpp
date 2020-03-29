@@ -32,10 +32,7 @@ namespace ScreenOverlays
 			return;
 		}
 
-		CScreenOverlayContainer& container = CScreenOverlayContainer::StaticInstance();
-		container.ClearOverlayStack();
-		container.PushOverlayOntoStack("OverlayDebugCommands", id);
-
+		CScreenOverlayContainer::StaticInstance().SetCurrentOverlay(id);
 		gEngfuncs.Con_Printf("Set screen overlay to %d.\n", id);
 
 	}
