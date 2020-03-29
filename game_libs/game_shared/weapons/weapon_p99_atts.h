@@ -71,6 +71,8 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	pm.WorldModelName = "models/weapon_p99/w_p99.mdl";
 	pm.PlayerAnimExtension = "onehanded";
 
+	obj.Prediction.SetUpPrediction<CWeaponP99>();
+
 	obj.SkillRecords.AddToTail(WASkillRecord("sk_plr_dmg_p99", &skilldata_t::plrDmgP99));
 
 	// Unsilenced

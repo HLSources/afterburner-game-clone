@@ -10,6 +10,7 @@
 #include "weaponatts_soundset.h"
 #include "weaponatts_ammodef.h"
 #include "weaponatts_baseattack.h"
+#include "weaponatts_prediction.h"
 #include "utlvector.h"
 
 namespace WeaponAtts
@@ -29,6 +30,7 @@ namespace WeaponAtts
 
 		WAViewModel ViewModel;
 		WAPlayerModel PlayerModel;
+		WAPrediction Prediction;
 
 		WACollection(const std::function<void(WACollection&)>& initialiser);
 

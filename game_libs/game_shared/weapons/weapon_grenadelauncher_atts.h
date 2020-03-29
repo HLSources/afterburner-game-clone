@@ -65,6 +65,8 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	pm.WorldModelName = "models/weapon_grenadelauncher/w_grenadelauncher.mdl";
 	pm.PlayerAnimExtension = "gauss";
 
+	obj.Prediction.SetUpPrediction<CWeaponGrenadeLauncher>();
+
 	obj.SkillRecords.AddToTail(WASkillRecord("sk_plr_dmg_grenadelauncher", &skilldata_t::plrDmgGrenadeLauncher));
 	obj.SkillRecords.AddToTail(WASkillRecord("sk_plr_selfdmg_mult_grenadelauncher", &skilldata_t::plrSelfDmgMultGrenadeLauncher));
 	obj.SkillRecords.AddToTail(WASkillRecord("sk_plr_dmg_mult_grenadelauncher_hit", &skilldata_t::plrDmgMultGrenadelauncherHit));

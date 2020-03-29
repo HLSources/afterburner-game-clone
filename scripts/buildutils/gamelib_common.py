@@ -1,8 +1,14 @@
 def options(opt):
-	pass
+	grp = opt.add_option_group("Gamelib options")
+
+	grp.add_option("--enable-client-weapons", action = "store_true", dest = "CLIENT_WEAPONS", default = True,
+		help = "Enable clientside weapon prediction [default: %default]")
 
 def configure(conf):
 	conf.env.append_unique("DEFINES", "GAME_LIBRARIES")
+
+	if conf.options.CLIENT_WEAPONS:
+		conf.define('CLIENT_WEAPONS', '1')
 
 	if conf.env.DEST_OS == 'win32':
 		conf.env.append_unique("DEFINES",

@@ -58,6 +58,8 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	pm.WorldModelName = "models/weapon_l96a1/w_l96a1.mdl";
 	pm.PlayerAnimExtension = "bow";
 
+	obj.Prediction.SetUpPrediction<CWeaponL96A1>();
+
 	obj.SkillRecords.AddToTail(WASkillRecord("sk_plr_dmg_l96a1", &skilldata_t::plrDmgL96A1));
 
 	WAHitscanAttack* priAttack = new WAHitscanAttack();

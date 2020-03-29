@@ -65,6 +65,8 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	pm.WorldModelName = "models/weapon_raptor/w_raptor.mdl";
 	pm.PlayerAnimExtension = "python";
 
+	obj.Prediction.SetUpPrediction<CWeaponRaptor>();
+
 	obj.SkillRecords.AddToTail(WASkillRecord("sk_plr_dmg_raptor", &skilldata_t::plrDmgRaptor));
 
 	WAHitscanAttack* priAttack = new WAHitscanAttack();

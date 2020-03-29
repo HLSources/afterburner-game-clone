@@ -636,7 +636,9 @@ void HUD_InitClientWeapons( void )
 
 	CWeaponRegistry::StaticInstance().ForEach([](const WeaponAtts::WACollection& atts)
 	{
-		CBaseEntity* predictionWeapon = CBaseEntity::Create(atts.Core.Classname, vec3_t(), vec3_t());
+		CBaseEntity* predictionWeapon = atts.Prediction.GetWeapon();
+		ASSERT(predictionWeapon);
+
 		HUD_PrepEntity(predictionWeapon, &player);
 	});
 

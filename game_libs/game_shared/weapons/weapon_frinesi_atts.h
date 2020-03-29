@@ -74,6 +74,8 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	pm.WorldModelName = "models/weapon_frinesi/w_frinesi.mdl";
 	pm.PlayerAnimExtension = "shotgun";
 
+	obj.Prediction.SetUpPrediction<CWeaponFrinesi>();
+
 	obj.SkillRecords.AddToTail(WASkillRecord("sk_plr_dmg_frinesi_auto", &skilldata_t::plrDmgFrinesiAuto));
 	obj.SkillRecords.AddToTail(WASkillRecord("sk_plr_dmg_frinesi_pump", &skilldata_t::plrDmgFrinesiPump));
 
