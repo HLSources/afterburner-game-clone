@@ -1,13 +1,16 @@
 #include "BaseScreenOverlay.h"
 
-CBaseScreenOverlay::~CBaseScreenOverlay()
+namespace ScreenOverlays
 {
-}
+	CBaseScreenOverlay::~CBaseScreenOverlay()
+	{
+	}
 
-void CBaseScreenOverlay::VidInit()
-{
-}
+	void CBaseScreenOverlay::VidInit()
+	{
+	}
 
-void CBaseScreenOverlay::Draw(float time)
-{
+	void CBaseScreenOverlay::Draw(float time)
+	{
+	}
 }

@@ -246,7 +246,8 @@ so the HUD can reinitialize itself.
 
 int DLLEXPORT HUD_VidInit( void )
 {
-	CScreenOverlayContainer::StaticInstance().VidInit();
+	ScreenOverlays::CScreenOverlayContainer& container = ScreenOverlays::CScreenOverlayContainer::StaticInstance();
+	container.VidInit();
 
 	gHUD.VidInit();
 #ifdef USE_VGUI_FOR_GOLDSOURCE_SUPPORT
@@ -293,7 +294,7 @@ void DLLEXPORT HUD_Init( void )
 
 	InitInput();
 
-	CScreenOverlayContainer& container = CScreenOverlayContainer::StaticInstance();
+	ScreenOverlays::CScreenOverlayContainer& container = ScreenOverlays::CScreenOverlayContainer::StaticInstance();
 	container.RegisterOverlays();
 	container.ResetCurrentOverlay();
 
@@ -313,7 +314,9 @@ redraw the HUD.
 
 int DLLEXPORT HUD_Redraw( float time, int intermission )
 {
-	CScreenOverlayContainer::StaticInstance().DrawCurrentOverlay(time);
+	ScreenOverlays::CScreenOverlayContainer& container = ScreenOverlays::CScreenOverlayContainer::StaticInstance();
+	container.DrawCurrentOverlay(time);
+
 	gHUD.Redraw( time, intermission );
 
 	return 1;
@@ -349,7 +352,7 @@ Called at start and end of demos to restore to "non"HUD state.
 
 void DLLEXPORT HUD_Reset( void )
 {
-	CScreenOverlayContainer& container = CScreenOverlayContainer::StaticInstance();
+	ScreenOverlays::CScreenOverlayContainer& container = ScreenOverlays::CScreenOverlayContainer::StaticInstance();
 	container.ResetCurrentOverlay();
 	container.VidInit();
 
