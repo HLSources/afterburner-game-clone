@@ -3,6 +3,7 @@
 #include <memory>
 #include "ScreenOverlayIds.h"
 #include "BaseScreenOverlay.h"
+#include "utlvector.h"
 
 class CScreenOverlayContainer
 {
@@ -22,12 +23,23 @@ public:
 	// Called when the currently active overlay should be drawn.
 	void DrawCurrentOverlay(float time);
 
-	void SetCurrentOverlay(ScreenOverlays::OverlayId id);
-	void ResetCurrentOverlay();
+	// The source is a string used to uniquely identify the caller that
+	// placed this overlay. It should be compile-time constant and should not be null.
+	bool PushOverlayOntoStack(const char* source, ScreenOverlays::OverlayId id);
+	bool PopOverlayFromStack(const char* source);
+	void ClearOverlayStack();
 
 private:
+	static constexpr size_t MAX_OVERLAY_STACK_DEPTH = 16;
+
 	using FactoryFunc = CBaseScreenOverlay* (*)(void);
 	using ScreenOverlayPtr = std::unique_ptr<CBaseScreenOverlay>;
+
+	struct StackItem
+	{
+		const char* source;
+		ScreenOverlays::OverlayId id;
+	};
 
 	template<typename T>
 	inline void MapIdToClass()
@@ -59,8 +71,9 @@ private:
 
 	void CreateAllOverlays();
 	CBaseScreenOverlay* GetOverlay(ScreenOverlays::OverlayId id);
+	CBaseScreenOverlay* GetCurrentOverlayFromStack();
 
 	ScreenOverlayPtr m_Overlays[ScreenOverlays::Overlay__Count];
 	FactoryFunc m_FactoryFunctions[ScreenOverlays::Overlay__Count];
-	ScreenOverlays::OverlayId m_CurrentOverlay = ScreenOverlays::Overlay_None;
+	CUtlVector<StackItem> m_OverlayStack;
 };
