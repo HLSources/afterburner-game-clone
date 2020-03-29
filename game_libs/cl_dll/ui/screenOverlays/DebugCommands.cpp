@@ -1,7 +1,7 @@
 #include <cstdlib>
 #include "DebugCommands.h"
 #include "cl_dll.h"
-#include "ScreenOverlayIds.h"
+#include "screenOverlays/screenOverlayIds.h"
 #include "ScreenOverlayContainer.h"
 
 namespace ScreenOverlays

@@ -1,7 +1,5 @@
 #pragma once
 
-class CScreenOverlayContainer;
-
 namespace ScreenOverlays
 {
 	enum OverlayId

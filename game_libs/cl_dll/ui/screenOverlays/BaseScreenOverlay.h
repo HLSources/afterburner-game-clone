@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ScreenOverlayIds.h"
+#include "screenOverlays/screenOverlayIds.h"
 
 class CBaseScreenOverlay
 {

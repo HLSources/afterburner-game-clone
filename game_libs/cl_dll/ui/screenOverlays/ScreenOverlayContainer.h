@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include "ScreenOverlayIds.h"
+#include "screenOverlays/screenOverlayIds.h"
 #include "BaseScreenOverlay.h"
 
 class CScreenOverlayContainer
