@@ -2,19 +2,8 @@
 
 namespace CustomGeometry
 {
-	int CMessageWriter::m_iMessageId = 0;
-
-	void CMessageWriter::RegisterUserMessage()
-	{
-		if ( m_iMessageId != 0 )
-		{
-			return;
-		}
-
-		m_iMessageId = REG_USER_MSG(MESSAGE_NAME, -1);
-	}
-
 	CMessageWriter::CMessageWriter(Category category) :
+		CBaseMessageWriter(MESSAGE_NAME, StaticUserMessageId()),
 		m_Category(Category::None),
 		m_pTargetClient(nullptr)
 	{
@@ -87,7 +76,7 @@ namespace CustomGeometry
 			return false;
 		}
 
-		WriteMessageBegin();
+		BeginMessage(m_pTargetClient);
 		WriteMessageHeader(m_Category, geometry.GetDrawType());
 
 		WRITE_LONG(geometry.GetColour());
@@ -105,7 +94,7 @@ namespace CustomGeometry
 			WRITE_CHAR(indices[index]);
 		}
 
-		MESSAGE_END();
+		EndMessage();
 		return true;
 	}
 
@@ -120,25 +109,13 @@ namespace CustomGeometry
 		return true;
 	}
 
-	void CMessageWriter::WriteMessageBegin()
-	{
-		if ( m_pTargetClient )
-		{
-			MESSAGE_BEGIN(MSG_ONE, m_iMessageId, nullptr, m_pTargetClient->pev);
-		}
-		else
-		{
-			MESSAGE_BEGIN(MSG_ALL, m_iMessageId);
-		}
-	}
-
 	// Message format:
 	// - Header only; draw type is None.
 	void CMessageWriter::WriteClearMessageInternal(Category geomCategory)
 	{
-		WriteMessageBegin();
+		BeginMessage(m_pTargetClient);
 		WriteMessageHeader(geomCategory, DrawType::None);
-		MESSAGE_END();
+		EndMessage();
 	}
 
 	// Header format:
@@ -148,17 +125,6 @@ namespace CustomGeometry
 	{
 		WRITE_BYTE(static_cast<uint8_t>(category));
 		WRITE_BYTE(static_cast<uint8_t>(drawType));
-	}
-
-	bool CMessageWriter::CanWriteMessage()
-	{
-		if ( m_iMessageId == 0 )
-		{
-			ALERT(at_warning, "Attempted to send custom geometry message before registration!\n");
-			return false;
-		}
-
-		return true;
 	}
 
 	bool CMessageWriter::IsValidSpecificCategory(Category geomCategory)

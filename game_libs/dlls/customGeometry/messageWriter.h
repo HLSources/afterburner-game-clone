@@ -2,13 +2,17 @@
 
 #include "standard_includes.h"
 #include "customGeometry/geometryItem.h"
+#include "messages/baseMessageWriter.h"
+#include "messages/messageRegistrationHelper.h"
 
 namespace CustomGeometry
 {
-	class CMessageWriter
+	class CMessageWriter : public Messages::CBaseMessageWriter,
+						   public Messages::CMessageRegistrationHelper<CMessageWriter>
 	{
 	public:
-		static void RegisterUserMessage();
+		static constexpr const char* MESSAGE_NAME = CustomGeometry::MESSAGE_NAME;
+		static constexpr int MESSAGE_SIZE = -1;
 
 		// Category must be greater than None and less than CategoryCount.
 		explicit CMessageWriter(Category category);
@@ -27,14 +31,10 @@ namespace CustomGeometry
 		bool WriteClearMessage();
 
 	private:
-		static bool CanWriteMessage();
 		static bool IsValidSpecificCategory(Category geomCategory);
 
-		void WriteMessageBegin();
 		void WriteMessageHeader(Category category, DrawType drawType);
 		void WriteClearMessageInternal(Category geomCategory);
-
-		static int m_iMessageId;
 
 		Category m_Category;
 		CBasePlayer* m_pTargetClient;
