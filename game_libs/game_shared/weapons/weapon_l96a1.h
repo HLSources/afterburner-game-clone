@@ -10,7 +10,9 @@ public:
 
 	virtual const WeaponAtts::WACollection& WeaponAttributes() const override;
 
+	virtual void Precache() override;
 	virtual void SecondaryAttack() override;
+	virtual void Reload() override;
 	virtual BOOL Deploy() override;
 	virtual void Holster(int skiplocal = 0) override;
 
@@ -21,6 +23,7 @@ public:
 
 private:
 	void SetZoomLevel(uint32_t level);
+	void PlayZoomSound();
 
 	uint32_t m_iZoomLevel = 0;
 	int m_iViewModel = 0;

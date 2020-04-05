@@ -237,21 +237,22 @@ bool CGenericWeapon::InvokeWithAttackMode(WeaponAttackType type, const WeaponAtt
 // TODO: Allow this to handle secondary too? Do we need this?
 void CGenericWeapon::Reload()
 {
+	if ( !CanReload() )
+	{
+		return;
+	}
+
 	const WeaponAtts::WAAmmoBasedAttack* ammoAttack = dynamic_cast<const WeaponAtts::WAAmmoBasedAttack*>(m_pPrimaryAttackMode);
 
 	if ( !ammoAttack )
 	{
+		// Checked in CanReload(), so this should never happen.
+		ASSERT(false);
 		return;
 	}
 
 	const WeaponAtts::WACollection& atts = WeaponAttributes();
 	const int maxClip = atts.Ammo.MaxClip;
-
-	if ( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] < 1 || m_iClip == maxClip ||
-		 m_flNextPrimaryAttack > UTIL_WeaponTimeBase() )
-	{
-		return;
-	}
 
 	if ( ammoAttack->SpecialReload )
 	{
@@ -641,6 +642,27 @@ bool CGenericWeapon::DecrementAmmo(const WeaponAtts::WABaseAttack* attackMode, i
 			return true;
 		}
 	}
+}
+
+bool CGenericWeapon::CanReload() const
+{
+	const WeaponAtts::WAAmmoBasedAttack* ammoAttack = dynamic_cast<const WeaponAtts::WAAmmoBasedAttack*>(m_pPrimaryAttackMode);
+
+	if ( !ammoAttack )
+	{
+		return false;
+	}
+
+	const WeaponAtts::WACollection& atts = WeaponAttributes();
+	const int maxClip = atts.Ammo.MaxClip;
+
+	if ( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] < 1 || m_iClip == maxClip ||
+		 m_flNextPrimaryAttack > UTIL_WeaponTimeBase() )
+	{
+		return false;
+	}
+
+	return true;
 }
 
 int CGenericWeapon::iItemSlot()

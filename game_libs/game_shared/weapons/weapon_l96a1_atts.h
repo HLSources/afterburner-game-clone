@@ -26,6 +26,8 @@ enum L9A61AttackMode_e
 static constexpr float L96A1_FIRE_RATE = 1.0f / 1.5f;
 
 static constexpr float L96A1_ZOOM_TOGGLE_DELAY = 0.2f;
+static constexpr const char* L96A1_ZOOM_IN_SOUND = "weapons/weapon_l96a1/l96a1_zoom_in.wav";
+static constexpr const char* L96A1_ZOOM_OUT_SOUND = "weapons/weapon_l96a1/l96a1_zoom_out.wav";
 
 static constexpr float L96A1_ZOOM_LEVELS[] =
 {

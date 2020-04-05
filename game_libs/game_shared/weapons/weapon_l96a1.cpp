@@ -22,6 +22,14 @@ const WeaponAtts::WACollection& CWeaponL96A1::WeaponAttributes() const
 	return WeaponAtts::StaticWeaponAttributes<CWeaponL96A1>();
 }
 
+void CWeaponL96A1::Precache()
+{
+	CGenericHitscanWeapon::Precache();
+
+	PRECACHE_SOUND(L96A1_ZOOM_IN_SOUND);
+	PRECACHE_SOUND(L96A1_ZOOM_OUT_SOUND);
+}
+
 void CWeaponL96A1::SecondaryAttack()
 {
 	if ( !m_pPlayer )
@@ -31,7 +39,19 @@ void CWeaponL96A1::SecondaryAttack()
 	}
 
 	SetZoomLevel(m_iZoomLevel + 1);
-	DelayPendingActions(0.5f);
+	PlayZoomSound();
+	DelayPendingActions(L96A1_ZOOM_TOGGLE_DELAY);
+}
+
+void CWeaponL96A1::Reload()
+{
+	if ( CanReload() )
+	{
+		SetZoomLevel(0);
+		PlayZoomSound();
+	}
+
+	CGenericHitscanWeapon::Reload();
 }
 
 BOOL CWeaponL96A1::Deploy()
@@ -76,6 +96,17 @@ void CWeaponL96A1::SetZoomLevel(uint32_t level)
 			m_pPlayer->pev->viewmodel = m_iViewModel;
 		}
 	}
+}
+
+void CWeaponL96A1::PlayZoomSound()
+{
+	EMIT_SOUND_DYN(ENT(m_pPlayer->pev),
+				   CHAN_ITEM,
+				   m_iZoomLevel > 0 ? L96A1_ZOOM_IN_SOUND : L96A1_ZOOM_OUT_SOUND,
+				   0.3f,
+				   ATTN_NORM,
+				   0,
+				   100);
 }
 
 #ifndef CLIENT_DLL
