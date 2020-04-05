@@ -17,7 +17,7 @@
 #define PLAYER_H
 
 #include "enginecallback.h"
-
+#include "screenOverlays/screenOverlayIds.h"
 #include "pm_materials.h"
 
 #define PLAYER_FATAL_FALL_SPEED		1024// approx 60 feet
@@ -310,6 +310,7 @@ public:
 
 	void SetCustomDecalFrames( int nFrames );
 	int GetCustomDecalFrames( void );
+	void SetScreenOverlay(ScreenOverlays::OverlayId id);
 
 	Vector m_vecLastViewAngles;
 
@@ -317,6 +318,7 @@ public:
 	float m_flAmmoStartCharge;
 	float m_flPlayAftershock;
 	float m_flNextAmmoBurn;// while charging, when to absorb another unit of player's ammo?
+	ScreenOverlays::OverlayId m_iWeaponScreenOverlay;
 
 	//Player ID
 	void InitStatusBar( void );

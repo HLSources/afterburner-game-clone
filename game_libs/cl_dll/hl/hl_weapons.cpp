@@ -848,6 +848,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	player.pev->maxspeed = from->client.maxspeed;
 	player.pev->fov = from->client.fov;
 	player.pev->weaponanim = from->client.weaponanim;
+	player.m_iWeaponScreenOverlay = ScreenOverlays::ToOverlayId(from->client.weaponScreenOverlay);
 	player.pev->viewmodel = from->client.viewmodel;
 	player.m_flNextAttack = from->client.m_flNextAttack;
 	player.m_flNextAmmoBurn = from->client.fuser2;
@@ -911,6 +912,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	to->client.viewmodel = player.pev->viewmodel;
 	to->client.fov = player.pev->fov;
 	to->client.weaponanim = player.pev->weaponanim;
+	to->client.weaponScreenOverlay = player.m_iWeaponScreenOverlay;
 	to->client.m_flNextAttack = player.m_flNextAttack;
 	to->client.fuser2 = player.m_flNextAmmoBurn;
 	to->client.fuser3 = player.m_flAmmoStartCharge;

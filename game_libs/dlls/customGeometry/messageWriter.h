@@ -20,11 +20,6 @@ namespace CustomGeometry
 		Category GetCategory() const;
 		bool SetCategory(Category category);
 
-		// By default, the message is sent to all clients.
-		CBasePlayer* GetTargetClient() const;
-		void SetTargetClient(CBasePlayer* client);
-		void ClearTargetClient();
-
 		// Writes message given currently set category.
 		// If category is None, these functions will fail and return false.
 		bool WriteMessage(const CGeometryItem& geometry);

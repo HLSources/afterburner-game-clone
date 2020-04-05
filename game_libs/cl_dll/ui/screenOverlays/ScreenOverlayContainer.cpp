@@ -1,9 +1,30 @@
 #include "ScreenOverlayContainer.h"
+#include "cl_dll.h"
+#include "messageReader.h"
+#include "projectInterface/IProjectInterface.h"
+#include "customGeometry/logger_client.h"
 
 #include "SniperScopeOverlay.h"
 
 namespace ScreenOverlays
 {
+	static int HandleScreenOverlayMessage(const char* msgName, int size, void* buffer)
+	{
+		CMessageReader reader;
+
+		if ( reader.ReadMessage(buffer, size) )
+		{
+			CScreenOverlayContainer::StaticInstance().SetCurrentOverlay(reader.Id());
+		}
+		else
+		{
+			ILogInterface& log = IProjectInterface::ProjectInterfaceImpl()->LogInterface();
+			log.LogF(ILogInterface::Level::Error, "Failed to parse screen overlay message. Error: %s\n", reader.ErrorString().Get());
+		}
+
+		return 1;
+	}
+
 	CScreenOverlayContainer& CScreenOverlayContainer::StaticInstance()
 	{
 		static CScreenOverlayContainer container;
@@ -15,11 +36,12 @@ namespace ScreenOverlays
 		memset(m_FactoryFunctions, 0, sizeof(m_FactoryFunctions));
 	}
 
-	void CScreenOverlayContainer::RegisterOverlays()
+	void CScreenOverlayContainer::Initialise()
 	{
-		MapIdToClass<CSniperScopeOverlay>();
+		RegisterOverlays();
+		ResetCurrentOverlay();
 
-		CreateAllOverlays();
+		gEngfuncs.pfnHookUserMsg(MESSAGE_NAME, &HandleScreenOverlayMessage);
 	}
 
 	void CScreenOverlayContainer::VidInit()
@@ -61,6 +83,14 @@ namespace ScreenOverlays
 		}
 
 		return nullptr;
+	}
+
+	void CScreenOverlayContainer::RegisterOverlays()
+	{
+		// All supported overlays should be listed here.
+		MapIdToClass<CSniperScopeOverlay>();
+
+		CreateAllOverlays();
 	}
 
 	void CScreenOverlayContainer::CreateAllOverlays()

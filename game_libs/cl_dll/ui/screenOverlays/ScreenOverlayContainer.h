@@ -13,9 +13,7 @@ namespace ScreenOverlays
 
 		CScreenOverlayContainer();
 
-		// This is called once on client initialisation.
-		// Any overlays supported in the game should be registered within this function.
-		void RegisterOverlays();
+		void Initialise();
 
 		// Called whenever the video settings change, eg. monitor resolution.
 		// All existing overlays are informed.
@@ -58,6 +56,10 @@ namespace ScreenOverlays
 				}
 			}
 		}
+
+		// This is called once on client initialisation.
+		// Any overlays supported in the game should be registered within this function.
+		void RegisterOverlays();
 
 		void CreateAllOverlays();
 		CBaseScreenOverlay* GetOverlay(ScreenOverlays::OverlayId id);

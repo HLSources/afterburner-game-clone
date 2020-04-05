@@ -5,9 +5,9 @@
 
 namespace CustomGeometry
 {
-	CMessageReader::ReadResult CMessageReader::GetLastReadResult() const
+	bool CMessageReader::WasClearMessage() const
 	{
-		return m_ReadResult;
+		return m_WasClearMessage;
 	}
 
 	GeometryItemPtr_t CMessageReader::GetGeometryItem() const
@@ -20,27 +20,8 @@ namespace CustomGeometry
 		return m_GeomCategory;
 	}
 
-	CMessageReader::ReadResult CMessageReader::ReadMessage(void* buffer, int size)
-	{
-		// Invalidate to start off with.
-		SetErrorState();
-
-		// If anything goes wrong in the process, invalidate before returning.
-		if ( !ReadMessageInternal(buffer, size) )
-		{
-			SetErrorState();
-		}
-
-		return m_ReadResult;
-	}
-
 	bool CMessageReader::ReadMessageInternal(void* buffer, int size)
 	{
-		if ( !buffer || size < 1 )
-		{
-			return false;
-		}
-
 		BEGIN_READ(buffer, size);
 
 		if ( !ReadGeometryCategory() )
@@ -52,7 +33,7 @@ namespace CustomGeometry
 
 		if ( drawType == static_cast<uint8_t>(DrawType::None) )
 		{
-			m_ReadResult = ReadResult::Clear;
+			m_WasClearMessage = true;
 
 			// Nothing else to read.
 			return true;
@@ -63,6 +44,9 @@ namespace CustomGeometry
 		switch ( static_cast<DrawType>(drawType) )
 		{
 			case DrawType::Lines:
+			case DrawType::TriangleFan:
+			case DrawType::TriangleStrip:
+			case DrawType::Triangles:
 			{
 				m_GeometryItem->SetDrawType(static_cast<DrawType>(drawType));
 				break;
@@ -70,6 +54,8 @@ namespace CustomGeometry
 
 			default:
 			{
+				SetErrorString("Unrecognised draw type.");
+				ASSERT(false);
 				return false;
 			}
 		}
@@ -80,6 +66,7 @@ namespace CustomGeometry
 
 		if ( pointCount > MAX_POINTS_PER_MSG )
 		{
+			SetErrorString("Point count exceeded max allowed points.");
 			return false;
 		}
 
@@ -94,6 +81,7 @@ namespace CustomGeometry
 
 		if ( indexCount > MAX_INDICES_PER_MSG )
 		{
+			SetErrorString("Index count exceeded max allowed indices.");
 			return false;
 		}
 
@@ -102,7 +90,6 @@ namespace CustomGeometry
 			m_GeometryItem->AddIndex(static_cast<uint8_t>(READ_CHAR()));
 		}
 
-		m_ReadResult = ReadResult::OK;
 		return true;
 	}
 
@@ -112,7 +99,7 @@ namespace CustomGeometry
 
 		if ( categoryInt >= CATEGORY_COUNT )
 		{
-			SetErrorState();
+			SetErrorString("Unrecognised geometry category.");
 			return false;
 		}
 
@@ -120,10 +107,12 @@ namespace CustomGeometry
 		return true;
 	}
 
-	void CMessageReader::SetErrorState()
+	void CMessageReader::ResetInternalData()
 	{
+		Messages::CBaseMessageReader::ResetInternalData();
+
 		m_GeometryItem.reset();
 		m_GeomCategory = Category::None;
-		m_ReadResult = ReadResult::Error;
+		m_WasClearMessage = false;
 	}
 }

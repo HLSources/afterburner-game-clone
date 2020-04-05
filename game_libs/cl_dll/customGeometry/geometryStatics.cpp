@@ -14,8 +14,7 @@ namespace CustomGeometry
 
 	static void HandleSuccessfullyReceivedMessage(const CMessageReader& reader)
 	{
-		if ( reader.GetLastReadResult() == CMessageReader::ReadResult::Clear &&
-			 reader.GetGeometryCategory() == Category::None )
+		if ( reader.WasClearMessage() && reader.GetGeometryCategory() == Category::None )
 		{
 			CL_LOG().LogF(ILogInterface::Level::Message, "Received custom geometry ClearAll message.\n");
 			ClearAllGeometry();
@@ -30,52 +29,39 @@ namespace CustomGeometry
 			return;
 		}
 
-		switch ( reader.GetLastReadResult() )
+		if ( reader.WasClearMessage() )
 		{
-			case CMessageReader::ReadResult::OK:
-			{
-				GeometryItemPtr_t item = reader.GetGeometryItem();
+			CL_LOG().LogF(ILogInterface::Level::Message,
+				"Received custom geometry clear message for category %s\n",
+				CustomGeometry::CategoryName(reader.GetGeometryCategory()));
 
-				CL_LOG().LogF(ILogInterface::Level::Message,
-					"Received custom geometry for category %s (%d points, %d indices)\n",
-					CustomGeometry::CategoryName(reader.GetGeometryCategory()),
-					item->GetPoints().Count(),
-					item->GetIndices().Count());
-
-				collection->AddItem(item);
-				break;
-			}
-
-			case CMessageReader::ReadResult::Clear:
-			{
-				CL_LOG().LogF(ILogInterface::Level::Message,
-					"Received custom geometry clear message for category %s\n",
-					CustomGeometry::CategoryName(reader.GetGeometryCategory()));
-
-				collection->Clear();
-				break;
-			}
-
-			default:
-			{
-				ASSERT(false);
-				break;
-			}
+			collection->Clear();
+			return;
 		}
+
+		GeometryItemPtr_t item = reader.GetGeometryItem();
+
+		CL_LOG().LogF(ILogInterface::Level::Message,
+			"Received custom geometry for category %s (%d points, %d indices)\n",
+			CustomGeometry::CategoryName(reader.GetGeometryCategory()),
+			item->GetPoints().Count(),
+			item->GetIndices().Count());
+
+		collection->AddItem(item);
 	}
 
 	static int HandleCustomGeometryMessage(const char* msgName, int size, void* buffer)
 	{
 		CMessageReader reader;
 
-		if ( reader.ReadMessage(buffer, size) != CMessageReader::ReadResult::Error )
+		if ( reader.ReadMessage(buffer, size) )
 		{
 			HandleSuccessfullyReceivedMessage(reader);
 		}
 		else
 		{
 			ILogInterface& log = IProjectInterface::ProjectInterfaceImpl()->LogInterface();
-			log.Log(ILogInterface::Level::Error, "Failed to parse custom geometry message.\n");
+			log.LogF(ILogInterface::Level::Error, "Failed to parse custom geometry message. Error: %s\n", reader.ErrorString().Get());
 		}
 
 		return 1;

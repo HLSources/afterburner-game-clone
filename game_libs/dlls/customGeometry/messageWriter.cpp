@@ -26,26 +26,6 @@ namespace CustomGeometry
 		return true;
 	}
 
-	CBasePlayer* CMessageWriter::GetTargetClient() const
-	{
-		return m_pTargetClient;
-	}
-
-	void CMessageWriter::SetTargetClient(CBasePlayer* client)
-	{
-		if ( !client || client->pev->flags | FL_FAKECLIENT || !(client->pev->flags | FL_CLIENT) )
-		{
-			return;
-		}
-
-		m_pTargetClient = client;
-	}
-
-	void CMessageWriter::ClearTargetClient()
-	{
-		m_pTargetClient = nullptr;
-	}
-
 	// Message format:
 	// - Header
 	// - Colour (uint32)
@@ -76,7 +56,7 @@ namespace CustomGeometry
 			return false;
 		}
 
-		BeginMessage(m_pTargetClient);
+		BeginMessage();
 		WriteMessageHeader(m_Category, geometry.GetDrawType());
 
 		WRITE_LONG(geometry.GetColour());
@@ -113,7 +93,7 @@ namespace CustomGeometry
 	// - Header only; draw type is None.
 	void CMessageWriter::WriteClearMessageInternal(Category geomCategory)
 	{
-		BeginMessage(m_pTargetClient);
+		BeginMessage();
 		WriteMessageHeader(geomCategory, DrawType::None);
 		EndMessage();
 	}

@@ -295,8 +295,7 @@ void DLLEXPORT HUD_Init( void )
 	InitInput();
 
 	ScreenOverlays::CScreenOverlayContainer& container = ScreenOverlays::CScreenOverlayContainer::StaticInstance();
-	container.RegisterOverlays();
-	container.ResetCurrentOverlay();
+	container.Initialise();
 
 	gHUD.Init();
 

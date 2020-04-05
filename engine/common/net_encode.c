@@ -221,6 +221,7 @@ static const delta_field_t cd_fields[] =
 { CLDT_DEF( maxspeed )	},
 { CLDT_DEF( fov )		},
 { CLDT_DEF( weaponanim )	},
+{ CLDT_DEF( weaponScreenOverlay )	},
 { CLDT_DEF( m_iId )		},
 { CLDT_DEF( m_flNextAttack )	},
 { CLDT_DEF( tfstate )	},

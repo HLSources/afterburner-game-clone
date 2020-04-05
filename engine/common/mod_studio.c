@@ -312,14 +312,14 @@ uint32_t Mod_GetHitboxCount(const edict_t* edict)
 		return 0;
 	}
 
-	studiohdr_t* mod_studiohdr = (studiohdr_t*)Mod_StudioExtradata(model);
+	studiohdr_t* header = (studiohdr_t*)Mod_StudioExtradata(model);
 
-	if( !mod_studiohdr )
+	if( !header )
 	{
 		return 0;
 	}
 
-	return mod_studiohdr->numhitboxes;
+	return header->numhitboxes;
 }
 
 void Mod_StudioPlayerBlend( mstudioseqdesc_t *pseqdesc, int *pBlend, float *pPitch )
@@ -404,7 +404,7 @@ qboolean Mod_GetTransformedHitboxPoints(const edict_t* edict, uint32_t hitboxInd
 		return false;
 	}
 
-	studiohdr_t* mod_studiohdr = (studiohdr_t*)Mod_StudioExtradata(model);
+	mod_studiohdr = (studiohdr_t*)Mod_StudioExtradata(model);
 
 	if( !mod_studiohdr || hitboxIndex >= mod_studiohdr->numhitboxes )
 	{
@@ -444,14 +444,14 @@ int Mod_GetHitboxHitGroup(const edict_t* edict, uint32_t hitboxIndex)
 		return -1;
 	}
 
-	studiohdr_t* mod_studiohdr = (studiohdr_t*)Mod_StudioExtradata(model);
+	studiohdr_t* header = (studiohdr_t*)Mod_StudioExtradata(model);
 
-	if( !mod_studiohdr || hitboxIndex >= mod_studiohdr->numhitboxes )
+	if( !header || hitboxIndex >= header->numhitboxes )
 	{
 		return -1;
 	}
 
-	const mstudiobbox_t* hitbox = (mstudiobbox_t*)((byte*)mod_studiohdr + mod_studiohdr->hitboxindex) + hitboxIndex;
+	const mstudiobbox_t* hitbox = (mstudiobbox_t*)((byte*)header + header->hitboxindex) + hitboxIndex;
 	return hitbox->group;
 }
 

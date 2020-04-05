@@ -43,6 +43,7 @@
 #include "gameplay/gameplaySystems.h"
 #include "gameplay/gameplaySystemsBase.h"
 #include "gameplay/spawnpointmanager.h"
+#include "screenOverlays/messageWriter.h"
 
 // #define DUCKFIX
 
@@ -242,6 +243,7 @@ void LinkUserMessages( void )
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
 
 	CustomGeometry::CMessageWriter::RegisterUserMessage();
+	ScreenOverlays::CMessageWriter::RegisterUserMessage();
 
 	userMessagesRegistered = true;
 }
@@ -2651,6 +2653,21 @@ pt_end:
 #endif
 }
 
+void CBasePlayer::SetScreenOverlay(ScreenOverlays::OverlayId id)
+{
+	if ( m_iWeaponScreenOverlay == id )
+	{
+		return;
+	}
+
+	m_iWeaponScreenOverlay = id;
+
+	ScreenOverlays::CMessageWriter msgWriter;
+	msgWriter.SetTargetClient(this);
+	msgWriter.SetId(m_iWeaponScreenOverlay);
+	msgWriter.WriteMessage();
+}
+
 void CBasePlayer::Spawn( void )
 {
 	pev->classname = MAKE_STRING( "player" );
@@ -2739,6 +2756,7 @@ void CBasePlayer::Spawn( void )
 	m_fWeapon = FALSE;
 	m_pClientActiveItem = NULL;
 	m_iClientBattery = -1;
+	m_iWeaponScreenOverlay = ScreenOverlays::Overlay_None;
 
 	// reset all ammo values to 0
 	for( int i = 0; i < MAX_AMMO_SLOTS; i++ )

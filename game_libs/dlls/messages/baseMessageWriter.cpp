@@ -11,27 +11,46 @@ namespace Messages
 		ASSERT(id != -1);
 	}
 
-	bool CBaseMessageWriter::BeginMessage(CBasePlayer* target)
+	CBasePlayer* CBaseMessageWriter::GetTargetClient() const
 	{
-		return BeginMessage(target ? target->pev : nullptr);
+		return m_pTargetClient;
 	}
 
-	bool CBaseMessageWriter::BeginMessage(entvars_t* target)
+	void CBaseMessageWriter::SetTargetClient(CBasePlayer* client)
+	{
+		m_pTargetClient = client;
+	}
+
+	void CBaseMessageWriter::ClearTargetClient()
+	{
+		m_pTargetClient = nullptr;
+	}
+
+	const Vector* CBaseMessageWriter::GetOrigin() const
+	{
+		return m_pMsgOrigin ? &m_vecOrigin : nullptr;
+	}
+
+	void CBaseMessageWriter::SetOrigin(const Vector& origin)
+	{
+		m_vecOrigin = origin;
+		m_pMsgOrigin = static_cast<const float*>(m_vecOrigin);
+	}
+
+	void CBaseMessageWriter::ClearOrigin()
+	{
+		m_vecOrigin = Vector();
+		m_pMsgOrigin = nullptr;
+	}
+
+	bool CBaseMessageWriter::BeginMessage()
 	{
 		if ( !CanWriteMessage() )
 		{
 			return false;
 		}
 
-		if ( target )
-		{
-			MESSAGE_BEGIN(MSG_ONE, m_iMessageId, nullptr, target);
-		}
-		else
-		{
-			MESSAGE_BEGIN(MSG_ALL, m_iMessageId);
-		}
-
+		MESSAGE_BEGIN(MSG_ALL, m_iMessageId, m_pMsgOrigin, m_pTargetClient ? m_pTargetClient->pev : nullptr);
 		return true;
 	}
 
