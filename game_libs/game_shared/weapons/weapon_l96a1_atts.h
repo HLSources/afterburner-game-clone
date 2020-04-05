@@ -3,6 +3,7 @@
 #include "weaponatts_collection.h"
 #include "weapon_pref_weights.h"
 #include "weaponatts_hitscanattack.h"
+#include "coreutil/coreutil.h"
 
 enum L96A1Animations_e
 {
@@ -23,6 +24,17 @@ enum L9A61AttackMode_e
 
 // Rounds per second:
 static constexpr float L96A1_FIRE_RATE = 1.0f / 1.5f;
+
+static constexpr float L96A1_ZOOM_TOGGLE_DELAY = 0.2f;
+
+static constexpr float L96A1_ZOOM_LEVELS[] =
+{
+	0.0f,	// Default
+	40.0f,
+	15.0f
+};
+
+static constexpr size_t L96A1_ZOOM_LEVEL_COUNT = CoreUtil::ArraySize(L96A1_ZOOM_LEVELS);
 
 static constexpr CAmmoDef Ammo_L96A1 =
 {
