@@ -3696,23 +3696,40 @@ void R_DrawViewModel( void )
 	R_GatherPlayerLight();
 
 	if( r_drawviewmodel->value == 0 )
+	{
 		return;
+	}
+
+	cl_entity_t* player = gEngfuncs.GetLocalPlayer();
+
+	if ( player && (player->curstate.effects & EF_HIDEVIEWMODEL) )
+	{
+		return;
+	}
 
 	if( ENGINE_GET_PARM( PARM_THIRDPERSON ))
+	{
 		return;
+	}
 
 	// ignore in thirdperson, camera view or client is died
 	if( !RP_NORMALPASS() || ENGINE_GET_PARM( PARM_LOCAL_HEALTH ) <= 0 || !CL_IsViewEntityLocalPlayer())
+	{
 		return;
+	}
 
 	tr.blend = CL_FxBlend( view ) / 255.0f;
 	if( !R_ModelOpaque( view->curstate.rendermode ) && tr.blend <= 0.0f )
+	{
 		return; // invisible ?
+	}
 
 	RI.currententity = view;
 
 	if( !RI.currententity->model )
+	{
 		return;
+	}
 
 	const float oldX = RI.fov_x;
 	const float oldY = RI.fov_y;

@@ -115,7 +115,7 @@
 #define EF_SNIPERLASER			512	// sniper laser effect
 #define EF_FIBERCAMERA			1024	// fiber camera
 
-
+#define EF_HIDEVIEWMODEL	(1<<23)	// View model will not be drawn, but events will still play.
 #define EF_NOREFLECT		(1<<24)	// Entity won't reflecting in mirrors
 #define EF_REFLECTONLY		(1<<25)	// Entity will be drawing only in mirrors
 #define EF_NOWATERCSG		(1<<26)	// Do not remove sides for func_water entity

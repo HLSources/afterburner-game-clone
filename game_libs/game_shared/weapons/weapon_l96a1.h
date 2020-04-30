@@ -13,7 +13,6 @@ public:
 	virtual void Precache() override;
 	virtual void SecondaryAttack() override;
 	virtual void Reload() override;
-	virtual BOOL Deploy() override;
 	virtual void Holster(int skiplocal = 0) override;
 
 #ifndef CLIENT_DLL
@@ -26,7 +25,6 @@ private:
 	void PlayZoomSound();
 
 	uint32_t m_iZoomLevel = 0;
-	int m_iViewModel = 0;
 };
 
 namespace WeaponAtts

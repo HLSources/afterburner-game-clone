@@ -114,6 +114,9 @@
 #define EF_LIGHT			64	// rocket flare glow sprite
 #define EF_NODRAW			128	// don't draw entity
 
+#define EF_HIDEVIEWMODEL	(1<<23)	// View model will not be drawn, but events will still play.
+#define EF_NOREFLECT		(1<<24)	// Entity won't reflecting in mirrors
+#define EF_REFLECTONLY		(1<<25)	// Entity will be drawing only in mirrors
 #define EF_WATERSIDES		(1<<26)	// Do not remove sides for func_water entity
 #define EF_FULLBRIGHT		(1<<27)	// Just get fullbright
 #define EF_NOSHADOW			(1<<28)	// ignore shadow for this entity
@@ -727,6 +730,7 @@ enum
 	kRenderFxExplode,			// Scale up really big!
 	kRenderFxGlowShell,			// Glowing Shell
 	kRenderFxClampMinScale,		// Keep this sprite from getting very small (SPRITES only!)
+	kRenderFxLightMultiplier	//CTM !!!CZERO added to tell the studiorender that the value in iuser2 is a lightmultiplier
 };
 
 typedef int		func_t;

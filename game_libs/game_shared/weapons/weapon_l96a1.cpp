@@ -11,8 +11,7 @@ LINK_ENTITY_TO_CLASS(weapon_l96a1, CWeaponL96A1)
 
 CWeaponL96A1::CWeaponL96A1() :
 	CGenericHitscanWeapon(),
-	m_iZoomLevel(0),
-	m_iViewModel(0)
+	m_iZoomLevel(0)
 {
 	m_pPrimaryAttackMode = GetAttackModeFromAttributes<WeaponAtts::WAHitscanAttack>(ATTACKMODE_NORMAL);
 }
@@ -54,18 +53,6 @@ void CWeaponL96A1::Reload()
 	CGenericHitscanWeapon::Reload();
 }
 
-BOOL CWeaponL96A1::Deploy()
-{
-	if ( !CGenericHitscanWeapon::Deploy() )
-	{
-		m_iViewModel = 0;
-		return FALSE;
-	}
-
-	m_iViewModel = m_pPlayer ? m_pPlayer->pev->viewmodel : 0;
-	return TRUE;
-}
-
 void CWeaponL96A1::Holster(int skiplocal)
 {
 	CGenericHitscanWeapon::Holster();
@@ -87,13 +74,13 @@ void CWeaponL96A1::SetZoomLevel(uint32_t level)
 		{
 			m_pPlayer->SetScreenOverlay(ScreenOverlays::OverlayId::Overlay_SniperScope);
 			m_pPlayer->pev->fov = m_pPlayer->m_iFOV = L96A1_ZOOM_LEVELS[m_iZoomLevel];
-			m_pPlayer->pev->viewmodel = 0;
+			m_pPlayer->pev->effects |= EF_HIDEVIEWMODEL;
 		}
 		else
 		{
 			m_pPlayer->SetScreenOverlay(ScreenOverlays::OverlayId::Overlay_None);
 			m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 0.0f;
-			m_pPlayer->pev->viewmodel = m_iViewModel;
+			m_pPlayer->pev->effects &= ~EF_HIDEVIEWMODEL;
 		}
 	}
 }
