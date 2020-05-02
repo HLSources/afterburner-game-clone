@@ -1520,10 +1520,7 @@ void R_PolysetFillSpans8 (spanpackage_t *pspanpackage)
 	do
 	{
 		lcount = d_aspancount - pspanpackage->count;
-
-		// This line got pulled down from upstream and it doesn't actually assign anything, so has no effect.
-		// I'm not 100% sure what its intention was, so I'm commenting it out so that I can compile without issue.
-		//d_ptex + a_ststepxwhole * lcount  + ((a_sstepxfrac * lcount) >> 16) + ((a_tstepxfrac * lcount) >> 16)*r_affinetridesc.skinwidth;
+		// d_ptex + a_ststepxwhole * lcount  + ((a_sstepxfrac * lcount) >> 16) + ((a_tstepxfrac * lcount) >> 16)*r_affinetridesc.skinwidth;
 
 		errorterm += erroradjustup;
 		if (errorterm >= 0)
