@@ -13,7 +13,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-#include "gl_local.h"
+#include "r_local.h"
 #include "r_efx.h"
 #include "event_flags.h"
 #include "entity_types.h"
@@ -21,6 +21,7 @@ GNU General Public License for more details.
 #include "customentity.h"
 #include "cl_tent.h"
 #include "pm_local.h"
+
 #include "studio.h"
 
 #define NOISE_DIVISIONS	64	// don't touch - many tripmines cause the crash when it equal 128
@@ -115,11 +116,12 @@ R_BeamCull
 Cull the beam by bbox
 ==============
 */
-qboolean R_BeamCull( const vec3_t start, const vec3_t end, qboolean pvsOnly )
+qboolean GAME_EXPORT R_BeamCull( const vec3_t start, const vec3_t end, qboolean pvsOnly )
 {
 	vec3_t	mins, maxs;
 	int	i;
-
+	return false;
+/*
 	for( i = 0; i < 3; i++ )
 	{
 		if( start[i] < end[i] )
@@ -150,6 +152,7 @@ qboolean R_BeamCull( const vec3_t start, const vec3_t end, qboolean pvsOnly )
 
 	// beam is culled
 	return true;
+	*/
 }
 
 /*
@@ -159,7 +162,7 @@ CL_AddCustomBeam
 Add the beam that encoded as custom entity
 ================
 */
-void CL_AddCustomBeam( cl_entity_t *pEnvBeam )
+void GAME_EXPORT CL_AddCustomBeam( cl_entity_t *pEnvBeam )
 {
 	if( tr.draw_list->num_beam_entities >= MAX_VISIBLE_PACKET )
 	{
@@ -313,15 +316,15 @@ static void R_DrawSegs( vec3_t source, vec3_t delta, float width, float scale, f
 			VectorMA( curSeg.pos, ( curSeg.width * 0.5f ), vAveNormal, vPoint1 );
 			VectorMA( curSeg.pos, (-curSeg.width * 0.5f ), vAveNormal, vPoint2 );
 
-			pglTexCoord2f( 0.0f, curSeg.texcoord );
+			TriTexCoord2f( 0.0f, curSeg.texcoord );
 			TriBrightness( brightness );
-			pglNormal3fv( vAveNormal );
-			pglVertex3fv( vPoint1 );
+			//pglNormal3fv( vAveNormal );
+			TriVertex3fv( vPoint1 );
 
-			pglTexCoord2f( 1.0f, curSeg.texcoord );
+			TriTexCoord2f( 1.0f, curSeg.texcoord );
 			TriBrightness( brightness );
-			pglNormal3fv( vAveNormal );
-			pglVertex3fv( vPoint2 );
+			//pflNormal3fv( vAveNormal );
+			TriVertex3fv( vPoint2 );
 		}
 
 		curSeg = nextSeg;
@@ -348,15 +351,15 @@ static void R_DrawSegs( vec3_t source, vec3_t delta, float width, float scale, f
 			VectorMA( curSeg.pos, (-curSeg.width * 0.5f ), vLastNormal, vPoint2 );
 
 			// specify the points.
-			pglTexCoord2f( 0.0f, curSeg.texcoord );
+			TriTexCoord2f( 0.0f, curSeg.texcoord );
 			TriBrightness( brightness );
-			pglNormal3fv( vLastNormal );
-			pglVertex3fv( vPoint1 );
+			//pglNormal3fv( vLastNormal );
+			TriVertex3fv( vPoint1 );
 
-			pglTexCoord2f( 1.0f, curSeg.texcoord );
+			TriTexCoord2f( 1.0f, curSeg.texcoord );
 			TriBrightness( brightness );
-			pglNormal3fv( vLastNormal );
-			pglVertex3fv( vPoint2 );
+			//pglNormal3fv( vLastNormal );
+			TriVertex3fv( vPoint2 );
 		}
 
 		vLast += vStep; // Advance texture scroll (v axis only)
@@ -403,7 +406,7 @@ void R_DrawTorus( vec3_t source, vec3_t delta, float width, float scale, float f
 		float	s, c;
 
 		fraction = i * div;
-		SinCos( fraction * M_PI2_F, &s, &c );
+		SinCos( fraction * M_PI2, &s, &c );
 
 		point[0] = s * freq * delta[2] + source[0];
 		point[1] = c * freq * delta[2] + source[1];
@@ -484,7 +487,7 @@ void R_DrawDisk( vec3_t source, vec3_t delta, float width, float scale, float fr
 	scale = scale * length;
 
 	// clamp the beam width
-	w = fmod( freq, width * 0.1f ) * delta[2];
+	w = fmod( freq, width ) * delta[2];
 
 	// NOTE: we must force the degenerate triangles to be on the edge
 	for( i = 0; i < segments; i++ )
@@ -498,7 +501,7 @@ void R_DrawDisk( vec3_t source, vec3_t delta, float width, float scale, float fr
 		TriTexCoord2f( 1.0f, vLast );
 		TriVertex3fv( point );
 
-		SinCos( fraction * M_PI2_F, &s, &c );
+		SinCos( fraction * M_PI2, &s, &c );
 		point[0] = s * w + source[0];
 		point[1] = c * w + source[1];
 		point[2] = source[2];
@@ -546,7 +549,7 @@ void R_DrawCylinder( vec3_t source, vec3_t delta, float width, float scale, floa
 		float	s, c;
 
 		fraction = i * div;
-		SinCos( fraction * M_PI2_F, &s, &c );
+		SinCos( fraction * M_PI2, &s, &c );
 
 		point[0] = s * freq * delta[2] + source[0];
 		point[1] = c * freq * delta[2] + source[1];
@@ -578,8 +581,8 @@ drawi followed beam
 void R_DrawBeamFollow( BEAM *pbeam, float frametime )
 {
 	particle_t	*pnew, *particles;
-	float		fraction, div, vLast, vStep;
-	vec3_t		last1, last2, tmp, screen;
+	float		fraction, div, vLast, vStep, saved_fraction;
+	vec3_t		last1, last2, tmp, screen, saved_last2;
 	vec3_t		delta, screenLast, normal;
 
 	gEngfuncs.R_FreeDeadParticles( &pbeam->particles );
@@ -670,6 +673,9 @@ void R_DrawBeamFollow( BEAM *pbeam, float frametime )
 		TriTexCoord2f( 0, 1 );
 		TriVertex3fv( last1 );
 
+		VectorCopy( last2, saved_last2 );
+		saved_fraction = fraction;
+
 		// Transform point into screen space
 		TriWorldToScreen( particles->org, screen );
 		// Build world-space normal to screen-space direction vector
@@ -698,6 +704,13 @@ void R_DrawBeamFollow( BEAM *pbeam, float frametime )
 
 		TriBrightness( fraction );
 		TriTexCoord2f( 0, 0 );
+		TriVertex3fv( last1 );
+		TriBrightness( saved_fraction );
+		TriTexCoord2f( 1.0f, 1.0f );
+		TriVertex3fv( saved_last2 );
+
+		TriBrightness( fraction );
+		TriTexCoord2f( 0.0f, 0.0f );
 		TriVertex3fv( last1 );
 		TriBrightness( fraction );
 		TriTexCoord2f( 1, 0 );
@@ -737,7 +750,7 @@ void R_DrawRing( vec3_t source, vec3_t delta, float width, float amplitude, floa
 		return;
 
 	VectorClear( screenLast );
-	segments = segments * M_PI_F;
+	segments = segments * M_PI;
 	
 	if( segments > NOISE_DIVISIONS * 8 )
 		segments = NOISE_DIVISIONS * 8;
@@ -774,7 +787,7 @@ void R_DrawRing( vec3_t source, vec3_t delta, float width, float amplitude, floa
 		return;
 
 	// is that box in PVS && frustum?
-	if( !gEngfuncs.Mod_BoxVisible( screen, tmp, Mod_GetCurrentVis( )) || R_CullBox( screen, tmp ))
+	if( !gEngfuncs.Mod_BoxVisible( screen, tmp, Mod_GetCurrentVis( ))  ) //|| R_CullBox( screen, tmp ))
 	{
 		return;
 	}
@@ -788,7 +801,7 @@ void R_DrawRing( vec3_t source, vec3_t delta, float width, float amplitude, floa
 	for( i = 0; i < segments + 1; i++ )
 	{
 		fraction = i * div;
-		SinCos( fraction * M_PI2_F, &x, &y );
+		SinCos( fraction * M_PI2, &x, &y );
 
 		VectorMAMAM( x, xaxis, y, yaxis, 1.0f, center, point ); 
 
@@ -1081,19 +1094,19 @@ void R_BeamDraw( BEAM *pbeam, float frametime )
 	switch( pbeam->type )
 	{
 	case TE_BEAMTORUS:
-		GL_Cull( GL_NONE );
+		//GL_Cull( GL_NONE );
 		TriBegin( TRI_TRIANGLE_STRIP );
 		R_DrawTorus( pbeam->source, pbeam->delta, pbeam->width, pbeam->amplitude, pbeam->freq, pbeam->speed, pbeam->segments );
 		TriEnd();
 		break;
 	case TE_BEAMDISK:
-		GL_Cull( GL_NONE );
+		//GL_Cull( GL_NONE );
 		TriBegin( TRI_TRIANGLE_STRIP );
 		R_DrawDisk( pbeam->source, pbeam->delta, pbeam->width, pbeam->amplitude, pbeam->freq, pbeam->speed, pbeam->segments );
 		TriEnd();
 		break;
 	case TE_BEAMCYLINDER:
-		GL_Cull( GL_NONE );
+		//GL_Cull( GL_NONE );
 		TriBegin( TRI_TRIANGLE_STRIP );
 		R_DrawCylinder( pbeam->source, pbeam->delta, pbeam->width, pbeam->amplitude, pbeam->freq, pbeam->speed, pbeam->segments );
 		TriEnd();
@@ -1105,19 +1118,19 @@ void R_BeamDraw( BEAM *pbeam, float frametime )
 		TriEnd();
 		break;
 	case TE_BEAMFOLLOW:
-		TriBegin( TRI_QUADS );
+		TriBegin( TRI_TRIANGLES );
 		R_DrawBeamFollow( pbeam, frametime );
 		TriEnd();
 		break;
 	case TE_BEAMRING:
-		GL_Cull( GL_NONE );
+		//GL_Cull( GL_NONE );
 		TriBegin( TRI_TRIANGLE_STRIP );
 		R_DrawRing( pbeam->source, pbeam->delta, pbeam->width, pbeam->amplitude, pbeam->freq, pbeam->speed, pbeam->segments );
 		TriEnd();
 		break;
 	}
 
-	GL_Cull( GL_FRONT );
+	//GL_Cull( GL_FRONT );
 	r_stats.c_view_beams_count++;
 }
 
@@ -1256,13 +1269,13 @@ CL_DrawBeams
 draw beam loop
 ==============
 */
-void CL_DrawBeams( int fTrans, BEAM *active_beams )
+void GAME_EXPORT CL_DrawBeams( int fTrans, BEAM *active_beams )
 {
 	BEAM	*pBeam;
 	int	i, flags;
 
-	pglShadeModel( GL_SMOOTH );
-	pglDepthMask( fTrans ? GL_FALSE : GL_TRUE );
+	//pglShadeModel( GL_SMOOTH );
+	//pglDepthMask( fTrans ? GL_FALSE : GL_TRUE );
 	
 	// server beams don't allocate beam chains
 	// all params are stored in cl_entity_t
@@ -1295,6 +1308,6 @@ void CL_DrawBeams( int fTrans, BEAM *active_beams )
 		R_BeamDraw( pBeam, gpGlobals->time -   gpGlobals->oldtime );
 	}
 
-	pglShadeModel( GL_FLAT );
-	pglDepthMask( GL_TRUE );
+	//pglShadeModel( GL_FLAT );
+	//pglDepthMask( GL_TRUE );
 }

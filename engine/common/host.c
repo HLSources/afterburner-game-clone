@@ -42,8 +42,6 @@ GNU General Public License for more details.
 #include "render_api.h"	// decallist_t
 
 
-typedef void (*pfnChangeGame)( const char *progname );
-
 pfnChangeGame	pChangeGame = NULL;
 host_parm_t		host;	// host parms
 sysinfo_t		SI;
@@ -754,6 +752,27 @@ static void Host_Crash_f( void )
 
 /*
 =================
+Host_Userconfigd_f
+=================
+*/
+void Host_Userconfigd_f( void )
+{
+	search_t *t;
+	int i;
+
+	t = FS_Search( "userconfig.d/*.cfg", true, false );
+	if( !t ) return;
+
+	for( i = 0; i < t->numfilenames; i++ )
+	{
+		Cbuf_AddText( va("exec %s\n", t->filenames[i] ) );
+	}
+
+	Mem_Free( t );
+}
+
+/*
+=================
 Host_InitCommon
 =================
 */
@@ -878,7 +897,9 @@ void Host_InitCommon( int argc, char **argv, const char *progname, qboolean bCha
 
 	Platform_Init();
 
-	if( ( baseDir = getenv( "XASH3D_BASEDIR" ) ) )
+	baseDir = getenv( "XASH3D_BASEDIR" );
+
+	if( COM_CheckString( baseDir ) )
 	{
 		Q_strncpy( host.rootdir, baseDir, sizeof(host.rootdir) );
 	}
@@ -911,9 +932,9 @@ void Host_InitCommon( int argc, char **argv, const char *progname, qboolean bCha
 	host.rodir[0] = 0;
 	if( !Sys_GetParmFromCmdLine( "-rodir", host.rodir ))
 	{
-		char *roDir;
+		char *roDir = getenv( "XASH3D_RODIR" );
 
-		if(( roDir = getenv( "XASH3D_RODIR" )))
+		if( COM_CheckString( roDir ))
 			Q_strncpy( host.rodir, roDir, sizeof( host.rodir ));
 	}
 
@@ -929,6 +950,7 @@ void Host_InitCommon( int argc, char **argv, const char *progname, qboolean bCha
 
 	Cmd_AddCommand( "exec", Host_Exec_f, "execute a script file" );
 	Cmd_AddCommand( "memlist", Host_MemStats_f, "prints memory pool information" );
+	Cmd_AddCommand( "userconfigd", Host_Userconfigd_f, "execute all scripts from userconfig.d" );
 
 	FS_Init();
 	Image_Init();
@@ -1047,6 +1069,8 @@ int EXPORT Host_Main( int argc, char **argv, const char *progname, int bChangeGa
 			Cbuf_AddText( "exec config.cfg\n" );
 			Cbuf_Execute();
 		}
+		// exec all files from userconfig.d 
+		Host_Userconfigd_f();
 		break;
 	case HOST_DEDICATED:
 		// allways parse commandline in dedicated-mode
