@@ -46,6 +46,7 @@
 #include "hitscanweaponeventplayer.h"
 #include "projectileweaponeventplayer.h"
 #include "meleeweaponeventplayer.h"
+#include "resources/SoundResources.h"
 
 static std::unique_ptr<BaseWeaponEventPlayer> EventPlayers[MAX_WEAPONS][WeaponAtts::WACollection::MAX_ATTACK_MODES];
 
@@ -344,24 +345,8 @@ void EV_HLDM_GunshotDecalTrace( pmtrace_t *pTrace, char *decalName )
 	iRand = gEngfuncs.pfnRandomLong( 0, 0x7FFF );
 	if( iRand < ( 0x7fff / 2 ) )// not every bullet makes a sound.
 	{
-		switch( iRand % 5 )
-		{
-		case 0:
-			gEngfuncs.pEventAPI->EV_PlaySound( -1, pTrace->endpos, 0, "weapons/ric1.wav", 1.0, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		case 1:
-			gEngfuncs.pEventAPI->EV_PlaySound( -1, pTrace->endpos, 0, "weapons/ric2.wav", 1.0, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		case 2:
-			gEngfuncs.pEventAPI->EV_PlaySound( -1, pTrace->endpos, 0, "weapons/ric3.wav", 1.0, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		case 3:
-			gEngfuncs.pEventAPI->EV_PlaySound( -1, pTrace->endpos, 0, "weapons/ric4.wav", 1.0, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		case 4:
-			gEngfuncs.pEventAPI->EV_PlaySound( -1, pTrace->endpos, 0, "weapons/ric5.wav", 1.0, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		}
+		const char* soundPath = SoundResources::WeaponSounds.GetRandomSoundPath(WeaponSoundId::BulletRicochet);
+		gEngfuncs.pEventAPI->EV_PlaySound(-1, pTrace->endpos, 0, soundPath, 1.0, ATTN_NORM, 0, PITCH_NORM);
 	}
 
 	pe = gEngfuncs.pEventAPI->EV_GetPhysent( pTrace->ent );

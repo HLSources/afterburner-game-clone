@@ -4,7 +4,9 @@
 
 enum class ItemSoundId
 {
-	GrenadeBounce = 0,
+	AmmoPickup = 0,
+	WeaponPickup,
+	WeaponDrop,
 	Count
 };
 

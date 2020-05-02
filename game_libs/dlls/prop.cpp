@@ -871,7 +871,7 @@ void CProp::BounceTouch( CBaseEntity *pOther )
 
 void CProp::BounceSound( void )
 {
-	const char* path = SoundResources::ItemSounds.GetRandomSoundPath(ItemSoundId::GrenadeBounce);
+	const char* path = SoundResources::WeaponSounds.GetRandomSoundPath(WeaponSoundId::GrenadeBounce);
 	EMIT_SOUND( ENT( pev ), CHAN_VOICE, path, 0.25, ATTN_NORM );
 }
 

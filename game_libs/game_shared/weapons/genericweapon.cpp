@@ -8,11 +8,6 @@
 #include "cl_entity.h"
 #endif
 
-namespace
-{
-	static constexpr const char* DEFAULT_WEAPON_PICKUP_SOUND = "items/gunpickup1.wav";
-}
-
 CGenericWeapon::CGenericWeapon()
 	: CBasePlayerWeapon(),
 	  m_pPrimaryAttackMode(nullptr),
@@ -101,7 +96,11 @@ void CGenericWeapon::PrecacheSoundSet(const WeaponAtts::WASoundSet& sounds)
 
 void CGenericWeapon::PrecacheCore(const WeaponAtts::WACore& core)
 {
-	PRECACHE_SOUND(core.PickupSoundOverride ? core.PickupSoundOverride : DEFAULT_WEAPON_PICKUP_SOUND);
+	if ( core.PickupSoundOverride )
+	{
+		// Default pickup sound is precached as part of the sound resources system.
+		PRECACHE_SOUND(core.PickupSoundOverride);
+	}
 }
 
 void CGenericWeapon::PrecacheViewModel(const WeaponAtts::WAViewModel& viewModel)
@@ -663,6 +662,18 @@ bool CGenericWeapon::CanReload() const
 	}
 
 	return true;
+}
+
+const char* CGenericWeapon::PickupSound() const
+{
+	const WeaponAtts::WACollection& atts = WeaponAttributes();
+
+	if ( atts.Core.PickupSoundOverride )
+	{
+		return atts.Core.PickupSoundOverride;
+	}
+
+	return CBasePlayerWeapon::PickupSound();
 }
 
 int CGenericWeapon::iItemSlot()

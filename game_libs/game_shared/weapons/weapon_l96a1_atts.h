@@ -99,5 +99,5 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	priAttack->AttackSounds.MaxVolume = 1.0f;
 	priAttack->AttackSounds.MinPitch = 95;
 	priAttack->AttackSounds.MaxPitch = 100;
-	priAttack->AttackSounds.SoundNames << "weapons/weapon_l96a1/l96a1_fire.wav";
+	priAttack->AttackSounds.SoundNames << "weapons/weapon_l96a1/l96a1_fire.wav"; // TODO: Far-away fire sound?
 });

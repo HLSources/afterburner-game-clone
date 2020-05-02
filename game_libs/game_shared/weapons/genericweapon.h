@@ -73,6 +73,8 @@ protected:
 		return attackMode;
 	}
 
+	virtual const char* PickupSound() const override;
+
 	// Overridable functions for attack modes:
 	virtual void PrecacheAttackMode(const WeaponAtts::WABaseAttack& attackMode);
 	virtual bool InvokeWithAttackMode(WeaponAttackType type, const WeaponAtts::WABaseAttack* attackMode);

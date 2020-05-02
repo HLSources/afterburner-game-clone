@@ -43,6 +43,8 @@ extern "C"
 #include "cl_dll.h"
 #include "ui/screenOverlays/ScreenOverlayContainer.h"
 #include "ui/screenOverlays/DebugCommands.h"
+#include "resources/SoundResources.h"
+#include "gameresources/GameResources.h"
 
 cl_enginefunc_t gEngfuncs;
 CHud gHUD;
@@ -291,6 +293,8 @@ void DLLEXPORT HUD_Init( void )
 	CustomGeometry::CLogger_Client::StaticInstance().RegisterCvar();
 	EventCommands::Initialise();
 	ScreenOverlays::InitialiseDebugCommands();
+	CGameResources::StaticInstance().Initialise();
+	SoundResources::Initialise();
 
 	InitInput();
 

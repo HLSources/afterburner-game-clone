@@ -347,5 +347,6 @@ void CBasePlayerAmmo::DefaultTouch( CBaseEntity *pOther ) { }
 int CBasePlayerWeapon::ExtractAmmo( CBasePlayerWeapon *pWeapon ) { return 0; }
 int CBasePlayerWeapon::ExtractClipAmmo( CBasePlayerWeapon *pWeapon ) { return 0; }
 void CBasePlayerWeapon::RetireWeapon( void ) { }
+const char* CBasePlayerItem::PickupSound() const { return nullptr; }
 void CSoundEnt::InsertSound( int iType, const Vector &vecOrigin, int iVolume, float flDuration ) {}
 void RadiusDamage( Vector vecSrc, entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, float flRadius, int iClassIgnore, int bitsDamageType ){}

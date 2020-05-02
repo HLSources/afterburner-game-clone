@@ -2,5 +2,7 @@
 
 void CItemSoundResources::Initialise()
 {
-	InitialiseSound(ItemSoundId::GrenadeBounce, "weapons/grenade_hit1.wav");
+	InitialiseSound(ItemSoundId::AmmoPickup, "items/ammopickup1.wav");
+	InitialiseSound(ItemSoundId::WeaponDrop, "items/weapondrop1.wav");
+	InitialiseSound(ItemSoundId::WeaponPickup, "items/gunpickup1.wav");
 }

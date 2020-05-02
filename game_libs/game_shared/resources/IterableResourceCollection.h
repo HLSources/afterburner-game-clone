@@ -62,10 +62,13 @@ public:
 
 			++m_Index;
 
-			if ( m_Index >= soundList->Count() )
+			// We keep trying until we encounter a list with items in,
+			// or we can no longer get any more lists.
+			while ( soundList && m_Index >= soundList->Count() )
 			{
 				++m_Id;
 				m_Index = 0;
+				soundList = CurrentSoundList();
 			}
 
 			return *this;
