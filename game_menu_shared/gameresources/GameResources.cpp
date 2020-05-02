@@ -13,14 +13,14 @@ CGameResources& CGameResources::StaticInstance()
 	return *resources;
 }
 
-CSoundResources& CGameResources::SoundResources()
+CItemSoundResources& CGameResources::ItemSounds()
 {
-	return m_SoundResources;
+	return m_ItemSounds;
 }
 
-const CSoundResources& CGameResources::SoundResources() const
+const CItemSoundResources& CGameResources::ItemSounds() const
 {
-	return m_SoundResources;
+	return m_ItemSounds;
 }
 
 CUtlString CGameResources::MultiplayerModelFullPath(const CUtlString& modelName)
@@ -38,7 +38,7 @@ const CUtlVector<CUtlString>& CGameResources::MultiplayerModelList() const
 void CGameResources::Initialise()
 {
 	InitMultiplayerModelList();
-	m_SoundResources.Initialise();
+	m_ItemSounds.Initialise();
 }
 
 void CGameResources::InitMultiplayerModelList()

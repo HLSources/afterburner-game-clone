@@ -3,7 +3,7 @@
 #include "filesystemops/FileSystemOps.h"
 #include "utlvector.h"
 #include "utlstring.h"
-#include "SoundResources.h"
+#include "ItemSoundResources.h"
 
 class CGameResources
 {
@@ -17,12 +17,12 @@ public:
 
 	const CUtlVector<CUtlString>& MultiplayerModelList() const;
 
-	CSoundResources& SoundResources();
-	const CSoundResources& SoundResources() const;
+	CItemSoundResources& ItemSounds();
+	const CItemSoundResources& ItemSounds() const;
 
 private:
 	void InitMultiplayerModelList();
 
 	CUtlVector<CUtlString> m_MultiplayerModelList;
-	CSoundResources m_SoundResources;
+	CItemSoundResources m_ItemSounds;
 };

@@ -59,6 +59,22 @@ MULTIDAMAGE gMultiDamage;
 
 #define TRACER_FREQ		4			// Tracers fire every fourth bullet
 
+// TODO: Perhaps there's a better place for this?
+template<typename ENUM, size_t N>
+void PrecacheAllSounds(const CBaseSoundResourceCollection<ENUM, N>& collection)
+{
+	for ( uint32_t index = 0; index < N; ++index )
+	{
+		const ENUM id = static_cast<ENUM>(index);
+		const size_t count = collection.SoundCount(id);
+
+		for ( uint32_t subIndex = 0; subIndex < count; ++subIndex )
+		{
+			PRECACHE_SOUND(collection.SoundPath(id, subIndex));
+		}
+	}
+}
+
 //=========================================================
 // MaxAmmoCarry - pass in a name and this function will tell
 // you the maximum amount of that type of ammunition that a
@@ -404,18 +420,7 @@ void W_Precache( void )
 
 	PRECACHE_SOUND( "items/weapondrop1.wav" );// weapon falls to the ground
 
-	CSoundResources& soundRes = CGameResources::StaticInstance().SoundResources();
-
-	for ( uint32_t soundTypeIndex = 0; soundTypeIndex < CSoundResources::ST__Count; ++soundTypeIndex )
-	{
-		CSoundResources::SoundType soundType = static_cast<CSoundResources::SoundType>(soundTypeIndex);
-		size_t count = soundRes.SoundCount(soundType);
-
-		for ( uint32_t index = 0; index < count; ++index )
-		{
-			PRECACHE_SOUND(soundRes.SoundPath(soundType, index));
-		}
-	}
+	PrecacheAllSounds(CGameResources::StaticInstance().ItemSounds());
 }
 
 TYPEDESCRIPTION	CBasePlayerItem::m_SaveData[] =
