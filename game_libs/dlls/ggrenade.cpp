@@ -27,7 +27,7 @@
 #include "soundent.h"
 #include "decals.h"
 #include "radialdamage.h"
-#include "gameresources/GameResources.h"
+#include "resources/SoundResources.h"
 
 //===================grenade
 
@@ -324,7 +324,7 @@ void CGrenade::SlideTouch( CBaseEntity *pOther )
 
 void CGrenade::BounceSound( void )
 {
-	const char* path = CGameResources::StaticInstance().ItemSounds().GetRandomSoundPath(ItemSoundId::GrenadeBounce);
+	const char* path = SoundResources::ItemSounds.GetRandomSoundPath(ItemSoundId::GrenadeBounce);
 	EMIT_SOUND( ENT( pev ), CHAN_VOICE, path, 0.25, ATTN_NORM );
 }
 

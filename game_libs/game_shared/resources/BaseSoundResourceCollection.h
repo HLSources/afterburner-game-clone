@@ -5,13 +5,18 @@
 #include "utlvector.h"
 #include "utlstring.h"
 #include "projectInterface/IProjectInterface.h"
+#include "IterableResourceCollection.h"
 
 template<typename ENUM, size_t N>
-class CBaseSoundResourceCollection
+class CBaseSoundResourceCollection : public IIterableSoundResourceCollection
 {
 public:
 	using ResourceId = ENUM;
 	static constexpr size_t NUM_ENTRIES = N;
+
+	CBaseSoundResourceCollection() : IIterableSoundResourceCollection(m_SoundPaths, NUM_ENTRIES)
+	{
+	}
 
 	virtual void Initialise() = 0;
 

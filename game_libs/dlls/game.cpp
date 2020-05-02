@@ -24,6 +24,7 @@
 #include "gameresources/GameResources.h"
 #include "hitbox_debugging/hitbox_commands.h"
 #include "customGeometry/commands.h"
+#include "resources/SoundResources.h"
 
 cvar_t displaysoundlist = {"displaysoundlist","0"};
 
@@ -465,6 +466,7 @@ void GameDLLInit( void )
 {
 	IProjectInterface::SetProjectInterfaceImpl(ProjectInterface_Server::StaticInstance());
 	CGameResources::StaticInstance().Initialise();
+	SoundResources::Initialise();
 
 	// Register cvars here:
 

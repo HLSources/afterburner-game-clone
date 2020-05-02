@@ -56,6 +56,7 @@ SOURCES = \
 	"game_shared/customGeometry/**/*.cpp",
 	"game_shared/util/**/*.cpp",
 	"game_shared/eventConstructor/**/*.cpp",
+	"game_shared/resources/**/*.cpp",
 	"cl_dll/ev_hldm.cpp",
 	"cl_dll/ammo.cpp",
 	"cl_dll/ammo_secondary.cpp",

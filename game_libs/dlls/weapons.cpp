@@ -33,7 +33,7 @@
 #include "weaponregistry.h"
 #include "weaponinfo.h"
 #include "weaponatts_collection.h"
-#include "gameresources/GameResources.h"
+#include "resources/SoundResources.h"
 
 extern CGraph WorldGraph;
 extern int gEvilImpulse101;
@@ -58,22 +58,6 @@ extern int gmsgCurWeapon;
 MULTIDAMAGE gMultiDamage;
 
 #define TRACER_FREQ		4			// Tracers fire every fourth bullet
-
-// TODO: Perhaps there's a better place for this?
-template<typename ENUM, size_t N>
-void PrecacheAllSounds(const CBaseSoundResourceCollection<ENUM, N>& collection)
-{
-	for ( uint32_t index = 0; index < N; ++index )
-	{
-		const ENUM id = static_cast<ENUM>(index);
-		const size_t count = collection.SoundCount(id);
-
-		for ( uint32_t subIndex = 0; subIndex < count; ++subIndex )
-		{
-			PRECACHE_SOUND(collection.SoundPath(id, subIndex));
-		}
-	}
-}
 
 //=========================================================
 // MaxAmmoCarry - pass in a name and this function will tell
@@ -420,7 +404,7 @@ void W_Precache( void )
 
 	PRECACHE_SOUND( "items/weapondrop1.wav" );// weapon falls to the ground
 
-	PrecacheAllSounds(CGameResources::StaticInstance().ItemSounds());
+	SoundResources::Precache();
 }
 
 TYPEDESCRIPTION	CBasePlayerItem::m_SaveData[] =

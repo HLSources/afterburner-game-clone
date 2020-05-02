@@ -62,6 +62,7 @@ SOURCES = \
 	"game_shared/customGeometry/**/*.cpp",
 	"game_shared/util/**/*.cpp",
 	"game_shared/eventConstructor/**/*.cpp",
+	"game_shared/resources/**/*.cpp",
 	"dlls/agrunt.cpp",
 	"dlls/airtank.cpp",
 	"dlls/aflock.cpp",
