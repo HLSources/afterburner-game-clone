@@ -35,7 +35,10 @@ typedef struct mip_s mip_t;
 
 typedef	int	fixed8_t;
 typedef	int	fixed16_t;
+
+#ifndef offsetof
 #define offsetof(s,m)       (size_t)&(((s *)0)->m)
+#endif
 
 #define ASSERT(x) if(!( x )) gEngfuncs.Host_Error( "assert failed at %s:%i\n", __FILE__, __LINE__ )
 #define Assert(x) if(!( x )) gEngfuncs.Host_Error( "assert failed at %s:%i\n", __FILE__, __LINE__ )
@@ -173,7 +176,7 @@ typedef struct
 	qboolean		drawWorld;	// ignore world for drawing PlayerModel
 	qboolean		isSkyVisible;	// sky is visible
 	qboolean		onlyClientDraw;	// disabled by client request
-	qboolean		drawOrtho;	// draw world as orthogonal projection	
+	qboolean		drawOrtho;	// draw world as orthogonal projection
 
 	float		fov_x, fov_y;	// current view fov
 
@@ -271,7 +274,7 @@ typedef struct
 
 	msurface_t	*draw_decals[MAX_DECAL_SURFS];
 	int		num_draw_decals;
-         
+
 	// OpenGL matrix states
 	qboolean		modelviewIdentity;
 

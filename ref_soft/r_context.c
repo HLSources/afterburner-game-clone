@@ -358,7 +358,7 @@ qboolean GAME_EXPORT VID_CubemapShot(const char *base, uint size, const float *v
 	return false;
 }
 
-void R_InitSkyClouds(mip_t *mt, texture_t *tx, qboolean custom_palette)
+void R_InitSkyClouds(const mip_t *mt, texture_t *tx, qboolean custom_palette)
 {
 
 }
