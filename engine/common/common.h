@@ -444,7 +444,7 @@ typedef struct host_parm_s
 
 	char		rootdir[MAX_OSPATH];	// member root directory
 	char		rodir[MAX_OSPATH];		// readonly root
-	char		gamefolder[MAX_QPATH];	// it's a default gamefolder	
+	char		gamefolder[MAX_QPATH];	// it's a default gamefolder
 	byte		*imagepool;	// imagelib mempool
 	byte		*soundpool;	// soundlib mempool
 
@@ -851,7 +851,8 @@ void CL_LegacyUpdateInfo( void );
 void CL_CharEvent( int key );
 qboolean CL_DisableVisibility( void );
 int CL_PointContents( const vec3_t point );
-char *COM_ParseFile( char *data, char *token );
+char* COM_ParseFile( char *data, char *token );
+char* COM_ParseFileSafe( char* data, char* token, size_t tokenLength );
 byte *COM_LoadFile( const char *filename, int usehunk, int *pLength );
 int CL_GetDemoComment( const char *demoname, char *comment );
 void COM_AddAppDirectoryToSearchPath( const char *pszBaseDir, const char *appName );

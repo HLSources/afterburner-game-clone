@@ -44,6 +44,7 @@
 #include "gameplay/gameplaySystemsBase.h"
 #include "gameplay/spawnpointmanager.h"
 #include "screenOverlays/messageWriter.h"
+#include "com_model.h"
 
 // #define DUCKFIX
 
@@ -3438,11 +3439,18 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 			Vector start = pev->origin + pev->view_ofs;
 			Vector end = start + gpGlobals->v_forward * 1024;
 			UTIL_TraceLine( start, end, ignore_monsters, edict(), &tr );
+
 			if( tr.pHit )
+			{
 				pWorld = tr.pHit;
-			const char *pTextureName = TRACE_TEXTURE( pWorld, start, end );
-			if( pTextureName )
-				ALERT( at_console, "Texture: %s\n", pTextureName );
+			}
+
+			texture_t* texture = TRACE_TEXTURE( pWorld, start, end );
+
+			if( texture )
+			{
+				ALERT( at_console, "Texture: %s\n", texture->name );
+			}
 		}
 		break;
 	case 195:

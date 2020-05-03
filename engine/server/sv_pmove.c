@@ -492,7 +492,7 @@ static float GAME_EXPORT pfnTraceModel( physent_t *pe, float *start, float *end,
 	return trace->fraction;
 }
 
-static const char *pfnTraceTexture( int ground, float *vstart, float *vend )
+static texture_t *pfnTraceTexture( int ground, float *vstart, float *vend )
 {
 	physent_t *pe;
 

@@ -18,6 +18,9 @@
 
 #define EVENT_API_VERSION	2
 
+struct event_fire_args_s;
+typedef struct texture_s texture_t;
+
 typedef struct event_api_s
 {
 	int	version;
@@ -39,7 +42,7 @@ typedef struct event_api_s
 	void	( *EV_WeaponAnimation )( int sequence, int body );
 	unsigned short ( *EV_PrecacheEvent )( int type, const char* psz );
 	void	( *EV_PlaybackEvent )( const struct event_fire_args_s* inArgs );
-	const char *( *EV_TraceTexture )( int ground, float *vstart, float *vend );
+	texture_t *( *EV_TraceTexture )( int ground, float *vstart, float *vend );
 	void	( *EV_StopAllSounds )( int entnum, int entchannel );
 	void	( *EV_KillEvents )( int entnum, const char *eventname );
 

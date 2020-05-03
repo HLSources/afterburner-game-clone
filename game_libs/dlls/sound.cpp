@@ -24,6 +24,7 @@
 #include "talkmonster.h"
 #include "gamerules.h"
 #include "resources/SoundResources.h"
+#include "com_model.h"
 
 static char *memfgets( byte *pMemFile, int fileSize, int &filePos, char *pBuffer, int bufferSize );
 
@@ -1526,11 +1527,10 @@ char TEXTURETYPE_Find( char *name )
 float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, int iBulletType )
 {
 	// hit the world, try to play sound based on texture material type
-	char chTextureType;
 	float fvol;
 	float fvolbar;
 	char szbuffer[64];
-	const char *pTextureName;
+	uint32_t texSurfaceProp = SurfaceProp_Default;
 	float rgfl1[3];
 	float rgfl2[3];
 	float fattn = ATTN_NORM;
@@ -1540,11 +1540,11 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 
 	CBaseEntity *pEntity = CBaseEntity::Instance( ptr->pHit );
 
-	chTextureType = 0;
-
 	if( pEntity && pEntity->Classify() != CLASS_NONE && pEntity->Classify() != CLASS_MACHINE )
+	{
 		// hit body
-		chTextureType = CHAR_TEX_FLESH;
+		texSurfaceProp = SurfaceProp_Flesh;
+	}
 	else
 	{
 		// hit world
@@ -1556,83 +1556,79 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 		vecSrc.CopyToArray( rgfl1 );
 		vecEnd.CopyToArray( rgfl2 );
 
+		texture_t* hitTexture = nullptr;
+
 		// get texture from entity or world (world is ent(0))
 		if( pEntity )
-			pTextureName = TRACE_TEXTURE( ENT( pEntity->pev ), rgfl1, rgfl2 );
-		else
-			pTextureName = TRACE_TEXTURE( ENT( 0 ), rgfl1, rgfl2 );
-
-		if( pTextureName )
 		{
-			// strip leading '-0' or '+0~' or '{' or '!'
-			if( *pTextureName == '-' || *pTextureName == '+' )
-				pTextureName += 2;
-
-			if( *pTextureName == '{' || *pTextureName == '!' || *pTextureName == '~' || *pTextureName == ' ' )
-				pTextureName++;
-			// '}}'
-			strcpy( szbuffer, pTextureName );
-			szbuffer[CBTEXTURENAMEMAX - 1] = 0;
-
-			// ALERT( at_console, "texture hit: %s\n", szbuffer );
-
-			// get texture type
-			chTextureType = TEXTURETYPE_Find( szbuffer );
+			hitTexture = TRACE_TEXTURE( ENT( pEntity->pev ), rgfl1, rgfl2 );
 		}
+		else
+		{
+			hitTexture = TRACE_TEXTURE( ENT( 0 ), rgfl1, rgfl2 );
+		}
+
+		if( hitTexture )
+		{
+			texSurfaceProp = hitTexture->surfaceType;
+		}
+	}
+
+	if ( texSurfaceProp == SurfaceProp_None )
+	{
+		// Don't play any sound.
+		return 0.0f;
 	}
 
 	const char* soundPath = nullptr;
 
-	switch( chTextureType )
+	switch( texSurfaceProp )
 	{
 	default:
-	case CHAR_TEX_CONCRETE:
+	case SurfaceProp_Default:
+	case SurfaceProp_Concrete:
+	case SurfaceProp_Dirt:
 		fvol = 0.9;
-		fvolbar = 0.6;
+		fvolbar = texSurfaceProp == SurfaceProp_Dirt ? 0.1 : 0.6;
 		soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitConcrete);
 		break;
-	case CHAR_TEX_METAL:
+	case SurfaceProp_Metal:
 		fvol = 0.9;
 		fvolbar = 0.3;
 		soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitMetal);
 		break;
-	case CHAR_TEX_DIRT:
-		fvol = 0.9;
-		fvolbar = 0.1;
-		soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitConcrete);
-		break;
-	case CHAR_TEX_VENT:
+	case SurfaceProp_VentDuct:
 		fvol = 0.5;
 		fvolbar = 0.3;
 		soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitVentDuct);
 		break;
-	case CHAR_TEX_GRATE:
+	case SurfaceProp_MetalGrate:
 		fvol = 0.9;
 		fvolbar = 0.5;
-		soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitGrate);
+		soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitMetalGrate);
 		break;
-	case CHAR_TEX_TILE:
+	case SurfaceProp_Tile:
 		fvol = 0.8;
 		fvolbar = 0.2;
 		soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitTile);
 		break;
-	case CHAR_TEX_SLOSH:
+	case SurfaceProp_Water:
 		fvol = 0.9;
 		fvolbar = 0.0;
 		soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitWater);
 		break;
-	case CHAR_TEX_WOOD:
+	case SurfaceProp_Wood:
 		fvol = 0.9;
 		fvolbar = 0.2;
 		soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitWood);
 		break;
-	case CHAR_TEX_GLASS:
-	case CHAR_TEX_COMPUTER:
+	case SurfaceProp_Glass:
+	case SurfaceProp_Computer:
 		fvol = 0.8;
 		fvolbar = 0.2;
 		soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitGlass);
 		break;
-	case CHAR_TEX_FLESH:
+	case SurfaceProp_Flesh:
 		if( iBulletType == BULLET_PLAYER_CROWBAR )
 			return 0.0; // crowbar already makes this sound
 		fvol = 1.0;
@@ -1648,7 +1644,7 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 		fvol /= 1.5;
 		fvolbar /= 2.0;
 	}
-	else if( chTextureType == CHAR_TEX_COMPUTER )
+	else if( texSurfaceProp == SurfaceProp_Computer )
 	{
 		// play random spark if computer
 		if( ptr->flFraction != 1.0 && RANDOM_LONG( 0, 1 ) )
@@ -1664,12 +1660,6 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 				case 1:
 					UTIL_EmitAmbientSound( ENT( 0 ), ptr->vecEndPos, "buttons/spark6.wav", flVolume, ATTN_NORM, 0, 100 );
 					break;
-				/*case 0:
-					EMIT_SOUND( ENT( pev ), CHAN_VOICE, "buttons/spark5.wav", flVolume, ATTN_NORM );
-					break;
-				 case 1:
-					EMIT_SOUND( ENT( pev ), CHAN_VOICE, "buttons/spark6.wav", flVolume, ATTN_NORM );
-					break;*/
 			}
 		}
 	}

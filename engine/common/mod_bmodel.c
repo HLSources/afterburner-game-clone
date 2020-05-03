@@ -25,6 +25,8 @@ GNU General Public License for more details.
 #include "server.h"			// LUMP_ error codes
 #include "ref_common.h"
 #include "stb_image.h"
+#include "textureproperties.h"
+
 typedef struct wadlist_s
 {
 	char			wadnames[MAX_MAP_WADS][32];
@@ -2252,9 +2254,115 @@ static void SequenceAnimatedTextures(uint32_t base)
 	}
 }
 
+static qboolean LoadPNGTextureData(const dpngtexturepath_t* in, texture_t** out, const char* texName)
+{
+	byte* pngData = NULL;
+	qboolean success = false;
+
+	do
+	{
+		fs_offset_t pngDataSize = 0;
+		pngData = FS_LoadFile(texName, &pngDataSize, false);
+
+		if ( !pngData || pngDataSize < 1 )
+		{
+			Con_Printf(S_ERROR "LoadPngTexture: Map '%s' texture '%s' not found.\n", loadmodel->name, texName);
+			break;
+		}
+
+		int width = 0;
+		int height = 0;
+
+		// Not sure if this is the best way to do this?
+		// Really these kinds of implementation details should be handled by the FS loader,
+		// but it seems that there's no good way of getting this information right now.
+		if ( !stbi_info_from_memory(pngData, pngDataSize, &width, &height, NULL) )
+		{
+			Con_Printf(S_ERROR "LoadPngTexture: Map '%s' texture '%s' failed to retrieve dimensions.\n", loadmodel->name, texName);
+			break;
+		}
+
+		const int textureNum = ref.dllFuncs.GL_LoadTexture(texName, pngData, pngDataSize, TF_MAKELUMA);
+
+		if ( textureNum <= 0 )
+		{
+			Con_Printf(S_ERROR "LoadPngTexture: Map '%s' texture '%s' failed to load.\n", loadmodel->name, texName);
+			break;
+		}
+
+		*out = Mem_Calloc(loadmodel->mempool, sizeof(texture_t));
+
+		(*out)->width = width;
+		(*out)->height = height;
+
+		Q_strncpy((*out)->name, in->path, sizeof((*out)->name));
+		(*out)->gl_texturenum = textureNum;
+		success = true;
+	}
+	while ( false );
+
+	if ( pngData )
+	{
+		Mem_Free(pngData);
+	}
+
+	if ( !success )
+	{
+		CreateDefaultTexture(out);
+	}
+
+	return success;
+}
+
+static void LoadTextureProperties(texture_t* out, const char* propertiesFilePath)
+{
+	byte* inFile = FS_LoadFile(propertiesFilePath, NULL, false);
+
+	if ( !inFile )
+	{
+		return;
+	}
+
+	char* inText = (char*)inFile;
+
+	while ( true )
+	{
+		char key[32];
+		char value[32];
+
+		inText = COM_ParseFileSafe(inText, key, sizeof(key));
+
+		if ( !inText )
+		{
+			// No more content
+			break;
+		}
+
+		inText = COM_ParseFileSafe(inText, value, sizeof(value));
+
+		if ( !inText )
+		{
+			Con_Printf(S_WARN, "LoadTextureProperties: Properties file %s contained key '%s' with no matching value\n",
+					   propertiesFilePath,
+					   key);
+			break;
+		}
+
+		if ( !TextureProperties_Parse(out, key, value) )
+		{
+			Con_Printf(S_WARN, "LoadTextureProperties: Properties file %s contained invalid property '%s %s'\n",
+					   propertiesFilePath,
+					   key,
+					   value);
+		}
+	}
+
+	Mem_Free(inFile);
+}
+
 static void LoadPNGTexture(const dpngtexturepath_t* in, texture_t** out)
 {
-	char texName[64];
+	char nameBuffer[96];
 	byte* pngData = NULL;
 	fs_offset_t pngDataSize = 0;
 
@@ -2273,61 +2381,23 @@ static void LoadPNGTexture(const dpngtexturepath_t* in, texture_t** out)
 		return;
 	}
 
-	Q_snprintf(texName, sizeof(texName), "%s.png", in->path);
+	Q_snprintf(nameBuffer, sizeof(nameBuffer), "%s.png", in->path);
 
-	if ( !FS_FileExists(texName, false) )
+	if ( !FS_FileExists(nameBuffer, false) )
 	{
-		Con_Printf(S_ERROR "LoadPngTexture: Map '%s' texture '%s' not found.\n", loadmodel->name, texName);
+		Con_Printf(S_ERROR "LoadPngTexture: Map '%s' texture '%s' not found.\n", loadmodel->name, nameBuffer);
 		CreateDefaultTexture(out);
 		return;
 	}
 
-	pngData = FS_LoadFile(texName, &pngDataSize, false);
-
-	if ( !pngData || pngDataSize < 1 )
+	if ( !LoadPNGTextureData(in, out, nameBuffer) )
 	{
-		Con_Printf(S_ERROR "LoadPngTexture: Map '%s' texture '%s' not found.\n", loadmodel->name, texName);
-		CreateDefaultTexture(out);
-	}
-	else
-	{
-		int width = 0;
-		int height = 0;
-
-		// Not sure if this is the best way to do this?
-		// Really these kinds of implementation details should be handled by the FS loader,
-		// but it seems that there's no way of getting this information right now.
-		if ( stbi_info_from_memory(pngData, pngDataSize, &width, &height, NULL) )
-		{
-			const int textureNum = ref.dllFuncs.GL_LoadTexture(texName, pngData, pngDataSize, TF_MAKELUMA);
-
-			if ( textureNum > 0 )
-			{
-				*out = Mem_Calloc(loadmodel->mempool, sizeof(texture_t));
-
-				(*out)->width = width;
-				(*out)->height = height;
-
-				Q_strncpy((*out)->name, in->path, sizeof((*out)->name));
-				(*out)->gl_texturenum = textureNum;
-			}
-			else
-			{
-				Con_Printf(S_ERROR "LoadPngTexture: Map '%s' texture '%s' failed to load.\n", loadmodel->name, texName);
-				CreateDefaultTexture(out);
-			}
-		}
-		else
-		{
-			Con_Printf(S_ERROR "LoadPngTexture: Map '%s' texture '%s' failed to retrieve dimensions.\n", loadmodel->name, texName);
-			CreateDefaultTexture(out);
-		}
+		// Don't load any property data if the main image could not be loaded.
+		return;
 	}
 
-	if ( pngData )
-	{
-		Mem_Free(pngData);
-	}
+	Q_snprintf(nameBuffer, sizeof(nameBuffer), "%s.props", in->path);
+	LoadTextureProperties(*out, nameBuffer);
 }
 
 static void LoadEmbeddedMiptex(dbspmodel_t* bmod, const int32_t* offsets, uint32_t index, texture_t** out)

@@ -331,6 +331,7 @@ static ref_api_t gEngfuncs =
 
 	FS_LoadFile,
 	COM_ParseFile,
+	COM_ParseFileSafe,
 	FS_FileExists,
 	FS_AllowDirectPaths,
 

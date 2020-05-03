@@ -35,6 +35,8 @@
 // This is conveniently done for them in extdll.h
 //
 
+typedef struct texture_s texture_t;
+
 typedef enum
 {
 	at_notice,
@@ -132,7 +134,7 @@ typedef struct enginefuncs_s
 	int	(*pfnTraceMonsterHull)( edict_t *pEdict, const float *v1, const float *v2, int fNoMonsters, edict_t *pentToSkip, TraceResult *ptr );
 	void	(*pfnTraceHull)( const float *v1, const float *v2, int fNoMonsters, int hullNumber, edict_t *pentToSkip, TraceResult *ptr );
 	void	(*pfnTraceModel)( const float *v1, const float *v2, int hullNumber, edict_t *pent, TraceResult *ptr );
-	const char *(*pfnTraceTexture)( edict_t *pTextureEntity, const float *v1, const float *v2 );
+	texture_t *(*pfnTraceTexture)( edict_t *pTextureEntity, const float *v1, const float *v2 );
 	void	(*pfnTraceSphere)( const float *v1, const float *v2, int fNoMonsters, float radius, edict_t *pentToSkip, TraceResult *ptr );
 	void	(*pfnGetAimVector)( edict_t *ent, float speed, float *rgflReturn );
 	void	(*pfnServerCommand)( const char *str );

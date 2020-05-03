@@ -550,16 +550,25 @@ void PM_CatagorizeTextureType( void )
 	pmove->sztexturename[0] = '\0';
 	pmove->chtexturetype = CHAR_TEX_CONCRETE;
 
-	pTextureName = pmove->PM_TraceTexture( pmove->onground, start, end );
+	texture_t* texture = pmove->PM_TraceTexture( pmove->onground, start, end );
+	pTextureName = texture ? texture->name : NULL;
+
 	if( !pTextureName )
+	{
 		return;
+	}
 
 	// strip leading '-0' or '+0~' or '{' or '!'
 	if( *pTextureName == '-' || *pTextureName == '+' )
+	{
 		pTextureName += 2;
+	}
 
 	if( *pTextureName == '{' || *pTextureName == '!' || *pTextureName == '~' || *pTextureName == ' ' )
+	{
 		pTextureName++;
+	}
+
 	// '}}'
 
 	strcpy( pmove->sztexturename, pTextureName);

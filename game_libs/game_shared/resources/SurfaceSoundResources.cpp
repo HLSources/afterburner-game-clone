@@ -84,7 +84,7 @@ void CSurfaceSoundResources::Initialise()
 	InitialiseSounds(SurfaceSoundId::HitFleshCritical, HitFleshCritical);
 	InitialiseSounds(SurfaceSoundId::HitGlass, HitGlass);
 	InitialiseSounds(SurfaceSoundId::HitMetal, HitMetal);
-	InitialiseSounds(SurfaceSoundId::HitGrate, HitMetalGrate);
+	InitialiseSounds(SurfaceSoundId::HitMetalGrate, HitMetalGrate);
 	InitialiseSounds(SurfaceSoundId::HitSnow, HitSnow);
 	InitialiseSounds(SurfaceSoundId::HitWood, HitWood);
 	InitialiseSounds(SurfaceSoundId::HitTile, HitTile);

@@ -62,7 +62,7 @@ int PM_SampleMiptex( const msurface_t *surf, const vec3_t point )
 	if( fb ) contents = fb->contents;
 	else contents = CONTENTS_SOLID;
 
-	if( !surf->texinfo || !surf->texinfo->texture ) 
+	if( !surf->texinfo || !surf->texinfo->texture )
 		return contents;
 
 	tx = surf->texinfo;
@@ -175,7 +175,7 @@ loc0:
 
 /*
 ==================
-PM_TraceTexture
+PM_TraceSurface
 
 find the face where the traceline hit
 assume physentity is valid
@@ -220,14 +220,16 @@ find the face where the traceline hit
 assume physentity is valid
 ==================
 */
-const char *PM_TraceTexture( physent_t *pe, vec3_t start, vec3_t end )
+texture_t *PM_TraceTexture( physent_t *pe, vec3_t start, vec3_t end )
 {
 	msurface_t	*surf = PM_TraceSurface( pe, start, end );
 
-	if( !surf || !surf->texinfo || !surf->texinfo->texture )
+	if( !surf || !surf->texinfo )
+	{
 		return NULL;
+	}
 
-	return surf->texinfo->texture->name;
+	return surf->texinfo->texture;
 }
 
 /*

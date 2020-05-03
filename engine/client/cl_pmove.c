@@ -829,12 +829,14 @@ static float GAME_EXPORT pfnTraceModel( physent_t *pe, float *start, float *end,
 	return trace->fraction;
 }
 
-static const char *pfnTraceTexture( int ground, float *vstart, float *vend )
+static texture_t *pfnTraceTexture( int ground, float *vstart, float *vend )
 {
 	physent_t *pe;
 
 	if( ground < 0 || ground >= clgame.pmove->numphysent )
+	{
 		return NULL; // bad ground
+	}
 
 	pe = &clgame.pmove->physents[ground];
 	return PM_TraceTexture( pe, vstart, vend );

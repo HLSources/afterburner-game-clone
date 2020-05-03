@@ -253,6 +253,33 @@ static file_t* TexDir_LoadFile(const char* path, qboolean gameDirOnly);
 typedef int(*StringComparisonFunc)(const char*, const char*, int);
 static int BinarySearchFiles(const char* searchTerm, string* fileList, int fileCount, StringComparisonFunc comparison);
 
+static const char* const AllowedTextureDirFileExtensions[] =
+{
+	"png",
+	"props",
+	NULL
+};
+
+static qboolean FileExtensionIsInList(const char* ext, const char* const* list)
+{
+	if ( !ext || !list )
+	{
+		return false;
+	}
+
+	while ( *list )
+	{
+		if ( Q_stricmp(ext, *list) == 0 )
+		{
+			return true;
+		}
+
+		++list;
+	}
+
+	return false;
+}
+
 /*
 =============================================================================
 
@@ -4266,7 +4293,7 @@ static qboolean IsTexDirAlreadyLoaded(const char* directory)
 	return false;
 }
 
-static void CountFilesAndFolders(stringlist_t* list, const char* rootFolder, const char* fileExt, size_t* numFiles, size_t* numFolders)
+static void CountFilesAndFolders(stringlist_t* list, const char* rootFolder, const char* const* fileExtList, size_t* numFiles, size_t* numFolders)
 {
 	int i;
 
@@ -4304,7 +4331,7 @@ static void CountFilesAndFolders(stringlist_t* list, const char* rootFolder, con
 		}
 		else if (numFiles)
 		{
-			if (!fileExt)
+			if (!fileExtList)
 			{
 				if (!FS_SysFileExists(fullPath, false))
 				{
@@ -4314,7 +4341,7 @@ static void CountFilesAndFolders(stringlist_t* list, const char* rootFolder, con
 			else
 			{
 				const char* thisExtension = COM_FileExtension(entry);
-				if (!thisExtension || Q_stricmp(thisExtension, fileExt) != 0 || !FS_SysFileExists(fullPath, false))
+				if (!thisExtension || !FileExtensionIsInList(thisExtension, fileExtList) || !FS_SysFileExists(fullPath, false))
 				{
 					continue;
 				}
@@ -4401,7 +4428,7 @@ qboolean AddTextureDirectoriesInternal(const char* directory, const char* subDir
 	stringlistinit(&directoryList);
 	listdirectory(&directoryList, fullDirectoryPath, false);
 	stringlistsort(&directoryList);
-	CountFilesAndFolders(&directoryList, fullDirectoryPath, "png", &filesInDirectory, &foldersInDirectory);
+	CountFilesAndFolders(&directoryList, fullDirectoryPath, AllowedTextureDirFileExtensions, &filesInDirectory, &foldersInDirectory);
 
 	if (filesInDirectory > 0)
 	{
@@ -4432,9 +4459,9 @@ qboolean AddTextureDirectoriesInternal(const char* directory, const char* subDir
 		// If it's a file:
 		if (FS_SysFileExists(fullPathToEntry, false))
 		{
-			// Make sure it's a PNG.
+			// Make sure the extension is allowed.
 			const char* extension = COM_FileExtension(entry);
-			if (!extension || Q_stricmp(extension, "png") != 0)
+			if (!extension || !FileExtensionIsInList(extension, AllowedTextureDirFileExtensions))
 			{
 				continue;
 			}

@@ -1460,14 +1460,16 @@ find the face where the traceline hit
 assume pTextureEntity is valid
 ==================
 */
-const char *SV_TraceTexture( edict_t *ent, const vec3_t start, const vec3_t end )
+texture_t *SV_TraceTexture( edict_t *ent, const vec3_t start, const vec3_t end )
 {
 	msurface_t	*surf = SV_TraceSurface( ent, start, end );
 
-	if( !surf || !surf->texinfo || !surf->texinfo->texture )
+	if( !surf || !surf->texinfo )
+	{
 		return NULL;
+	}
 
-	return surf->texinfo->texture->name;
+	return surf->texinfo->texture;
 }
 
 /*

@@ -2522,12 +2522,14 @@ pfnTraceTexture
 
 =============
 */
-static const char *pfnTraceTexture( int ground, float *vstart, float *vend )
+static texture_t *pfnTraceTexture( int ground, float *vstart, float *vend )
 {
 	physent_t *pe;
 
 	if( ground < 0 || ground >= clgame.pmove->numphysent )
+	{
 		return NULL; // bad ground
+	}
 
 	pe = &clgame.pmove->physents[ground];
 	return PM_TraceTexture( pe, vstart, vend );
@@ -3100,6 +3102,17 @@ char *pfnParseFile( char *data, char *token )
 
 	host.com_handlecolon = true;
 	out = COM_ParseFile( data, token );
+	host.com_handlecolon = false;
+
+	return out;
+}
+
+char *pfnParseFileSafe( char *data, char *token, size_t tokenLength )
+{
+	char	*out;
+
+	host.com_handlecolon = true;
+	out = COM_ParseFileSafe( data, token, tokenLength );
 	host.com_handlecolon = false;
 
 	return out;
@@ -3860,6 +3873,7 @@ static cl_enginefunc_t gEngfuncs =
 	VGui_ViewportPaintBackground,
 	COM_LoadFile,
 	pfnParseFile,
+	pfnParseFileSafe,
 	COM_FreeFile,
 	&gTriApi,
 	&gEfxApi,

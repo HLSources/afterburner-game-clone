@@ -2311,10 +2311,12 @@ pfnTraceTexture
 returns texture basename
 =============
 */
-static const char *pfnTraceTexture( edict_t *pTextureEntity, const float *v1, const float *v2 )
+static texture_t *pfnTraceTexture( edict_t *pTextureEntity, const float *v1, const float *v2 )
 {
 	if( !SV_IsValidEdict( pTextureEntity ))
+	{
 		return NULL;
+	}
 
 	return SV_TraceTexture( pTextureEntity, v1, v2 );
 }
