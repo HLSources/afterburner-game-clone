@@ -776,4 +776,25 @@ typedef struct
 	int	hitgroup;		// 0 == generic, non zero is specific body part
 } trace_t;
 
+#define SURFACEPROP_ENTRY_LIST \
+	LIST_ITEM(SurfaceProp_Default = 0, "default") \
+	LIST_ITEM(SurfaceProp_None, "none") \
+	LIST_ITEM(SurfaceProp_Concrete, "concrete") \
+	LIST_ITEM(SurfaceProp_Metal, "metal") \
+	LIST_ITEM(SurfaceProp_VentDuct, "ventduct") \
+	LIST_ITEM(SurfaceProp_MetalGrate, "metalgrate") \
+	LIST_ITEM(SurfaceProp_Glass, "glass") \
+	LIST_ITEM(SurfaceProp_Flesh, "flesh") \
+	LIST_ITEM(SurfaceProp_Snow, "snow") \
+	LIST_ITEM(SurfaceProp_Wood, "wood") \
+	LIST_ITEM(SurfaceProp_Tile, "tile") \
+	LIST_ITEM(SurfaceProp_Water, "water")
+
+#define LIST_ITEM(enum, name) enum,
+typedef enum
+{
+	SURFACEPROP_ENTRY_LIST
+} SurfaceProp;
+#undef LIST_ITEM
+
 #endif//CONST_H

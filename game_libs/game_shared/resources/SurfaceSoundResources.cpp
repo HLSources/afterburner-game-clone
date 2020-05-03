@@ -79,7 +79,7 @@ static constexpr const char* const HitWater[] =
 void CSurfaceSoundResources::Initialise()
 {
 	InitialiseSounds(SurfaceSoundId::HitConcrete, HitConcrete);
-	InitialiseSounds(SurfaceSoundId::HitVent, HitHollowContainer);
+	InitialiseSounds(SurfaceSoundId::HitVentDuct, HitHollowContainer);
 	InitialiseSounds(SurfaceSoundId::HitFlesh, HitFlesh);
 	InitialiseSounds(SurfaceSoundId::HitFleshCritical, HitFleshCritical);
 	InitialiseSounds(SurfaceSoundId::HitGlass, HitGlass);

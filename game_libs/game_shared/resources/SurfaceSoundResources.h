@@ -6,7 +6,7 @@ enum class SurfaceSoundId
 {
 	HitConcrete = 0,
 	HitMetal,
-	HitVent,
+	HitVentDuct,
 	HitGrate,
 	HitGlass,
 	HitFlesh,

@@ -1604,7 +1604,7 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 	case CHAR_TEX_VENT:
 		fvol = 0.5;
 		fvolbar = 0.3;
-		soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitVent);
+		soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitVentDuct);
 		break;
 	case CHAR_TEX_GRATE:
 		fvol = 0.9;
