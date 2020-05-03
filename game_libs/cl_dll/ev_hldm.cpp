@@ -169,147 +169,129 @@ void EV_HandleGenericWeaponFire(event_args_t* args)
 float EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *vecEnd, int iBulletType )
 {
 	// hit the world, try to play sound based on texture material type
-	char chTextureType = CHAR_TEX_CONCRETE;
 	float fvol;
 	float fvolbar;
-	const char *rgsz[4];
-	int cnt;
+	uint32_t texSurfaceProp = SurfaceProp_Default;
 	float fattn = ATTN_NORM;
 	int entity;
-	char *pTextureName;
-	char texname[64];
-	char szbuffer[64];
 
 	entity = gEngfuncs.pEventAPI->EV_IndexFromTrace( ptr );
 
 	// FIXME check if playtexture sounds movevar is set
 	//
-	chTextureType = 0;
 
 	// Player
 	if( entity >= 1 && entity <= gEngfuncs.GetMaxClients() )
 	{
 		// hit body
-		chTextureType = CHAR_TEX_FLESH;
+		texSurfaceProp = SurfaceProp_Flesh;
 	}
 	else if( entity == 0 )
 	{
 		// get texture from entity or world (world is ent(0))
-		pTextureName = (char *)gEngfuncs.pEventAPI->EV_TraceTexture( ptr->ent, vecSrc, vecEnd );
+		texture_t* texture = gEngfuncs.pEventAPI->EV_TraceTexture( ptr->ent, vecSrc, vecEnd );
 
-		if ( pTextureName )
+		if ( texture )
 		{
-			strcpy( texname, pTextureName );
-			pTextureName = texname;
-
-			// strip leading '-0' or '+0~' or '{' or '!'
-			if( *pTextureName == '-' || *pTextureName == '+' )
-			{
-				pTextureName += 2;
-			}
-
-			if( *pTextureName == '{' || *pTextureName == '!' || *pTextureName == '~' || *pTextureName == ' ' )
-			{
-				pTextureName++;
-			}
-
-			// '}}'
-			strcpy( szbuffer, pTextureName );
-			szbuffer[CBTEXTURENAMEMAX - 1] = 0;
-
-			// get texture type
-			chTextureType = PM_FindTextureType( szbuffer );
+			texSurfaceProp = texture->surfaceType;
 		}
 	}
 
-	switch (chTextureType)
+	if ( texSurfaceProp == SurfaceProp_None )
 	{
-	default:
-	case CHAR_TEX_CONCRETE:
-		fvol = 0.9;
-		fvolbar = 0.6;
-		rgsz[0] = "player/pl_step1.wav";
-		rgsz[1] = "player/pl_step2.wav";
-		cnt = 2;
-		break;
-	case CHAR_TEX_METAL:
-		fvol = 0.9;
-		fvolbar = 0.3;
-		rgsz[0] = "player/pl_metal1.wav";
-		rgsz[1] = "player/pl_metal2.wav";
-		cnt = 2;
-		break;
-	case CHAR_TEX_DIRT:
-		fvol = 0.9;
-		fvolbar = 0.1;
-		rgsz[0] = "player/pl_dirt1.wav";
-		rgsz[1] = "player/pl_dirt2.wav";
-		rgsz[2] = "player/pl_dirt3.wav";
-		cnt = 3;
-		break;
-	case CHAR_TEX_VENT:
-		fvol = 0.5;
-		fvolbar = 0.3;
-		rgsz[0] = "player/pl_duct1.wav";
-		rgsz[1] = "player/pl_duct1.wav";
-		cnt = 2;
-		break;
-	case CHAR_TEX_GRATE:
-		fvol = 0.9;
-		fvolbar = 0.5;
-		rgsz[0] = "player/pl_grate1.wav";
-		rgsz[1] = "player/pl_grate4.wav";
-		cnt = 2;
-		break;
-	case CHAR_TEX_TILE:
-		fvol = 0.8;
-		fvolbar = 0.2;
-		rgsz[0] = "player/pl_tile1.wav";
-		rgsz[1] = "player/pl_tile3.wav";
-		rgsz[2] = "player/pl_tile2.wav";
-		rgsz[3] = "player/pl_tile4.wav";
-		cnt = 4;
-		break;
-	case CHAR_TEX_SLOSH:
-		fvol = 0.9;
-		fvolbar = 0.0;
-		rgsz[0] = "player/pl_slosh1.wav";
-		rgsz[1] = "player/pl_slosh3.wav";
-		rgsz[2] = "player/pl_slosh2.wav";
-		rgsz[3] = "player/pl_slosh4.wav";
-		cnt = 4;
-		break;
-	case CHAR_TEX_WOOD:
-		fvol = 0.9;
-		fvolbar = 0.2;
-		rgsz[0] = "debris/wood1.wav";
-		rgsz[1] = "debris/wood2.wav";
-		rgsz[2] = "debris/wood3.wav";
-		cnt = 3;
-		break;
-	case CHAR_TEX_GLASS:
-	case CHAR_TEX_COMPUTER:
-		fvol = 0.8;
-		fvolbar = 0.2;
-		rgsz[0] = "debris/glass1.wav";
-		rgsz[1] = "debris/glass2.wav";
-		rgsz[2] = "debris/glass3.wav";
-		cnt = 3;
-		break;
-	case CHAR_TEX_FLESH:
-		if( iBulletType == BULLET_PLAYER_CROWBAR )
-			return 0.0; // crowbar already makes this sound
-		fvol = 1.0;
-		fvolbar = 0.2;
-		rgsz[0] = "weapons/bullet_hit1.wav";
-		rgsz[1] = "weapons/bullet_hit2.wav";
-		fattn = 1.0;
-		cnt = 2;
-		break;
+		// Don't play any sound.
+		return 0.0f;
+	}
+
+	const char* soundPath = nullptr;
+
+	switch (texSurfaceProp)
+	{
+		default:
+		case SurfaceProp_Default:
+		case SurfaceProp_Concrete:
+		case SurfaceProp_Dirt:
+		{
+			fvol = 0.9;
+			fvolbar = texSurfaceProp == SurfaceProp_Dirt ? 0.1 : 0.6;
+			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitConcrete);
+			break;
+		}
+
+		case SurfaceProp_Metal:
+		{
+			fvol = 0.9;
+			fvolbar = 0.3;
+			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitMetal);
+			break;
+		}
+
+		case SurfaceProp_VentDuct:
+		{
+			fvol = 0.5;
+			fvolbar = 0.3;
+			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitVentDuct);
+			break;
+		}
+
+		case SurfaceProp_MetalGrate:
+		{
+			fvol = 0.9;
+			fvolbar = 0.5;
+			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitMetalGrate);
+			break;
+		}
+
+		case SurfaceProp_Tile:
+		{
+			fvol = 0.8;
+			fvolbar = 0.2;
+			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitTile);
+			break;
+		}
+
+		case SurfaceProp_Water:
+		{
+			fvol = 0.9;
+			fvolbar = 0.0;
+			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitWater);
+			break;
+		}
+
+		case SurfaceProp_Wood:
+		{
+			fvol = 0.9;
+			fvolbar = 0.2;
+			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitWood);
+			break;
+		}
+
+		case SurfaceProp_Glass:
+		case SurfaceProp_Computer:
+		{
+			fvol = 0.8;
+			fvolbar = 0.2;
+			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitGlass);
+			break;
+		}
+
+		case SurfaceProp_Flesh:
+		{
+			if( iBulletType == BULLET_PLAYER_CROWBAR )
+			{
+				return 0.0; // crowbar already makes this sound
+			}
+
+			fvol = 1.0;
+			fvolbar = 0.2;
+			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitFlesh);
+			fattn = 1.0;
+			break;
+		}
 	}
 
 	// play material hit sound
-	gEngfuncs.pEventAPI->EV_PlaySound( 0, ptr->endpos, CHAN_STATIC, rgsz[gEngfuncs.pfnRandomLong( 0, cnt - 1 )], fvol, fattn, 0, 96 + gEngfuncs.pfnRandomLong( 0, 0xf ) );
+	gEngfuncs.pEventAPI->EV_PlaySound( 0, ptr->endpos, CHAN_STATIC, soundPath, fvol, fattn, 0, 96 + gEngfuncs.pfnRandomLong( 0, 15 ) );
 	return fvolbar;
 }
 
@@ -332,6 +314,7 @@ char *EV_HLDM_DamageDecal( physent_t *pe )
 		idx = gEngfuncs.pfnRandomLong( 0, 4 );
 		sprintf( decalname, "{shot%i", idx + 1 );
 	}
+
 	return decalname;
 }
 

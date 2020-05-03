@@ -1584,57 +1584,86 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 
 	switch( texSurfaceProp )
 	{
-	default:
-	case SurfaceProp_Default:
-	case SurfaceProp_Concrete:
-	case SurfaceProp_Dirt:
-		fvol = 0.9;
-		fvolbar = texSurfaceProp == SurfaceProp_Dirt ? 0.1 : 0.6;
-		soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitConcrete);
-		break;
-	case SurfaceProp_Metal:
-		fvol = 0.9;
-		fvolbar = 0.3;
-		soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitMetal);
-		break;
-	case SurfaceProp_VentDuct:
-		fvol = 0.5;
-		fvolbar = 0.3;
-		soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitVentDuct);
-		break;
-	case SurfaceProp_MetalGrate:
-		fvol = 0.9;
-		fvolbar = 0.5;
-		soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitMetalGrate);
-		break;
-	case SurfaceProp_Tile:
-		fvol = 0.8;
-		fvolbar = 0.2;
-		soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitTile);
-		break;
-	case SurfaceProp_Water:
-		fvol = 0.9;
-		fvolbar = 0.0;
-		soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitWater);
-		break;
-	case SurfaceProp_Wood:
-		fvol = 0.9;
-		fvolbar = 0.2;
-		soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitWood);
-		break;
-	case SurfaceProp_Glass:
-	case SurfaceProp_Computer:
-		fvol = 0.8;
-		fvolbar = 0.2;
-		soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitGlass);
-		break;
-	case SurfaceProp_Flesh:
-		if( iBulletType == BULLET_PLAYER_CROWBAR )
-			return 0.0; // crowbar already makes this sound
-		fvol = 1.0;
-		fvolbar = 0.2;
-		soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitFlesh);
-		break;
+		default:
+		case SurfaceProp_Default:
+		case SurfaceProp_Concrete:
+		case SurfaceProp_Dirt:
+		{
+			fvol = 0.9;
+			fvolbar = texSurfaceProp == SurfaceProp_Dirt ? 0.1 : 0.6;
+			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitConcrete);
+			break;
+		}
+
+		case SurfaceProp_Metal:
+		{
+			fvol = 0.9;
+			fvolbar = 0.3;
+			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitMetal);
+			break;
+		}
+
+		case SurfaceProp_VentDuct:
+		{
+			fvol = 0.5;
+			fvolbar = 0.3;
+			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitVentDuct);
+			break;
+		}
+
+		case SurfaceProp_MetalGrate:
+		{
+			fvol = 0.9;
+			fvolbar = 0.5;
+			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitMetalGrate);
+			break;
+		}
+
+		case SurfaceProp_Tile:
+		{
+			fvol = 0.8;
+			fvolbar = 0.2;
+			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitTile);
+			break;
+		}
+
+		case SurfaceProp_Water:
+		{
+			fvol = 0.9;
+			fvolbar = 0.0;
+			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitWater);
+			break;
+		}
+
+		case SurfaceProp_Wood:
+		{
+			fvol = 0.9;
+			fvolbar = 0.2;
+			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitWood);
+			break;
+		}
+
+		case SurfaceProp_Glass:
+		case SurfaceProp_Computer:
+		{
+			fvol = 0.8;
+			fvolbar = 0.2;
+			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitGlass);
+			break;
+		}
+
+		case SurfaceProp_Flesh:
+		{
+			if( iBulletType == BULLET_PLAYER_CROWBAR )
+			{
+				return 0.0; // crowbar already makes this sound
+			}
+
+			fvol = 1.0;
+			fvolbar = 0.2;
+			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitFlesh);
+			break;
+		}
 	}
 
 	// did we hit a breakable?
