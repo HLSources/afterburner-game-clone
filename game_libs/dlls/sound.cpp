@@ -23,6 +23,7 @@
 #include "player.h"
 #include "talkmonster.h"
 #include "gamerules.h"
+#include "resources/SoundResources.h"
 
 static char *memfgets( byte *pMemFile, int fileSize, int &filePos, char *pBuffer, int bufferSize );
 
@@ -1532,8 +1533,6 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 	const char *pTextureName;
 	float rgfl1[3];
 	float rgfl2[3];
-	const char *rgsz[4];
-	int cnt;
 	float fattn = ATTN_NORM;
 
 	if( !g_pGameRules->PlayTextureSounds() )
@@ -1582,89 +1581,63 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 		}
 	}
 
+	const char* soundPath = nullptr;
+
 	switch( chTextureType )
 	{
 	default:
 	case CHAR_TEX_CONCRETE:
 		fvol = 0.9;
 		fvolbar = 0.6;
-		rgsz[0] = "player/pl_step1.wav";
-		rgsz[1] = "player/pl_step2.wav";
-		cnt = 2;
+		soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitConcrete);
 		break;
 	case CHAR_TEX_METAL:
 		fvol = 0.9;
 		fvolbar = 0.3;
-		rgsz[0] = "player/pl_metal1.wav";
-		rgsz[1] = "player/pl_metal2.wav";
-		cnt = 2;
+		soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitMetal);
 		break;
 	case CHAR_TEX_DIRT:
 		fvol = 0.9;
 		fvolbar = 0.1;
-		rgsz[0] = "player/pl_dirt1.wav";
-		rgsz[1] = "player/pl_dirt2.wav";
-		rgsz[2] = "player/pl_dirt3.wav";
-		cnt = 3;
+		soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitConcrete);
 		break;
 	case CHAR_TEX_VENT:
 		fvol = 0.5;
 		fvolbar = 0.3;
-		rgsz[0] = "player/pl_duct1.wav";
-		rgsz[1] = "player/pl_duct1.wav";
-		cnt = 2;
+		soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitVent);
 		break;
 	case CHAR_TEX_GRATE:
 		fvol = 0.9;
 		fvolbar = 0.5;
-		rgsz[0] = "player/pl_grate1.wav";
-		rgsz[1] = "player/pl_grate4.wav";
-		cnt = 2;
+		soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitGrate);
 		break;
 	case CHAR_TEX_TILE:
 		fvol = 0.8;
 		fvolbar = 0.2;
-		rgsz[0] = "player/pl_tile1.wav";
-		rgsz[1] = "player/pl_tile3.wav";
-		rgsz[2] = "player/pl_tile2.wav";
-		rgsz[3] = "player/pl_tile4.wav";
-		cnt = 4;
+		soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitTile);
 		break;
 	case CHAR_TEX_SLOSH:
 		fvol = 0.9;
 		fvolbar = 0.0;
-		rgsz[0] = "player/pl_slosh1.wav";
-		rgsz[1] = "player/pl_slosh3.wav";
-		rgsz[2] = "player/pl_slosh2.wav";
-		rgsz[3] = "player/pl_slosh4.wav";
-		cnt = 4;
+		soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitWater);
 		break;
 	case CHAR_TEX_WOOD:
 		fvol = 0.9;
 		fvolbar = 0.2;
-		rgsz[0] = "debris/wood1.wav";
-		rgsz[1] = "debris/wood2.wav";
-		rgsz[2] = "debris/wood3.wav";
-		cnt = 3;
+		soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitWood);
 		break;
 	case CHAR_TEX_GLASS:
 	case CHAR_TEX_COMPUTER:
 		fvol = 0.8;
 		fvolbar = 0.2;
-		rgsz[0] = "debris/glass1.wav";
-		rgsz[1] = "debris/glass2.wav";
-		rgsz[2] = "debris/glass3.wav";
-		cnt = 3;
+		soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitGlass);
 		break;
 	case CHAR_TEX_FLESH:
 		if( iBulletType == BULLET_PLAYER_CROWBAR )
 			return 0.0; // crowbar already makes this sound
 		fvol = 1.0;
 		fvolbar = 0.2;
-		rgsz[0] = "weapons/bullet_hit1.wav";
-		rgsz[1] = "weapons/bullet_hit2.wav";
-		fattn = 1.0;
-		cnt = 2;
+		soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitFlesh);
 		break;
 	}
 
@@ -1702,8 +1675,7 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 	}
 
 	// play material hit sound
-	UTIL_EmitAmbientSound( ENT( 0 ), ptr->vecEndPos, rgsz[RANDOM_LONG( 0, cnt - 1 )], fvol, fattn, 0, 96 + RANDOM_LONG( 0, 0xf ) );
-	//EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_WEAPON, rgsz[RANDOM_LONG( 0, cnt - 1 )], fvol, ATTN_NORM, 0, 96 + RANDOM_LONG( 0, 0xf ) );
+	UTIL_EmitAmbientSound(ENT(0), ptr->vecEndPos, soundPath, fvol, fattn, 0, 96 + RANDOM_LONG(0, 15));
 
 	return fvolbar;
 }

@@ -6,6 +6,7 @@ namespace SoundResources
 {
 	CItemSoundResources ItemSounds;
 	CWeaponSoundResources WeaponSounds;
+	CSurfaceSoundResources SurfaceSounds;
 
 	static void Precache(const IIterableSoundResourceCollection& collection)
 	{
@@ -19,11 +20,13 @@ namespace SoundResources
 	{
 		ItemSounds.Initialise();
 		WeaponSounds.Initialise();
+		SurfaceSounds.Initialise();
 	}
 
 	void Precache()
 	{
 		Precache(ItemSounds);
 		Precache(WeaponSounds);
+		Precache(SurfaceSounds);
 	}
 }
