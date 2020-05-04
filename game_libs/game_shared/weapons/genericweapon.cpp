@@ -73,6 +73,7 @@ void CGenericWeapon::Precache()
 void CGenericWeapon::PrecacheAttackMode(const WeaponAtts::WABaseAttack& attackMode)
 {
 	PrecacheSoundSet(attackMode.AttackSounds);
+	PrecacheSoundSet(attackMode.ViewModelAttackSounds);
 
 	const uint32_t index = attackMode.Signature()->Index;
 
