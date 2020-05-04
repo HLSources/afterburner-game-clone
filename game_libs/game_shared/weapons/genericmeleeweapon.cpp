@@ -171,18 +171,10 @@ void CGenericMeleeWeapon::AttackStrike()
 		{
 			vec3_t traceEnd = m_vecAttackTraceStart + ((m_vecContactPointOnSurface - m_vecAttackTraceStart) * 2);
 
-			float texSoundVolume = TEXTURETYPE_PlaySound(&tr, m_vecAttackTraceStart, traceEnd, BULLET_MELEE);
+			TEXTURETYPE_PlaySound(&tr, m_vecAttackTraceStart, traceEnd, BULLET_MELEE);
 
-			if( g_pGameRules->IsMultiplayer() )
-			{
-				// override the volume here, cause we don't play texture sounds in multiplayer,
-				// and fvolbar is going to be 0 from the above call.
-
-				texSoundVolume = 1.0f;
-			}
-
-			PlaySound(*worldHitSounds, CHAN_ITEM, texSoundVolume);
-			m_pPlayer->m_iWeaponVolume = static_cast<int>(static_cast<float>(m_pCachedAttack->Volume) * texSoundVolume);
+			PlaySound(*worldHitSounds, CHAN_ITEM, 1.0f);
+			m_pPlayer->m_iWeaponVolume = m_pCachedAttack->Volume;
 		}
 
 		if ( m_pCachedAttack->DecalOnImpact )

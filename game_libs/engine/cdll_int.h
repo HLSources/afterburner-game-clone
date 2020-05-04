@@ -219,7 +219,7 @@ typedef struct cl_enginefuncs_s
 	int	(*CL_CreateVisibleEntity)( int type, struct cl_entity_s *ent );
 
 	const struct model_s* (*GetSpritePointer)( HSPRITE hSprite );
-	void	(*pfnPlaySoundByNameAtLocation)( const char *szSound, float volume, float *origin );
+	void	(*pfnPlaySoundByNameAtLocation)( const char *szSound, float volume, const float *origin );
 
 	unsigned short (*pfnPrecacheEvent)( int type, const char* psz );
 	void	(*pfnPlaybackEvent)( const struct event_fire_args_s* );

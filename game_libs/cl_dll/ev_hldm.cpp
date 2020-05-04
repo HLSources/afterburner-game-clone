@@ -47,6 +47,8 @@
 #include "projectileweaponeventplayer.h"
 #include "meleeweaponeventplayer.h"
 #include "resources/SoundResources.h"
+#include "sound/SurfacePropertySounds.h"
+#include "sound/ClientSoundInstance.h"
 
 static std::unique_ptr<BaseWeaponEventPlayer> EventPlayers[MAX_WEAPONS][WeaponAtts::WACollection::MAX_ATTACK_MODES];
 
@@ -166,27 +168,22 @@ void EV_HandleGenericWeaponFire(event_args_t* args)
 // play a strike sound based on the texture that was hit by the attack traceline.  VecSrc/VecEnd are the
 // original traceline endpoints used by the attacker, iBulletType is the type of bullet that hit the texture.
 // returns volume of strike instrument (crowbar) to play
-float EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *vecEnd, int iBulletType )
+void EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *vecEnd, int iBulletType )
 {
 	// hit the world, try to play sound based on texture material type
-	float fvol;
-	float fvolbar;
-	uint32_t texSurfaceProp = SurfaceProp_Default;
-	float fattn = ATTN_NORM;
-	int entity;
-
-	entity = gEngfuncs.pEventAPI->EV_IndexFromTrace( ptr );
+	uint32_t texSurfaceProp = SurfaceProp_None;
+	int entity = gEngfuncs.pEventAPI->EV_IndexFromTrace(ptr);
 
 	// FIXME check if playtexture sounds movevar is set
 	//
 
 	// Player
-	if( entity >= 1 && entity <= gEngfuncs.GetMaxClients() )
+	if ( entity >= 1 && entity <= gEngfuncs.GetMaxClients() )
 	{
 		// hit body
 		texSurfaceProp = SurfaceProp_Flesh;
 	}
-	else if( entity == 0 )
+	else if ( entity == 0 )
 	{
 		// get texture from entity or world (world is ent(0))
 		texture_t* texture = gEngfuncs.pEventAPI->EV_TraceTexture( ptr->ent, vecSrc, vecEnd );
@@ -197,102 +194,17 @@ float EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *v
 		}
 	}
 
-	if ( texSurfaceProp == SurfaceProp_None )
+	if ( texSurfaceProp == SurfaceProp_None || (texSurfaceProp == SurfaceProp_Flesh && iBulletType == BULLET_PLAYER_CROWBAR) )
 	{
 		// Don't play any sound.
-		return 0.0f;
+		return;
 	}
 
-	const char* soundPath = nullptr;
+	CSoundInstance soundInst;
+	soundInst.SetPosition(Vector(vecEnd));
 
-	switch (texSurfaceProp)
-	{
-		default:
-		case SurfaceProp_Default:
-		case SurfaceProp_Concrete:
-		case SurfaceProp_Dirt:
-		{
-			fvol = 0.9;
-			fvolbar = texSurfaceProp == SurfaceProp_Dirt ? 0.1 : 0.6;
-			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitConcrete);
-			break;
-		}
-
-		case SurfaceProp_Metal:
-		{
-			fvol = 0.9;
-			fvolbar = 0.3;
-			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitMetal);
-			break;
-		}
-
-		case SurfaceProp_VentDuct:
-		{
-			fvol = 0.5;
-			fvolbar = 0.3;
-			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitVentDuct);
-			break;
-		}
-
-		case SurfaceProp_MetalGrate:
-		{
-			fvol = 0.9;
-			fvolbar = 0.5;
-			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitMetalGrate);
-			break;
-		}
-
-		case SurfaceProp_Tile:
-		{
-			fvol = 0.8;
-			fvolbar = 0.2;
-			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitTile);
-			break;
-		}
-
-		case SurfaceProp_Water:
-		{
-			fvol = 0.9;
-			fvolbar = 0.0;
-			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitWater);
-			break;
-		}
-
-		case SurfaceProp_Wood:
-		{
-			fvol = 0.9;
-			fvolbar = 0.2;
-			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitWood);
-			break;
-		}
-
-		case SurfaceProp_Glass:
-		case SurfaceProp_Computer:
-		{
-			fvol = 0.8;
-			fvolbar = 0.2;
-			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitGlass);
-			break;
-		}
-
-		case SurfaceProp_Flesh:
-		{
-			if( iBulletType == BULLET_PLAYER_CROWBAR )
-			{
-				return 0.0; // crowbar already makes this sound
-			}
-
-			fvol = 1.0;
-			fvolbar = 0.2;
-			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitFlesh);
-			fattn = 1.0;
-			break;
-		}
-	}
-
-	// play material hit sound
-	gEngfuncs.pEventAPI->EV_PlaySound( 0, ptr->endpos, CHAN_STATIC, soundPath, fvol, fattn, 0, 96 + gEngfuncs.pfnRandomLong( 0, 15 ) );
-	return fvolbar;
+	SurfacePropertySounds::GetHitSoundForSurface(static_cast<SurfaceProp>(texSurfaceProp), soundInst);
+	ClientSoundInstance::PlayEventSound(soundInst);
 }
 
 char *EV_HLDM_DamageDecal( physent_t *pe )

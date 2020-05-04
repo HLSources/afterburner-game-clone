@@ -51,6 +51,7 @@ SOURCES = \
 	"dlls/customGeometry/**/*.cpp",
 	"dlls/messages/**/*.cpp",
 	"dlls/screenOverlays/**/*.cpp",
+	"dlls/sound/**/*.cpp",
 
 	# TODO: Change the folder structure one day so that we can use globs and not have to do this.
 	# Currently we don't want to include absolutely everything...
@@ -63,6 +64,7 @@ SOURCES = \
 	"game_shared/util/**/*.cpp",
 	"game_shared/eventConstructor/**/*.cpp",
 	"game_shared/resources/**/*.cpp",
+	"game_shared/sound/**/*.cpp",
 	"dlls/agrunt.cpp",
 	"dlls/airtank.cpp",
 	"dlls/aflock.cpp",

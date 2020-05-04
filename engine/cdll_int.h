@@ -217,7 +217,7 @@ typedef struct cl_enginefuncs_s
 	int	(*CL_CreateVisibleEntity)( int type, struct cl_entity_s *ent );
 
 	const struct model_s* (*GetSpritePointer)( HSPRITE hSprite );
-	void	(*pfnPlaySoundByNameAtLocation)( char *szSound, float volume, float *origin );
+	void	(*pfnPlaySoundByNameAtLocation)( const char *szSound, float volume, const float *origin );
 
 	unsigned short (*pfnPrecacheEvent)( int type, const char* psz );
 	void	(*pfnPlaybackEvent)( const struct event_fire_args_s* args );
@@ -312,7 +312,7 @@ typedef struct cl_enginefuncs_s
 	void		(*pfnConstructTutorMessageDecayBuffer)( int *buffer, int buflen );
 	void		(*pfnResetTutorMessageDecayData)( void );
 
-	void		(*pfnPlaySoundByNameAtPitch)( char *szSound, float volume, int pitch );
+	void		(*pfnPlaySoundByNameAtPitch)( const char *szSound, float volume, int pitch );
 	void		(*pfnFillRGBABlend)( int x, int y, int width, int height, int r, int g, int b, int a );
 	int		(*pfnGetAppID)( void );
 	cmdalias_t	*(*pfnGetAliases)( void );

@@ -813,7 +813,7 @@ typedef struct
 	LIST_ITEM(SurfaceProp_Wood, "wood")
 
 #define LIST_ITEM(enum, name) enum,
-typedef enum
+typedef enum _SurfaceProp
 {
 	SURFACEPROP_ENTRY_LIST
 	SurfaceProp__Count

@@ -25,6 +25,8 @@
 #include "gamerules.h"
 #include "resources/SoundResources.h"
 #include "com_model.h"
+#include "sound/ServerSoundInstance.h"
+#include "sound/SurfacePropertySounds.h"
 
 static char *memfgets( byte *pMemFile, int fileSize, int &filePos, char *pBuffer, int bufferSize );
 
@@ -1524,20 +1526,10 @@ char TEXTURETYPE_Find( char *name )
 // original traceline endpoints used by the attacker, iBulletType is the type of bullet that hit the texture.
 // returns volume of strike instrument (crowbar) to play
 
-float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, int iBulletType )
+void TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, int iBulletType )
 {
 	// hit the world, try to play sound based on texture material type
-	float fvol;
-	float fvolbar;
-	char szbuffer[64];
-	uint32_t texSurfaceProp = SurfaceProp_Default;
-	float rgfl1[3];
-	float rgfl2[3];
-	float fattn = ATTN_NORM;
-
-	if( !g_pGameRules->PlayTextureSounds() )
-		return 0.0;
-
+	uint32_t texSurfaceProp = SurfaceProp_None;
 	CBaseEntity *pEntity = CBaseEntity::Instance( ptr->pHit );
 
 	if( pEntity && pEntity->Classify() != CLASS_NONE && pEntity->Classify() != CLASS_MACHINE )
@@ -1547,10 +1539,11 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 	}
 	else
 	{
+		float rgfl1[3];
+		float rgfl2[3];
+
 		// hit world
-
 		// find texture under strike, get material type
-
 		// copy trace vector into array for trace_texture
 
 		vecSrc.CopyToArray( rgfl1 );
@@ -1574,129 +1567,50 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 		}
 	}
 
-	if ( texSurfaceProp == SurfaceProp_None )
+	if ( texSurfaceProp == SurfaceProp_None || (texSurfaceProp == SurfaceProp_Flesh && iBulletType == BULLET_PLAYER_CROWBAR) )
 	{
 		// Don't play any sound.
-		return 0.0f;
+		return;
 	}
 
-	const char* soundPath = nullptr;
+	CSoundInstance soundInst;
+	soundInst.SetPosition(ptr->vecEndPos);
 
-	switch( texSurfaceProp )
-	{
-		default:
-		case SurfaceProp_Default:
-		case SurfaceProp_Concrete:
-		case SurfaceProp_Dirt:
-		{
-			fvol = 0.9;
-			fvolbar = texSurfaceProp == SurfaceProp_Dirt ? 0.1 : 0.6;
-			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitConcrete);
-			break;
-		}
-
-		case SurfaceProp_Metal:
-		{
-			fvol = 0.9;
-			fvolbar = 0.3;
-			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitMetal);
-			break;
-		}
-
-		case SurfaceProp_VentDuct:
-		{
-			fvol = 0.5;
-			fvolbar = 0.3;
-			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitVentDuct);
-			break;
-		}
-
-		case SurfaceProp_MetalGrate:
-		{
-			fvol = 0.9;
-			fvolbar = 0.5;
-			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitMetalGrate);
-			break;
-		}
-
-		case SurfaceProp_Tile:
-		{
-			fvol = 0.8;
-			fvolbar = 0.2;
-			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitTile);
-			break;
-		}
-
-		case SurfaceProp_Water:
-		{
-			fvol = 0.9;
-			fvolbar = 0.0;
-			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitWater);
-			break;
-		}
-
-		case SurfaceProp_Wood:
-		{
-			fvol = 0.9;
-			fvolbar = 0.2;
-			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitWood);
-			break;
-		}
-
-		case SurfaceProp_Glass:
-		case SurfaceProp_Computer:
-		{
-			fvol = 0.8;
-			fvolbar = 0.2;
-			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitGlass);
-			break;
-		}
-
-		case SurfaceProp_Flesh:
-		{
-			if( iBulletType == BULLET_PLAYER_CROWBAR )
-			{
-				return 0.0; // crowbar already makes this sound
-			}
-
-			fvol = 1.0;
-			fvolbar = 0.2;
-			soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(SurfaceSoundId::HitFlesh);
-			break;
-		}
-	}
+	SurfacePropertySounds::GetHitSoundForSurface(static_cast<SurfaceProp>(texSurfaceProp), soundInst);
 
 	// did we hit a breakable?
-	if( pEntity && FClassnameIs( pEntity->pev, "func_breakable" ) )
+	if ( pEntity && FClassnameIs( pEntity->pev, "func_breakable" ) )
 	{
 		// drop volumes, the object will already play a damaged sound
-		fvol /= 1.5;
-		fvolbar /= 2.0;
+		soundInst.SetVolume(soundInst.Volume() / 1.5f);
 	}
-	else if( texSurfaceProp == SurfaceProp_Computer )
+	else if ( texSurfaceProp == SurfaceProp_Computer )
 	{
 		// play random spark if computer
 		if( ptr->flFraction != 1.0 && RANDOM_LONG( 0, 1 ) )
 		{
 			UTIL_Sparks( ptr->vecEndPos );
 
-			float flVolume = RANDOM_FLOAT( 0.7, 1.0 );//random volume range
+			float flVolume = RANDOM_FLOAT( 0.7, 1.0 );
+
 			switch( RANDOM_LONG( 0, 1 ) )
 			{
 				case 0:
-					UTIL_EmitAmbientSound( ENT( 0 ), ptr->vecEndPos, "buttons/spark5.wav", flVolume, ATTN_NORM, 0, 100 );
+				{
+					UTIL_EmitAmbientSound(ENT( 0 ), ptr->vecEndPos, "buttons/spark5.wav", flVolume, ATTN_NORM, 0, 100);
 					break;
+				}
 				case 1:
-					UTIL_EmitAmbientSound( ENT( 0 ), ptr->vecEndPos, "buttons/spark6.wav", flVolume, ATTN_NORM, 0, 100 );
+				{
+					UTIL_EmitAmbientSound(ENT( 0 ), ptr->vecEndPos, "buttons/spark6.wav", flVolume, ATTN_NORM, 0, 100);
 					break;
+				}
 			}
 		}
 	}
 
 	// play material hit sound
-	UTIL_EmitAmbientSound(ENT(0), ptr->vecEndPos, soundPath, fvol, fattn, 0, 96 + RANDOM_LONG(0, 15));
-
-	return fvolbar;
+	ServerSoundInstance::PlayAmbient(soundInst);
 }
 
 // ===================================================================================

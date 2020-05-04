@@ -2248,7 +2248,7 @@ static pmtrace_t *pfnTraceLine( float *start, float *end, int flags, int usehull
 	return &tr;
 }
 
-static void GAME_EXPORT pfnPlaySoundByNameAtLocation( char *szSound, float volume, float *origin )
+static void GAME_EXPORT pfnPlaySoundByNameAtLocation( const char *szSound, float volume, const float *origin )
 {
 	int hSound = S_RegisterSound( szSound );
 	S_StartSound( origin, 0, CHAN_AUTO, hSound, volume, ATTN_NORM, PITCH_NORM, 0 );
@@ -3022,7 +3022,7 @@ pfnPlaySoundByNameAtPitch
 
 =============
 */
-static void GAME_EXPORT pfnPlaySoundByNameAtPitch( char *filename, float volume, int pitch )
+static void GAME_EXPORT pfnPlaySoundByNameAtPitch( const char *filename, float volume, int pitch )
 {
 	int hSound = S_RegisterSound( filename );
 	S_StartSound( NULL, cl.viewentity, CHAN_ITEM, hSound, volume, 1.0, pitch, SND_STOP_LOOPING );

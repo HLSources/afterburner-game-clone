@@ -556,7 +556,7 @@ void DLLEXPORT HUD_StudioEvent( const struct mstudioevent_s *event, const struct
 		gEngfuncs.pEfxAPI->R_SparkEffect( (float *)&entity->attachment[0], atoi( event->options ), -100, 100 );
 		break;
 	case 5004:	// Play a client-side sound at attachment 0 origin (note that the sound does not follow the model)
-		gEngfuncs.pfnPlaySoundByNameAtLocation( (char *)event->options, 1.0, (float *)&entity->attachment[0] );
+		gEngfuncs.pfnPlaySoundByNameAtLocation( event->options, 1.0, (const float *)&entity->attachment[0] );
 		break;
 	case 5005:	// Play an ambient client-side sound
 		gEngfuncs.pfnPlaySoundByName((char*)event->options, 1.0f);
