@@ -52,7 +52,7 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 
 	WACore& core = obj.Core;
 	core.Classname = "weapon_l96a1";
-	core.Id = WeaponId_e::Weapon_L96A1;
+	core.Id = WeaponId_e::WeaponL96A1;
 	core.SwitchWeight = WeaponPref_L96A1;
 
 	WAAmmoDef& ammo = obj.Ammo;

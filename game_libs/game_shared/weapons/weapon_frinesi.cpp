@@ -247,7 +247,7 @@ IMPLEMENT_SAVERESTORE(CWeaponFrinesi, CGenericHitscanWeapon)
 
 float CWeaponFrinesi::Bot_CalcDesireToUse(CBaseBot& bot, CBaseEntity& enemy, float distanceToEnemy) const
 {
-	return static_cast<float>(WeaponPref_Frinesi) / static_cast<float>(WeaponPref_Max);
+	return static_cast<float>(WeaponAttributes().Core.SwitchWeight) / static_cast<float>(WeaponPref_Max);
 }
 
 void CWeaponFrinesi::Bot_SetFightStyle(CBaseBotFightStyle& fightStyle) const

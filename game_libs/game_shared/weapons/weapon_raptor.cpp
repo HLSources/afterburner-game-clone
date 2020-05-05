@@ -28,7 +28,7 @@ const WeaponAtts::WACollection& CWeaponRaptor::WeaponAttributes() const
 #ifndef CLIENT_DLL
 float CWeaponRaptor::Bot_CalcDesireToUse(CBaseBot& bot, CBaseEntity& enemy, float distanceToEnemy) const
 {
-	return static_cast<float>(WeaponPref_P99) / static_cast<float>(WeaponPref_Max);
+	return static_cast<float>(WeaponAttributes().Core.SwitchWeight) / static_cast<float>(WeaponPref_Max);
 }
 
 void CWeaponRaptor::Bot_SetFightStyle(CBaseBotFightStyle& fightStyle) const

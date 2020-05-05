@@ -54,7 +54,7 @@ float CWeaponGrenadeLauncher::Bot_CalcDesireToUse(CBaseBot& bot, CBaseEntity& en
 	const float explosionRadius = grenadelauncher_explosion_radius.value;
 
 	// Default, unmodified preference:
-	float pref = static_cast<float>(WeaponPref_GrenadeLauncher) / static_cast<float>(WeaponPref_Max);
+	float pref = static_cast<float>(WeaponAttributes().Core.SwitchWeight) / static_cast<float>(WeaponPref_Max);
 
 	// If the enemy is close enough that we'd damage ourselves with the grenade, scale back the preference accordingly.
 	if ( distanceToEnemy > explosionRadius )

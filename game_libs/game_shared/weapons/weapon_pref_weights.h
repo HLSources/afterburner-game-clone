@@ -6,6 +6,9 @@
 // lower values.
 enum WeaponPreferenceWeight
 {
+	// For debug weapons - should never take priority.
+	WeaponPref_Debug = 0,
+
 	// Least preferable
 	WeaponPref_Fists = 1,
 	WeaponPref_P99,

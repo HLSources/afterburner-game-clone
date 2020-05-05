@@ -90,7 +90,7 @@ IMPLEMENT_SAVERESTORE(CWeaponP99, CGenericHitscanWeapon)
 
 float CWeaponP99::Bot_CalcDesireToUse(CBaseBot& bot, CBaseEntity& enemy, float distanceToEnemy) const
 {
-	return static_cast<float>(WeaponPref_P99) / static_cast<float>(WeaponPref_Max);
+	return static_cast<float>(WeaponAttributes().Core.SwitchWeight) / static_cast<float>(WeaponPref_Max);
 }
 
 void CWeaponP99::Bot_SetFightStyle(CBaseBotFightStyle& fightStyle) const
