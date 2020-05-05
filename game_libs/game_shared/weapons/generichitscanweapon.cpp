@@ -38,7 +38,10 @@ void CGenericHitscanWeapon::PrecacheAttackMode(const WeaponAtts::WABaseAttack& a
 
 	const WeaponAtts::WAHitscanAttack& hitscanAttack = static_cast<const WeaponAtts::WAHitscanAttack&>(attackMode);
 
-	PRECACHE_MODEL(hitscanAttack.ShellModelName);
+	if ( hitscanAttack.ShellModelName )
+	{
+		PRECACHE_MODEL(hitscanAttack.ShellModelName);
+	}
 }
 
 bool CGenericHitscanWeapon::InvokeWithAttackMode(const CGenericWeapon::WeaponAttackType type, const WeaponAtts::WABaseAttack* attackMode)

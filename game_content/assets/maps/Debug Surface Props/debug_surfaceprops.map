@@ -115,7 +115,7 @@
 // brush 12
 {
 ( 1344 64 16 ) ( 1344 65 16 ) ( 1344 64 17 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
-( 1344 64 16 ) ( 1344 64 17 ) ( 1345 64 16 ) airfield/ac1a [ 1 0 0 -128 ] [ 0 0 -1 23.2727 ] 0 0.5 0.6875 0 wld_lightmap [ 16 0 ]
+( 1344 64 16 ) ( 1344 64 17 ) ( 1345 64 16 ) airfield/metal_aluminum [ 1 0 0 -128 ] [ 0 0 -1 23.2727 ] 0 0.5 0.6875 0 wld_lightmap [ 16 0 ]
 ( 1344 64 16 ) ( 1345 64 16 ) ( 1344 65 16 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
 ( 1472 80 192 ) ( 1472 81 192 ) ( 1473 80 192 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
 ( 1472 80 32 ) ( 1473 80 32 ) ( 1472 80 33 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
@@ -297,41 +297,6 @@
 }
 // entity 9
 {
-"classname" "weapon_p99"
-"origin" "-16 -80 24"
-}
-// entity 10
-{
-"classname" "ammo_p99"
-"origin" "-16 -48 24"
-}
-// entity 11
-{
-"classname" "ammo_p99"
-"origin" "-16 -16 24"
-}
-// entity 12
-{
-"classname" "ammo_p99"
-"origin" "0 -16 24"
-}
-// entity 13
-{
-"classname" "ammo_p99"
-"origin" "0 -48 24"
-}
-// entity 14
-{
-"classname" "ammo_p99"
-"origin" "0 -80 24"
-}
-// entity 15
-{
-"classname" "ammo_p99"
-"origin" "-16 16 24"
-}
-// entity 16
-{
-"classname" "ammo_p99"
-"origin" "0 16 24"
+"classname" "weapon_silent"
+"origin" "-16 -144 56"
 }

@@ -76,17 +76,6 @@ static constexpr const char* const HitWater[] =
 	"surfaceprop/hit_water1.wav"
 };
 
-CSurfaceSoundResources::CSurfaceSoundResources() :
-	BaseClass()
-{
-	m_SoundForSurfaceProp.SetCount(SurfaceProp__Count);
-
-	FOR_EACH_VEC(m_SoundForSurfaceProp, index)
-	{
-		m_SoundForSurfaceProp[index] = SurfaceSoundId::HitNone;
-	}
-}
-
 void CSurfaceSoundResources::Initialise()
 {
 	InitialiseSounds(SurfaceSoundId::HitConcrete, HitConcrete);
@@ -100,48 +89,4 @@ void CSurfaceSoundResources::Initialise()
 	InitialiseSounds(SurfaceSoundId::HitWood, HitWood);
 	InitialiseSounds(SurfaceSoundId::HitTile, HitTile);
 	InitialiseSounds(SurfaceSoundId::HitWater, HitWater);
-
-	InitialiseSurfacePropMappings();
-}
-
-SurfaceSoundId CSurfaceSoundResources::SurfaceSoundForSurfaceProp(SurfaceProp surfaceProp)
-{
-	if ( surfaceProp >= SurfaceProp__Count )
-	{
-		return SurfaceSoundId::HitNone;
-	}
-
-	return m_SoundForSurfaceProp[surfaceProp];
-}
-
-void CSurfaceSoundResources::InitialiseSurfacePropMappings()
-{
-	// Remember that these are the sound made by a given surface. Some surfaces,
-	// eg. sand and snow, are similar enough to just use the same sound.
-	// Entries listed with FIXME use the most appropriate existing sound effect,
-	// but really should have their own.
-	m_SoundForSurfaceProp[SurfaceProp_BulletproofGlass] = SurfaceSoundId::HitGlass;
-	m_SoundForSurfaceProp[SurfaceProp_Carpet] = SurfaceSoundId::HitConcrete; // FIXME
-	m_SoundForSurfaceProp[SurfaceProp_Cloth] = SurfaceSoundId::HitConcrete; // FIXME
-	m_SoundForSurfaceProp[SurfaceProp_Computer] = SurfaceSoundId::HitGlass;
-	m_SoundForSurfaceProp[SurfaceProp_Concrete] = SurfaceSoundId::HitConcrete;
-	m_SoundForSurfaceProp[SurfaceProp_Dirt] = SurfaceSoundId::HitConcrete; // FIXME
-	m_SoundForSurfaceProp[SurfaceProp_Flesh] = SurfaceSoundId::HitFlesh;
-	m_SoundForSurfaceProp[SurfaceProp_Glass] = SurfaceSoundId::HitGlass;
-	m_SoundForSurfaceProp[SurfaceProp_Gold] = SurfaceSoundId::HitMetal;
-	m_SoundForSurfaceProp[SurfaceProp_Grass] = SurfaceSoundId::HitConcrete; // FIXME
-	m_SoundForSurfaceProp[SurfaceProp_Gravel] = SurfaceSoundId::HitConcrete; // FIXME
-	m_SoundForSurfaceProp[SurfaceProp_Metal] = SurfaceSoundId::HitMetal;
-	m_SoundForSurfaceProp[SurfaceProp_MetalGrate] = SurfaceSoundId::HitMetalGrate;
-	m_SoundForSurfaceProp[SurfaceProp_Paper] = SurfaceSoundId::HitConcrete; // FIXME
-	m_SoundForSurfaceProp[SurfaceProp_Plaster] = SurfaceSoundId::HitConcrete; // FIXME
-	m_SoundForSurfaceProp[SurfaceProp_Plastic] = SurfaceSoundId::HitConcrete; // FIXME
-	m_SoundForSurfaceProp[SurfaceProp_Rock] = SurfaceSoundId::HitConcrete;
-	m_SoundForSurfaceProp[SurfaceProp_Rubber] = SurfaceSoundId::HitConcrete; // FIXME
-	m_SoundForSurfaceProp[SurfaceProp_Sand] = SurfaceSoundId::HitSnow;
-	m_SoundForSurfaceProp[SurfaceProp_Snow] = SurfaceSoundId::HitSnow;
-	m_SoundForSurfaceProp[SurfaceProp_Tile] = SurfaceSoundId::HitConcrete; // FIXME
-	m_SoundForSurfaceProp[SurfaceProp_VentDuct] = SurfaceSoundId::HitVentDuct;
-	m_SoundForSurfaceProp[SurfaceProp_Water] = SurfaceSoundId::HitWater;
-	m_SoundForSurfaceProp[SurfaceProp_Wood] = SurfaceSoundId::HitWood;
 }

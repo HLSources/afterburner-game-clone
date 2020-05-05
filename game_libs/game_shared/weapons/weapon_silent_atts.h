@@ -65,7 +65,6 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	priAttack->Volume = QUIET_GUN_VOLUME;
 	priAttack->MuzzleFlashBrightness = NORMAL_GUN_FLASH;
 	priAttack->ViewPunchY = -2.0f;
-	priAttack->ShellModelName = "models/shell.mdl";
 
 	priAttack->ViewModelAnimList_Attack << SW_SHOOT;
 });

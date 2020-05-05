@@ -47,8 +47,11 @@
 #include "projectileweaponeventplayer.h"
 #include "meleeweaponeventplayer.h"
 #include "resources/SoundResources.h"
-#include "sound/SurfacePropertySounds.h"
+#include "resources/SurfaceAttributes.h"
 #include "sound/ClientSoundInstance.h"
+
+// TODO: Make into a convar?
+static constexpr float BULLET_RICOCHET_NOISE_CHANCE = 0.5f;
 
 static std::unique_ptr<BaseWeaponEventPlayer> EventPlayers[MAX_WEAPONS][WeaponAtts::WACollection::MAX_ATTACK_MODES];
 
@@ -167,7 +170,6 @@ void EV_HandleGenericWeaponFire(event_args_t* args)
 
 // play a strike sound based on the texture that was hit by the attack traceline.  VecSrc/VecEnd are the
 // original traceline endpoints used by the attacker, iBulletType is the type of bullet that hit the texture.
-// returns volume of strike instrument (crowbar) to play
 void EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *vecEnd, int iBulletType )
 {
 	// hit the world, try to play sound based on texture material type
@@ -200,11 +202,14 @@ void EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *ve
 		return;
 	}
 
-	CSoundInstance soundInst;
-	soundInst.SetPosition(Vector(vecEnd));
+	CSurfaceAttributes& surfAttsMaster = CSurfaceAttributes::StaticInstance();
+	const CSurfaceAttributes::Attributes& surfaceAtts = surfAttsMaster.GetAttributes(static_cast<SurfaceProp>(texSurfaceProp));
 
-	SurfacePropertySounds::GetHitSoundForSurface(static_cast<SurfaceProp>(texSurfaceProp), soundInst);
-	ClientSoundInstance::PlayEventSound(soundInst);
+	if( surfaceAtts.ricochetChance > 0.0f && surfaceAtts.ricochetSoundVol > 0.0f && gEngfuncs.pfnRandomFloat(0.0f, 1.0f) <= surfaceAtts.ricochetChance )
+	{
+		const char* soundPath = SoundResources::WeaponSounds.GetRandomSoundPath(WeaponSoundId::BulletRicochet);
+		gEngfuncs.pEventAPI->EV_PlaySound(-1, ptr->endpos, 0, soundPath, surfaceAtts.ricochetSoundVol, ATTN_NORM, 0, gEngfuncs.pfnRandomLong(97, 103));
+	}
 }
 
 char *EV_HLDM_DamageDecal( physent_t *pe )
@@ -232,22 +237,11 @@ char *EV_HLDM_DamageDecal( physent_t *pe )
 
 void EV_HLDM_GunshotDecalTrace( pmtrace_t *pTrace, char *decalName )
 {
-	int iRand;
-	physent_t *pe;
-
 	gEngfuncs.pEfxAPI->R_BulletImpactParticles( pTrace->endpos );
-
-	iRand = gEngfuncs.pfnRandomLong( 0, 0x7FFF );
-	if( iRand < ( 0x7fff / 2 ) )// not every bullet makes a sound.
-	{
-		const char* soundPath = SoundResources::WeaponSounds.GetRandomSoundPath(WeaponSoundId::BulletRicochet);
-		gEngfuncs.pEventAPI->EV_PlaySound(-1, pTrace->endpos, 0, soundPath, 1.0, ATTN_NORM, 0, PITCH_NORM);
-	}
-
-	pe = gEngfuncs.pEventAPI->EV_GetPhysent( pTrace->ent );
+	physent_t* pe = gEngfuncs.pEventAPI->EV_GetPhysent( pTrace->ent );
 
 	// Only decal brush models such as the world etc.
-	if(  decalName && decalName[0] && pe && ( pe->solid == SOLID_BSP || pe->movetype == MOVETYPE_PUSHSTEP ) )
+	if( decalName && decalName[0] && pe && ( pe->solid == SOLID_BSP || pe->movetype == MOVETYPE_PUSHSTEP ) )
 	{
 		if( gEngfuncs.pfnGetCvarFloat("r_decals") )
 		{

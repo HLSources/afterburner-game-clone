@@ -26,7 +26,7 @@
 #include "resources/SoundResources.h"
 #include "com_model.h"
 #include "sound/ServerSoundInstance.h"
-#include "sound/SurfacePropertySounds.h"
+#include "resources/SurfaceAttributes.h"
 
 static char *memfgets( byte *pMemFile, int fileSize, int &filePos, char *pBuffer, int bufferSize );
 
@@ -1576,7 +1576,7 @@ void TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, int
 	CSoundInstance soundInst;
 	soundInst.SetPosition(ptr->vecEndPos);
 
-	SurfacePropertySounds::GetHitSoundForSurface(static_cast<SurfaceProp>(texSurfaceProp), soundInst);
+	CSurfaceAttributes::StaticInstance().GetHitSoundForSurface(static_cast<SurfaceProp>(texSurfaceProp), soundInst);
 
 	// did we hit a breakable?
 	if ( pEntity && FClassnameIs( pEntity->pev, "func_breakable" ) )
