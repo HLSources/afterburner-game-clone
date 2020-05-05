@@ -73,8 +73,7 @@ static constexpr const char* const HitTile[] =
 
 static constexpr const char* const HitWater[] =
 {
-	"surfaceprop/hit_water1.wav",
-	"surfaceprop/hit_water2.wav"
+	"surfaceprop/hit_water1.wav"
 };
 
 CSurfaceSoundResources::CSurfaceSoundResources() :

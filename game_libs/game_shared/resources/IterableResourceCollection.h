@@ -52,25 +52,7 @@ public:
 		// Prefix
 		inline Iterator& operator ++()
 		{
-			const CUtlVector<CUtlString>* soundList = CurrentSoundList();
-
-			if ( !soundList )
-			{
-				// We're invalid - nowhere further to go.
-				return *this;
-			}
-
-			++m_Index;
-
-			// We keep trying until we encounter a list with items in,
-			// or we can no longer get any more lists.
-			while ( soundList && m_Index >= soundList->Count() )
-			{
-				++m_Id;
-				m_Index = 0;
-				soundList = CurrentSoundList();
-			}
-
+			FindNextValidItem();
 			return *this;
 		}
 
@@ -85,11 +67,40 @@ public:
 	private:
 		friend class IIterableSoundResourceCollection;
 
+		inline void FindNextValidItem()
+		{
+			const CUtlVector<CUtlString>* soundList = CurrentSoundList();
+
+			if ( !soundList )
+			{
+				// We're invalid - nowhere further to go.
+				return;
+			}
+
+			++m_Index;
+
+			// We keep trying until we encounter a list with items in,
+			// or we can no longer get any more lists.
+			while ( soundList && m_Index >= soundList->Count() )
+			{
+				++m_Id;
+				m_Index = 0;
+				soundList = CurrentSoundList();
+			}
+		}
+
 		inline Iterator(const IIterableSoundResourceCollection* parent, uint32_t id, uint32_t index) :
 			m_Parent(parent),
 			m_Id(id),
 			m_Index(index)
 		{
+			// The collection may not have a valid item in the first list,
+			// but may have more later.
+			// Make sure we start on something that's valid, if we can.
+			if ( !IsValid() )
+			{
+				FindNextValidItem();
+			}
 		}
 
 		const CUtlVector<CUtlString>* CurrentSoundList() const
