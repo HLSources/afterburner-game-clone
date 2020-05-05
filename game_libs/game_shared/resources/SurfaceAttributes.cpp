@@ -28,7 +28,7 @@ CSurfaceAttributes::CSurfaceAttributes()
 	Attributes* atts = nullptr;
 
 	atts = &m_Attributes[SurfaceProp_BulletproofGlass];
-	atts->hitSound = SurfaceSoundId::HitGlass;
+	atts->hitSound = SurfaceSoundId::HitGlassA;
 	atts->hitSoundVol = 0.8f;
 	atts->ricochetSoundVol = RIC_LOUD;
 	atts->ricochetChance = 0.85f;
@@ -42,7 +42,7 @@ CSurfaceAttributes::CSurfaceAttributes()
 	atts->hitSoundVol = 0.8f;
 
 	atts = &m_Attributes[SurfaceProp_Computer];
-	atts->hitSound = SurfaceSoundId::HitGlass;
+	atts->hitSound = SurfaceSoundId::HitGlassB;
 	atts->hitSoundVol = 0.8f;
 	atts->ricochetSoundVol = RIC_NORM;
 	atts->ricochetChance = 0.2f;
@@ -62,7 +62,7 @@ CSurfaceAttributes::CSurfaceAttributes()
 	atts->hitSoundVol = 0.9f;
 
 	atts = &m_Attributes[SurfaceProp_Glass];
-	atts->hitSound = SurfaceSoundId::HitGlass;
+	atts->hitSound = SurfaceSoundId::HitGlassB;
 	atts->hitSoundVol = 0.8f;
 	atts->ricochetSoundVol = RIC_NORM;
 	atts->ricochetChance = 0.2f;

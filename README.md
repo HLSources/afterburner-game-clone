@@ -54,6 +54,7 @@ Many thanks to:
 * Developers of [rapidjson library](http://rapidjson.org/).
 * Contributors to [XeNTaX game reverse-engineering forums](https://forum.xentax.com/).
 * Various Nightfire modders over the years whose tools and reverse-engineering have proven invaluable when developing this mod (specifically Tres, 009, Ford, UltimateSniper).
+* ZapSplat.com for various free sound effects.
 
 For posterity, the Xash3D engine readme is below.
 

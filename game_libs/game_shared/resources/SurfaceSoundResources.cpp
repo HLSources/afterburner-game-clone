@@ -7,11 +7,11 @@ static constexpr const char* const HitConcrete[] =
 	"surfaceprop/hit_concrete2.wav"
 };
 
-static constexpr const char* const HitHollowContainer[] =
+static constexpr const char* const HitVentDuct[] =
 {
-	"surfaceprop/hit_hollowcontainer1.wav",
-	"surfaceprop/hit_hollowcontainer2.wav",
-	"surfaceprop/hit_hollowcontainer3.wav"
+	"surfaceprop/hit_ventduct1.wav",
+	"surfaceprop/hit_ventduct2.wav",
+	"surfaceprop/hit_ventduct3.wav"
 };
 
 static constexpr const char* const HitFlesh[] =
@@ -32,10 +32,18 @@ static constexpr const char* const HitFleshCritical[] =
 	"surfaceprop/hit_flesh_crit2.wav"
 };
 
-static constexpr const char* const HitGlass[] =
+static constexpr const char* const HitGlassA[] =
 {
 	"surfaceprop/hit_glass1.wav",
-	"surfaceprop/hit_glass2.wav"
+	"surfaceprop/hit_glass2.wav",
+	"surfaceprop/hit_glass3.wav"
+};
+
+static constexpr const char* const HitGlassB[] =
+{
+	"surfaceprop/hit_glassb1.wav",
+	"surfaceprop/hit_glassb2.wav",
+	"surfaceprop/hit_glassb3.wav"
 };
 
 static constexpr const char* const HitMetal[] =
@@ -79,10 +87,11 @@ static constexpr const char* const HitWater[] =
 void CSurfaceSoundResources::Initialise()
 {
 	InitialiseSounds(SurfaceSoundId::HitConcrete, HitConcrete);
-	InitialiseSounds(SurfaceSoundId::HitVentDuct, HitHollowContainer);
+	InitialiseSounds(SurfaceSoundId::HitVentDuct, HitVentDuct);
 	InitialiseSounds(SurfaceSoundId::HitFlesh, HitFlesh);
 	InitialiseSounds(SurfaceSoundId::HitFleshCritical, HitFleshCritical);
-	InitialiseSounds(SurfaceSoundId::HitGlass, HitGlass);
+	InitialiseSounds(SurfaceSoundId::HitGlassA, HitGlassA);
+	InitialiseSounds(SurfaceSoundId::HitGlassB, HitGlassB);
 	InitialiseSounds(SurfaceSoundId::HitMetal, HitMetal);
 	InitialiseSounds(SurfaceSoundId::HitMetalGrate, HitMetalGrate);
 	InitialiseSounds(SurfaceSoundId::HitSnow, HitSnow);
