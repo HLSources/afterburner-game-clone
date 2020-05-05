@@ -1,0 +1,337 @@
+// Game: Afterburner
+// Format: Nightfire
+// entity 0
+{
+"classname" "worldspawn"
+"_tb_textures" "textures/airfield;textures/austria;textures/casino;textures/caviar;textures/common;textures/decals;textures/detail;textures/dev;textures/envmap;textures/island;textures/japanese;textures/knox;textures/liquids;textures/missile;textures/osato;textures/power;textures/romania;textures/space;textures/special;textures/wahoo"
+// brush 0
+{
+( -64 -64 -16 ) ( -64 -63 -16 ) ( -64 -64 -15 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( -64 -192 -16 ) ( -64 -192 -15 ) ( -63 -192 -16 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( -64 -64 -16 ) ( -63 -64 -16 ) ( -64 -63 -16 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 64 64 16 ) ( 64 65 16 ) ( 65 64 16 ) island/isle_concflr2_1 [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 64 64 16 ) ( 65 64 16 ) ( 64 64 17 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 2752 64 16 ) ( 2752 64 17 ) ( 2752 65 16 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+}
+// brush 1
+{
+( -64 64 16 ) ( -64 65 16 ) ( -64 64 17 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( -64 64 16 ) ( -64 64 17 ) ( -63 64 16 ) island/window1_1 [ 1 0 0 -128 ] [ 0 0 -1 23.2727 ] 0 0.5 0.6875 0 wld_lightmap [ 16 0 ]
+( -64 64 16 ) ( -63 64 16 ) ( -64 65 16 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 64 80 192 ) ( 64 81 192 ) ( 65 80 192 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 64 80 32 ) ( 65 80 32 ) ( 64 80 33 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 64 80 32 ) ( 64 80 33 ) ( 64 81 32 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+}
+// brush 2
+{
+( 64 64 16 ) ( 64 65 16 ) ( 64 64 17 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 64 64 16 ) ( 64 64 17 ) ( 65 64 16 ) airfield/carpet_c1 [ 1 0 0 -128 ] [ 0 0 -1 23.2727 ] 0 0.5 0.6875 0 wld_lightmap [ 16 0 ]
+( 64 64 16 ) ( 65 64 16 ) ( 64 65 16 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 192 80 192 ) ( 192 81 192 ) ( 193 80 192 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 192 80 32 ) ( 193 80 32 ) ( 192 80 33 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 192 80 32 ) ( 192 80 33 ) ( 192 81 32 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+}
+// brush 3
+{
+( 192 64 16 ) ( 192 65 16 ) ( 192 64 17 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 192 64 16 ) ( 192 64 17 ) ( 193 64 16 ) common/wall_cloth_paintolive00 [ 1 0 0 -128 ] [ 0 0 -1 23.2727 ] 0 0.5 0.6875 0 wld_lightmap [ 16 0 ]
+( 192 64 16 ) ( 193 64 16 ) ( 192 65 16 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 320 80 192 ) ( 320 81 192 ) ( 321 80 192 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 320 80 32 ) ( 321 80 32 ) ( 320 80 33 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 320 80 32 ) ( 320 80 33 ) ( 320 81 32 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+}
+// brush 4
+{
+( 320 64 16 ) ( 320 65 16 ) ( 320 64 17 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 320 64 16 ) ( 320 64 17 ) ( 321 64 16 ) island/#isle_server4_1a [ 1 0 0 128 ] [ 0 0 -1 23.2727 ] 0 0.5 0.6875 0 wld_lightmap [ 16 0 ]
+( 320 64 16 ) ( 321 64 16 ) ( 320 65 16 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 448 80 192 ) ( 448 81 192 ) ( 449 80 192 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 448 80 32 ) ( 449 80 32 ) ( 448 80 33 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 448 80 32 ) ( 448 80 33 ) ( 448 81 32 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+}
+// brush 5
+{
+( 448 64 16 ) ( 448 65 16 ) ( 448 64 17 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 448 64 16 ) ( 448 64 17 ) ( 449 64 16 ) airfield/concrete_wall_b [ 1 0 0 -128 ] [ 0 0 -1 23.2727 ] 0 0.5 0.6875 0 wld_lightmap [ 16 0 ]
+( 448 64 16 ) ( 449 64 16 ) ( 448 65 16 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 576 80 192 ) ( 576 81 192 ) ( 577 80 192 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 576 80 32 ) ( 577 80 32 ) ( 576 80 33 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 576 80 32 ) ( 576 80 33 ) ( 576 81 32 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+}
+// brush 6
+{
+( 576 64 16 ) ( 576 65 16 ) ( 576 64 17 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 576 64 16 ) ( 576 64 17 ) ( 577 64 16 ) common/dirt_path_128x128 [ 1 0 0 -128 ] [ 0 0 -1 23.2727 ] 0 0.5 0.6875 0 wld_lightmap [ 16 0 ]
+( 576 64 16 ) ( 577 64 16 ) ( 576 65 16 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 704 80 192 ) ( 704 81 192 ) ( 705 80 192 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 704 80 32 ) ( 705 80 32 ) ( 704 80 33 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 704 80 32 ) ( 704 80 33 ) ( 704 81 32 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+}
+// brush 7
+{
+( 704 64 16 ) ( 704 65 16 ) ( 704 64 17 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 704 64 16 ) ( 704 64 17 ) ( 705 64 16 ) dev/flesh [ 1 0 0 0 ] [ 0 0 -1 23.2727 ] 0 0.5 0.6875 0 wld_lightmap [ 16 0 ]
+( 704 64 16 ) ( 705 64 16 ) ( 704 65 16 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 832 80 192 ) ( 832 81 192 ) ( 833 80 192 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 832 80 32 ) ( 833 80 32 ) ( 832 80 33 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 832 80 32 ) ( 832 80 33 ) ( 832 81 32 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+}
+// brush 8
+{
+( 832 64 16 ) ( 832 65 16 ) ( 832 64 17 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 832 64 16 ) ( 832 64 17 ) ( 833 64 16 ) osato/[window5 [ 1 0 0 0.000198364 ] [ 0 0 -1 23.2727 ] 0 0.5 0.6875 0 wld_lightmap [ 16 0 ]
+( 832 64 16 ) ( 833 64 16 ) ( 832 65 16 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 960 80 192 ) ( 960 81 192 ) ( 961 80 192 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 960 80 32 ) ( 961 80 32 ) ( 960 80 33 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 960 80 32 ) ( 960 80 33 ) ( 960 81 32 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+}
+// brush 9
+{
+( 960 64 16 ) ( 960 65 16 ) ( 960 64 17 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 960 64 16 ) ( 960 64 17 ) ( 961 64 16 ) knox/gold_side [ 1 0 0 -128 ] [ 0 0 -1 23.2727 ] 0 0.5 0.6875 0 wld_lightmap [ 16 0 ]
+( 960 64 16 ) ( 961 64 16 ) ( 960 65 16 ) special/nodraw [ 1 0 0 -128 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1088 80 192 ) ( 1088 81 192 ) ( 1089 80 192 ) special/nodraw [ 1 0 0 -128 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1088 80 32 ) ( 1089 80 32 ) ( 1088 80 33 ) special/nodraw [ 1 0 0 -128 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1088 80 32 ) ( 1088 80 33 ) ( 1088 81 32 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+}
+// brush 10
+{
+( 1088 64 16 ) ( 1088 65 16 ) ( 1088 64 17 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1088 64 16 ) ( 1088 64 17 ) ( 1089 64 16 ) common/grass_rough_256x256 [ 1 0 0 -128 ] [ 0 0 -1 23.2727 ] 0 0.5 0.6875 0 wld_lightmap [ 16 0 ]
+( 1088 64 16 ) ( 1089 64 16 ) ( 1088 65 16 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1216 80 192 ) ( 1216 81 192 ) ( 1217 80 192 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1216 80 32 ) ( 1217 80 32 ) ( 1216 80 33 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1216 80 32 ) ( 1216 80 33 ) ( 1216 81 32 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+}
+// brush 11
+{
+( 1216 64 16 ) ( 1216 65 16 ) ( 1216 64 17 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1216 64 16 ) ( 1216 64 17 ) ( 1217 64 16 ) japanese/decorative_gravel_dark [ 1 0 0 0.000289917 ] [ 0 0 -1 23.2727 ] 0 0.5 0.6875 0 wld_lightmap [ 16 0 ]
+( 1216 64 16 ) ( 1217 64 16 ) ( 1216 65 16 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1344 80 192 ) ( 1344 81 192 ) ( 1345 80 192 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1344 80 32 ) ( 1345 80 32 ) ( 1344 80 33 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1344 80 32 ) ( 1344 80 33 ) ( 1344 81 32 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+}
+// brush 12
+{
+( 1344 64 16 ) ( 1344 65 16 ) ( 1344 64 17 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1344 64 16 ) ( 1344 64 17 ) ( 1345 64 16 ) airfield/ac1a [ 1 0 0 -128 ] [ 0 0 -1 23.2727 ] 0 0.5 0.6875 0 wld_lightmap [ 16 0 ]
+( 1344 64 16 ) ( 1345 64 16 ) ( 1344 65 16 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1472 80 192 ) ( 1472 81 192 ) ( 1473 80 192 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1472 80 32 ) ( 1473 80 32 ) ( 1472 80 33 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1472 80 32 ) ( 1472 80 33 ) ( 1472 81 32 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+}
+// brush 13
+{
+( 1472 64 16 ) ( 1472 65 16 ) ( 1472 64 17 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1472 64 16 ) ( 1472 64 17 ) ( 1473 64 16 ) power/grate_hinges_none [ 1 0 0 -128 ] [ 0 0 -1 23.2727 ] 0 0.5 0.6875 0 wld_lightmap [ 16 0 ]
+( 1472 64 16 ) ( 1473 64 16 ) ( 1472 65 16 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1600 80 192 ) ( 1600 81 192 ) ( 1601 80 192 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1600 80 32 ) ( 1601 80 32 ) ( 1600 80 33 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1600 80 32 ) ( 1600 80 33 ) ( 1600 81 32 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+}
+// brush 14
+{
+( 1600 64 16 ) ( 1600 65 16 ) ( 1600 64 17 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1600 64 16 ) ( 1600 64 17 ) ( 1601 64 16 ) missile/{poster_kiko [ 1 0 0 0 ] [ 0 0 -1 23.2727 ] 0 0.5 0.6875 0 wld_lightmap [ 16 0 ]
+( 1600 64 16 ) ( 1601 64 16 ) ( 1600 65 16 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1728 80 192 ) ( 1728 81 192 ) ( 1729 80 192 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1728 80 32 ) ( 1729 80 32 ) ( 1728 80 33 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1728 80 32 ) ( 1728 80 33 ) ( 1728 81 32 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+}
+// brush 15
+{
+( 1728 64 16 ) ( 1728 65 16 ) ( 1728 64 17 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1728 64 16 ) ( 1728 64 17 ) ( 1729 64 16 ) airfield/ceiling_tile2 [ 1 0 0 0 ] [ 0 0 -1 23.2727 ] 0 0.5 0.6875 0 wld_lightmap [ 16 0 ]
+( 1728 64 16 ) ( 1729 64 16 ) ( 1728 65 16 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1856 80 192 ) ( 1856 81 192 ) ( 1857 80 192 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1856 80 32 ) ( 1857 80 32 ) ( 1856 80 33 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1856 80 32 ) ( 1856 80 33 ) ( 1856 81 32 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+}
+// brush 16
+{
+( 1856 64 16 ) ( 1856 65 16 ) ( 1856 64 17 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1856 64 16 ) ( 1856 64 17 ) ( 1857 64 16 ) austria/cliff_b_main [ 1 0 0 0 ] [ 0 0 -1 23.2727 ] 0 0.5 0.6875 0 wld_lightmap [ 16 0 ]
+( 1856 64 16 ) ( 1857 64 16 ) ( 1856 65 16 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1984 80 192 ) ( 1984 81 192 ) ( 1985 80 192 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1984 80 32 ) ( 1985 80 32 ) ( 1984 80 33 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1984 80 32 ) ( 1984 80 33 ) ( 1984 81 32 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+}
+// brush 17
+{
+( 1984 64 16 ) ( 1984 65 16 ) ( 1984 64 17 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 1984 64 16 ) ( 1984 64 17 ) ( 1985 64 16 ) missile/conveyor_belt [ 1 0 0 -256 ] [ 0 0 -1 23.2727 ] 0 0.5 0.6875 0 wld_lightmap [ 16 0 ]
+( 1984 64 16 ) ( 1985 64 16 ) ( 1984 65 16 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 2112 80 192 ) ( 2112 81 192 ) ( 2113 80 192 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 2112 80 32 ) ( 2113 80 32 ) ( 2112 80 33 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 2112 80 32 ) ( 2112 80 33 ) ( 2112 81 32 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+}
+// brush 18
+{
+( 2112 64 16 ) ( 2112 65 16 ) ( 2112 64 17 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 2112 64 16 ) ( 2112 64 17 ) ( 2113 64 16 ) island/isl_sand1_3 [ 1 0 0 0 ] [ 0 0 -1 23.2727 ] 0 0.5 0.6875 0 wld_lightmap [ 16 0 ]
+( 2112 64 16 ) ( 2113 64 16 ) ( 2112 65 16 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 2240 80 192 ) ( 2240 81 192 ) ( 2241 80 192 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 2240 80 32 ) ( 2241 80 32 ) ( 2240 80 33 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 2240 80 32 ) ( 2240 80 33 ) ( 2240 81 32 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+}
+// brush 19
+{
+( 2240 64 16 ) ( 2240 65 16 ) ( 2240 64 17 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 2240 64 16 ) ( 2240 64 17 ) ( 2241 64 16 ) austria/fountain_ice [ 1 0 0 -384 ] [ 0 0 -1 23.2727 ] 0 0.5 0.6875 0 wld_lightmap [ 16 0 ]
+( 2240 64 16 ) ( 2241 64 16 ) ( 2240 65 16 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 2368 80 192 ) ( 2368 81 192 ) ( 2369 80 192 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 2368 80 32 ) ( 2369 80 32 ) ( 2368 80 33 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 2368 80 32 ) ( 2368 80 33 ) ( 2368 81 32 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+}
+// brush 20
+{
+( 2368 64 16 ) ( 2368 65 16 ) ( 2368 64 17 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 2368 64 16 ) ( 2368 64 17 ) ( 2369 64 16 ) osato/ac3 [ 1 0 0 -128 ] [ 0 0 -1 23.2727 ] 0 0.5 0.6875 0 wld_lightmap [ 16 0 ]
+( 2368 64 16 ) ( 2369 64 16 ) ( 2368 65 16 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 2496 80 192 ) ( 2496 81 192 ) ( 2497 80 192 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 2496 80 32 ) ( 2497 80 32 ) ( 2496 80 33 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 2496 80 32 ) ( 2496 80 33 ) ( 2496 81 32 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+}
+// brush 21
+{
+( 2496 64 16 ) ( 2496 65 16 ) ( 2496 64 17 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 2496 64 16 ) ( 2496 64 17 ) ( 2497 64 16 ) osato/pool_water [ 1 0 0 0 ] [ 0 0 -1 23.2727 ] 0 0.5 0.6875 0 wld_lightmap [ 16 0 ]
+( 2496 64 16 ) ( 2497 64 16 ) ( 2496 65 16 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 2624 80 192 ) ( 2624 81 192 ) ( 2625 80 192 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 2624 80 32 ) ( 2625 80 32 ) ( 2624 80 33 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 2624 80 32 ) ( 2624 80 33 ) ( 2624 81 32 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+}
+// brush 22
+{
+( 2624 64 16 ) ( 2624 65 16 ) ( 2624 64 17 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 2624 64 16 ) ( 2624 64 17 ) ( 2625 64 16 ) airfield/desk_wood [ 1 0 0 0 ] [ 0 0 -1 23.2727 ] 0 0.5 0.6875 0 wld_lightmap [ 16 0 ]
+( 2624 64 16 ) ( 2625 64 16 ) ( 2624 65 16 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 2752 80 192 ) ( 2752 81 192 ) ( 2753 80 192 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 2752 80 32 ) ( 2753 80 32 ) ( 2752 80 33 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 2752 80 32 ) ( 2752 80 33 ) ( 2752 81 32 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+}
+// brush 23
+{
+( -64 -64 192 ) ( -64 -63 192 ) ( -64 -64 193 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( -64 -192 192 ) ( -64 -192 193 ) ( -63 -192 192 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( -64 -64 192 ) ( -63 -64 192 ) ( -64 -63 192 ) island/isle_conc1_1 [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 64 64 224 ) ( 64 65 224 ) ( 65 64 224 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 64 64 224 ) ( 65 64 224 ) ( 64 64 225 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 2752 64 224 ) ( 2752 64 225 ) ( 2752 65 224 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+}
+// brush 24
+{
+( -64 -224 160 ) ( -64 -223 160 ) ( -64 -224 161 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( -64 -224 160 ) ( -64 -224 161 ) ( -63 -224 160 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( -64 -224 16 ) ( -63 -224 16 ) ( -64 -223 16 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 64 -96 192 ) ( 64 -95 192 ) ( 65 -96 192 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 64 -192 192 ) ( 65 -192 192 ) ( 64 -192 193 ) island/isle_conc1_2 [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 2752 -96 192 ) ( 2752 -96 193 ) ( 2752 -95 192 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+}
+// brush 25
+{
+( -96 -64 16 ) ( -96 -63 16 ) ( -96 -64 17 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( -96 -192 16 ) ( -96 -192 17 ) ( -95 -192 16 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( -96 -64 16 ) ( -95 -64 16 ) ( -96 -63 16 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( -64 64 192 ) ( -64 65 192 ) ( -63 64 192 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( -64 64 192 ) ( -63 64 192 ) ( -64 64 193 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( -64 64 192 ) ( -64 64 193 ) ( -64 65 192 ) island/isle_conc1_2 [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+}
+// brush 26
+{
+( 2752 -64 16 ) ( 2752 -63 16 ) ( 2752 -64 17 ) island/isle_conc1_2 [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 2752 -192 16 ) ( 2752 -192 17 ) ( 2753 -192 16 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 2752 -64 16 ) ( 2753 -64 16 ) ( 2752 -63 16 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 2784 64 192 ) ( 2784 65 192 ) ( 2785 64 192 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 2784 64 192 ) ( 2785 64 192 ) ( 2784 64 193 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 2784 64 192 ) ( 2784 64 193 ) ( 2784 65 192 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+}
+}
+// entity 1
+{
+"classname" "light"
+"origin" "64 -64 128"
+"_light" "255 219 181 500"
+}
+// entity 2
+{
+"classname" "light"
+"origin" "448 -64 128"
+"_light" "255 219 181 500"
+}
+// entity 3
+{
+"classname" "light"
+"origin" "832 -64 128"
+"_light" "255 219 181 500"
+}
+// entity 4
+{
+"classname" "light"
+"origin" "1216 -64 128"
+"_light" "255 219 181 500"
+}
+// entity 5
+{
+"classname" "light"
+"origin" "1600 -64 128"
+"_light" "255 219 181 500"
+}
+// entity 6
+{
+"classname" "light"
+"origin" "1984 -64 128"
+"_light" "255 219 181 500"
+}
+// entity 7
+{
+"classname" "light"
+"origin" "2368 -64 128"
+"_light" "255 219 181 500"
+}
+// entity 8
+{
+"classname" "info_player_start"
+"origin" "-16 -144 52"
+}
+// entity 9
+{
+"classname" "weapon_p99"
+"origin" "-16 -80 24"
+}
+// entity 10
+{
+"classname" "ammo_p99"
+"origin" "-16 -48 24"
+}
+// entity 11
+{
+"classname" "ammo_p99"
+"origin" "-16 -16 24"
+}
+// entity 12
+{
+"classname" "ammo_p99"
+"origin" "0 -16 24"
+}
+// entity 13
+{
+"classname" "ammo_p99"
+"origin" "0 -48 24"
+}
+// entity 14
+{
+"classname" "ammo_p99"
+"origin" "0 -80 24"
+}
+// entity 15
+{
+"classname" "ammo_p99"
+"origin" "-16 16 24"
+}
+// entity 16
+{
+"classname" "ammo_p99"
+"origin" "0 16 24"
+}
