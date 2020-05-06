@@ -479,7 +479,7 @@ void CBasePlayerItem::FallThink( void )
 		if( !FNullEnt( pev->owner ) )
 		{
 			int pitch = 95 + RANDOM_LONG( 0, 29 );
-			const char* soundPath = SoundResources::ItemSounds.GetRandomSoundPath(ItemSoundId::WeaponDrop);
+			const char* soundPath = SoundResources::ItemSounds.RandomResourcePath(ItemSoundId::WeaponDrop);
 			EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, soundPath, 1, ATTN_NORM, 0, pitch );
 		}
 
@@ -877,7 +877,7 @@ BOOL CBasePlayerWeapon::AddPrimaryAmmo( int iCount, char *szName, int iMaxClip, 
 		{
 			// play the "got ammo" sound only if we gave some ammo to a player that already had this gun.
 			// if the player is just getting this gun for the first time, DefaultTouch will play the "picked up gun" sound for us.
-			const char* soundPath = SoundResources::ItemSounds.GetRandomSoundPath(ItemSoundId::AmmoPickup);
+			const char* soundPath = SoundResources::ItemSounds.RandomResourcePath(ItemSoundId::AmmoPickup);
 			EMIT_SOUND( ENT( pev ), CHAN_ITEM, soundPath, 1, ATTN_NORM );
 		}
 	}
@@ -896,7 +896,7 @@ BOOL CBasePlayerWeapon::AddSecondaryAmmo( int iCount, char *szName, int iMax )
 	if( iIdAmmo > 0 )
 	{
 		m_iSecondaryAmmoType = iIdAmmo;
-		const char* soundPath = SoundResources::ItemSounds.GetRandomSoundPath(ItemSoundId::AmmoPickup);
+		const char* soundPath = SoundResources::ItemSounds.RandomResourcePath(ItemSoundId::AmmoPickup);
 		EMIT_SOUND( ENT( pev ), CHAN_ITEM, soundPath, 1, ATTN_NORM );
 	}
 	return iIdAmmo > 0 ? TRUE : FALSE;
@@ -904,7 +904,7 @@ BOOL CBasePlayerWeapon::AddSecondaryAmmo( int iCount, char *szName, int iMax )
 
 const char* CBasePlayerItem::PickupSound() const
 {
-	return SoundResources::ItemSounds.GetRandomSoundPath(ItemSoundId::WeaponPickup);
+	return SoundResources::ItemSounds.RandomResourcePath(ItemSoundId::WeaponPickup);
 }
 
 //=========================================================
@@ -1400,7 +1400,7 @@ void CWeaponBox::Touch( CBaseEntity *pOther )
 		}
 	}
 
-	const char* soundPath = SoundResources::ItemSounds.GetRandomSoundPath(ItemSoundId::WeaponPickup);
+	const char* soundPath = SoundResources::ItemSounds.RandomResourcePath(ItemSoundId::WeaponPickup);
 	EMIT_SOUND( pOther->edict(), CHAN_ITEM, soundPath, 1, ATTN_NORM );
 	SetTouch( NULL );
 	UTIL_Remove(this);

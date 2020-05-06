@@ -157,7 +157,7 @@ const CSurfaceAttributes::Attributes& CSurfaceAttributes::GetAttributes(SurfaceP
 void CSurfaceAttributes::GetHitSoundForSurface(SurfaceProp surfaceProp, CSoundInstance& sound)
 {
 	const CSurfaceAttributes::Attributes surfaceAtts = CSurfaceAttributes::StaticInstance().GetAttributes(surfaceProp);
-	const char* soundPath = SoundResources::SurfaceSounds.GetRandomSoundPath(surfaceAtts.hitSound);
+	const char* soundPath = SoundResources::SurfaceSounds.RandomResourcePath(surfaceAtts.hitSound);
 
 	sound.SetSoundPath(soundPath);
 	sound.SetPitch(96, 111);

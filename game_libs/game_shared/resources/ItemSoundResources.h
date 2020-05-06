@@ -10,8 +10,8 @@ enum class ItemSoundId
 	Count
 };
 
-class CItemSoundResources : public CBaseSoundResourceCollection<ItemSoundId, static_cast<size_t>(ItemSoundId::Count)>
+class CItemSoundResources : public CBaseResourceCollection<ItemSoundId, static_cast<size_t>(ItemSoundId::Count)>
 {
 public:
-	virtual void Initialise() override;
+	CItemSoundResources();
 };

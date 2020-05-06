@@ -96,19 +96,20 @@ static constexpr const char* const HitWater[] =
 	"surfaceprop/hit_water2.wav"
 };
 
-void CSurfaceSoundResources::Initialise()
+CSurfaceSoundResources::CSurfaceSoundResources() :
+	CBaseResourceCollection<SurfaceSoundId, static_cast<size_t>(SurfaceSoundId::Count)>()
 {
-	InitialiseSounds(SurfaceSoundId::HitConcrete, HitConcrete);
-	InitialiseSounds(SurfaceSoundId::HitVentDuct, HitVentDuct);
-	InitialiseSounds(SurfaceSoundId::HitFlesh, HitFlesh);
-	InitialiseSounds(SurfaceSoundId::HitFleshCritical, HitFleshCritical);
-	InitialiseSounds(SurfaceSoundId::HitGlassA, HitGlassA);
-	InitialiseSounds(SurfaceSoundId::HitGlassB, HitGlassB);
-	InitialiseSounds(SurfaceSoundId::HitMetal, HitMetal);
-	InitialiseSounds(SurfaceSoundId::HitMetalGrate, HitMetalGrate);
-	InitialiseSounds(SurfaceSoundId::HitSnow, HitSnow);
-	InitialiseSounds(SurfaceSoundId::HitSand, HitSand);
-	InitialiseSounds(SurfaceSoundId::HitWood, HitWood);
-	InitialiseSounds(SurfaceSoundId::HitTile, HitTile);
-	InitialiseSounds(SurfaceSoundId::HitWater, HitWater);
+	InitialiseResources(SurfaceSoundId::HitConcrete, HitConcrete);
+	InitialiseResources(SurfaceSoundId::HitVentDuct, HitVentDuct);
+	InitialiseResources(SurfaceSoundId::HitFlesh, HitFlesh);
+	InitialiseResources(SurfaceSoundId::HitFleshCritical, HitFleshCritical);
+	InitialiseResources(SurfaceSoundId::HitGlassA, HitGlassA);
+	InitialiseResources(SurfaceSoundId::HitGlassB, HitGlassB);
+	InitialiseResources(SurfaceSoundId::HitMetal, HitMetal);
+	InitialiseResources(SurfaceSoundId::HitMetalGrate, HitMetalGrate);
+	InitialiseResources(SurfaceSoundId::HitSnow, HitSnow);
+	InitialiseResources(SurfaceSoundId::HitSand, HitSand);
+	InitialiseResources(SurfaceSoundId::HitWood, HitWood);
+	InitialiseResources(SurfaceSoundId::HitTile, HitTile);
+	InitialiseResources(SurfaceSoundId::HitWater, HitWater);
 }

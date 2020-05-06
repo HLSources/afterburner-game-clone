@@ -10,6 +10,5 @@ namespace SoundResources
 	extern CWeaponSoundResources WeaponSounds;
 	extern CSurfaceSoundResources SurfaceSounds;
 
-	void Initialise();
 	void Precache();
 }

@@ -207,7 +207,7 @@ void EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *ve
 
 	if( surfaceAtts.ricochetChance > 0.0f && surfaceAtts.ricochetSoundVol > 0.0f && gEngfuncs.pfnRandomFloat(0.0f, 1.0f) <= surfaceAtts.ricochetChance )
 	{
-		const char* soundPath = SoundResources::WeaponSounds.GetRandomSoundPath(WeaponSoundId::BulletRicochet);
+		const char* soundPath = SoundResources::WeaponSounds.RandomResourcePath(WeaponSoundId::BulletRicochet);
 		gEngfuncs.pEventAPI->EV_PlaySound(-1, ptr->endpos, 0, soundPath, surfaceAtts.ricochetSoundVol, ATTN_NORM, 0, gEngfuncs.pfnRandomLong(97, 103));
 	}
 }

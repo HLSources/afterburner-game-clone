@@ -9,8 +9,9 @@ static constexpr const char* const BulletRicochetSounds[] =
 	"weapons/ric5.wav",
 };
 
-void CWeaponSoundResources::Initialise()
+CWeaponSoundResources::CWeaponSoundResources() :
+	CBaseResourceCollection<WeaponSoundId, static_cast<size_t>(WeaponSoundId::Count)>()
 {
-	InitialiseSounds(WeaponSoundId::BulletRicochet, BulletRicochetSounds);
-	InitialiseSound(WeaponSoundId::GrenadeBounce, "weapons/grenade_hit1.wav");
+	InitialiseResources(WeaponSoundId::BulletRicochet, BulletRicochetSounds);
+	InitialiseResource(WeaponSoundId::GrenadeBounce, "weapons/grenade_hit1.wav");
 }

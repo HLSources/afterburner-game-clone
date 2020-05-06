@@ -5,7 +5,7 @@
 #include "utlvector.h"
 #include "utlstring.h"
 
-class IIterableSoundResourceCollection
+class IIterableResourceCollection
 {
 public:
 	class Iterator
@@ -22,7 +22,7 @@ public:
 		{
 		}
 
-		inline const char* SoundName() const
+		inline const char* Path() const
 		{
 			const CUtlVector<CUtlString>* soundList = CurrentSoundList();
 
@@ -41,7 +41,7 @@ public:
 
 		inline bool IsValid() const
 		{
-			return SoundName() != nullptr;
+			return Path() != nullptr;
 		}
 
 		inline operator bool() const
@@ -65,7 +65,7 @@ public:
 		}
 
 	private:
-		friend class IIterableSoundResourceCollection;
+		friend class IIterableResourceCollection;
 
 		inline void FindNextValidItem()
 		{
@@ -89,7 +89,7 @@ public:
 			}
 		}
 
-		inline Iterator(const IIterableSoundResourceCollection* parent, uint32_t id, uint32_t index) :
+		inline Iterator(const IIterableResourceCollection* parent, uint32_t id, uint32_t index) :
 			m_Parent(parent),
 			m_Id(id),
 			m_Index(index)
@@ -113,12 +113,12 @@ public:
 			return &m_Parent->m_List[m_Id];
 		}
 
-		const IIterableSoundResourceCollection* m_Parent = nullptr;
+		const IIterableResourceCollection* m_Parent = nullptr;
 		uint32_t m_Id = ~0;
 		uint32_t m_Index = ~0;
 	};
 
-	inline IIterableSoundResourceCollection(const CUtlVector<CUtlString>* list, size_t count) :
+	inline IIterableResourceCollection(const CUtlVector<CUtlString>* list, size_t count) :
 		m_List(list),
 		m_Count(count)
 	{

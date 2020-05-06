@@ -8,25 +8,24 @@
 #include "IterableResourceCollection.h"
 
 template<typename ENUM, size_t N>
-class CBaseSoundResourceCollection : public IIterableSoundResourceCollection
+class CBaseResourceCollection : public IIterableResourceCollection
 {
 public:
 	using ResourceId = ENUM;
 	static constexpr size_t NUM_ENTRIES = N;
 
-	CBaseSoundResourceCollection() : IIterableSoundResourceCollection(m_SoundPaths, NUM_ENTRIES)
+	CBaseResourceCollection() :
+		IIterableResourceCollection(m_SoundPaths, NUM_ENTRIES)
 	{
 	}
 
-	virtual void Initialise() = 0;
-
-	inline size_t SoundCount(ResourceId id) const
+	inline size_t ResourceCount(ResourceId id) const
 	{
 		const uint32_t intId = static_cast<uint32_t>(id);
 		return intId < NUM_ENTRIES ? m_SoundPaths[intId].Count() : 0;
 	}
 
-	const char* SoundPath(ResourceId id, uint32_t index = 0) const
+	const char* ResourcePath(ResourceId id, uint32_t index = 0) const
 	{
 		const uint32_t intId = static_cast<uint32_t>(id);
 
@@ -45,7 +44,7 @@ public:
 		return list[index].String();
 	}
 
-	const char* GetRandomSoundPath(ResourceId id) const
+	const char* RandomResourcePath(ResourceId id) const
 	{
 		const uint32_t intId = static_cast<uint32_t>(id);
 
@@ -68,17 +67,17 @@ public:
 
 protected:
 	template<size_t LEN>
-	inline void InitialiseSounds(ResourceId id, const char* const (&array)[LEN])
+	inline void InitialiseResources(ResourceId id, const char* const (&array)[LEN])
 	{
-		InitialiseSounds(id, array, LEN);
+		InitialiseResources(id, array, LEN);
 	}
 
-	inline void InitialiseSound(ResourceId id, const char* const path)
+	inline void InitialiseResource(ResourceId id, const char* const path)
 	{
-		InitialiseSounds(id, &path, 1);
+		InitialiseResources(id, &path, 1);
 	}
 
-	void InitialiseSounds(ResourceId id, const char* const* paths, size_t pathsLength)
+	void InitialiseResources(ResourceId id, const char* const* paths, size_t pathsLength)
 	{
 		const uint32_t intId = static_cast<uint32_t>(id);
 

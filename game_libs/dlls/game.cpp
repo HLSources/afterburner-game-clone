@@ -466,7 +466,6 @@ void GameDLLInit( void )
 {
 	IProjectInterface::SetProjectInterfaceImpl(ProjectInterface_Server::StaticInstance());
 	CGameResources::StaticInstance().Initialise();
-	SoundResources::Initialise();
 
 	// Register cvars here:
 

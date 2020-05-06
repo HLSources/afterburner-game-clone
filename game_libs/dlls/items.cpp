@@ -229,7 +229,7 @@ class CItemBattery : public CItem
 			pPlayer->pev->armorvalue += gSkillData.batteryCapacity;
 			pPlayer->pev->armorvalue = Q_min( pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY );
 
-			const char* soundPath = SoundResources::ItemSounds.GetRandomSoundPath(ItemSoundId::WeaponPickup);
+			const char* soundPath = SoundResources::ItemSounds.RandomResourcePath(ItemSoundId::WeaponPickup);
 			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, soundPath, 1, ATTN_NORM );
 
 			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );

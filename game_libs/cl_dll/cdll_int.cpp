@@ -294,7 +294,6 @@ void DLLEXPORT HUD_Init( void )
 	EventCommands::Initialise();
 	ScreenOverlays::InitialiseDebugCommands();
 	CGameResources::StaticInstance().Initialise();
-	SoundResources::Initialise();
 
 	InitInput();
 

@@ -1,7 +1,6 @@
 #include "SoundResources.h"
 #include "standard_includes.h"
 #include "enginecallback.h"
-#include "projectInterface/IProjectInterface.h"
 
 namespace SoundResources
 {
@@ -9,20 +8,12 @@ namespace SoundResources
 	CWeaponSoundResources WeaponSounds;
 	CSurfaceSoundResources SurfaceSounds;
 
-	static void Precache(const IIterableSoundResourceCollection& collection)
+	static void Precache(const IIterableResourceCollection& collection)
 	{
-		for ( IIterableSoundResourceCollection::Iterator it = collection.Begin(); it.IsValid(); ++it )
+		for ( IIterableResourceCollection::Iterator it = collection.Begin(); it.IsValid(); ++it )
 		{
-			IProjectInterface::ProjectInterfaceImpl()->LogInterface().LogF(ILogInterface::Level::Message, "Precaching sound resource: %s\n", it.SoundName());
-			PRECACHE_SOUND(it.SoundName());
+			PRECACHE_SOUND(it.Path());
 		}
-	}
-
-	void Initialise()
-	{
-		ItemSounds.Initialise();
-		WeaponSounds.Initialise();
-		SurfaceSounds.Initialise();
 	}
 
 	void Precache()

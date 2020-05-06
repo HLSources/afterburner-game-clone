@@ -9,8 +9,8 @@ enum class WeaponSoundId
 	Count
 };
 
-class CWeaponSoundResources : public CBaseSoundResourceCollection<WeaponSoundId, static_cast<size_t>(WeaponSoundId::Count)>
+class CWeaponSoundResources : public CBaseResourceCollection<WeaponSoundId, static_cast<size_t>(WeaponSoundId::Count)>
 {
 public:
-	virtual void Initialise() override;
+	CWeaponSoundResources();
 };
