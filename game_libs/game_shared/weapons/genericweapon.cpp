@@ -656,7 +656,9 @@ bool CGenericWeapon::CanReload() const
 	const WeaponAtts::WACollection& atts = WeaponAttributes();
 	const int maxClip = atts.Ammo.MaxClip;
 
-	if ( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] < 1 || m_iClip == maxClip ||
+	if ( maxClip == WEAPON_NOCLIP ||
+		 m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] < 1 ||
+		 m_iClip == maxClip ||
 		 m_flNextPrimaryAttack > UTIL_WeaponTimeBase() )
 	{
 		return false;

@@ -65,23 +65,35 @@ static constexpr const char* const HitSnow[] =
 	"surfaceprop/hit_snow1.wav"
 };
 
+static constexpr const char* const HitSand[] =
+{
+	"surfaceprop/hit_sand1.wav",
+	"surfaceprop/hit_sand2.wav",
+	"surfaceprop/hit_sand3.wav",
+	"surfaceprop/hit_sand4.wav"
+};
+
 static constexpr const char* const HitWood[] =
 {
 	"surfaceprop/hit_wood1.wav",
 	"surfaceprop/hit_wood2.wav",
 	"surfaceprop/hit_wood3.wav",
-	"surfaceprop/hit_wood4.wav"
+	"surfaceprop/hit_wood4.wav",
+	"surfaceprop/hit_wood5.wav"
 };
 
 static constexpr const char* const HitTile[] =
 {
 	"surfaceprop/hit_tile1.wav",
-	"surfaceprop/hit_tile2.wav"
+	"surfaceprop/hit_tile2.wav",
+	"surfaceprop/hit_tile3.wav",
+	"surfaceprop/hit_tile4.wav"
 };
 
 static constexpr const char* const HitWater[] =
 {
-	"surfaceprop/hit_water1.wav"
+	"surfaceprop/hit_water1.wav",
+	"surfaceprop/hit_water2.wav"
 };
 
 void CSurfaceSoundResources::Initialise()
@@ -95,6 +107,7 @@ void CSurfaceSoundResources::Initialise()
 	InitialiseSounds(SurfaceSoundId::HitMetal, HitMetal);
 	InitialiseSounds(SurfaceSoundId::HitMetalGrate, HitMetalGrate);
 	InitialiseSounds(SurfaceSoundId::HitSnow, HitSnow);
+	InitialiseSounds(SurfaceSoundId::HitSand, HitSand);
 	InitialiseSounds(SurfaceSoundId::HitWood, HitWood);
 	InitialiseSounds(SurfaceSoundId::HitTile, HitTile);
 	InitialiseSounds(SurfaceSoundId::HitWater, HitWater);

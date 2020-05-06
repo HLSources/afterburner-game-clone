@@ -116,7 +116,7 @@ CSurfaceAttributes::CSurfaceAttributes()
 	atts->hitSoundVol = 0.7f;
 
 	atts = &m_Attributes[SurfaceProp_Sand];
-	atts->hitSound = SurfaceSoundId::HitSnow;
+	atts->hitSound = SurfaceSoundId::HitSand;
 	atts->hitSoundVol = 0.7f;
 
 	atts = &m_Attributes[SurfaceProp_Snow];
@@ -124,7 +124,7 @@ CSurfaceAttributes::CSurfaceAttributes()
 	atts->hitSoundVol = 0.6f;
 
 	atts = &m_Attributes[SurfaceProp_Tile];
-	atts->hitSound = SurfaceSoundId::HitConcrete; // FIXME: proper sound needed
+	atts->hitSound = SurfaceSoundId::HitTile;
 	atts->hitSoundVol = 0.8f;
 	atts->ricochetSoundVol = RIC_NORM;
 	atts->ricochetChance = 0.33f;

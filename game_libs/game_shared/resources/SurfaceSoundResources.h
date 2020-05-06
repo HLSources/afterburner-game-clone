@@ -14,6 +14,7 @@ enum class SurfaceSoundId
 	HitFlesh,
 	HitFleshCritical,
 	HitSnow,
+	HitSand,
 	HitWood,
 	HitTile,
 	HitWater,
