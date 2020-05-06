@@ -1,6 +1,6 @@
 #pragma once
 
-#include "BaseSoundResourceCollection.h"
+#include "BaseResourceCollection.h"
 
 enum class SurfaceSoundId
 {
