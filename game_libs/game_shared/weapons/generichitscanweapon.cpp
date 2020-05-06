@@ -140,7 +140,7 @@ Vector CGenericHitscanWeapon::FireBulletsPlayer(const WeaponAtts::WAHitscanAttac
 	const uint32_t numShots = hitscanAttack.BulletsPerShot;
 	for( uint32_t shot = 0; shot < numShots; shot++ )
 	{
-		float damagePerShot = 1.0f;
+		float damagePerShot = 0.0f;
 		const WeaponAtts::WASkillRecord::SkillDataEntryPtr dmgPtr = hitscanAttack.BaseDamagePerShot;
 		if ( dmgPtr )
 		{
@@ -153,9 +153,7 @@ Vector CGenericHitscanWeapon::FireBulletsPlayer(const WeaponAtts::WAHitscanAttac
 						(x * hitscanAttack.SpreadX * vecRight) +
 						(y * hitscanAttack.SpreadY * vecUp);
 
-		Vector vecEnd;
-
-		vecEnd = vecSrc + vecDir * DEFAULT_BULLET_TRACE_DISTANCE;
+		Vector vecEnd = vecSrc + (vecDir * DEFAULT_BULLET_TRACE_DISTANCE);
 		UTIL_TraceLine(vecSrc, vecEnd, dont_ignore_monsters, ENT(pev), &tr);
 
 		Debug_HitscanBulletFired(vecSrc, tr);

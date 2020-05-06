@@ -1576,7 +1576,19 @@ void TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, int
 	CSoundInstance soundInst;
 	soundInst.SetPosition(ptr->vecEndPos);
 
-	CSurfaceAttributes::StaticInstance().GetHitSoundForSurface(static_cast<SurfaceProp>(texSurfaceProp), soundInst);
+	const CSurfaceAttributes::Attributes surfaceAtts = CSurfaceAttributes::StaticInstance().GetAttributes(static_cast<SurfaceProp>(texSurfaceProp));
+	SurfaceSoundId hitSoundId = surfaceAtts.hitSound;
+
+	if ( hitSoundId == SurfaceSoundId::HitFlesh && ptr->iHitgroup == HITGROUP_HEAD )
+	{
+		hitSoundId = SurfaceSoundId::HitFleshCritical;
+	}
+
+	soundInst.SetSoundPath(SoundResources::SurfaceSounds.RandomResourcePath(hitSoundId));
+	soundInst.SetPitch(96, 111);
+	soundInst.SetAttenuation(ATTN_NORM);
+	soundInst.SetVolume(surfaceAtts.hitSoundVol);
+	soundInst.SetChannel(CHAN_STATIC);
 
 	// did we hit a breakable?
 	if ( pEntity && FClassnameIs( pEntity->pev, "func_breakable" ) )
@@ -1584,27 +1596,25 @@ void TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, int
 		// drop volumes, the object will already play a damaged sound
 		soundInst.SetVolume(soundInst.Volume() / 1.5f);
 	}
-	else if ( texSurfaceProp == SurfaceProp_Computer )
+
+	// play random spark if computer
+	if ( texSurfaceProp == SurfaceProp_Computer && ptr->flFraction != 1.0 && RANDOM_LONG( 0, 1 ))
 	{
-		// play random spark if computer
-		if( ptr->flFraction != 1.0 && RANDOM_LONG( 0, 1 ) )
+		UTIL_Sparks( ptr->vecEndPos );
+
+		float flVolume = RANDOM_FLOAT( 0.7, 1.0 );
+
+		switch( RANDOM_LONG( 0, 1 ) )
 		{
-			UTIL_Sparks( ptr->vecEndPos );
-
-			float flVolume = RANDOM_FLOAT( 0.7, 1.0 );
-
-			switch( RANDOM_LONG( 0, 1 ) )
+			case 0:
 			{
-				case 0:
-				{
-					UTIL_EmitAmbientSound(ENT( 0 ), ptr->vecEndPos, "buttons/spark5.wav", flVolume, ATTN_NORM, 0, 100);
-					break;
-				}
-				case 1:
-				{
-					UTIL_EmitAmbientSound(ENT( 0 ), ptr->vecEndPos, "buttons/spark6.wav", flVolume, ATTN_NORM, 0, 100);
-					break;
-				}
+				UTIL_EmitAmbientSound(ENT( 0 ), ptr->vecEndPos, "buttons/spark5.wav", flVolume, ATTN_NORM, 0, 100);
+				break;
+			}
+			case 1:
+			{
+				UTIL_EmitAmbientSound(ENT( 0 ), ptr->vecEndPos, "buttons/spark6.wav", flVolume, ATTN_NORM, 0, 100);
+				break;
 			}
 		}
 	}

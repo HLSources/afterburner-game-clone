@@ -153,14 +153,3 @@ const CSurfaceAttributes::Attributes& CSurfaceAttributes::GetAttributes(SurfaceP
 
 	return m_Attributes[surfaceProp];
 }
-
-void CSurfaceAttributes::GetHitSoundForSurface(SurfaceProp surfaceProp, CSoundInstance& sound)
-{
-	const CSurfaceAttributes::Attributes surfaceAtts = CSurfaceAttributes::StaticInstance().GetAttributes(surfaceProp);
-	const char* soundPath = SoundResources::SurfaceSounds.RandomResourcePath(surfaceAtts.hitSound);
-
-	sound.SetSoundPath(soundPath);
-	sound.SetPitch(96, 111);
-	sound.SetAttenuation(ATTN_NORM);
-	sound.SetVolume(surfaceAtts.hitSoundVol);
-}

@@ -872,6 +872,8 @@ void CBaseBot::ThinkStart( void )
 
 void CBaseBot::ThinkSteering( void )
 {
+	const bool canJump = bot_dontmove.value == 0.0f;
+
 	//Vacindak: changed "GetEnemy()" to "GetEnemy() != NULL"
 	if ( GetEnemy() != NULL && GetEnemy()->IsAlive() )
 	{
@@ -903,7 +905,7 @@ void CBaseBot::ThinkSteering( void )
 		{
 			if ( GetWantToBeInCombat() )
 			{
-				if ( RANDOM_FLOAT(1,4000) < Stats.GetTraitJumpPropensity() )
+				if ( canJump && RANDOM_FLOAT(1,4000) < Stats.GetTraitJumpPropensity() )
 				{ // jump a lil bit during a duel
 					pev->button |= IN_JUMP;
 				}
@@ -919,7 +921,7 @@ void CBaseBot::ThinkSteering( void )
 			}
 			else
 			{
-				if ( RANDOM_FLOAT(1,2000) < Stats.GetTraitJumpPropensity() )
+				if ( canJump && RANDOM_FLOAT(1,2000) < Stats.GetTraitJumpPropensity() )
 				{ // jump a bit more if you don't want to be in combat
 					pev->button |= IN_JUMP;
 				}
@@ -936,7 +938,7 @@ void CBaseBot::ThinkSteering( void )
 		}
 		else
 		{
-			if ( RANDOM_FLOAT(1,1000) < Stats.GetTraitJumpPropensity() )
+			if ( canJump && RANDOM_FLOAT(1,1000) < Stats.GetTraitJumpPropensity() )
 			{ // jump a lot if you don't have a decent weapon
 				pev->button |= IN_JUMP;
 			}

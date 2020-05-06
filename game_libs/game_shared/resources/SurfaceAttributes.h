@@ -22,9 +22,6 @@ public:
 	CSurfaceAttributes();
 	const Attributes& GetAttributes(SurfaceProp surfaceProp) const;
 
-	// Convenience:
-	void GetHitSoundForSurface(SurfaceProp surfaceProp, CSoundInstance& sound);
-
 private:
 	Attributes m_Attributes[SurfaceProp__Count];
 };
