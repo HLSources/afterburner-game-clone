@@ -2939,14 +2939,19 @@ int GAME_EXPORT CL_DecalIndexFromName( const char *name )
 	int	i;
 
 	if( !COM_CheckString( name ))
+	{
 		return 0;
+	}
 
 	// look through the loaded sprite name list for SpriteName
-	for( i = 1; i < MAX_DECALS && host.draw_decals[i][0]; i++ )
+	for( i = 1; i < MAX_DECALS && host.draw_decals[i].name[0]; i++ )
 	{
-		if( !Q_stricmp( name, host.draw_decals[i] ))
+		if( !Q_stricmp( name, host.draw_decals[i].name ))
+		{
 			return i;
+		}
 	}
+
 	return 0; // invalid decal
 }
 
@@ -2964,7 +2969,7 @@ int GAME_EXPORT CL_DecalIndex( int id )
 	if( cl.decal_index[id] == 0 )
 	{
 		Image_SetForceFlags( IL_LOAD_DECAL );
-		cl.decal_index[id] = ref.dllFuncs.GL_LoadTexture( host.draw_decals[id], NULL, 0, TF_DECAL );
+		cl.decal_index[id] = ref.dllFuncs.GL_LoadTexture( host.draw_decals[id].path, NULL, 0, TF_DECAL );
 		Image_ClearForceFlags();
 	}
 

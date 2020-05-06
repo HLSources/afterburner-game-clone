@@ -2539,10 +2539,12 @@ int GAME_EXPORT pfnDecalIndex( const char *m )
 	if( !COM_CheckString( m ))
 		return -1;
 
-	for( i = 1; i < MAX_DECALS && host.draw_decals[i][0]; i++ )
+	for( i = 1; i < MAX_DECALS && host.draw_decals[i].name[0]; i++ )
 	{
-		if( !Q_stricmp( host.draw_decals[i], m ))
+		if ( Q_stricmp(host.draw_decals[i].name, m) == 0 )
+		{
 			return i;
+		}
 	}
 
 	return -1;

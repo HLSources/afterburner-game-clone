@@ -225,21 +225,21 @@ void Host_EndGame( qboolean abort, const char *message, ... )
 {
 	va_list		argptr;
 	static char	string[MAX_SYSPATH];
-	
+
 	va_start( argptr, message );
 	Q_vsnprintf( string, sizeof( string ), message, argptr );
 	va_end( argptr );
 
 	Con_Printf( "Host_EndGame: %s\n", string );
 
-	SV_Shutdown( "\n" );	
+	SV_Shutdown( "\n" );
 #if !XASH_DEDICATED
 	CL_Disconnect();
 
 	// recreate world if needs
 	CL_ClearEdicts ();
 #endif
-	
+
 	// release all models
 	Mod_FreeAll();
 
@@ -331,7 +331,7 @@ void Host_ChangeGame_f( void )
 	}
 	else if( !Q_stricmp( GI->gamefolder, Cmd_Argv( 1 )))
 	{
-		Con_Printf( "%s already active\n", Cmd_Argv( 1 ));	
+		Con_Printf( "%s already active\n", Cmd_Argv( 1 ));
 	}
 	else
 	{
@@ -367,7 +367,7 @@ void Host_Exec_f( void )
 			return;
 	}
 
-	Q_strncpy( cfgpath, Cmd_Argv( 1 ), sizeof( cfgpath )); 
+	Q_strncpy( cfgpath, Cmd_Argv( 1 ), sizeof( cfgpath ));
 	COM_DefaultExtension( cfgpath, ".cfg" ); // append as default
 
 	f = FS_LoadFile( cfgpath, &len, false );
@@ -449,25 +449,21 @@ qboolean Host_IsLocalClient( void )
 	return false;
 }
 
-/*
-=================
-Host_RegisterDecal
-=================
-*/
-qboolean Host_RegisterDecal( const char *name, int *count )
+static qboolean Host_RegisterDecalEx(const char* decalName, const char* decalPath, size_t* count)
 {
-	char	shortname[MAX_QPATH];
-	int	i;
+	int i = 0;
 
-	if( !COM_CheckString( name ))
-		return 0;
-
-	COM_FileBase( name, shortname );
-
-	for( i = 1; i < MAX_DECALS && host.draw_decals[i][0]; i++ )
+	if ( !COM_CheckString(decalName) || !COM_CheckString(decalPath) )
 	{
-		if( !Q_stricmp( host.draw_decals[i], shortname ))
+		return false;
+	}
+
+	for ( i = 1; i < MAX_DECALS && host.draw_decals[i].name[0]; i++ )
+	{
+		if ( !Q_stricmp(host.draw_decals[i].name, decalName) )
+		{
 			return true;
+		}
 	}
 
 	if( i == MAX_DECALS )
@@ -477,10 +473,72 @@ qboolean Host_RegisterDecal( const char *name, int *count )
 	}
 
 	// register new decal
-	Q_strncpy( host.draw_decals[i], shortname, sizeof( host.draw_decals[i] ));
+	Q_strncpy( host.draw_decals[i].name, decalName, sizeof( host.draw_decals[i].name ));
+	Q_strncpy( host.draw_decals[i].path, decalPath, sizeof( host.draw_decals[i].path ));
 	*count += 1;
 
 	return true;
+}
+
+/*
+=================
+Host_RegisterDecal
+=================
+*/
+static qboolean Host_RegisterDecal( const char *name, size_t* count )
+{
+	char	shortname[MAX_QPATH];
+
+	if( !COM_CheckString( name ))
+	{
+		return false;
+	}
+
+	COM_FileBase( name, shortname );
+	return Host_RegisterDecalEx(shortname, shortname, count);
+}
+
+static size_t RegisterOldDecalList(search_t* list)
+{
+	if ( !list )
+	{
+		return 0;
+	}
+
+	size_t count = 0;
+
+	for ( int i = 0; i < list->numfilenames; i++ )
+	{
+		if ( !Host_RegisterDecal(list->filenames[i], &count) )
+		{
+			break;
+		}
+	}
+
+	return count;
+}
+
+static size_t RegisterNewDecalList(search_t* list)
+{
+	if ( !list )
+	{
+		return 0;
+	}
+
+	size_t count = 0;
+
+	for ( int i = 0; i < list->numfilenames; i++ )
+	{
+		char shortname[MAX_QPATH];
+		COM_FileBase(list->filenames[i], shortname);
+
+		if ( !Host_RegisterDecalEx(shortname, list->filenames[i], &count) )
+		{
+			break;
+		}
+	}
+
+	return count;
 }
 
 /*
@@ -490,26 +548,34 @@ Host_InitDecals
 */
 void Host_InitDecals( void )
 {
-	int	i, num_decals = 0;
-	search_t	*t;
+	search_t* t = NULL;
+	size_t numOldDecals = 0;
+	size_t numNewDecals = 0;
 
 	// NOTE: only once resource without which engine can't continue work
 	if( !FS_FileExists( "gfx/conchars", false ))
+	{
 		Sys_Error( "W_LoadWadFile: couldn't load gfx.wad\n" );
+	}
 
 	memset( host.draw_decals, 0, sizeof( host.draw_decals ));
 
 	// lookup all the decals in decals.wad (basedir, gamedir, falldir)
 	t = FS_Search( "decals.wad/*.*", true, false );
-
-	for( i = 0; t && i < t->numfilenames; i++ )
+	numOldDecals = RegisterOldDecalList(t);
+	if ( t )
 	{
-		if( !Host_RegisterDecal( t->filenames[i], &num_decals ))
-			break;
+		Mem_Free( t );
 	}
 
-	if( t ) Mem_Free( t );
-	Con_Reportf( "InitDecals: %i decals\n", num_decals );
+	t = FS_Search( "textures/decals/*.*", true, false );
+	numNewDecals = RegisterNewDecalList(t);
+	if ( t )
+	{
+		Mem_Free( t );
+	}
+
+	Con_Reportf( "InitDecals: %u decals (%u from WAD, %u from filesystem)\n", numOldDecals + numNewDecals, numOldDecals, numNewDecals );
 }
 
 /*
@@ -606,7 +672,7 @@ qboolean Host_FilterTime( float time )
 		else
 		{
 			if(( host.realtime - oldtime ) < ( 1.0 / fps ))
-				return false;		
+				return false;
 		}
 	}
 
@@ -696,7 +762,7 @@ void GAME_EXPORT Host_Error( const char *error, ... )
 	if( host.status == HOST_SHUTDOWN ) return;
 
 	if( recursive )
-	{ 
+	{
 		Con_Printf( "Host_RecursiveError: %s", hosterror2 );
 		Sys_Error( "%s", hosterror1 );
 		return; // don't multiple executes
@@ -1008,7 +1074,7 @@ int EXPORT Host_Main( int argc, char **argv, const char *progname, int bChangeGa
 
 	host_serverstate = Cvar_Get( "host_serverstate", "0", FCVAR_READ_ONLY, "displays current server state" );
 	host_maxfps = Cvar_Get( "fps_max", "72", FCVAR_ARCHIVE, "host fps upper limit" );
-	host_framerate = Cvar_Get( "host_framerate", "0", 0, "locks frame timing to this value in seconds" );  
+	host_framerate = Cvar_Get( "host_framerate", "0", 0, "locks frame timing to this value in seconds" );
 	host_sleeptime = Cvar_Get( "sleeptime", "1", FCVAR_ARCHIVE, "milliseconds to sleep for each frame. higher values reduce fps accuracy" );
 	host_gameloaded = Cvar_Get( "host_gameloaded", "0", FCVAR_READ_ONLY, "inidcates a loaded game.dll" );
 	host_clientloaded = Cvar_Get( "host_clientloaded", "0", FCVAR_READ_ONLY, "inidcates a loaded client.dll" );
@@ -1069,7 +1135,7 @@ int EXPORT Host_Main( int argc, char **argv, const char *progname, int bChangeGa
 			Cbuf_AddText( "exec config.cfg\n" );
 			Cbuf_Execute();
 		}
-		// exec all files from userconfig.d 
+		// exec all files from userconfig.d
 		Host_Userconfigd_f();
 		break;
 	case HOST_DEDICATED:

@@ -381,6 +381,12 @@ typedef struct
 	float		scale;		// curstate.scale
 } tentlist_t;
 
+typedef struct decalentry_s
+{
+	char name[32];
+	char path[MAX_QPATH];
+} decalentry_t;
+
 typedef struct host_parm_s
 {
 	HINSTANCE			hInst;
@@ -409,7 +415,7 @@ typedef struct host_parm_s
 	uint		framecount;	// global framecount
 
 	// list of unique decal indexes
-	char		draw_decals[MAX_DECALS][MAX_QPATH];
+	decalentry_t draw_decals[MAX_DECALS];
 
 	vec3_t		player_mins[MAX_MAP_HULLS];	// 4 hulls allowed
 	vec3_t		player_maxs[MAX_MAP_HULLS];	// 4 hulls allowed
