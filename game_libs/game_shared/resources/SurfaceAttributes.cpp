@@ -34,11 +34,11 @@ CSurfaceAttributes::CSurfaceAttributes()
 	atts->ricochetChance = 0.85f;
 
 	atts = &m_Attributes[SurfaceProp_Carpet];
-	atts->hitSound = SurfaceSoundId::HitConcrete; // FIXME: proper sound needed
+	atts->hitSound = SurfaceSoundId::HitPaper; // FIXME: proper sound needed
 	atts->hitSoundVol = 0.8f;
 
 	atts = &m_Attributes[SurfaceProp_Cloth];
-	atts->hitSound = SurfaceSoundId::HitConcrete; // FIXME: proper sound needed
+	atts->hitSound = SurfaceSoundId::HitPaper; // FIXME: proper sound needed
 	atts->hitSoundVol = 0.8f;
 
 	atts = &m_Attributes[SurfaceProp_Computer];
@@ -54,7 +54,7 @@ CSurfaceAttributes::CSurfaceAttributes()
 	atts->ricochetChance = 0.33f;
 
 	atts = &m_Attributes[SurfaceProp_Dirt];
-	atts->hitSound = SurfaceSoundId::HitConcrete; // FIXME: proper sound needed
+	atts->hitSound = SurfaceSoundId::HitSand; // FIXME: proper sound needed
 	atts->hitSoundVol = 0.6f;
 
 	atts = &m_Attributes[SurfaceProp_Flesh];
@@ -74,11 +74,11 @@ CSurfaceAttributes::CSurfaceAttributes()
 	atts->ricochetChance = 0.5f;
 
 	atts = &m_Attributes[SurfaceProp_Grass];
-	atts->hitSound = SurfaceSoundId::HitConcrete; // FIXME: proper sound needed
+	atts->hitSound = SurfaceSoundId::HitSand; // FIXME: proper sound needed
 	atts->hitSoundVol = 0.8f;
 
 	atts = &m_Attributes[SurfaceProp_Gravel],
-	atts->hitSound = SurfaceSoundId::HitConcrete; // FIXME: proper sound needed
+	atts->hitSound = SurfaceSoundId::HitSand; // FIXME: proper sound needed
 	atts->hitSoundVol = 0.8f;
 
 	atts = &m_Attributes[SurfaceProp_Metal];
@@ -94,15 +94,15 @@ CSurfaceAttributes::CSurfaceAttributes()
 	atts->ricochetChance = 0.2;
 
 	atts = &m_Attributes[SurfaceProp_Paper],
-	atts->hitSound = SurfaceSoundId::HitConcrete; // FIXME: proper sound needed
+	atts->hitSound = SurfaceSoundId::HitPaper;
 	atts->hitSoundVol = 0.8f;
 
 	atts = &m_Attributes[SurfaceProp_Plaster];
-	atts->hitSound = SurfaceSoundId::HitConcrete; // FIXME: proper sound needed
+	atts->hitSound = SurfaceSoundId::HitPlaster;
 	atts->hitSoundVol = 0.8f;
 
 	atts = &m_Attributes[SurfaceProp_Plastic];
-	atts->hitSound = SurfaceSoundId::HitConcrete; // FIXME: proper sound needed
+	atts->hitSound = SurfaceSoundId::HitPlastic;
 	atts->hitSoundVol = 0.7f;
 
 	atts = &m_Attributes[SurfaceProp_Rock];
@@ -112,7 +112,7 @@ CSurfaceAttributes::CSurfaceAttributes()
 	atts->ricochetChance = 0.4;
 
 	atts = &m_Attributes[SurfaceProp_Rubber];
-	atts->hitSound = SurfaceSoundId::HitConcrete; // FIXME: proper sound needed
+	atts->hitSound = SurfaceSoundId::HitPlaster;
 	atts->hitSoundVol = 0.7f;
 
 	atts = &m_Attributes[SurfaceProp_Sand];

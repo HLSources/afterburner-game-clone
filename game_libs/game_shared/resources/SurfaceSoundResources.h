@@ -18,6 +18,9 @@ enum class SurfaceSoundId
 	HitWood,
 	HitTile,
 	HitWater,
+	HitPlaster,
+	HitPlastic,
+	HitPaper,
 	Count
 };
 

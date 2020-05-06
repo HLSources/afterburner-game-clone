@@ -96,6 +96,26 @@ static constexpr const char* const HitWater[] =
 	"surfaceprop/hit_water2.wav"
 };
 
+static constexpr const char* const HitPlaster[] =
+{
+	"surfaceprop/hit_plaster1.wav",
+	"surfaceprop/hit_plaster2.wav",
+	"surfaceprop/hit_plaster3.wav"
+};
+
+static constexpr const char* const HitPlastic[] =
+{
+	"surfaceprop/hit_plastic1.wav",
+	"surfaceprop/hit_plastic2.wav",
+	"surfaceprop/hit_plastic3.wav"
+};
+
+static constexpr const char* const HitPaper[] =
+{
+	"surfaceprop/hit_paper1.wav",
+	"surfaceprop/hit_paper2.wav"
+};
+
 CSurfaceSoundResources::CSurfaceSoundResources() :
 	CBaseResourceCollection<SurfaceSoundId, static_cast<size_t>(SurfaceSoundId::Count)>()
 {
@@ -112,4 +132,7 @@ CSurfaceSoundResources::CSurfaceSoundResources() :
 	InitialiseResources(SurfaceSoundId::HitWood, HitWood);
 	InitialiseResources(SurfaceSoundId::HitTile, HitTile);
 	InitialiseResources(SurfaceSoundId::HitWater, HitWater);
+	InitialiseResources(SurfaceSoundId::HitPlaster, HitPlaster);
+	InitialiseResources(SurfaceSoundId::HitPlastic, HitPlastic);
+	InitialiseResources(SurfaceSoundId::HitPaper, HitPaper);
 }
