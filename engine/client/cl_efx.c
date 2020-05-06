@@ -6,6 +6,8 @@
 #include "r_efx.h"
 #include "cl_tent.h"
 #include "pm_local.h"
+#include "cl_surfaceprop_effects.h"
+
 #define PART_SIZE	Q_max( 0.5f, cl_draw_particles->value )
 
 /*
@@ -1720,6 +1722,74 @@ void GAME_EXPORT R_BulletImpactParticles( const vec3_t pos )
 		p->die = cl.time + 0.5;
 		p->color = 3 - color;
 		p->type = pt_grav;
+	}
+}
+
+static size_t CalculateImpactParticleQuantity(const vec3_t pos)
+{
+	static const float MAX_DIST = 1000.0f;
+
+	vec3_t		dir;
+	VectorSubtract( pos, refState.vieworg, dir );
+
+	float dist = VectorLength( dir );
+
+	if( dist > MAX_DIST )
+	{
+		dist = MAX_DIST;
+	}
+
+	// Max of 10 particles and min of 1.
+	// Quantity decreases by 1 particle per 100 units.
+	size_t quantity = (size_t)((MAX_DIST - dist) / 100.0f);
+
+	if ( quantity <= 0 )
+	{
+		quantity = 1;
+	}
+
+	return quantity;
+}
+
+static qboolean CreateConcreteImpactParticle(const vec3_t pos, size_t quantity)
+{
+	particle_t* p = R_AllocParticle( NULL );
+
+	if ( !p )
+	{
+		return false;
+	}
+
+	VectorCopy(pos, p->org);
+
+	p->vel[0] = COM_RandomFloat( -1.0f, 1.0f );
+	p->vel[1] = COM_RandomFloat( -1.0f, 1.0f );
+	p->vel[2] = COM_RandomFloat( -1.0f, 1.0f );
+	VectorScale( p->vel, COM_RandomFloat( 50.0f, 100.0f ), p->vel );
+
+	p->die = cl.time + 0.5;
+	p->type = pt_grav;
+
+	int colour = 3 - ((3 * quantity) / 10 );
+	p->color = 3 - colour;
+	return true;
+}
+
+void GAME_EXPORT R_BulletImpactParticlesForSurface( const vec3_t pos, SurfaceProp surfaceProp )
+{
+	const size_t quantity = CalculateImpactParticleQuantity(pos);
+
+	if ( R_SurfaceImpactCreatesSparks(surfaceProp) )
+	{
+		R_SparkStreaks( pos, 2, -200, 200 );
+	}
+
+	for ( int i = 0; i < quantity * 4; i++ )
+	{
+		if ( !CreateConcreteImpactParticle(pos, quantity) )
+		{
+			return;
+		}
 	}
 }
 

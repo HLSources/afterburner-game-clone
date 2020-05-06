@@ -236,16 +236,21 @@ char *EV_HLDM_DamageDecal( physent_t *pe )
 	return decalname;
 }
 
-const CSurfaceAttributes::Attributes& GetSurfaceAttributes(int idx, pmtrace_t* ptr, float *vecSrc, float *vecEnd)
+const CSurfaceAttributes::Attributes& GetSurfaceAttributes(int idx, pmtrace_t* ptr, float *vecSrc, float *vecEnd, SurfaceProp* outSurface = nullptr)
 {
 	SurfaceProp surfaceProp = EV_HLDM_GetSurfacePropForTexture(idx, ptr, vecSrc, vecEnd);
+
+	if ( outSurface )
+	{
+		*outSurface = surfaceProp;
+	}
+
 	CSurfaceAttributes& surfAttsMaster = CSurfaceAttributes::StaticInstance();
 	return surfAttsMaster.GetAttributes(surfaceProp);
 }
 
 void EV_HLDM_GunshotDecalTrace( pmtrace_t *pTrace, const char *decalName, float scale )
 {
-	gEngfuncs.pEfxAPI->R_BulletImpactParticles( pTrace->endpos );
 	physent_t* pe = gEngfuncs.pEventAPI->EV_GetPhysent( pTrace->ent );
 
 	// Only decal brush models such as the world etc.
@@ -279,6 +284,7 @@ void EV_HLDM_DecalGunshot( pmtrace_t *pTrace, int iBulletType )
 		case BULLET_GENERIC:
 		default:
 			// smoke and decal
+			gEngfuncs.pEfxAPI->R_BulletImpactParticles( pTrace->endpos );
 			EV_HLDM_GunshotDecalTrace( pTrace, EV_HLDM_DamageDecal( pe ), 1.0f );
 			break;
 		}
@@ -294,7 +300,8 @@ void EV_HLDM_DecalGunshotNew(int idx, pmtrace_t *ptr, float *vecSrc, float *vecE
 		return;
 	}
 
-	const CSurfaceAttributes::Attributes& atts = GetSurfaceAttributes(idx, ptr, vecSrc, vecEnd);
+	SurfaceProp surfaceProp = SurfaceProp_None;
+	const CSurfaceAttributes::Attributes& atts = GetSurfaceAttributes(idx, ptr, vecSrc, vecEnd, &surfaceProp);
 
 	if ( atts.decal == SurfaceDecalId::None )
 	{
@@ -309,6 +316,7 @@ void EV_HLDM_DecalGunshotNew(int idx, pmtrace_t *ptr, float *vecSrc, float *vecE
 		return;
 	}
 
+	gEngfuncs.pEfxAPI->R_BulletImpactParticlesForSurface( ptr->endpos, surfaceProp );
 	EV_HLDM_GunshotDecalTrace(ptr, decalPath, scale);
 }
 

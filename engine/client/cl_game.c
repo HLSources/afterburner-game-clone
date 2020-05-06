@@ -3654,6 +3654,7 @@ static efx_api_t gEfxApi =
 	R_Bubbles,
 	R_BubbleTrail,
 	R_BulletImpactParticles,
+	R_BulletImpactParticlesForSurface,
 	R_EntityParticles,
 	R_Explosion,
 	R_FizzEffect,
