@@ -168,6 +168,7 @@ Vector CGenericHitscanWeapon::FireBulletsPlayer(const WeaponAtts::WAHitscanAttac
 		}
 
 		// make bullet trails
+		// TODO: This should be clientside in the event playback.
 		UTIL_BubbleTrail(vecSrc, tr.vecEndPos, (int)((DEFAULT_BULLET_TRACE_DISTANCE * tr.flFraction) / 64.0));
 	}
 

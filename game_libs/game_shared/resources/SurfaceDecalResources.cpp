@@ -129,4 +129,20 @@ CSurfaceDecalResources::CSurfaceDecalResources() :
 	InitialiseResources(SurfaceDecalId::Snow, SnowDecals);
 	InitialiseResources(SurfaceDecalId::Stone, StoneDecals);
 	InitialiseResources(SurfaceDecalId::Wood, WoodDecals);
+
+	Atts(SurfaceDecalId::None).scale = 0.0f;
+	Atts(SurfaceDecalId::Generic).scale = 4.0f;
+	Atts(SurfaceDecalId::Carpet).scale = 4.0f;
+	Atts(SurfaceDecalId::Dirt).scale = 4.0f;
+	Atts(SurfaceDecalId::Glass).scale = 3.0f;
+	Atts(SurfaceDecalId::BulletproofGlass).scale = 4.0f;
+	Atts(SurfaceDecalId::Grass).scale = 4.0f;
+	Atts(SurfaceDecalId::Metal).scale = 6.0f;
+	Atts(SurfaceDecalId::Gold).scale = 6.0f;
+	Atts(SurfaceDecalId::Plaster).scale = 6.0f;
+	Atts(SurfaceDecalId::Sand).scale = 4.0f;
+	Atts(SurfaceDecalId::Scorch).scale = 1.0f;
+	Atts(SurfaceDecalId::Snow).scale = 4.0f;
+	Atts(SurfaceDecalId::Stone).scale = 5.0f;
+	Atts(SurfaceDecalId::Wood).scale = 4.0f;
 }

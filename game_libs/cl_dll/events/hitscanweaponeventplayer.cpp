@@ -104,7 +104,7 @@ void HitscanWeaponEventPlayer::CreateBulletTracers()
 		if ( traceResult.fraction != 1.0 )
 		{
 			EV_HLDM_PlayTextureSound(m_iEntIndex, &traceResult, m_vecGunPosition, traceEnd, BULLET_GENERIC);
-			EV_HLDM_DecalGunshot(&traceResult, BULLET_GENERIC);
+			EV_HLDM_DecalGunshotNew(m_iEntIndex, &traceResult, m_vecGunPosition, traceEnd);
 		}
 
 		Debug_AddTrace(m_vecGunPosition, traceResult.endpos);
