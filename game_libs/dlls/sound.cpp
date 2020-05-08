@@ -1509,19 +1509,6 @@ static char *memfgets( byte *pMemFile, int fileSize, int &filePos, char *pBuffer
 	return NULL;
 }
 
-// given texture name, find texture type
-// if not found, return type 'concrete'
-
-// NOTE: this routine should ONLY be called if the
-// current texture under the player changes!
-
-extern "C" char PM_FindTextureType( char *name );
-
-char TEXTURETYPE_Find( char *name )
-{
-	return PM_FindTextureType(name);
-}
-
 // play a strike sound based on the texture that was hit by the attack traceline.  VecSrc/VecEnd are the
 // original traceline endpoints used by the attacker, iBulletType is the type of bullet that hit the texture.
 // returns volume of strike instrument (crowbar) to play

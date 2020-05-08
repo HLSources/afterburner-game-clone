@@ -26,6 +26,7 @@
 #include <string.h> // strcpy
 #include <stdlib.h> // atoi
 #include <ctype.h>  // isspace
+#include "resources/PlayerMoveResources.h"
 
 //#define PM_VERBOSE_LOGGING
 
@@ -71,31 +72,6 @@ playermove_t *pmove = NULL;
 #define VEC_HULL_MAX		36
 #define VEC_VIEW		28
 #define	STOP_EPSILON		0.1
-
-#define CTEXTURESMAX		512			// max number of textures loaded
-#define CBTEXTURENAMEMAX	13			// only load first n chars of name
-
-#define CHAR_TEX_CONCRETE	'C'			// texture types
-#define CHAR_TEX_METAL		'M'
-#define CHAR_TEX_DIRT		'D'
-#define CHAR_TEX_VENT		'V'
-#define CHAR_TEX_GRATE		'G'
-#define CHAR_TEX_TILE		'T'
-#define CHAR_TEX_SLOSH		'S'
-#define CHAR_TEX_WOOD		'W'
-#define CHAR_TEX_COMPUTER	'P'
-#define CHAR_TEX_GLASS		'Y'
-#define CHAR_TEX_FLESH		'F'
-
-#define STEP_CONCRETE		0		// default step sound
-#define STEP_METAL		1		// metal floor
-#define STEP_DIRT		2		// dirt, sand, rock
-#define STEP_VENT		3		// ventillation duct
-#define STEP_GRATE		4		// metal grating
-#define STEP_TILE		5		// floor tiles
-#define STEP_SLOSH		6		// shallow liquid puddle
-#define STEP_WADE		7		// wading in liquid
-#define STEP_LADDER		8		// climbing ladder
 
 #define PLAYER_FATAL_FALL_SPEED		1024// approx 60 feet
 #define PLAYER_MAX_SAFE_FALL_SPEED	580// approx 20 feet
@@ -143,389 +119,44 @@ static int rgStuckLast[MAX_CLIENTS][2];
 
 // Texture names
 static int gcTextures = 0;
-static char grgszTextureName[CTEXTURESMAX][CBTEXTURENAMEMAX];
-static char grgchTextureType[CTEXTURESMAX];
 
 int g_onladder = 0;
 
-void PM_SwapTextures( int i, int j )
+void PM_PlayStepSoundNew(int stepSoundId, float volume)
 {
-	char chTemp;
-	char szTemp[CBTEXTURENAMEMAX];
-
-	strcpy( szTemp, grgszTextureName[i] );
-	chTemp = grgchTextureType[i];
-
-	strcpy( grgszTextureName[i], grgszTextureName[j] );
-	grgchTextureType[i] = grgchTextureType[j];
-
-	strcpy( grgszTextureName[j], szTemp );
-	grgchTextureType[j] = chTemp;
-}
-
-void PM_SortTextures( void )
-{
-	// Bubble sort, yuck, but this only occurs at startup and it's only 512 elements...
-	//
-	int i, j;
-
-	for( i = 0; i < gcTextures; i++ )
-	{
-		for( j = i + 1; j < gcTextures; j++ )
-		{
-			if( stricmp( grgszTextureName[i], grgszTextureName[j] ) > 0 )
-			{
-				// Swap
-				//
-				PM_SwapTextures( i, j );
-			}
-		}
-	}
-}
-
-void PM_InitTextureTypes(void)
-{
-	char buffer[512];
-	int i, j;
-	byte *pMemFile;
-	int fileSize, filePos = 0;
-	static qboolean bTextureTypeInit = false;
-
-	if( bTextureTypeInit )
-		return;
-
-	memset(&( grgszTextureName[0][0] ), 0, sizeof( grgszTextureName ) );
-	memset( grgchTextureType, 0, sizeof( grgchTextureType ) );
-
-	gcTextures = 0;
-
-	pMemFile = pmove->COM_LoadFile( "sound/materials.txt", 5, &fileSize );
-	if( !pMemFile )
-		return;
-
-	memset( buffer, 0, sizeof( buffer ) );
-
-	// for each line in the file...
-	while( pmove->memfgets( pMemFile, fileSize, &filePos, buffer, 511 ) != NULL && (gcTextures < CTEXTURESMAX ) )
-	{
-		// skip whitespace
-		i = 0;
-		while( buffer[i] && isspace( buffer[i] ) )
-			i++;
-
-		if( !buffer[i] )
-			continue;
-
-		// skip comment lines
-		if( buffer[i] == '/' || !isalpha( buffer[i] ) )
-			continue;
-
-		// get texture type
-		grgchTextureType[gcTextures] = toupper( buffer[i++] );
-
-		// skip whitespace
-		while( buffer[i] && isspace( buffer[i] ) )
-			i++;
-
-		if( !buffer[i] )
-			continue;
-
-		// get sentence name
-		j = i;
-		while( buffer[j] && !isspace( buffer[j] ) )
-			j++;
-
-		if( !buffer[j] )
-			continue;
-
-		// null-terminate name and save in sentences array
-		j = MIN_OF( j, CBTEXTURENAMEMAX - 1 + i );
-		buffer[j] = 0;
-		strcpy( &( grgszTextureName[gcTextures++][0] ), &( buffer[i] ) );
-	}
-
-	// Must use engine to free since we are in a .dll
-	pmove->COM_FreeFile( pMemFile );
-
-	PM_SortTextures();
-
-	bTextureTypeInit = true;
-}
-
-char PM_FindTextureType( char *name )
-{
-	int left, right, pivot;
-	int val;
-
-	assert( pm_shared_initialized );
-
-	left = 0;
-	right = gcTextures - 1;
-
-	while( left <= right )
-	{
-		pivot = ( left + right ) / 2;
-
-		val = strnicmp( name, grgszTextureName[pivot], CBTEXTURENAMEMAX - 1 );
-		if( val == 0 )
-		{
-			return grgchTextureType[pivot];
-		}
-		else if( val > 0 )
-		{
-			left = pivot + 1;
-		}
-		else if( val < 0 )
-		{
-			right = pivot - 1;
-		}
-	}
-
-	return CHAR_TEX_CONCRETE;
-}
-
-void PM_PlayStepSound( int step, float fvol )
-{
-	static int iSkipStep = 0;
-	int irand;
-	vec3_t hvel;
-
-	pmove->iStepLeft = !pmove->iStepLeft;
-
 	if( !pmove->runfuncs )
 	{
 		return;
 	}
 
-	irand = pmove->RandomLong( 0, 1 ) + ( pmove->iStepLeft * 2 );
-
 	// FIXME mp_footsteps needs to be a movevar
 	if( pmove->multiplayer && !pmove->movevars->footsteps )
+	{
 		return;
+	}
 
+	const qboolean stepLeft = pmove->iStepLeft != 0;
+	pmove->iStepLeft = !pmove->iStepLeft;
+
+	vec3_t hvel;
 	VectorCopy( pmove->velocity, hvel );
 	hvel[2] = 0.0;
 
-	if( pmove->multiplayer && ( !g_onladder && Length( hvel ) <= 220 ) )
+	// TODO: Why do we not use g_onladder in PM_UpdateStepSound()???
+	// Do we even want this check?
+	if( pmove->multiplayer && !g_onladder && Length(hvel) <= 220 )
+	{
 		return;
-
-	// irand - 0,1 for right foot, 2,3 for left foot
-	// used to alternate left and right foot
-	// FIXME, move to player state
-
-	switch( step )
-	{
-	default:
-	case STEP_CONCRETE:
-		switch( irand )
-		{
-		// right foot
-		case 0:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_step1.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		case 1:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_step3.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		// left foot
-		case 2:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_step2.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		case 3:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_step4.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		}
-		break;
-	case STEP_METAL:
-		switch( irand )
-		{
-		// right foot
-		case 0:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_metal1.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		case 1:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_metal3.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		// left foot
-		case 2:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_metal2.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		case 3:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_metal4.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		}
-		break;
-	case STEP_DIRT:
-		switch( irand )
-		{
-		// right foot
-		case 0:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_dirt1.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		case 1:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_dirt3.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		// left foot
-		case 2:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_dirt2.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		case 3:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_dirt4.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		}
-		break;
-	case STEP_VENT:
-		switch( irand )
-		{
-		// right foot
-		case 0:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_duct1.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		case 1:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_duct3.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		// left foot
-		case 2:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_duct2.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		case 3:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_duct4.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		}
-		break;
-	case STEP_GRATE:
-		switch( irand )
-		{
-		// right foot
-		case 0:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_grate1.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		case 1:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_grate3.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		// left foot
-		case 2:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_grate2.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		case 3:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_grate4.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		}
-		break;
-	case STEP_TILE:
-		if( !pmove->RandomLong( 0, 4 ) )
-			irand = 4;
-		switch( irand )
-		{
-		// right foot
-		case 0:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_tile1.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		case 1:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_tile3.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		// left foot
-		case 2:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_tile2.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		case 3:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_tile4.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		case 4:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_tile5.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		}
-		break;
-	case STEP_SLOSH:
-		switch( irand )
-		{
-		// right foot
-		case 0:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_slosh1.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		case 1:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_slosh3.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		// left foot
-		case 2:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_slosh2.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		case 3:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_slosh4.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		}
-		break;
-	case STEP_WADE:
-		if( iSkipStep == 0 )
-		{
-			iSkipStep++;
-			break;
-		}
-
-		if( iSkipStep++ == 3 )
-		{
-			iSkipStep = 0;
-		}
-
-		switch( irand )
-		{
-		// right foot
-		case 0:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_wade1.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		case 1:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_wade2.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		// left foot
-		case 2:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_wade3.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		case 3:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_wade4.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		}
-		break;
-	case STEP_LADDER:
-		switch( irand )
-		{
-		// right foot
-		case 0:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_ladder1.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		case 1:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_ladder3.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		// left foot
-		case 2:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_ladder2.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		case 3:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_ladder4.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		}
-		break;
 	}
-}
 
-int PM_MapTextureTypeStepType( char chTextureType )
-{
-	switch( chTextureType )
+	const char* path = PMRes_GetStepSoundPath(stepSoundId, stepLeft);
+
+	if ( !path )
 	{
-		default:
-		case CHAR_TEX_CONCRETE:
-			return STEP_CONCRETE;
-		case CHAR_TEX_METAL:
-			return STEP_METAL;
-		case CHAR_TEX_DIRT:
-			return STEP_DIRT;
-		case CHAR_TEX_VENT:
-			return STEP_VENT;
-		case CHAR_TEX_GRATE:
-			return STEP_GRATE;
-		case CHAR_TEX_TILE:
-			return STEP_TILE;
-		case CHAR_TEX_SLOSH:
-			return STEP_SLOSH;
+		return;
 	}
+
+	pmove->PM_PlaySound(CHAN_BODY, path, volume, ATTN_NORM, 0, PITCH_NORM);
 }
 
 /*
@@ -535,7 +166,7 @@ PM_CatagorizeTextureType
 Determine texture info for the texture we are standing on.
 ====================
 */
-void PM_CatagorizeTextureType( void )
+SurfaceProp PM_CatagorizeTextureType( void )
 {
 	vec3_t start, end;
 	const char *pTextureName;
@@ -546,166 +177,110 @@ void PM_CatagorizeTextureType( void )
 	// Straight down
 	end[2] -= 64;
 
-	// Fill in default values, just in case.
-	pmove->sztexturename[0] = '\0';
-	pmove->chtexturetype = CHAR_TEX_CONCRETE;
-
 	texture_t* texture = pmove->PM_TraceTexture( pmove->onground, start, end );
-	pTextureName = texture ? texture->name : NULL;
+	return texture ? texture->surfaceType : SurfaceProp_Concrete;
+}
 
-	if( !pTextureName )
-	{
-		return;
-	}
-
-	// strip leading '-0' or '+0~' or '{' or '!'
-	if( *pTextureName == '-' || *pTextureName == '+' )
-	{
-		pTextureName += 2;
-	}
-
-	if( *pTextureName == '{' || *pTextureName == '!' || *pTextureName == '~' || *pTextureName == ' ' )
-	{
-		pTextureName++;
-	}
-
-	// '}}'
-
-	strcpy( pmove->sztexturename, pTextureName);
-	pmove->sztexturename[CBTEXTURENAMEMAX - 1] = 0;
-
-	// get texture type
-	pmove->chtexturetype = PM_FindTextureType( pmove->sztexturename );
+int PM_GetStepSoundIdForCurrentTexture(void)
+{
+	return PMRes_GetStepSoundIdForSurface(PM_CatagorizeTextureType());
 }
 
 void PM_UpdateStepSound( void )
 {
-	int fWalking;
-	float fvol;
 	vec3_t knee;
 	vec3_t feet;
-	//vec3_t center;
-	float height;
-	float speed;
-	float velrun;
-	float velwalk;
-	float flduck;
-	int fLadder;
-	int step;
 
-	if( pmove->flTimeStepSound > 0 )
+	if( pmove->flTimeStepSound > 0 || (pmove->flags & FL_FROZEN) )
+	{
 		return;
+	}
 
-	if( pmove->flags & FL_FROZEN )
+	const float speed = Length(pmove->velocity);
+
+	if ( speed <= 0.0f )
+	{
 		return;
-
-	PM_CatagorizeTextureType();
-
-	speed = Length( pmove->velocity );
+	}
 
 	// determine if we are on a ladder
-	fLadder = ( pmove->movetype == MOVETYPE_FLY );// IsOnLadder();
+	const qboolean isOnLadder = g_onladder; // Used to be (pmove->movetype == MOVETYPE_FLY)
+
+	if ( !isOnLadder && pmove->onground == -1 )
+	{
+		return;
+	}
 
 	// UNDONE: need defined numbers for run, walk, crouch, crouch run velocities!!!!
-	if( ( pmove->flags & FL_DUCKING) || fLadder )
-	{
-		velwalk = 60;		// These constants should be based on cl_movespeedkey * cl_forwardspeed somehow
-		velrun = 80;		// UNDONE: Move walking to server
-		flduck = 100;
-	}
-	else
+	float velwalk = 60;		// These constants should be based on cl_movespeedkey * cl_forwardspeed somehow
+	float velrun = 80;		// UNDONE: Move walking to server
+	float flduck = 100;
+
+	if ( !(pmove->flags & FL_DUCKING) && !isOnLadder )
 	{
 		velwalk = 120;
 		velrun = 210;
 		flduck = 0;
 	}
 
-	// If we're on a ladder or on the ground, and we're moving fast enough,
-	//  play step sound.  Also, if pmove->flTimeStepSound is zero, get the new
-	//  sound right away - we just started moving in new level.
-	if( ( fLadder || ( pmove->onground != -1 ) ) && ( Length( pmove->velocity ) > 0.0 ) && ( speed >= velwalk || !pmove->flTimeStepSound ) )
+	// If pmove->flTimeStepSound is zero in this case, don't exit - we just started moving in new level.
+	if ( speed < velwalk && pmove->flTimeStepSound != 0 )
 	{
-		fWalking = speed < velrun;
-
-		//VectorCopy( pmove->origin, center );
-		VectorCopy( pmove->origin, knee );
-		VectorCopy( pmove->origin, feet );
-
-		height = pmove->player_maxs[pmove->usehull][2] - pmove->player_mins[pmove->usehull][2];
-
-		knee[2] = pmove->origin[2] - 0.3 * height;
-		feet[2] = pmove->origin[2] - 0.5 * height;
-
-		// find out what we're stepping in or on...
-		if( fLadder )
-		{
-			step = STEP_LADDER;
-			fvol = 0.35;
-			pmove->flTimeStepSound = 350;
-		}
-		else if( pmove->PM_PointContents( knee, NULL ) == CONTENTS_WATER )
-		{
-			step = STEP_WADE;
-			fvol = 0.65;
-			pmove->flTimeStepSound = 600;
-		}
-		else if( pmove->PM_PointContents( feet, NULL ) == CONTENTS_WATER )
-		{
-			step = STEP_SLOSH;
-			fvol = fWalking ? 0.2 : 0.5;
-			pmove->flTimeStepSound = fWalking ? 400 : 300;
-		}
-		else
-		{
-			// find texture under player, if different from current texture,
-			// get material type
-			step = PM_MapTextureTypeStepType( pmove->chtexturetype );
-
-			switch( pmove->chtexturetype )
-			{
-			default:
-			case CHAR_TEX_CONCRETE:
-				fvol = fWalking ? 0.2 : 0.5;
-				pmove->flTimeStepSound = fWalking ? 400 : 300;
-				break;
-			case CHAR_TEX_METAL:
-				fvol = fWalking ? 0.2 : 0.5;
-				pmove->flTimeStepSound = fWalking ? 400 : 300;
-				break;
-			case CHAR_TEX_DIRT:
-				fvol = fWalking ? 0.25 : 0.55;
-				pmove->flTimeStepSound = fWalking ? 400 : 300;
-				break;
-			case CHAR_TEX_VENT:
-				fvol = fWalking ? 0.4 : 0.7;
-				pmove->flTimeStepSound = fWalking ? 400 : 300;
-				break;
-			case CHAR_TEX_GRATE:
-				fvol = fWalking ? 0.2 : 0.5;
-				pmove->flTimeStepSound = fWalking ? 400 : 300;
-				break;
-			case CHAR_TEX_TILE:
-				fvol = fWalking ? 0.2 : 0.5;
-				pmove->flTimeStepSound = fWalking ? 400 : 300;
-				break;
-			case CHAR_TEX_SLOSH:
-				fvol = fWalking ? 0.2 : 0.5;
-				pmove->flTimeStepSound = fWalking ? 400 : 300;
-				break;
-			}
-		}
-
-		pmove->flTimeStepSound += flduck; // slower step time if ducking
-
-		// play the sound
-		// 35% volume if ducking
-		if( pmove->flags & FL_DUCKING )
-		{
-			fvol *= 0.35;
-		}
-
-		PM_PlayStepSound( step, fvol );
+		return;
 	}
+
+	const qboolean isWalking = speed < velrun;
+
+	VectorCopy( pmove->origin, knee );
+	VectorCopy( pmove->origin, feet );
+
+	const float height = pmove->player_maxs[pmove->usehull][2] - pmove->player_mins[pmove->usehull][2];
+
+	knee[2] = pmove->origin[2] - 0.3 * height;
+	feet[2] = pmove->origin[2] - 0.5 * height;
+
+	float fvol = 1.0f;
+	int stepSoundId = 0;
+
+	// find out what we're stepping in or on...
+	if( isOnLadder )
+	{
+		stepSoundId = PMRes_GetStepSoundIdForSurface(SurfaceProp_SpecialLadder);
+		fvol = 0.35;
+		pmove->flTimeStepSound = 350;
+	}
+	else if( pmove->PM_PointContents( knee, NULL ) == CONTENTS_WATER )
+	{
+		stepSoundId = PMRes_GetStepSoundIdForWater(true);
+		fvol = 0.65;
+		pmove->flTimeStepSound = 600;
+	}
+	else if( pmove->PM_PointContents( feet, NULL ) == CONTENTS_WATER )
+	{
+		stepSoundId = PMRes_GetStepSoundIdForWater(false);
+		fvol = isWalking ? 0.2 : 0.5;
+		pmove->flTimeStepSound = isWalking ? 400 : 300;
+	}
+	else
+	{
+		const SurfaceProp surfaceProp = PM_CatagorizeTextureType();
+		stepSoundId = PMRes_GetStepSoundIdForSurface(surfaceProp);
+		pmove->flTimeStepSound = isWalking ? 400 : 300;
+
+		fvol = fvol = isWalking ? 0.4 : 0.7;
+		fvol *= PMRes_GetStepSoundVolumeMultiplierForSurface(surfaceProp, isWalking);
+	}
+
+	pmove->flTimeStepSound += flduck; // slower step time if ducking
+
+	// play the sound
+	// 35% volume if ducking
+	if( pmove->flags & FL_DUCKING )
+	{
+		fvol *= 0.35f;
+	}
+
+	PM_PlayStepSoundNew(stepSoundId, fvol);
 }
 
 /*
@@ -2549,32 +2124,24 @@ void PM_Jump( void )
 		pmove->onground = -1;
 
 		if( pmove->watertype == CONTENTS_WATER )	// We move up a certain amount
+		{
 			pmove->velocity[2] = 100;
+		}
 		else if( pmove->watertype == CONTENTS_SLIME )
+		{
 			pmove->velocity[2] = 80;
+		}
 		else // LAVA
+		{
 			pmove->velocity[2] = 50;
+		}
 
 		// play swiming sound
 		if( pmove->flSwimTime <= 0 )
 		{
 			// Don't play sound again for 1 second
 			pmove->flSwimTime = 1000;
-			switch( pmove->RandomLong( 0, 3 ) )
-			{
-			case 0:
-				pmove->PM_PlaySound( CHAN_BODY, "player/pl_wade1.wav", 1, ATTN_NORM, 0, PITCH_NORM );
-				break;
-			case 1:
-				pmove->PM_PlaySound( CHAN_BODY, "player/pl_wade2.wav", 1, ATTN_NORM, 0, PITCH_NORM );
-				break;
-			case 2:
-				pmove->PM_PlaySound( CHAN_BODY, "player/pl_wade3.wav", 1, ATTN_NORM, 0, PITCH_NORM );
-				break;
-			case 3:
-				pmove->PM_PlaySound( CHAN_BODY, "player/pl_wade4.wav", 1, ATTN_NORM, 0, PITCH_NORM );
-				break;
-			}
+			PM_PlayStepSoundNew(PMRes_GetSwimSoundId(), 1.0f);
 		}
 
 		return;
@@ -2597,7 +2164,9 @@ void PM_Jump( void )
 	pmove->onground = -1;
 
 	if( g_bhopcap )
+	{
 		PM_PreventMegaBunnyJumping();
+	}
 
 	if( tfc )
 	{
@@ -2605,7 +2174,8 @@ void PM_Jump( void )
 	}
 	else
 	{
-		PM_PlayStepSound( PM_MapTextureTypeStepType( pmove->chtexturetype ), 1.0 );
+		const int stepSoundId = PM_GetStepSoundIdForCurrentTexture();
+		PM_PlayStepSoundNew(stepSoundId, 1.0f);
 	}
 
 	// See if user can super long jump?
@@ -2765,7 +2335,8 @@ void PM_CheckFalling( void )
 			PM_UpdateStepSound();
 
 			// play step sound for current texture
-			PM_PlayStepSound( PM_MapTextureTypeStepType( pmove->chtexturetype ), fvol );
+			const int stepSoundId = PM_GetStepSoundIdForCurrentTexture();
+			PM_PlayStepSoundNew(stepSoundId, fvol);
 
 			// Knock the screen around a little bit, temporary effect
 			pmove->punchangle[2] = pmove->flFallVelocity * 0.013;	// punch z axis
@@ -2794,21 +2365,7 @@ void PM_PlayWaterSounds( void )
 	// Did we enter or leave water?
 	if( ( pmove->oldwaterlevel == 0 && pmove->waterlevel != 0 ) || ( pmove->oldwaterlevel != 0 && pmove->waterlevel == 0 ) )
 	{
-		switch( pmove->RandomLong( 0, 3 ) )
-		{
-		case 0:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_wade1.wav", 1, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		case 1:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_wade2.wav", 1, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		case 2:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_wade3.wav", 1, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		case 3:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_wade4.wav", 1, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		}
+		PM_PlayStepSoundNew(PMRes_GetStepSoundIdForWater(true), 1.0f);
 	}
 }
 
@@ -3382,7 +2939,6 @@ void PM_Init( struct playermove_s *ppmove )
 	pmove = ppmove;
 
 	PM_CreateStuckTable();
-	PM_InitTextureTypes();
 
 	pm_shared_initialized = 1;
 }

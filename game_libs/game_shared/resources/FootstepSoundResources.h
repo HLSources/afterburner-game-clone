@@ -17,6 +17,8 @@ enum class FootstepSoundId
 	VentDuct,
 	WoodClean,
 	WoodGrit,
+	ShallowWater,
+	DeepWater,
 	Count
 };
 

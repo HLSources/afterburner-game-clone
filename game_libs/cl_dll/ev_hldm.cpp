@@ -58,8 +58,6 @@ static std::unique_ptr<BaseWeaponEventPlayer> EventPlayers[MAX_WEAPONS][WeaponAt
 
 extern engine_studio_api_t IEngineStudio;
 
-extern "C" char PM_FindTextureType( char *name );
-
 void V_PunchAxis( int axis, float punch );
 void VectorAngles( const float *forward, float *angles );
 

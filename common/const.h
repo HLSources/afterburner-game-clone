@@ -801,7 +801,8 @@ typedef struct
 	LIST_ITEM(SurfaceProp_Tile, "tile") \
 	LIST_ITEM(SurfaceProp_VentDuct, "ventduct") \
 	LIST_ITEM(SurfaceProp_Water, "water") \
-	LIST_ITEM(SurfaceProp_Wood, "wood")
+	LIST_ITEM(SurfaceProp_Wood, "wood") \
+	LIST_ITEM(SurfaceProp_SpecialLadder, "special_ladder")
 
 #define LIST_ITEM(enum, name) enum,
 typedef enum _SurfaceProp

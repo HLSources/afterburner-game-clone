@@ -511,7 +511,6 @@ int SENTENCEG_GetIndex(const char *szrootname);
 int SENTENCEG_Lookup(const char *sample, char *sentencenum);
 
 void TEXTURETYPE_Init();
-char TEXTURETYPE_Find(char *name);
 void TEXTURETYPE_PlaySound(TraceResult *ptr,  Vector vecSrc, Vector vecEnd, int iBulletType);
 
 // NOTE: use EMIT_SOUND_DYN to set the pitch of a sound. Pitch of 100

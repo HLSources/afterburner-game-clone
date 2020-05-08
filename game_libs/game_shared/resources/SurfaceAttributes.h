@@ -19,7 +19,8 @@ public:
 		float ricochetChance;
 		SurfaceDecalId decal;
 		FootstepSoundId footstepSound;
-		float footstepSoundVol;
+		float footstepSoundVolRun;
+		float footstepSoundVolWalk;
 	};
 
 	static CSurfaceAttributes& StaticInstance();

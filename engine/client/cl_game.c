@@ -48,7 +48,6 @@ static dllfunc_t cdll_exports[] =
 { "HUD_Reset", (void **)&clgame.dllFuncs.pfnReset },
 { "HUD_PlayerMove", (void **)&clgame.dllFuncs.pfnPlayerMove },
 { "HUD_PlayerMoveInit", (void **)&clgame.dllFuncs.pfnPlayerMoveInit },
-{ "HUD_PlayerMoveTexture", (void **)&clgame.dllFuncs.pfnPlayerMoveTexture },
 { "HUD_ConnectionlessPacket", (void **)&clgame.dllFuncs.pfnConnectionlessPacket },
 { "HUD_GetHullBounds", (void **)&clgame.dllFuncs.pfnGetHullBounds },
 { "HUD_Frame", (void **)&clgame.dllFuncs.pfnFrame },
