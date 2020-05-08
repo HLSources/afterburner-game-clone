@@ -15,14 +15,14 @@ public:
 	static constexpr size_t NUM_ENTRIES = N;
 
 	CBaseResourceCollection() :
-		IIterableResourceCollection(m_SoundPaths, NUM_ENTRIES)
+		IIterableResourceCollection(m_ResourcePaths, NUM_ENTRIES)
 	{
 	}
 
 	inline size_t ResourceCount(ResourceId id) const
 	{
 		const uint32_t intId = static_cast<uint32_t>(id);
-		return intId < NUM_ENTRIES ? m_SoundPaths[intId].Count() : 0;
+		return intId < NUM_ENTRIES ? m_ResourcePaths[intId].Count() : 0;
 	}
 
 	const char* ResourcePath(ResourceId id, uint32_t index = 0) const
@@ -34,7 +34,7 @@ public:
 			return nullptr;
 		}
 
-		const CUtlVector<CUtlString>& list = m_SoundPaths[intId];
+		const CUtlVector<CUtlString>& list = m_ResourcePaths[intId];
 
 		if ( index >= list.Count() )
 		{
@@ -53,7 +53,7 @@ public:
 			return nullptr;
 		}
 
-		const CUtlVector<CUtlString>& list = m_SoundPaths[intId];
+		const CUtlVector<CUtlString>& list = m_ResourcePaths[intId];
 
 		if ( list.Count() < 1 )
 		{
@@ -81,7 +81,7 @@ protected:
 	{
 		const uint32_t intId = static_cast<uint32_t>(id);
 
-		CUtlVector<CUtlString>& list = m_SoundPaths[intId];
+		CUtlVector<CUtlString>& list = m_ResourcePaths[intId];
 		list.Purge();
 
 		for ( uint32_t index = 0; index < pathsLength; ++index )
@@ -90,6 +90,5 @@ protected:
 		}
 	}
 
-private:
-	CUtlVector<CUtlString> m_SoundPaths[NUM_ENTRIES];
+	CUtlVector<CUtlString> m_ResourcePaths[NUM_ENTRIES];
 };

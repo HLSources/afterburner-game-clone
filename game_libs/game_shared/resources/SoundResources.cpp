@@ -7,6 +7,7 @@ namespace SoundResources
 	CItemSoundResources ItemSounds;
 	CWeaponSoundResources WeaponSounds;
 	CSurfaceSoundResources SurfaceSounds;
+	CFootstepSoundResources FootstepSounds;
 
 	static void Precache(const IIterableResourceCollection& collection)
 	{
@@ -21,5 +22,6 @@ namespace SoundResources
 		Precache(ItemSounds);
 		Precache(WeaponSounds);
 		Precache(SurfaceSounds);
+		Precache(FootstepSounds);
 	}
 }

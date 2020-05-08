@@ -33,16 +33,22 @@ CSurfaceAttributes::CSurfaceAttributes()
 	atts->ricochetSoundVol = RIC_LOUD;
 	atts->ricochetChance = 0.85f;
 	atts->decal = SurfaceDecalId::BulletproofGlass;
+	atts->footstepSound = FootstepSoundId::Metal; // FIXME: better sound needed
+	atts->footstepSoundVol = 1.0f;
 
 	atts = &m_Attributes[SurfaceProp_Carpet];
-	atts->hitSound = SurfaceSoundId::HitPaper; // FIXME: proper sound needed
+	atts->hitSound = SurfaceSoundId::HitPaper; // FIXME: better sound needed
 	atts->hitSoundVol = 0.8f;
 	atts->decal = SurfaceDecalId::Carpet;
+	atts->footstepSound = FootstepSoundId::Carpet;
+	atts->footstepSoundVol = 1.0f;
 
 	atts = &m_Attributes[SurfaceProp_Cloth];
-	atts->hitSound = SurfaceSoundId::HitPaper; // FIXME: proper sound needed
+	atts->hitSound = SurfaceSoundId::HitPaper; // FIXME: better sound needed
 	atts->hitSoundVol = 0.8f;
 	atts->decal = SurfaceDecalId::Carpet;
+	atts->footstepSound = FootstepSoundId::Carpet;
+	atts->footstepSoundVol = 1.0f;
 
 	atts = &m_Attributes[SurfaceProp_Computer];
 	atts->hitSound = SurfaceSoundId::HitGlassB;
@@ -50,6 +56,8 @@ CSurfaceAttributes::CSurfaceAttributes()
 	atts->ricochetSoundVol = RIC_NORM;
 	atts->ricochetChance = 0.2f;
 	atts->decal = SurfaceDecalId::Metal;
+	atts->footstepSound = FootstepSoundId::Metal; // FIXME: better sound needed
+	atts->footstepSoundVol = 1.0f;
 
 	atts = &m_Attributes[SurfaceProp_Concrete];
 	atts->hitSound = SurfaceSoundId::HitConcrete;
@@ -57,15 +65,21 @@ CSurfaceAttributes::CSurfaceAttributes()
 	atts->ricochetSoundVol = RIC_NORM;
 	atts->ricochetChance = 0.33f;
 	atts->decal = SurfaceDecalId::Generic;
+	atts->footstepSound = FootstepSoundId::ConcreteClean;
+	atts->footstepSoundVol = 1.0f;
 
 	atts = &m_Attributes[SurfaceProp_Dirt];
-	atts->hitSound = SurfaceSoundId::HitSand; // FIXME: proper sound needed
+	atts->hitSound = SurfaceSoundId::HitSand; // FIXME: better sound needed
 	atts->hitSoundVol = 0.6f;
 	atts->decal = SurfaceDecalId::Dirt;
+	atts->footstepSound = FootstepSoundId::Dirt;
+	atts->footstepSoundVol = 1.0f;
 
 	atts = &m_Attributes[SurfaceProp_Flesh];
 	atts->hitSound = SurfaceSoundId::HitFlesh;
 	atts->hitSoundVol = 0.9f;
+	atts->footstepSound = FootstepSoundId::Dirt; // FIXME: better sound needed
+	atts->footstepSoundVol = 1.0f;
 
 	atts = &m_Attributes[SurfaceProp_Glass];
 	atts->hitSound = SurfaceSoundId::HitGlassB;
@@ -73,6 +87,8 @@ CSurfaceAttributes::CSurfaceAttributes()
 	atts->ricochetSoundVol = RIC_NORM;
 	atts->ricochetChance = 0.2f;
 	atts->decal = SurfaceDecalId::Glass;
+	atts->footstepSound = FootstepSoundId::Metal; // FIXME: better sound needed
+	atts->footstepSoundVol = 1.0f;
 
 	atts = &m_Attributes[SurfaceProp_Gold];
 	atts->hitSound = SurfaceSoundId::HitMetal;
@@ -80,16 +96,22 @@ CSurfaceAttributes::CSurfaceAttributes()
 	atts->ricochetSoundVol = RIC_NORM;
 	atts->ricochetChance = 0.5f;
 	atts->decal = SurfaceDecalId::Gold;
+	atts->footstepSound = FootstepSoundId::Metal;
+	atts->footstepSoundVol = 1.0f;
 
 	atts = &m_Attributes[SurfaceProp_Grass];
-	atts->hitSound = SurfaceSoundId::HitSand; // FIXME: proper sound needed
+	atts->hitSound = SurfaceSoundId::HitSand; // FIXME: better sound needed
 	atts->hitSoundVol = 0.8f;
 	atts->decal = SurfaceDecalId::Grass;
+	atts->footstepSound = FootstepSoundId::Grass;
+	atts->footstepSoundVol = 1.0f;
 
 	atts = &m_Attributes[SurfaceProp_Gravel],
-	atts->hitSound = SurfaceSoundId::HitSand; // FIXME: proper sound needed
+	atts->hitSound = SurfaceSoundId::HitSand; // FIXME: better sound needed
 	atts->hitSoundVol = 0.8f;
 	atts->decal = SurfaceDecalId::Dirt;
+	atts->footstepSound = FootstepSoundId::Dirt;
+	atts->footstepSoundVol = 1.0f;
 
 	atts = &m_Attributes[SurfaceProp_Metal];
 	atts->hitSound = SurfaceSoundId::HitMetal;
@@ -97,27 +119,37 @@ CSurfaceAttributes::CSurfaceAttributes()
 	atts->ricochetSoundVol = RIC_NORM;
 	atts->ricochetChance = 0.8;
 	atts->decal = SurfaceDecalId::Metal;
+	atts->footstepSound = FootstepSoundId::Metal;
+	atts->footstepSoundVol = 1.0f;
 
 	atts = &m_Attributes[SurfaceProp_MetalGrate];
 	atts->hitSound = SurfaceSoundId::HitMetalGrate;
 	atts->hitSoundVol = 0.9f;
 	atts->ricochetSoundVol = RIC_NORM;
 	atts->ricochetChance = 0.2;
+	atts->footstepSound = FootstepSoundId::Metal; // FIXME: better sound needed
+	atts->footstepSoundVol = 1.0f;
 
 	atts = &m_Attributes[SurfaceProp_Paper],
 	atts->hitSound = SurfaceSoundId::HitPaper;
 	atts->hitSoundVol = 0.8f;
 	atts->decal = SurfaceDecalId::Plaster;
+	atts->footstepSound = FootstepSoundId::ConcreteClean; // FIXME: better sound needed
+	atts->footstepSoundVol = 1.0f;
 
 	atts = &m_Attributes[SurfaceProp_Plaster];
 	atts->hitSound = SurfaceSoundId::HitPlaster;
 	atts->hitSoundVol = 0.8f;
 	atts->decal = SurfaceDecalId::Plaster;
+	atts->footstepSound = FootstepSoundId::ConcreteClean; // FIXME: better sound needed
+	atts->footstepSoundVol = 1.0f;
 
 	atts = &m_Attributes[SurfaceProp_Plastic];
 	atts->hitSound = SurfaceSoundId::HitPlastic;
 	atts->hitSoundVol = 0.7f;
 	atts->decal = SurfaceDecalId::Generic;
+	atts->footstepSound = FootstepSoundId::ConcreteClean; // FIXME: better sound needed
+	atts->footstepSoundVol = 1.0f;
 
 	atts = &m_Attributes[SurfaceProp_Rock];
 	atts->hitSound = SurfaceSoundId::HitConcrete;
@@ -125,21 +157,29 @@ CSurfaceAttributes::CSurfaceAttributes()
 	atts->ricochetSoundVol = RIC_NORM;
 	atts->ricochetChance = 0.4;
 	atts->decal = SurfaceDecalId::Stone;
+	atts->footstepSound = FootstepSoundId::ConcreteGrit;
+	atts->footstepSoundVol = 1.0f;
 
 	atts = &m_Attributes[SurfaceProp_Rubber];
 	atts->hitSound = SurfaceSoundId::HitPlaster;
 	atts->hitSoundVol = 0.7f;
 	atts->decal = SurfaceDecalId::Generic;
+	atts->footstepSound = FootstepSoundId::ConcreteClean; // FIXME: better sound needed
+	atts->footstepSoundVol = 1.0f;
 
 	atts = &m_Attributes[SurfaceProp_Sand];
 	atts->hitSound = SurfaceSoundId::HitSand;
 	atts->hitSoundVol = 0.7f;
 	atts->decal = SurfaceDecalId::Sand;
+	atts->footstepSound = FootstepSoundId::Dirt;
+	atts->footstepSoundVol = 1.0f;
 
 	atts = &m_Attributes[SurfaceProp_Snow];
 	atts->hitSound = SurfaceSoundId::HitSnow;
 	atts->hitSoundVol = 0.6f;
 	atts->decal = SurfaceDecalId::Snow;
+	atts->footstepSound = FootstepSoundId::Snow;
+	atts->footstepSoundVol = 1.0f;
 
 	atts = &m_Attributes[SurfaceProp_Tile];
 	atts->hitSound = SurfaceSoundId::HitTile;
@@ -147,6 +187,8 @@ CSurfaceAttributes::CSurfaceAttributes()
 	atts->ricochetSoundVol = RIC_NORM;
 	atts->ricochetChance = 0.33f;
 	atts->decal = SurfaceDecalId::Generic;
+	atts->footstepSound = FootstepSoundId::ConcreteClean;
+	atts->footstepSoundVol = 1.0f;
 
 	atts = &m_Attributes[SurfaceProp_VentDuct];
 	atts->hitSound = SurfaceSoundId::HitVentDuct;
@@ -154,6 +196,8 @@ CSurfaceAttributes::CSurfaceAttributes()
 	atts->ricochetSoundVol = RIC_NORM;
 	atts->ricochetChance = 0.5f;
 	atts->decal = SurfaceDecalId::Metal;
+	atts->footstepSound = FootstepSoundId::VentDuct;
+	atts->footstepSoundVol = 1.0f;
 
 	atts = &m_Attributes[SurfaceProp_Water];
 	atts->hitSound = SurfaceSoundId::HitWater;
@@ -163,6 +207,8 @@ CSurfaceAttributes::CSurfaceAttributes()
 	atts->hitSound = SurfaceSoundId::HitWood;
 	atts->hitSoundVol = 0.8f;
 	atts->decal = SurfaceDecalId::Wood;
+	atts->footstepSound = FootstepSoundId::WoodClean;
+	atts->footstepSoundVol = 1.0f;
 }
 
 const CSurfaceAttributes::Attributes& CSurfaceAttributes::GetAttributes(SurfaceProp surfaceProp) const

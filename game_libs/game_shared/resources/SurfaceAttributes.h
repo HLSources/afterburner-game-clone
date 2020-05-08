@@ -1,8 +1,9 @@
 #pragma once
 
+#include "standard_includes.h"
 #include "SurfaceSoundResources.h"
 #include "SurfaceDecalResources.h"
-#include "standard_includes.h"
+#include "FootstepSoundResources.h"
 
 class CSoundInstance;
 
@@ -17,6 +18,8 @@ public:
 		float ricochetSoundVol;
 		float ricochetChance;
 		SurfaceDecalId decal;
+		FootstepSoundId footstepSound;
+		float footstepSoundVol;
 	};
 
 	static CSurfaceAttributes& StaticInstance();
