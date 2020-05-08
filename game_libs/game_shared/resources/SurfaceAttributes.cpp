@@ -33,7 +33,7 @@ CSurfaceAttributes::CSurfaceAttributes()
 	atts->ricochetSoundVol = RIC_LOUD;
 	atts->ricochetChance = 0.85f;
 	atts->decal = SurfaceDecalId::BulletproofGlass;
-	atts->footstepSound = FootstepSoundId::Metal; // FIXME: better sound needed
+	atts->footstepSound = FootstepSoundId::Glass;
 	atts->footstepSoundVolRun = 0.5f;
 	atts->footstepSoundVolWalk = 0.2f;
 
@@ -59,7 +59,7 @@ CSurfaceAttributes::CSurfaceAttributes()
 	atts->ricochetSoundVol = RIC_NORM;
 	atts->ricochetChance = 0.2f;
 	atts->decal = SurfaceDecalId::Metal;
-	atts->footstepSound = FootstepSoundId::Metal; // FIXME: better sound needed
+	atts->footstepSound = FootstepSoundId::Glass; // FIXME: better sound needed
 	atts->footstepSoundVolRun = 0.5f;
 	atts->footstepSoundVolWalk = 0.2f;
 
@@ -94,7 +94,7 @@ CSurfaceAttributes::CSurfaceAttributes()
 	atts->ricochetSoundVol = RIC_NORM;
 	atts->ricochetChance = 0.2f;
 	atts->decal = SurfaceDecalId::Glass;
-	atts->footstepSound = FootstepSoundId::Metal; // FIXME: better sound needed
+	atts->footstepSound = FootstepSoundId::Glass;
 	atts->footstepSoundVolRun = 0.5f;
 	atts->footstepSoundVolWalk = 0.2f;
 
@@ -139,7 +139,7 @@ CSurfaceAttributes::CSurfaceAttributes()
 	atts->hitSoundVol = 0.9f;
 	atts->ricochetSoundVol = RIC_NORM;
 	atts->ricochetChance = 0.2;
-	atts->footstepSound = FootstepSoundId::Metal; // FIXME: better sound needed
+	atts->footstepSound = FootstepSoundId::MetalGrate;
 	atts->footstepSoundVolRun = 0.5f;
 	atts->footstepSoundVolWalk = 0.2f;
 

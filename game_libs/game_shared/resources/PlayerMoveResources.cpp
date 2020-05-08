@@ -16,16 +16,12 @@ int PMRes_GetStepSoundIdForSurface(SurfaceProp surfaceProp)
 
 int PMRes_GetStepSoundIdForWater(int deepWater)
 {
-	// TODO: We need a sound for this.
-	// For now, play something that is clearly wrong.
-	return static_cast<int>(FootstepSoundId::Metal);
+	return static_cast<int>(deepWater ? FootstepSoundId::DeepWater : FootstepSoundId::ShallowWater);
 }
 
 int PMRes_GetSwimSoundId(void)
 {
-	// TODO: We need a sound for this.
-	// For now, play something that is clearly wrong.
-	return static_cast<int>(FootstepSoundId::Metal);
+	return static_cast<int>(FootstepSoundId::DeepWater);
 }
 
 float PMRes_GetStepSoundVolumeMultiplierForSurface(SurfaceProp surfaceProp, int walking)

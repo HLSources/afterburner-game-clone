@@ -94,6 +94,38 @@ static constexpr const char* const FootstepsWoodGrit[] =
 	"footsteps/step_wood_grit4.wav",
 };
 
+static constexpr const char* const FootstepsGlass[] =
+{
+	"footsteps/step_glass1.wav",
+	"footsteps/step_glass2.wav",
+	"footsteps/step_glass3.wav",
+	"footsteps/step_glass4.wav",
+};
+
+static constexpr const char* const FootstepsMetalGrate[] =
+{
+	"footsteps/step_metalgrate1.wav",
+	"footsteps/step_metalgrate2.wav",
+	"footsteps/step_metalgrate3.wav",
+	"footsteps/step_metalgrate4.wav",
+};
+
+static constexpr const char* const FootstepsWater[] =
+{
+	"footsteps/step_water1.wav",
+	"footsteps/step_water2.wav",
+	"footsteps/step_water3.wav",
+	"footsteps/step_water4.wav",
+};
+
+static constexpr const char* const FootstepsWaterWade[] =
+{
+	"footsteps/step_waterwade1.wav",
+	"footsteps/step_waterwade2.wav",
+	"footsteps/step_waterwade3.wav",
+	"footsteps/step_waterwade4.wav",
+};
+
 CFootstepSoundResources::CFootstepSoundResources() :
 	CBaseResourceCollection<FootstepSoundId, static_cast<size_t>(FootstepSoundId::Count)>()
 {
@@ -109,6 +141,10 @@ CFootstepSoundResources::CFootstepSoundResources() :
 	InitialiseResources(FootstepSoundId::VentDuct, FootstepsVentDuct);
 	InitialiseResources(FootstepSoundId::WoodClean, FootstepsWoodClean);
 	InitialiseResources(FootstepSoundId::WoodGrit, FootstepsWoodGrit);
+	InitialiseResources(FootstepSoundId::Glass, FootstepsGlass);
+	InitialiseResources(FootstepSoundId::MetalGrate, FootstepsMetalGrate);
+	InitialiseResources(FootstepSoundId::ShallowWater, FootstepsWater);
+	InitialiseResources(FootstepSoundId::DeepWater, FootstepsWaterWade);
 }
 
 const char* CFootstepSoundResources::RandomFootstepSoundPath(FootstepSoundId id, Foot foot) const
