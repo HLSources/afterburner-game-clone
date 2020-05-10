@@ -330,6 +330,7 @@ public:
 	char m_SbarString1[SBAR_STRING_SIZE];
 
 	float m_flNextChatTime;
+	float m_flNextPainTime;
 
 	bool m_bSentBhopcap; // If false, the player just joined and needs a bhopcap message.
 };

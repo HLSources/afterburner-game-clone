@@ -45,6 +45,7 @@
 #include "gameplay/spawnpointmanager.h"
 #include "screenOverlays/messageWriter.h"
 #include "com_model.h"
+#include "resources/SoundResources.h"
 
 // #define DUCKFIX
 
@@ -253,16 +254,16 @@ LINK_ENTITY_TO_CLASS( player, CBasePlayer )
 
 void CBasePlayer::Pain( void )
 {
-	float flRndSound;//sound randomizer
+	if ( m_flNextPainTime > gpGlobals->time )
+	{
+		return;
+	}
 
-	flRndSound = RANDOM_FLOAT( 0, 1 );
+	// TODO: Need to decide on subtype (male/female/bond).
+	const char* path = SoundResources::PlayerSounds.RandomResourcePath(PlayerSoundId::PainMale);
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, path, 1.0f, ATTN_NORM);
 
-	if( flRndSound <= 0.33 )
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain5.wav", 1, ATTN_NORM );
-	else if( flRndSound <= 0.66 )
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain6.wav", 1, ATTN_NORM );
-	else
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain7.wav", 1, ATTN_NORM );
+	m_flNextPainTime = gpGlobals->time + 0.45f;
 }
 
 Vector VecVelocityForDamage( float flDamage )
@@ -345,28 +346,9 @@ int TrainSpeed( int iSpeed, int iMax )
 
 void CBasePlayer::DeathSound( void )
 {
-	// water death sounds
-	/*
-	if( pev->waterlevel == 3 )
-	{
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/h2odeath.wav", 1, ATTN_NONE );
-		return;
-	}
-	*/
-
-	// temporarily using pain sounds for death sounds
-	switch( RANDOM_LONG( 1, 5 ) )
-	{
-	case 1:
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain5.wav", 1, ATTN_NORM );
-		break;
-	case 2:
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain6.wav", 1, ATTN_NORM );
-		break;
-	case 3:
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain7.wav", 1, ATTN_NORM );
-		break;
-	}
+	// TODO: Need to decide on subtype (male/female/bond).
+	const char* path = SoundResources::PlayerSounds.RandomResourcePath(PlayerSoundId::DieMale);
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, path, 1.0f, ATTN_NORM);
 
 	// play one of the suit death alarms
 	EMIT_GROUPNAME_SUIT( ENT( pev ), "HEV_DEAD" );
@@ -540,6 +522,11 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 
 	m_bitsDamageType |= bitsDamage; // Save this so we can report it to the client
 	m_bitsHUDDamage = -1;  // make sure the damage bits get resent
+
+	if ( !(bitsDamage & DMG_DROWN) && pev->health > 0 )
+	{
+		Pain();
+	}
 
 	while( fTookDamage && ( !ftrivial || ( bitsDamage & DMG_TIMEBASED ) ) && ffound && bitsDamage )
 	{
@@ -2769,6 +2756,7 @@ void CBasePlayer::Spawn( void )
 	m_lastx = m_lasty = 0;
 
 	m_flNextChatTime = gpGlobals->time;
+	m_flNextPainTime = gpGlobals->time;
 
 	g_pGameRules->PlayerSpawn( this );
 }

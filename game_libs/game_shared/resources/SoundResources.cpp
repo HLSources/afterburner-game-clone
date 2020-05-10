@@ -8,6 +8,7 @@ namespace SoundResources
 	CWeaponSoundResources WeaponSounds;
 	CSurfaceSoundResources SurfaceSounds;
 	CFootstepSoundResources FootstepSounds;
+	CPlayerSoundResources PlayerSounds;
 
 	static void Precache(const IIterableResourceCollection& collection)
 	{
@@ -17,11 +18,14 @@ namespace SoundResources
 		}
 	}
 
-	void Precache()
+	void PrecacheAll()
 	{
+		// TODO: Do we want a way to precache subsets of these sounds?
+		// Eg. so that we don't have to precache multiplayer-only sounds in singleplayer?
 		Precache(ItemSounds);
 		Precache(WeaponSounds);
 		Precache(SurfaceSounds);
 		Precache(FootstepSounds);
+		Precache(PlayerSounds);
 	}
 }

@@ -4,6 +4,7 @@
 #include "WeaponSoundResources.h"
 #include "SurfaceSoundResources.h"
 #include "FootstepSoundResources.h"
+#include "PlayerSoundResources.h"
 
 namespace SoundResources
 {
@@ -11,6 +12,7 @@ namespace SoundResources
 	extern CWeaponSoundResources WeaponSounds;
 	extern CSurfaceSoundResources SurfaceSounds;
 	extern CFootstepSoundResources FootstepSounds;
+	extern CPlayerSoundResources PlayerSounds;
 
-	void Precache();
+	void PrecacheAll();
 }

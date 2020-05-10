@@ -399,10 +399,7 @@ void W_Precache( void )
 	PRECACHE_SOUND( "weapons/debris2.wav" );// explosion aftermaths
 	PRECACHE_SOUND( "weapons/debris3.wav" );// explosion aftermaths
 
-	PRECACHE_SOUND( "weapons/bullet_hit1.wav" );	// hit by bullet
-	PRECACHE_SOUND( "weapons/bullet_hit2.wav" );	// hit by bullet
-
-	SoundResources::Precache();
+	SoundResources::PrecacheAll();
 }
 
 TYPEDESCRIPTION	CBasePlayerItem::m_SaveData[] =
