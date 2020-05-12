@@ -239,7 +239,7 @@ typedef struct playermove_s
 #endif
 	int		(*PM_TestPlayerPositionEx) (float *pos, pmtrace_t *ptrace, int (*pfnIgnore)( physent_t *pe ));
 	struct pmtrace_s	*(*PM_TraceLineEx)( float *start, float *end, int flags, int usehulll, int (*pfnIgnore)( physent_t *pe ));
-	struct msurface_s	*(*PM_TraceSurface)( int ground, float *vstart, float *vend );
+	struct msurface_s	*(*PM_TraceSurface)( int ground, const float *vstart, const float *vend );
 } playermove_t;
 
 #ifdef __MINGW32__

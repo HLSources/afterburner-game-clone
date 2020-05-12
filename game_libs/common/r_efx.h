@@ -106,6 +106,7 @@ typedef struct tempent_s
 
 	vec3_t		tentOffset;	// if attached, client origin + tentOffset = tent origin.
 	cl_entity_t	entity;
+	int entityIndex;
 
 	// baseline.origin		- velocity
 	// baseline.renderamt	- starting fadeout intensity

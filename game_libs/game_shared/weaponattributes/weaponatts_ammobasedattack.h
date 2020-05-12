@@ -2,6 +2,7 @@
 
 #include "weaponatts_baseattack.h"
 #include "weapons.h"
+#include "resources/ShellImpactSoundResources.h"
 
 namespace WeaponAtts
 {
@@ -22,9 +23,9 @@ namespace WeaponAtts
         int MuzzleFlashBrightness = NORMAL_GUN_FLASH;
         float ViewPunchY = 0.0f;
         const char* ShellModelName = nullptr;
+        ShellType ShellModelType = ShellType::Default;
         bool AutoReload = true;
         bool SpecialReload = false;
-
         inline void SetUniformSpread(float spread)
         {
             SpreadX = spread;

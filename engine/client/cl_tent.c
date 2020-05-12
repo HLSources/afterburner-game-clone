@@ -229,6 +229,7 @@ void CL_ClearTempEnts( void )
 	{
 		cl_tempents[i].next = &cl_tempents[i+1];
 		cl_tempents[i].entity.trivial_accept = INVALID_HANDLE;
+		cl_tempents[i].entityIndex = -i;
 	}
 
 	cl_tempents[GI->max_tents-1].next = NULL;
@@ -292,90 +293,6 @@ void CL_PrepareTEnt( TEMPENTITY *pTemp, model_t *pmodel )
 
 /*
 ==============
-CL_TempEntPlaySound
-
-play collide sound
-==============
-*/
-void CL_TempEntPlaySound( TEMPENTITY *pTemp, float damp )
-{
-	float	fvol;
-	char	soundname[32];
-	qboolean	isshellcasing = false;
-	int	zvel;
-
-	Assert( pTemp != NULL );
-
-	fvol = 0.8f;
-
-	switch( pTemp->hitSound )
-	{
-	case BOUNCE_GLASS:
-		Q_snprintf( soundname, sizeof( soundname ), "debris/glass%i.wav", COM_RandomLong( 1, 4 ));
-		break;
-	case BOUNCE_METAL:
-		Q_snprintf( soundname, sizeof( soundname ), "debris/metal%i.wav", COM_RandomLong( 1, 6 ));
-		break;
-	case BOUNCE_FLESH:
-		Q_snprintf( soundname, sizeof( soundname ), "debris/flesh%i.wav", COM_RandomLong( 1, 7 ));
-		break;
-	case BOUNCE_WOOD:
-		Q_snprintf( soundname, sizeof( soundname ), "debris/wood%i.wav", COM_RandomLong( 1, 4 ));
-		break;
-	case BOUNCE_SHRAP:
-		Q_snprintf( soundname, sizeof( soundname ), "%s", cl_ricochet_sounds[COM_RandomLong( 0, 4 )] );
-		break;
-	case BOUNCE_SHOTSHELL:
-		Q_snprintf( soundname, sizeof( soundname ), "%s", cl_weapon_shell_sounds[COM_RandomLong( 0, 2 )] );
-		isshellcasing = true; // shell casings have different playback parameters
-		fvol = 0.5f;
-		break;
-	case BOUNCE_SHELL:
-		Q_snprintf( soundname, sizeof( soundname ), "%s", cl_player_shell_sounds[COM_RandomLong( 0, 2 )] );
-		isshellcasing = true; // shell casings have different playback parameters
-		break;
-	case BOUNCE_CONCRETE:
-		Q_snprintf( soundname, sizeof( soundname ), "debris/concrete%i.wav", COM_RandomLong( 1, 3 ));
-		break;
-	default:	// null sound
-		return;
-	}
-
-	zvel = abs( pTemp->entity.baseline.origin[2] );
-
-	// only play one out of every n
-	if( isshellcasing )
-	{
-		// play first bounce, then 1 out of 3
-		if( zvel < 200 && COM_RandomLong( 0, 3 ))
-			return;
-	}
-	else
-	{
-		if( COM_RandomLong( 0, 5 ))
-			return;
-	}
-
-	if( damp > 0.0f )
-	{
-		int	pitch;
-		sound_t	handle;
-
-		if( isshellcasing )
-			fvol *= min ( 1.0f, ((float)zvel) / 350.0f );
-		else fvol *= min ( 1.0f, ((float)zvel) / 450.0f );
-
-		if( !COM_RandomLong( 0, 3 ) && !isshellcasing )
-			pitch = COM_RandomLong( 95, 105 );
-		else pitch = PITCH_NORM;
-
-		handle = S_RegisterSound( soundname );
-		S_StartSound( pTemp->entity.origin, -(pTemp - cl_tempents), CHAN_BODY, handle, fvol, ATTN_NORM, pitch, SND_STOP_LOOPING );
-	}
-}
-
-/*
-==============
 CL_TEntAddEntity
 
 add entity to renderlist
@@ -423,7 +340,7 @@ void CL_TempEntUpdate( void )
 	double	ft = cl.time - cl.oldtime;
 	float	gravity = clgame.movevars.gravity;
 
-	clgame.dllFuncs.pfnTempEntUpdate( ft, cl.time, gravity, &cl_free_tents, &cl_active_tents, CL_TempEntAddEntity, CL_TempEntPlaySound );
+	clgame.dllFuncs.pfnTempEntUpdate( ft, cl.time, gravity, &cl_free_tents, &cl_active_tents, CL_TempEntAddEntity );
 }
 
 /*

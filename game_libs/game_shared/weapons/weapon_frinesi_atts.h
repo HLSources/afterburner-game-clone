@@ -101,6 +101,7 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	priAttack->MuzzleFlashBrightness = NORMAL_GUN_FLASH;
 	priAttack->ViewPunchY = -5.0f;
 	priAttack->ShellModelName = "models/shotgunshell.mdl";
+	priAttack->ShellModelType = ShellType::Shotgun;
 	priAttack->SpecialReload = true;
 
 	priAttack->ViewModelAnimList_Attack << FRINESI_SHOOT;

@@ -60,7 +60,7 @@ typedef struct cldll_func_s
 	int	(*pfnGetHullBounds)( int hullnumber, float *mins, float *maxs );
 	void	(*pfnFrame)( double time );
 	int	(*pfnKey_Event)( int eventcode, int keynum, const char *pszCurrentBinding );
-	void	(*pfnTempEntUpdate)( double frametime, double client_time, double cl_gravity, struct tempent_s **ppTempEntFree, struct tempent_s **ppTempEntActive, int ( *Callback_AddVisibleEntity )( cl_entity_t *pEntity ), void ( *Callback_TempEntPlaySound )( struct tempent_s *pTemp, float damp ));
+	void	(*pfnTempEntUpdate)( double frametime, double client_time, double cl_gravity, struct tempent_s **ppTempEntFree, struct tempent_s **ppTempEntActive, int ( *Callback_AddVisibleEntity )( cl_entity_t *pEntity ));
 	cl_entity_t *(*pfnGetUserEntity)( int index );
 	void	(*pfnVoiceStatus)( int entindex, qboolean bTalking );
 	void	(*pfnDirectorMessage)( int iSize, void *pbuf );

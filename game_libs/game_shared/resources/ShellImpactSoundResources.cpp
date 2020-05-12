@@ -1,4 +1,5 @@
 #include "ShellImpactSoundResources.h"
+#include "standard_includes.h"
 
 static constexpr const char* const BrassShellOnHardSurface[] =
 {
@@ -60,4 +61,90 @@ CShellImpactSoundResources::CShellImpactSoundResources() :
 	InitialiseResources(ShellImpactSoundId::SolidOnMediumSurface, SolidShellOnConcreteSurface);
 	InitialiseResources(ShellImpactSoundId::SolidOnMetalSurface, ShellOnMetalSurface);
 	InitialiseResources(ShellImpactSoundId::SolidOnWoodSurface, SolidShellOnWoodSurface);
+}
+
+const char* CShellImpactSoundResources::RandomResourcePathForImpact(ShellType shell, SurfaceProp surfaceProp) const
+{
+	if ( surfaceProp == SurfaceProp_None )
+	{
+		return nullptr;
+	}
+
+	if ( surfaceProp == SurfaceProp_Water )
+	{
+		return RandomResourcePath(ShellImpactSoundId::IntoWater);
+	}
+
+	switch ( shell )
+	{
+		case ShellType::Default:
+		{
+			return DefaultShellImpact(surfaceProp);
+		}
+
+		case ShellType::Shotgun:
+		{
+			return ShotgunShellImpact(surfaceProp);
+		}
+
+		case ShellType::Heavy:
+		{
+			return HeavyShellImpact(surfaceProp);
+		}
+
+		default:
+		{
+			return nullptr;
+		}
+	}
+}
+
+const char* CShellImpactSoundResources::DefaultShellImpact(SurfaceProp surfaceProp) const
+{
+	return RandomResourcePath(ShellImpactSoundId::BrassOnHardSurface);
+}
+
+const char* CShellImpactSoundResources::ShotgunShellImpact(SurfaceProp surfaceProp) const
+{
+	return RandomResourcePath(ShellImpactSoundId::HollowOnHardSurface);
+}
+
+const char* CShellImpactSoundResources::HeavyShellImpact(SurfaceProp surfaceProp) const
+{
+	switch ( surfaceProp )
+	{
+		case SurfaceProp_Carpet:
+		case SurfaceProp_Cloth:
+		case SurfaceProp_Dirt:
+		case SurfaceProp_Flesh:
+		case SurfaceProp_Grass:
+		case SurfaceProp_Gravel:
+		case SurfaceProp_Paper:
+		case SurfaceProp_Plaster:
+		case SurfaceProp_Plastic:
+		case SurfaceProp_Rubber:
+		case SurfaceProp_Sand:
+		case SurfaceProp_Snow:
+		{
+			return RandomResourcePath(ShellImpactSoundId::SolidOnMediumSurface);
+		}
+
+		case SurfaceProp_Gold:
+		case SurfaceProp_Metal:
+		case SurfaceProp_VentDuct:
+		case SurfaceProp_MetalGrate:
+		{
+			return RandomResourcePath(ShellImpactSoundId::SolidOnMetalSurface);
+		}
+
+		case SurfaceProp_Wood:
+		{
+			return RandomResourcePath(ShellImpactSoundId::SolidOnWoodSurface);
+		}
+
+		default:
+		{
+			return RandomResourcePath(ShellImpactSoundId::SolidOnHardSurface);
+		}
+	}
 }

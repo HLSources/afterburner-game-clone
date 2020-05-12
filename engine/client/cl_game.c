@@ -2521,7 +2521,7 @@ pfnTraceTexture
 
 =============
 */
-static texture_t *pfnTraceTexture( int ground, float *vstart, float *vend )
+static texture_t *pfnTraceTexture( int ground, const float *vstart, const float *vend )
 {
 	physent_t *pe;
 
@@ -2540,7 +2540,7 @@ pfnTraceSurface
 
 =============
 */
-struct msurface_s *pfnTraceSurface( int ground, float *vstart, float *vend )
+struct msurface_s *pfnTraceSurface( int ground, const float *vstart, const float *vend )
 {
 	physent_t *pe;
 

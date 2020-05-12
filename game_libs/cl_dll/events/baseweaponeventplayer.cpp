@@ -131,7 +131,7 @@ void BaseWeaponEventPlayer::AnimateViewModel()
 	gEngfuncs.pEventAPI->EV_WeaponAnimation(animIndex, body);
 }
 
-void BaseWeaponEventPlayer::EjectShellFromViewModel(int shellIndex)
+void BaseWeaponEventPlayer::EjectShellFromViewModel(int shellIndex, ShellType shellType)
 {
 	vec3_t ShellVelocity;
 	vec3_t ShellOrigin;
@@ -149,7 +149,7 @@ void BaseWeaponEventPlayer::EjectShellFromViewModel(int shellIndex)
 						   SHELLEJECT_RIGHT_SCALE,
 						   SHELLEJECT_UP_SCALE);
 
-	EV_EjectBrass(ShellOrigin, ShellVelocity, m_vecEntAngles[YAW], shellIndex, TE_BOUNCE_SHELL);
+	EV_EjectBrass(ShellOrigin, ShellVelocity, m_vecEntAngles[YAW], shellIndex, shellType == ShellType::Shotgun ? TE_BOUNCE_SHOTSHELL : TE_BOUNCE_SHELL);
 }
 
 void BaseWeaponEventPlayer::PlayFireSound()

@@ -2,6 +2,15 @@
 
 #include "BaseResourceCollection.h"
 
+typedef enum _SurfaceProp SurfaceProp;
+
+enum class ShellType
+{
+	Default = 0,
+	Shotgun,
+	Heavy
+};
+
 enum class ShellImpactSoundId
 {
 	BrassOnHardSurface = 0,
@@ -18,4 +27,11 @@ class CShellImpactSoundResources : public CBaseResourceCollection<ShellImpactSou
 {
 public:
 	CShellImpactSoundResources();
+
+	const char* RandomResourcePathForImpact(ShellType shell, SurfaceProp surfaceProp) const;
+
+private:
+	const char* DefaultShellImpact(SurfaceProp surfaceProp) const;
+	const char* ShotgunShellImpact(SurfaceProp surfaceProp) const;
+	const char* HeavyShellImpact(SurfaceProp surfaceProp) const;
 };

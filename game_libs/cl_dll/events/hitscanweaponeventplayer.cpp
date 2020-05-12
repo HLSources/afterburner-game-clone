@@ -52,7 +52,7 @@ void HitscanWeaponEventPlayer::EventStart()
 		V_PunchAxis(0, m_pHitscanAttack->ViewPunchY);
 	}
 
-	EjectShellFromViewModel(m_iShellModelIndex);
+	EjectShellFromViewModel(m_iShellModelIndex, m_pHitscanAttack->ShellModelType);
 	PlayFireSound();
 	CreateBulletTracers();
 }

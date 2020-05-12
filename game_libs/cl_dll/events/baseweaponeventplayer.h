@@ -3,6 +3,7 @@
 #include "utlstring.h"
 #include "rapidjson/document.h"
 #include "weaponatts_baseattack.h"
+#include "resources/ShellImpactSoundResources.h"
 
 typedef struct event_args_s event_args_t;
 class CGenericWeaponAtts_HitscanFireMechanic;
@@ -22,7 +23,7 @@ protected:
 	virtual void ParseEventScript(const rapidjson::Document& document);
 
 	void AnimateViewModel();
-	void EjectShellFromViewModel(int shellIndex);
+	void EjectShellFromViewModel(int shellIndex, ShellType shellType);
 	void PlayFireSound();
 
 	const event_args_t* m_pEventArgs = nullptr;

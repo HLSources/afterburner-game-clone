@@ -5,8 +5,6 @@
 #include "SurfaceDecalResources.h"
 #include "FootstepSoundResources.h"
 
-class CSoundInstance;
-
 class CSurfaceAttributes
 {
 public:

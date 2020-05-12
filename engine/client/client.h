@@ -840,7 +840,7 @@ void CL_GetMousePosition( int *mx, int *my ); // TODO: move to input
 cl_entity_t* CL_GetViewModel( void );
 void pfnGetScreenFade( struct screenfade_s *fade );
 physent_t *pfnGetPhysent( int idx );
-struct msurface_s *pfnTraceSurface( int ground, float *vstart, float *vend );
+struct msurface_s *pfnTraceSurface( int ground, const float *vstart, const float *vend );
 movevars_t *pfnGetMoveVars( void );
 
 _inline cl_entity_t *CL_EDICT_NUM( int n )

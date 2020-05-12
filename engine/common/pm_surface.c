@@ -181,7 +181,7 @@ find the face where the traceline hit
 assume physentity is valid
 ==================
 */
-msurface_t *PM_TraceSurface( physent_t *pe, vec3_t start, vec3_t end )
+msurface_t *PM_TraceSurface( physent_t *pe, const float* start, const float* end )
 {
 	matrix4x4		matrix;
 	model_t		*bmodel;
@@ -220,7 +220,7 @@ find the face where the traceline hit
 assume physentity is valid
 ==================
 */
-texture_t *PM_TraceTexture( physent_t *pe, vec3_t start, vec3_t end )
+texture_t *PM_TraceTexture( physent_t *pe, const float* start, const float* end )
 {
 	msurface_t	*surf = PM_TraceSurface( pe, start, end );
 

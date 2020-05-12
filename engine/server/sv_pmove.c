@@ -585,7 +585,7 @@ static pmtrace_t *pfnTraceLineEx( float *start, float *end, int flags, int usehu
 	return &tr;
 }
 
-static struct msurface_s *pfnTraceSurface( int ground, float *vstart, float *vend )
+static struct msurface_s *pfnTraceSurface( int ground, const float *vstart, const float *vend )
 {
 	physent_t *pe;
 
