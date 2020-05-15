@@ -122,7 +122,7 @@ static int gcTextures = 0;
 
 int g_onladder = 0;
 
-void PM_PlayStepSoundNew(int stepSoundId, float volume)
+static void PM_PlayStepSound(int stepSoundId, float volume)
 {
 	if( !pmove->runfuncs )
 	{
@@ -142,8 +142,6 @@ void PM_PlayStepSoundNew(int stepSoundId, float volume)
 	VectorCopy( pmove->velocity, hvel );
 	hvel[2] = 0.0;
 
-	// TODO: Why do we not use g_onladder in PM_UpdateStepSound()???
-	// Do we even want this check?
 	if( pmove->multiplayer && !g_onladder && Length(hvel) <= 220 )
 	{
 		return;
@@ -224,7 +222,7 @@ void PM_UpdateStepSound( void )
 	}
 
 	// If pmove->flTimeStepSound is zero in this case, don't exit - we just started moving in new level.
-	if ( speed < velwalk && pmove->flTimeStepSound != 0 )
+	if ( speed < velwalk && pmove->flTimeStepSound > 0 )
 	{
 		return;
 	}
@@ -280,7 +278,7 @@ void PM_UpdateStepSound( void )
 		fvol *= 0.35f;
 	}
 
-	PM_PlayStepSoundNew(stepSoundId, fvol);
+	PM_PlayStepSound(stepSoundId, fvol);
 }
 
 /*
@@ -2141,7 +2139,7 @@ void PM_Jump( void )
 		{
 			// Don't play sound again for 1 second
 			pmove->flSwimTime = 1000;
-			PM_PlayStepSoundNew(PMRes_GetSwimSoundId(), 1.0f);
+			PM_PlayStepSound(PMRes_GetSwimSoundId(), 1.0f);
 		}
 
 		return;
@@ -2172,7 +2170,7 @@ void PM_Jump( void )
 	else
 	{
 		const int stepSoundId = PM_GetStepSoundIdForCurrentTexture();
-		PM_PlayStepSoundNew(stepSoundId, 1.0f);
+		PM_PlayStepSound(stepSoundId, 1.0f);
 	}
 
 	// In the air now.
@@ -2317,7 +2315,7 @@ void PM_CheckFalling( void )
 
 			// play step sound for current texture
 			const int stepSoundId = PM_GetStepSoundIdForCurrentTexture();
-			PM_PlayStepSoundNew(stepSoundId, fvol);
+			PM_PlayStepSound(stepSoundId, fvol);
 
 			// Knock the screen around a little bit, temporary effect
 			pmove->punchangle[2] = pmove->flFallVelocity * 0.013;	// punch z axis
@@ -2346,7 +2344,7 @@ void PM_PlayWaterSounds( void )
 	// Did we enter or leave water?
 	if( ( pmove->oldwaterlevel == 0 && pmove->waterlevel != 0 ) || ( pmove->oldwaterlevel != 0 && pmove->waterlevel == 0 ) )
 	{
-		PM_PlayStepSoundNew(PMRes_GetStepSoundIdForWater(true), 1.0f);
+		PM_PlayStepSound(PMRes_GetStepSoundIdForWater(true), 1.0f);
 	}
 }
 
@@ -2888,7 +2886,7 @@ void PM_Move( struct playermove_s *ppmove, int server )
 		pmove->flags &= ~FL_ONGROUND;
 	}
 
-	// Reset friction after each movement to FrictionModifier Triggers work still.
+	// Reset friction after each movement so FrictionModifier Triggers work still.
 	if( pmove->movetype == MOVETYPE_WALK )
 	{
 		pmove->friction = 1.0f;
