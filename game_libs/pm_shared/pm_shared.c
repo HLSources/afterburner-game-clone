@@ -2160,9 +2160,6 @@ void PM_Jump( void )
 	if( pmove->oldbuttons & IN_JUMP )
 		return;		// don't pogo stick
 
-	// In the air now.
-	pmove->onground = -1;
-
 	if( g_bhopcap )
 	{
 		PM_PreventMegaBunnyJumping();
@@ -2177,6 +2174,9 @@ void PM_Jump( void )
 		const int stepSoundId = PM_GetStepSoundIdForCurrentTexture();
 		PM_PlayStepSoundNew(stepSoundId, 1.0f);
 	}
+
+	// In the air now.
+	pmove->onground = -1;
 
 	// See if user can super long jump?
 	cansuperjump = atoi( pmove->PM_Info_ValueForKey( pmove->physinfo, "slj" ) ) == 1 ? true : false;
