@@ -1,4 +1,5 @@
 #include "r_local.h"
+#define APIENTRY_LINKAGE static
 #include "../ref_gl/gl_export.h"
 
 struct swblit_s
@@ -10,6 +11,7 @@ struct swblit_s
 	void (*pUnlockBuffer)( void );
 	qboolean(*pCreateBuffer)( int width, int height, uint *stride, uint *bpp, uint *r, uint *g, uint *b );
 	uint rotate;
+	qboolean gl1;
 } swblit;
 
 
@@ -91,8 +93,18 @@ void GAME_EXPORT GL_SetupAttributes( int safegl )
 	// untill we have any blitter in ref api, setup GL
 	gEngfuncs.GL_SetAttribute( REF_GL_CONTEXT_PROFILE_MASK, REF_GL_CONTEXT_PROFILE_ES );
 	gEngfuncs.GL_SetAttribute( REF_GL_CONTEXT_EGL, 1 );
-	gEngfuncs.GL_SetAttribute( REF_GL_CONTEXT_MAJOR_VERSION, 3 );
-	gEngfuncs.GL_SetAttribute( REF_GL_CONTEXT_MINOR_VERSION, 0 );
+//	safegl=1;
+	if( safegl )
+	{
+		gEngfuncs.GL_SetAttribute( REF_GL_CONTEXT_MAJOR_VERSION, 1 );
+		gEngfuncs.GL_SetAttribute( REF_GL_CONTEXT_MINOR_VERSION, 1 );
+		swblit.gl1 = true;
+	}
+	else
+	{
+		gEngfuncs.GL_SetAttribute( REF_GL_CONTEXT_MAJOR_VERSION, 3 );
+		gEngfuncs.GL_SetAttribute( REF_GL_CONTEXT_MINOR_VERSION, 0 );
+	}
 	gEngfuncs.GL_SetAttribute( REF_GL_DOUBLEBUFFER, 1 );
 
 	gEngfuncs.GL_SetAttribute( REF_GL_RED_SIZE, 5 );
@@ -106,8 +118,8 @@ void GL_FUNCTION( glBindBuffer)(GLenum target, GLuint buffer);
 void GL_FUNCTION( glBufferData )(GLenum target, GLsizeiptrARB size, const GLvoid *data, GLenum usage);
 void GL_FUNCTION( glGenBuffers )(GLsizei n, GLuint *buffers);
 void GL_FUNCTION( glDeleteBuffers )(GLsizei n, const GLuint *buffers);
-GLvoid* GL_FUNCTION( glMapBuffer )(GLenum target, GLenum access);
-GLboolean GL_FUNCTION( glUnmapBuffer )(GLenum target);
+GLvoid* GL_FUNCTION( glMapBufferOES )(GLenum target, GLenum access);
+GLboolean GL_FUNCTION( glUnmapBufferOES )(GLenum target);
 #define GL_PIXEL_UNPACK_BUFFER 0x88EC
 #define GL_FRAMEBUFFER 0x8D40
 #define GL_COLOR_ATTACHMENT0 0x8CE0
@@ -147,8 +159,12 @@ void GAME_EXPORT GL_InitExtensions( void )
 	LOAD(glBufferData);
 	LOAD(glGenBuffers);
 	LOAD(glDeleteBuffers);
-	LOAD(glMapBuffer);
-	LOAD(glUnmapBuffer);
+	LOAD(glMapBufferOES);
+	if( !pglMapBufferOES )
+		pglMapBufferOES = gEngfuncs.GL_GetProcAddress("glMapBuffer");
+	LOAD(glUnmapBufferOES);
+	if( !pglUnmapBufferOES )
+		pglUnmapBufferOES = gEngfuncs.GL_GetProcAddress("glUnmapBuffer");
 	LOAD(glGenFramebuffers);
 	LOAD(glBindFramebuffer);
 	LOAD(glFramebufferTexture2D);
@@ -292,16 +308,42 @@ static qboolean R_CreateBuffer_GLES1( int width, int height, uint *stride, uint 
 
 static void *R_Lock_GLES3( void )
 {
+	void *buf = NULL;
+
+	if( !vid.width || !vid.height )
+		return NULL;
+
+	if( glbuf )
+		return glbuf;
+
 	pglBufferData( GL_PIXEL_UNPACK_BUFFER, vid.width * vid.height * 2, 0, GL_STREAM_DRAW_ARB );
-	return pglMapBuffer( GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY_ARB );
+	if( pglMapBufferOES )
+		buf = pglMapBufferOES( GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY_ARB );
+	if( !buf )
+	{
+		if( pglUnmapBufferOES )
+			pglUnmapBufferOES( GL_PIXEL_UNPACK_BUFFER );
+		pglBindBuffer( GL_PIXEL_UNPACK_BUFFER, 0 );
+		glbuf = Mem_Malloc( r_temppool, vid.width*vid.height*2 );
+		pglTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, vid.width, vid.height, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, glbuf );
+		return glbuf;
+	}
+	else
+		return buf;
 }
 
 
 static void R_Unlock_GLES3( void )
 {
 	gEngfuncs.GL_SwapBuffers();
-	pglUnmapBuffer( GL_PIXEL_UNPACK_BUFFER );
-	pglTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, vid.width, vid.height, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, 0 );
+	if( glbuf )
+		pglTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, vid.width, vid.height, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, glbuf );
+	else
+	{
+		if( pglUnmapBufferOES )
+			pglUnmapBufferOES( GL_PIXEL_UNPACK_BUFFER );
+		pglTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, vid.width, vid.height, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, 0 );
+	}
 	//pglDrawArrays( GL_TRIANGLE_FAN, 0,4 );
 	pglBlitFramebuffer( 0, vid.height, vid.width, 0, 0, 0, vid.width, vid.height, GL_COLOR_BUFFER_BIT, GL_NEAREST );
 }
@@ -590,7 +632,13 @@ void R_InitBlit( qboolean glblit )
 {
 	R_BuildBlendMaps();
 
-	if( glblit )
+	if( glblit && swblit.gl1 )
+	{
+		swblit.pLockBuffer = R_Lock_GL1;
+		swblit.pUnlockBuffer = R_Unlock_GLES1;
+		swblit.pCreateBuffer = R_CreateBuffer_GLES1;
+	}
+	else if( glblit )
 	{
 		swblit.pLockBuffer = R_Lock_GLES3;
 		swblit.pUnlockBuffer = R_Unlock_GLES3;

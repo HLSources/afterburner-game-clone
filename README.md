@@ -93,12 +93,14 @@ Read more about Xash3D on ModDB: https://www.moddb.com/engines/xash3d-engine
 
 ## Contributing
 * Before sending an issue, check if someone already reported your issue. Make sure you're following "How To Ask Questions The Smart Way" guide by Eric Steven Raymond. Read more: http://www.catb.org/~esr/faqs/smart-questions.html
-* Before sending a PR, check if you followed our coding guide in CODING_STYLE.md file.
+* Before sending a PR, check if you followed our contribution guide in CONTRIBUTING.md file.
 
 ## Build instructions
 We are using Waf build system. If you have some Waf-related questions, I recommend you to read https://waf.io/book/
 
 If you're stuck somewhere and you need a clear example, read `.travis.yml` and `scripts/build*.sh`.
+
+NOTE: NEVER USE GitHub's ZIP ARCHIVES. They are broken and don't contain external dependencies sources we're using.
 
 ### Prerequisites
 #### Windows(Visual Studio)
