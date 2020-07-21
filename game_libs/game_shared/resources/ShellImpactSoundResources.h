@@ -1,8 +1,7 @@
 #pragma once
 
 #include "BaseResourceCollection.h"
-
-typedef enum _SurfaceProp SurfaceProp;
+#include "surfaceprops.h"
 
 enum class ShellType
 {

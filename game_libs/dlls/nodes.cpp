@@ -3040,7 +3040,7 @@ void CGraph::BuildRegionTables( void )
 			int jCodeX = m_pNodes[jNode].m_Region[0];
 			int jCodeY = m_pNodes[jNode].m_Region[1];
 			int jCodeZ = m_pNodes[jNode].m_Region[2];
-			int jCode;
+			int jCode = 0;
 			switch( i )
 			{
 			case 0:
@@ -3060,7 +3060,7 @@ void CGraph::BuildRegionTables( void )
 				int kCodeX = m_pNodes[kNode].m_Region[0];
 				int kCodeY = m_pNodes[kNode].m_Region[1];
 				int kCodeZ = m_pNodes[kNode].m_Region[2];
-				int kCode;
+				int kCode = 0;
 				switch( i )
 				{
 				case 0:
@@ -3143,7 +3143,7 @@ void CGraph::ComputeStaticRoutingTables( void )
 		{
 			for( int iCap = 0; iCap < 2; iCap++ )
 			{
-				int iCapMask;
+				int iCapMask = 0;
 				switch( iCap )
 				{
 				case 0:
@@ -3443,7 +3443,7 @@ void CGraph::TestRoutingTables( void )
 		{
 			for( int iCap = 0; iCap < 2; iCap++ )
 			{
-				int iCapMask;
+				int iCapMask = 0;
 				switch( iCap )
 				{
 				case 0:

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "sound/Soundinstance.h"
+#include "sound/SoundInstance.h"
 
 typedef struct edict_s edict_t;
 

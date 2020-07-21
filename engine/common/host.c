@@ -500,12 +500,12 @@ static qboolean Host_RegisterDecal( const char *name, size_t* count )
 
 static size_t RegisterOldDecalList(search_t* list)
 {
+	size_t count = 0;
+
 	if ( !list )
 	{
 		return 0;
 	}
-
-	size_t count = 0;
 
 	for ( int i = 0; i < list->numfilenames; i++ )
 	{
@@ -520,12 +520,12 @@ static size_t RegisterOldDecalList(search_t* list)
 
 static size_t RegisterNewDecalList(search_t* list)
 {
+	size_t count = 0;
+
 	if ( !list )
 	{
 		return 0;
 	}
-
-	size_t count = 0;
 
 	for ( int i = 0; i < list->numfilenames; i++ )
 	{

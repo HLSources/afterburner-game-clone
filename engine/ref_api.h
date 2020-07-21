@@ -410,7 +410,7 @@ typedef struct ref_api_s
 
 	// event api
 	struct physent_s *(*EV_GetPhysent)( int idx );
-	struct msurface_s *( *EV_TraceSurface )( int ground, float *vstart, float *vend );
+	struct msurface_s *( *EV_TraceSurface )( int ground, const float *vstart, const float *vend );
 	struct pmtrace_s *(*PM_TraceLine)( float *start, float *end, int flags, int usehull, int ignore_pe );
 	struct pmtrace_s *(*EV_VisTraceLine )( float *start, float *end, int flags );
 	struct pmtrace_s (*CL_TraceLine)( vec3_t start, vec3_t end, int flags );

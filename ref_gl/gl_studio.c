@@ -3687,6 +3687,10 @@ R_DrawViewModel
 */
 void R_DrawViewModel( void )
 {
+	cl_entity_t* player = NULL;
+	float oldX = 0.0f;
+	float oldY = 0.0f;
+	qboolean differentFOV = false;
 	cl_entity_t	*view = gEngfuncs.GetViewModel();
 
 	R_GatherPlayerLight();
@@ -3696,7 +3700,7 @@ void R_DrawViewModel( void )
 		return;
 	}
 
-	cl_entity_t* player = gEngfuncs.GetLocalPlayer();
+	player = gEngfuncs.GetLocalPlayer();
 
 	if ( player && (player->curstate.effects & EF_HIDEVIEWMODEL) )
 	{
@@ -3727,9 +3731,9 @@ void R_DrawViewModel( void )
 		return;
 	}
 
-	const float oldX = RI.fov_x;
-	const float oldY = RI.fov_y;
-	const qboolean differentFOV = RI.fov_x != RI.viewmodelfov_x || RI.fov_y != RI.viewmodelfov_y;
+	oldX = RI.fov_x;
+	oldY = RI.fov_y;
+	differentFOV = RI.fov_x != RI.viewmodelfov_x || RI.fov_y != RI.viewmodelfov_y;
 
 	if ( differentFOV )
 	{

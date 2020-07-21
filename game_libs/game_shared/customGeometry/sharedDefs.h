@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+
 namespace CustomGeometry
 {
 	static constexpr const char* MESSAGE_NAME = "DrawCustomGeometry";

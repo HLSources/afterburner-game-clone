@@ -2261,7 +2261,11 @@ static qboolean LoadPNGTextureData(const dpngtexturepath_t* in, texture_t** out,
 
 	do
 	{
+		int width = 0;
+		int height = 0;
 		fs_offset_t pngDataSize = 0;
+		int textureNum = 0;
+
 		pngData = FS_LoadFile(texName, &pngDataSize, false);
 
 		if ( !pngData || pngDataSize < 1 )
@@ -2269,9 +2273,6 @@ static qboolean LoadPNGTextureData(const dpngtexturepath_t* in, texture_t** out,
 			Con_Printf(S_ERROR "LoadPngTexture: Map '%s' texture '%s' not found.\n", loadmodel->name, texName);
 			break;
 		}
-
-		int width = 0;
-		int height = 0;
 
 		// Not sure if this is the best way to do this?
 		// Really these kinds of implementation details should be handled by the FS loader,
@@ -2282,7 +2283,7 @@ static qboolean LoadPNGTextureData(const dpngtexturepath_t* in, texture_t** out,
 			break;
 		}
 
-		const int textureNum = ref.dllFuncs.GL_LoadTexture(texName, pngData, pngDataSize, TF_MAKELUMA);
+		textureNum = ref.dllFuncs.GL_LoadTexture(texName, pngData, pngDataSize, TF_MAKELUMA);
 
 		if ( textureNum <= 0 )
 		{
@@ -2316,6 +2317,7 @@ static qboolean LoadPNGTextureData(const dpngtexturepath_t* in, texture_t** out,
 
 static void LoadTextureProperties(texture_t* out, const char* propertiesFilePath)
 {
+	char* inText = NULL;
 	byte* inFile = FS_LoadFile(propertiesFilePath, NULL, false);
 
 	if ( !inFile )
@@ -2323,7 +2325,7 @@ static void LoadTextureProperties(texture_t* out, const char* propertiesFilePath
 		return;
 	}
 
-	char* inText = (char*)inFile;
+	inText = (char*)inFile;
 
 	while ( true )
 	{
@@ -2342,7 +2344,7 @@ static void LoadTextureProperties(texture_t* out, const char* propertiesFilePath
 
 		if ( !inText )
 		{
-			Con_Printf(S_WARN, "LoadTextureProperties: Properties file %s contained key '%s' with no matching value\n",
+			Con_Printf(S_WARN "LoadTextureProperties: Properties file %s contained key '%s' with no matching value\n",
 					   propertiesFilePath,
 					   key);
 			break;
@@ -2350,7 +2352,7 @@ static void LoadTextureProperties(texture_t* out, const char* propertiesFilePath
 
 		if ( !TextureProperties_Parse(out, key, value) )
 		{
-			Con_Printf(S_WARN, "LoadTextureProperties: Properties file %s contained invalid property '%s %s'\n",
+			Con_Printf(S_WARN "LoadTextureProperties: Properties file %s contained invalid property '%s %s'\n",
 					   propertiesFilePath,
 					   key,
 					   value);

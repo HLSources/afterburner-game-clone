@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   This source code contains proprietary and confidential information of
@@ -163,7 +163,7 @@ TYPEDESCRIPTION	CTentacle::m_SaveData[] =
 
 IMPLEMENT_SAVERESTORE( CTentacle, CBaseMonster )
 
-// animation sequence aliases 
+// animation sequence aliases
 typedef enum
 {
 	TENTACLE_ANIM_Pit_Idle,
@@ -228,7 +228,7 @@ typedef enum
 } TENTACLE_ANIM;
 
 //=========================================================
-// Classify - indicates this monster's place in the 
+// Classify - indicates this monster's place in the
 // relationship table.
 //=========================================================
 int CTentacle::Classify( void )
@@ -364,7 +364,7 @@ int CTentacle::MyLevel()
 {
 	switch( pev->sequence )
 	{
-	case TENTACLE_ANIM_Pit_Idle: 
+	case TENTACLE_ANIM_Pit_Idle:
 		return -1;
 
 	case TENTACLE_ANIM_rise_to_Temp1:
@@ -442,7 +442,7 @@ void CTentacle::Cycle( void )
 	if( m_MonsterState == MONSTERSTATE_SCRIPT || m_IdealMonsterState == MONSTERSTATE_SCRIPT )
 	{
 		pev->angles.y = m_flInitialYaw;
-		pev->ideal_yaw = m_flInitialYaw;	
+		pev->ideal_yaw = m_flInitialYaw;
 		ClearConditions( IgnoreConditions() );
 		MonsterThink();
 		m_iGoalAnim = TENTACLE_ANIM_Pit_Idle;
@@ -454,7 +454,7 @@ void CTentacle::Cycle( void )
 
 	ChangeYaw( pev->yaw_speed );
 
-	CSound *pSound;
+	CSound *pSound = nullptr;
 
 	Listen();
 
@@ -592,7 +592,7 @@ void CTentacle::Cycle( void )
 				if( m_flNextSong < gpGlobals->time )
 				{
 					// play "I hear new something" sound
-					const char *sound;	
+					const char *sound = nullptr;
 
 					switch( RANDOM_LONG( 0, 1 ) )
 					{
@@ -692,7 +692,7 @@ void CTentacle::Cycle( void )
 
 void CTentacle::CommandUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-	// ALERT( at_console, "%s triggered %d\n", STRING( pev->targetname ), useType ); 
+	// ALERT( at_console, "%s triggered %d\n", STRING( pev->targetname ), useType );
 	switch( useType )
 	{
 	case USE_OFF:
@@ -792,7 +792,7 @@ void CTentacle::DieThink( void )
 
 void CTentacle::HandleAnimEvent( MonsterEvent_t *pEvent )
 {
-	const char *sound;
+	const char *sound = nullptr;
 
 	switch( pEvent->event )
 	{
@@ -928,7 +928,7 @@ void CTentacle::Start( void )
 		EMIT_SOUND( ENT( pev ), CHAN_BODY, "ambience/squirm2.wav", 1, ATTN_NORM );
 		g_fSquirmSound = TRUE;
 	}
-	
+
 	pev->nextthink = gpGlobals->time + 0.1;
 }
 
