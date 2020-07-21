@@ -803,6 +803,11 @@ pack_t *FS_LoadPackPAK( const char *packfile, int *error )
 	return pack;
 }
 
+// Usage of read() in this function causes an unused result error on GCC.
+// Because it's not my code and I'm not going to dive in and keep track of returns myself,
+// I'm just going to disable this warning here so that we can compile without issue.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-result"
 static zip_t *FS_LoadZip( const char *zipfile, int *error )
 {
 	int		  numpackfiles = 0, i;
@@ -973,6 +978,7 @@ static zip_t *FS_LoadZip( const char *zipfile, int *error )
 
 	return zip;
 }
+#pragma GCC diagnostic pop
 
 void Zip_Close( zip_t *zip )
 {
@@ -989,6 +995,11 @@ void Zip_Close( zip_t *zip )
 	Mem_Free( zip );
 }
 
+// Usage of read() in this function causes an unused result error on GCC.
+// Because it's not my code and I'm not going to dive in and keep track of returns myself,
+// I'm just going to disable this warning here so that we can compile without issue.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-result"
 static byte *Zip_LoadFile( const char *path, fs_offset_t *sizeptr, qboolean gamedironly )
 {
 	searchpath_t	*search;
@@ -1115,6 +1126,7 @@ static byte *Zip_LoadFile( const char *path, fs_offset_t *sizeptr, qboolean game
 	FS_EnsureOpenZip( NULL );
 	return NULL;
 }
+#pragma GCC diagnostic pop
 
 /*
 ====================

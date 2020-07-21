@@ -269,6 +269,11 @@ struct sigaction oldFilter;
 #define STACK_DUMP_STR "Stack dump:\n"
 #define ALIGN( x, y ) (((int) (x) + ((y)-1)) & ~((y)-1))
 
+// Usage of write() in this function causes an unused result error on GCC.
+// Because it's not my code and I'm not going to dive in and keep track of returns myself,
+// I'm just going to disable this warning here so that we can compile without issue.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-result"
 static void Sys_Crash( int signal, siginfo_t *si, void *context)
 {
 	void *pc, **bp, **sp; // this must be set for every OS!
@@ -415,6 +420,7 @@ static void Sys_Crash( int signal, siginfo_t *si, void *context)
 
 	Sys_Quit();
 }
+#pragma GCC diagnostic pop
 
 void Sys_SetupCrashHandler( void )
 {
