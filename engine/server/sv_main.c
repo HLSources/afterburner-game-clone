@@ -100,10 +100,10 @@ CVAR_DEFINE_AUTO( hostname, "", FCVAR_SERVER|FCVAR_PRINTABLEONLY, "name of curre
 CVAR_DEFINE_AUTO( sv_fps, "0.0", FCVAR_SERVER, "server framerate" );
 
 // gore-related cvars
-CVAR_DEFINE_AUTO( violence_hblood, "1", 0, "draw human blood" );
-CVAR_DEFINE_AUTO( violence_ablood, "1", 0, "draw alien blood" );
-CVAR_DEFINE_AUTO( violence_hgibs, "1", 0, "show human gib entities" );
-CVAR_DEFINE_AUTO( violence_agibs, "1", 0, "show alien gib entities" );
+CVAR_DEFINE_AUTO( violence_hblood, "0", 0, "draw human blood" );
+CVAR_DEFINE_AUTO( violence_ablood, "0", 0, "draw alien blood" );
+CVAR_DEFINE_AUTO( violence_hgibs, "0", 0, "show human gib entities" );
+CVAR_DEFINE_AUTO( violence_agibs, "0", 0, "show alien gib entities" );
 
 convar_t	*sv_novis;			// disable server culling entities by vis
 convar_t	*sv_pausable;
