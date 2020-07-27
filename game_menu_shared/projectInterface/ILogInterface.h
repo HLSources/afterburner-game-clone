@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdarg>
+#include <cstddef>
 
 class CUtlString;
 

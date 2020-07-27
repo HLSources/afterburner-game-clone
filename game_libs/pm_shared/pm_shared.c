@@ -124,6 +124,10 @@ int g_onladder = 0;
 
 static void PM_PlayStepSound(int stepSoundId, float volume)
 {
+	qboolean stepLeft = false;
+	vec3_t hvel;
+	const char* path = NULL;
+
 	if( !pmove->runfuncs )
 	{
 		return;
@@ -135,10 +139,9 @@ static void PM_PlayStepSound(int stepSoundId, float volume)
 		return;
 	}
 
-	const qboolean stepLeft = pmove->iStepLeft != 0;
+	stepLeft = pmove->iStepLeft != 0;
 	pmove->iStepLeft = !pmove->iStepLeft;
 
-	vec3_t hvel;
 	VectorCopy( pmove->velocity, hvel );
 	hvel[2] = 0.0;
 
@@ -147,7 +150,7 @@ static void PM_PlayStepSound(int stepSoundId, float volume)
 		return;
 	}
 
-	const char* path = PMRes_GetStepSoundPath(stepSoundId, stepLeft);
+	path = PMRes_GetStepSoundPath(stepSoundId, stepLeft);
 
 	if ( !path )
 	{
@@ -167,7 +170,7 @@ Determine texture info for the texture we are standing on.
 SurfaceProp PM_CatagorizeTextureType( void )
 {
 	vec3_t start, end;
-	const char *pTextureName;
+	texture_t* texture = NULL;
 
 	VectorCopy( pmove->origin, start );
 	VectorCopy( pmove->origin, end );
@@ -175,7 +178,7 @@ SurfaceProp PM_CatagorizeTextureType( void )
 	// Straight down
 	end[2] -= 64;
 
-	texture_t* texture = pmove->PM_TraceTexture( pmove->onground, start, end );
+	texture = pmove->PM_TraceTexture( pmove->onground, start, end );
 	return texture ? texture->surfaceType : SurfaceProp_Concrete;
 }
 
@@ -188,13 +191,22 @@ void PM_UpdateStepSound( void )
 {
 	vec3_t knee;
 	vec3_t feet;
+	float speed = 0.0f;
+	qboolean isOnLadder = false;
+	float velwalk = 0.0f;
+	float velrun = 0.0f;
+	float flduck = 0.0f;
+	qboolean isWalking = false;
+	float height = 0.0f;
+	float fvol = 0.0f;
+	int stepSoundId = 0;
 
 	if( pmove->flTimeStepSound > 0 || (pmove->flags & FL_FROZEN) )
 	{
 		return;
 	}
 
-	const float speed = Length(pmove->velocity);
+	speed = Length(pmove->velocity);
 
 	if ( speed <= 0.0f )
 	{
@@ -202,7 +214,7 @@ void PM_UpdateStepSound( void )
 	}
 
 	// determine if we are on a ladder
-	const qboolean isOnLadder = g_onladder; // Used to be (pmove->movetype == MOVETYPE_FLY)
+	isOnLadder = g_onladder; // Used to be (pmove->movetype == MOVETYPE_FLY)
 
 	if ( !isOnLadder && pmove->onground == -1 )
 	{
@@ -210,9 +222,9 @@ void PM_UpdateStepSound( void )
 	}
 
 	// UNDONE: need defined numbers for run, walk, crouch, crouch run velocities!!!!
-	float velwalk = 60;		// These constants should be based on cl_movespeedkey * cl_forwardspeed somehow
-	float velrun = 80;		// UNDONE: Move walking to server
-	float flduck = 100;
+	velwalk = 60;		// These constants should be based on cl_movespeedkey * cl_forwardspeed somehow
+	velrun = 80;		// UNDONE: Move walking to server
+	flduck = 100;
 
 	if ( !(pmove->flags & FL_DUCKING) && !isOnLadder )
 	{
@@ -227,18 +239,18 @@ void PM_UpdateStepSound( void )
 		return;
 	}
 
-	const qboolean isWalking = speed < velrun;
+	isWalking = speed < velrun;
 
 	VectorCopy( pmove->origin, knee );
 	VectorCopy( pmove->origin, feet );
 
-	const float height = pmove->player_maxs[pmove->usehull][2] - pmove->player_mins[pmove->usehull][2];
+	height = pmove->player_maxs[pmove->usehull][2] - pmove->player_mins[pmove->usehull][2];
 
 	knee[2] = pmove->origin[2] - 0.3 * height;
 	feet[2] = pmove->origin[2] - 0.5 * height;
 
-	float fvol = 1.0f;
-	int stepSoundId = 0;
+	fvol = 1.0f;
+	stepSoundId = 0;
 
 	// find out what we're stepping in or on...
 	if( isOnLadder )
@@ -2308,13 +2320,15 @@ void PM_CheckFalling( void )
 
 		if( fvol > 0.0 )
 		{
+			int stepSoundId = 0;
+
 			// Play landing step right away
 			pmove->flTimeStepSound = 0;
 
 			PM_UpdateStepSound();
 
 			// play step sound for current texture
-			const int stepSoundId = PM_GetStepSoundIdForCurrentTexture();
+			stepSoundId = PM_GetStepSoundIdForCurrentTexture();
 			PM_PlayStepSound(stepSoundId, fvol);
 
 			// Knock the screen around a little bit, temporary effect

@@ -49,7 +49,7 @@ typedef struct event_api_s
 	// Xash3D extension
 	void	( *EV_PlayerTraceExt )( float *start, float *end, int traceFlags, int (*pfnIgnore)( struct physent_s *pe ), struct pmtrace_s *tr );
 	const char *(*EV_SoundForIndex)( int index );
-	struct msurface_s *( *EV_TraceSurface )( int ground, float *vstart, float *vend );
+	struct msurface_s *( *EV_TraceSurface )( int ground, const float *vstart, const float *vend );
 	struct movevars_s *( *EV_GetMovevars )( void );
 	struct pmtrace_s *( *EV_VisTraceLine )( float *start, float *end, int flags );
 	struct physent_s *( *EV_GetVisent )( int idx );

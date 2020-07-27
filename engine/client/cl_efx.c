@@ -1730,9 +1730,11 @@ static size_t CalculateImpactParticleQuantity(const vec3_t pos)
 	static const float MAX_DIST = 1000.0f;
 
 	vec3_t		dir;
-	VectorSubtract( pos, refState.vieworg, dir );
+	float dist = 0.0f;
+	size_t quantity = 0;
 
-	float dist = VectorLength( dir );
+	VectorSubtract( pos, refState.vieworg, dir );
+	dist = VectorLength( dir );
 
 	if( dist > MAX_DIST )
 	{
@@ -1741,7 +1743,7 @@ static size_t CalculateImpactParticleQuantity(const vec3_t pos)
 
 	// Max of 10 particles and min of 1.
 	// Quantity decreases by 1 particle per 100 units.
-	size_t quantity = (size_t)((MAX_DIST - dist) / 100.0f);
+	quantity = (size_t)((MAX_DIST - dist) / 100.0f);
 
 	if ( quantity <= 0 )
 	{
@@ -1753,6 +1755,7 @@ static size_t CalculateImpactParticleQuantity(const vec3_t pos)
 
 static qboolean CreateConcreteImpactParticle(const vec3_t pos, size_t quantity)
 {
+	int colour = 0;
 	particle_t* p = R_AllocParticle( NULL );
 
 	if ( !p )
@@ -1770,7 +1773,7 @@ static qboolean CreateConcreteImpactParticle(const vec3_t pos, size_t quantity)
 	p->die = cl.time + 0.5;
 	p->type = pt_grav;
 
-	int colour = 3 - ((3 * quantity) / 10 );
+	colour = 3 - ((3 * quantity) / 10 );
 	p->color = 3 - colour;
 	return true;
 }

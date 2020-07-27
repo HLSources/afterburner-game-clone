@@ -57,7 +57,7 @@ public:
 		}
 
 		// Postfix
-		inline Iterator& operator ++(int)
+		inline Iterator operator ++(int)
 		{
 			Iterator next(*this);
 			++(*this);

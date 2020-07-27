@@ -343,7 +343,7 @@ SCR_BeginLoadingPlaque
 */
 void SCR_BeginLoadingPlaque( qboolean is_background )
 {
-	float	oldclear;
+	float	oldclear = 0.0f;
 	S_StopAllSounds( true );
 	cl.audio_prepped = false;			// don't play ambients
 	cl.video_prepped = false;

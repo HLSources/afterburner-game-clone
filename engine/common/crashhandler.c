@@ -243,6 +243,24 @@ void Sys_RestoreCrashHandler( void )
 #include <signal.h>
 #include <sys/mman.h>
 
+#ifdef XASH_DYNAMIC_DLADDR
+static int d_dladdr( void *sym, Dl_info *info )
+{
+	static int (*dladdr_real) ( void *sym, Dl_info *info );
+
+	if( !dladdr_real )
+		dladdr_real = dlsym( (void*)(size_t)(-1), "dladdr" );
+
+	memset( info, 0, sizeof( *info ) );
+
+	if( !dladdr_real )
+		return -1;
+
+	return dladdr_real(  sym, info );
+}
+#define dladdr d_dladdr
+#endif
+
 int printframe( char *buf, int len, int i, void *addr )
 {
 	Dl_info dlinfo;
@@ -269,6 +287,11 @@ struct sigaction oldFilter;
 #define STACK_DUMP_STR "Stack dump:\n"
 #define ALIGN( x, y ) (((int) (x) + ((y)-1)) & ~((y)-1))
 
+// Usage of write() in this function causes an unused result error on GCC.
+// Because it's not my code and I'm not going to dive in and keep track of returns myself,
+// I'm just going to disable this warning here so that we can compile without issue.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-result"
 static void Sys_Crash( int signal, siginfo_t *si, void *context)
 {
 	void *pc, **bp, **sp; // this must be set for every OS!
@@ -415,6 +438,7 @@ static void Sys_Crash( int signal, siginfo_t *si, void *context)
 
 	Sys_Quit();
 }
+#pragma GCC diagnostic pop
 
 void Sys_SetupCrashHandler( void )
 {

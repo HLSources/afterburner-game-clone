@@ -19,10 +19,6 @@
 #ifndef PARSEMSG_H
 #define PARSEMSG_H
 
-#ifndef ASSERT
-#define ASSERT( x )
-#endif
-
 #include <cstdint>
 #include "vector_classes.h"
 

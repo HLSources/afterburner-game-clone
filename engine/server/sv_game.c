@@ -3507,12 +3507,13 @@ static uint32_t pfnGetHitboxCount(const edict_t* edict)
 
 static qboolean pfnGetTransformedHitboxPoints(const edict_t* edict, uint32_t hitboxIndex, float* points)
 {
+	Mod_BoxPoints boxPoints;
+
 	if ( !SV_IsValidEdict(edict) )
 	{
 		return false;
 	}
 
-	Mod_BoxPoints boxPoints;
 	memset(&boxPoints, 0, sizeof(boxPoints));
 
 	if ( Mod_GetTransformedHitboxPoints(edict, hitboxIndex, &boxPoints) )

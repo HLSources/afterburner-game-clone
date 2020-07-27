@@ -300,19 +300,22 @@ hull_t *Mod_HullForStudio( model_t *model, float frame, int sequence, vec3_t ang
 
 uint32_t Mod_GetHitboxCount(const edict_t* edict)
 {
+	model_t* model = NULL;
+	studiohdr_t* header = NULL;
+
 	if ( !edict )
 	{
 		return 0;
 	}
 
-	model_t* model = SV_ModelHandle(edict->v.modelindex);
+	model = SV_ModelHandle(edict->v.modelindex);
 
 	if ( !model )
 	{
 		return 0;
 	}
 
-	studiohdr_t* header = (studiohdr_t*)Mod_StudioExtradata(model);
+	header = (studiohdr_t*)Mod_StudioExtradata(model);
 
 	if( !header )
 	{
@@ -392,12 +395,15 @@ static void SetUpBones(const edict_t* edict, model_t* mod)
 
 qboolean Mod_GetTransformedHitboxPoints(const edict_t* edict, uint32_t hitboxIndex, Mod_BoxPoints* box)
 {
+	model_t* model = NULL;
+	const mstudiobbox_t* hitbox = NULL;
+
 	if ( !edict || !box )
 	{
 		return false;
 	}
 
-	model_t* model = SV_ModelHandle(edict->v.modelindex);
+	model = SV_ModelHandle(edict->v.modelindex);
 
 	if ( !model )
 	{
@@ -413,7 +419,7 @@ qboolean Mod_GetTransformedHitboxPoints(const edict_t* edict, uint32_t hitboxInd
 
 	SetUpBones(edict, model);
 
-	const mstudiobbox_t* hitbox = (mstudiobbox_t*)((byte*)mod_studiohdr + mod_studiohdr->hitboxindex) + hitboxIndex;
+	hitbox = (mstudiobbox_t*)((byte*)mod_studiohdr + mod_studiohdr->hitboxindex) + hitboxIndex;
 
 	for ( uint32_t index = 0; index < ARRAYSIZE(box->points); ++index )
 	{
@@ -432,26 +438,30 @@ qboolean Mod_GetTransformedHitboxPoints(const edict_t* edict, uint32_t hitboxInd
 
 int Mod_GetHitboxHitGroup(const edict_t* edict, uint32_t hitboxIndex)
 {
+	model_t* model = NULL;
+	studiohdr_t* header = NULL;
+	const mstudiobbox_t* hitbox = NULL;
+
 	if ( !edict )
 	{
 		return -1;
 	}
 
-	model_t* model = SV_ModelHandle(edict->v.modelindex);
+	model = SV_ModelHandle(edict->v.modelindex);
 
 	if ( !model )
 	{
 		return -1;
 	}
 
-	studiohdr_t* header = (studiohdr_t*)Mod_StudioExtradata(model);
+	header = (studiohdr_t*)Mod_StudioExtradata(model);
 
 	if( !header || hitboxIndex >= header->numhitboxes )
 	{
 		return -1;
 	}
 
-	const mstudiobbox_t* hitbox = (mstudiobbox_t*)((byte*)header + header->hitboxindex) + hitboxIndex;
+	hitbox = (mstudiobbox_t*)((byte*)header + header->hitboxindex) + hitboxIndex;
 	return hitbox->group;
 }
 

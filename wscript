@@ -283,7 +283,8 @@ def configure(conf):
 		#'-Werror=duplicated-branches', # BEWARE: buggy (also breaks stb_image.h)
 		'-Werror=bool-compare',
 		'-Werror=bool-operation',
-		'-Werror=uninitialized',
+		'-Wuninitialized', # older GCC versions have -Wmaybe-uninitialized enabled by this switch, which is not accurate
+                                   # so just warn, not error
 		'-Winit-self',
 		'-Werror=implicit-fallthrough=2', # clang incompatible without "=2"
 #		'-Wdouble-promotion', # disable warning flood, causes super irritating warnings with variadic functions

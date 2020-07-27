@@ -436,7 +436,7 @@ void CTentacle::Cycle( void )
 
 	ChangeYaw( pev->yaw_speed );
 
-	CSound *pSound;
+	CSound *pSound = nullptr;
 
 	Listen();
 
@@ -574,7 +574,7 @@ void CTentacle::Cycle( void )
 				if( m_flNextSong < gpGlobals->time )
 				{
 					// play "I hear new something" sound
-					const char *sound;
+					const char *sound = nullptr;
 
 					switch( RANDOM_LONG( 0, 1 ) )
 					{
@@ -774,7 +774,7 @@ void CTentacle::DieThink( void )
 
 void CTentacle::HandleAnimEvent( MonsterEvent_t *pEvent )
 {
-	const char *sound;
+	const char *sound = nullptr;
 
 	switch( pEvent->event )
 	{

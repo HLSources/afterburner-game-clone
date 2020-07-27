@@ -1,10 +1,10 @@
 #pragma once
 
+#include "surfaceprops.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-typedef enum _SurfaceProp SurfaceProp;
 
 // These functions are a C-ified interface to the footstep resources.
 int PMRes_GetStepSoundIdForSurface(SurfaceProp surfaceProp);

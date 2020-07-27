@@ -1,6 +1,6 @@
 #pragma once
 
-#include "sound/Soundinstance.h"
+#include "sound/SoundInstance.h"
 
 namespace ClientSoundInstance
 {
