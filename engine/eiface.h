@@ -282,10 +282,13 @@ typedef struct enginefuncs_s
 	void	(*pfnQueryClientCvarValue2)( const edict_t *player, const char *cvarName, int requestID );
 	int	(*pfnCheckParm)( char *parm, char **ppnext );
 
+	// Afterburner extensions begin here
+
 	float (*pfnModelSequenceDuration)( int modelIndex, int anim );
 	uint32_t (*pfnGetHitboxCount)(const edict_t* edict);
 
-	// Expects points list to be 8 points long.
+	// Expects points list to be 8*3 floats long
+	// TODO: Replace points with a known struct?
 	qboolean (*pfnGetTransformedHitboxPoints)(const edict_t* edict, uint32_t hitboxIndex, float* points);
 
 	int (*pfnGetHitboxHitGroup)(const edict_t* edict, uint32_t hitboxIndex);
@@ -492,9 +495,14 @@ typedef struct
 	// Most games right now should return 0, until client-side weapon prediction code is written
 	//  and tested for them.
 	int	(*pfnAllowLagCompensation)( void );
-} DLL_FUNCTIONS;
 
-extern DLL_FUNCTIONS		gEntityInterface;
+	// Afterburner extensions start here
+
+	// This isn't a fantastic way to do this, but really we should factor out the bits of the engine
+	// which play contents sounds for movement (eg. water) and do all that stuff in the game libs.
+	// For now, this will do as a hacky solution.
+	const char* (*pfnGetRandomWaterTransitionSound)(void);
+} DLL_FUNCTIONS;
 
 // Current version.
 #define NEW_DLL_FUNCTIONS_VERSION	1

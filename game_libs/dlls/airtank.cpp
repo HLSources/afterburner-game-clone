@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -29,7 +29,7 @@ class CAirtank : public CGrenade
 	int  BloodColor( void ) { return DONT_BLEED; };
 	void Killed( entvars_t *pevAttacker, int iGib );
 
-	virtual int Save( CSave &save ); 
+	virtual int Save( CSave &save );
 	virtual int Restore( CRestore &restore );
 
 	static	TYPEDESCRIPTION m_SaveData[];
@@ -97,7 +97,7 @@ void CAirtank::TankTouch( CBaseEntity *pOther )
 	if( !m_state )
 	{
 		// "no oxygen" sound
-		EMIT_SOUND( ENT( pev ), CHAN_BODY, "player/pl_swim2.wav", 1.0, ATTN_NORM );
+		// Used to play swim sound here, but these have been removed now that we have per-surface defined sounds.
 		return;
 	}
 

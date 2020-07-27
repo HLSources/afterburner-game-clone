@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   This source code contains proprietary and confidential information of
@@ -38,7 +38,7 @@ enum
 //=========================================================
 // monster-specific tasks
 //=========================================================
-enum 
+enum
 {
 	TASK_AGRUNT_SETUP_HIDE_ATTACK = LAST_COMMON_TASK + 1,
 	TASK_AGRUNT_GET_PATH_TO_ENEMY_CORPSE
@@ -188,7 +188,7 @@ const char *CAGrunt::pAlertSounds[] =
 };
 
 //=========================================================
-// IRelationship - overridden because Human Grunts are 
+// IRelationship - overridden because Human Grunts are
 // Alien Grunt's nemesis.
 //=========================================================
 int CAGrunt::IRelationship( CBaseEntity *pTarget )
@@ -202,7 +202,7 @@ int CAGrunt::IRelationship( CBaseEntity *pTarget )
 }
 
 //=========================================================
-// ISoundMask 
+// ISoundMask
 //=========================================================
 int CAGrunt::ISoundMask( void )
 {
@@ -282,8 +282,8 @@ BOOL CAGrunt::ShouldSpeak( void )
 		if( m_MonsterState != MONSTERSTATE_COMBAT )
 		{
 			// if gagged, don't talk outside of combat.
-			// if not going to talk because of this, put the talk time 
-			// into the future a bit, so we don't talk immediately after 
+			// if not going to talk because of this, put the talk time
+			// into the future a bit, so we don't talk immediately after
 			// going into combat
 			m_flNextSpeakTime = gpGlobals->time + 3;
 			return FALSE;
@@ -294,7 +294,7 @@ BOOL CAGrunt::ShouldSpeak( void )
 }
 
 //=========================================================
-// PrescheduleThink 
+// PrescheduleThink
 //=========================================================
 void CAGrunt::PrescheduleThink( void )
 {
@@ -455,8 +455,8 @@ void CAGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 			MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecArmPos );
 				WRITE_BYTE( TE_SPRITE );
 				WRITE_COORD( vecArmPos.x );	// pos
-				WRITE_COORD( vecArmPos.y );	
-				WRITE_COORD( vecArmPos.z );	
+				WRITE_COORD( vecArmPos.y );
+				WRITE_COORD( vecArmPos.z );
 				WRITE_SHORT( iAgruntMuzzleFlash );		// model
 				WRITE_BYTE( 6 );				// size * 10
 				WRITE_BYTE( 128 );			// brightness
@@ -488,28 +488,10 @@ void CAGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 		}
 		break;
 	case AGRUNT_AE_LEFT_FOOT:
-		switch( RANDOM_LONG( 0, 1 ) )
-		{
-		// left foot
-		case 0:
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_BODY, "player/pl_ladder2.wav", 1, ATTN_NORM, 0, 70 );
-			break;
-		case 1:
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_BODY, "player/pl_ladder4.wav", 1, ATTN_NORM, 0, 70 );
-			break;
-		}
+		// Used to play sounds here, but these have been removed now that we have per-surface defined sounds.
 		break;
 	case AGRUNT_AE_RIGHT_FOOT:
-		// right foot
-		switch( RANDOM_LONG( 0, 1 ) )
-		{
-		case 0:
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_BODY, "player/pl_ladder1.wav", 1, ATTN_NORM, 0, 70 );
-			break;
-		case 1:
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_BODY, "player/pl_ladder3.wav", 1, ATTN_NORM, 0 ,70);
-			break;
-		}
+		// Used to play sounds here, but these have been removed now that we have per-surface defined sounds.
 		break;
 
 	case AGRUNT_AE_LEFT_PUNCH:
@@ -691,8 +673,8 @@ Schedule_t slAGruntCombatFail[] =
 };
 
 //=========================================================
-// Standoff schedule. Used in combat when a monster is 
-// hiding in cover or the enemy has moved out of sight. 
+// Standoff schedule. Used in combat when a monster is
+// hiding in cover or the enemy has moved out of sight.
 // Should we look around in this schedule?
 //=========================================================
 Task_t tlAGruntStandoff[] =
@@ -904,8 +886,8 @@ BOOL CAGrunt::FCanCheckAttacks( void )
 }
 
 //=========================================================
-// CheckMeleeAttack1 - alien grunts zap the crap out of 
-// any enemy that gets too close. 
+// CheckMeleeAttack1 - alien grunts zap the crap out of
+// any enemy that gets too close.
 //=========================================================
 BOOL CAGrunt::CheckMeleeAttack1( float flDot, float flDist )
 {
@@ -917,11 +899,11 @@ BOOL CAGrunt::CheckMeleeAttack1( float flDot, float flDist )
 }
 
 //=========================================================
-// CheckRangeAttack1 
+// CheckRangeAttack1
 //
 // !!!LATER - we may want to load balance this. Several
 // tracelines are done, so we may not want to do this every
-// server frame. Definitely not while firing. 
+// server frame. Definitely not while firing.
 //=========================================================
 BOOL CAGrunt::CheckRangeAttack1( float flDot, float flDist )
 {
@@ -977,7 +959,7 @@ void CAGrunt::StartTask( Task_t *pTask )
 		}
 		break;
 	case TASK_AGRUNT_SETUP_HIDE_ATTACK:
-		// alien grunt shoots hornets back out into the open from a concealed location. 
+		// alien grunt shoots hornets back out into the open from a concealed location.
 		// try to find a spot to throw that gives the smart weapon a good chance of finding the enemy.
 		// ideally, this spot is along a line that is perpendicular to a line drawn from the agrunt to the enemy.
 		CBaseMonster	*pEnemyMonsterPtr;
@@ -1125,7 +1107,7 @@ Schedule_t *CAGrunt::GetSchedule( void )
 
 //=========================================================
 //=========================================================
-Schedule_t *CAGrunt::GetScheduleOfType( int Type ) 
+Schedule_t *CAGrunt::GetScheduleOfType( int Type )
 {
 	switch( Type )
 	{
@@ -1164,7 +1146,7 @@ Schedule_t *CAGrunt::GetScheduleOfType( int Type )
 			{
 				// I have an enemy
 				// !!!LATER - what if this enemy is really far away and i'm chasing him?
-				// this schedule will make me stop, face his last known position for 2 
+				// this schedule will make me stop, face his last known position for 2
 				// seconds, and then try to move again
 				return &slAGruntCombatFail[0];
 			}

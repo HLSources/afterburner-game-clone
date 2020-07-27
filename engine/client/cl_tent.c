@@ -57,13 +57,6 @@ const char *cl_default_sprites[] =
 	"sprites/shellchrome.spr",
 };
 
-const char *cl_player_shell_sounds[] =
-{
-	"player/pl_shell1.wav",
-	"player/pl_shell2.wav",
-	"player/pl_shell3.wav",
-};
-
 const char *cl_weapon_shell_sounds[] =
 {
 	"weapons/sshell1.wav",
@@ -162,13 +155,6 @@ void CL_AddClientResources( void )
 	}
 
 	// then check sounds
-	for( i = 0; i < ARRAYSIZE( cl_player_shell_sounds ); i++ )
-	{
-		Q_snprintf( filepath, sizeof( filepath ), "%s%s", DEFAULT_SOUNDPATH, cl_player_shell_sounds[i] );
-
-		if( !FS_FileExists( filepath, false ))
-			CL_AddClientResource( cl_player_shell_sounds[i], t_sound );
-	}
 
 	for( i = 0; i < ARRAYSIZE( cl_weapon_shell_sounds ); i++ )
 	{
@@ -185,16 +171,6 @@ void CL_AddClientResources( void )
 		if( !FS_FileExists( filepath, false ))
 			CL_AddClientResource( cl_explode_sounds[i], t_sound );
 	}
-
-#if 0	// ric sounds was precached by server-side
-	for( i = 0; i < ARRAYSIZE( cl_ricochet_sounds ); i++ )
-	{
-		Q_snprintf( filepath, sizeof( filepath ), "%s%s", DEFAULT_SOUNDPATH, cl_ricochet_sounds[i] );
-
-		if( !FS_FileExists( filepath, false ))
-			CL_AddClientResource( cl_ricochet_sounds[i], t_sound );
-	}
-#endif
 }
 
 

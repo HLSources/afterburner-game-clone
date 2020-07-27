@@ -42,6 +42,7 @@
 #include "gameresources/GameResources.h"
 #include "prop_playercorpse.h"
 #include "gameplay/gameplaySystems.h"
+#include "resources/SoundResources.h"
 
 extern DLL_GLOBAL ULONG		g_ulModelIndexPlayer;
 extern DLL_GLOBAL BOOL		g_fGameOver;
@@ -880,8 +881,6 @@ void ClientPrecache( void )
 {
 	// setup precaches always needed
 	PRECACHE_SOUND( "player/sprayer.wav" );			// spray paint sound for PreAlpha
-
-	// PRECACHE_SOUND( "player/pl_jumpland2.wav" );		// UNDONE: play 2x step sound
 
 	PRECACHE_SOUND( "debris/wood1.wav" );			// hit wood texture
 	PRECACHE_SOUND( "debris/wood2.wav" );
@@ -1931,4 +1930,9 @@ AllowLagCompensation
 int AllowLagCompensation( void )
 {
 	return 1;
+}
+
+const char* GetRandomWaterTransitionSound(void)
+{
+	return SoundResources::FootstepSounds.RandomResourcePath(FootstepSoundId::DeepWater);
 }

@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -62,4 +62,5 @@ extern void CreateInstancedBaselines( void );
 extern int InconsistentFile( const edict_t *player, const char *filename, char *disconnect_message );
 
 extern int AllowLagCompensation( void );
+extern const char* GetRandomWaterTransitionSound(void);
 #endif // CLIENT_H

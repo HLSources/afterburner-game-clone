@@ -1117,10 +1117,12 @@ void CBasePlayer::WaterMove()
 		// not underwater
 
 		// play 'up for air' sound
-		if( pev->air_finished < gpGlobals->time )
-			EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_wade1.wav", 1, ATTN_NORM );
-		else if( pev->air_finished < gpGlobals->time + 9 )
-			EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_wade2.wav", 1, ATTN_NORM );
+		// This +9 second offset is pretty arbitrary, but whatever, Valve.
+		if( pev->air_finished < gpGlobals->time + 9 )
+		{
+			const char* soundPath = SoundResources::FootstepSounds.RandomResourcePath(FootstepSoundId::DeepWater);
+			EMIT_SOUND(ENT(pev), CHAN_VOICE, soundPath, 1, ATTN_NORM);
+		}
 
 		pev->air_finished = gpGlobals->time + AIRTIME;
 		pev->dmg = 2;
@@ -1180,23 +1182,11 @@ void CBasePlayer::WaterMove()
 
 	// make bubbles
 	air = (int)( pev->air_finished - gpGlobals->time );
+
 	if( !RANDOM_LONG( 0, 0x1f ) && RANDOM_LONG( 0, AIRTIME - 1 ) >= air )
 	{
-		switch( RANDOM_LONG( 0, 3 ) )
-		{
-			case 0:
-				EMIT_SOUND( ENT( pev ), CHAN_BODY, "player/pl_swim1.wav", 0.8, ATTN_NORM );
-				break;
-			case 1:
-				EMIT_SOUND( ENT( pev ), CHAN_BODY, "player/pl_swim2.wav", 0.8, ATTN_NORM );
-				break;
-			case 2:
-				EMIT_SOUND( ENT( pev ), CHAN_BODY, "player/pl_swim3.wav", 0.8, ATTN_NORM );
-				break;
-			case 3:
-				EMIT_SOUND( ENT( pev ), CHAN_BODY, "player/pl_swim4.wav", 0.8, ATTN_NORM );
-				break;
-		}
+		const char* soundPath = SoundResources::FootstepSounds.RandomResourcePath(FootstepSoundId::Swim);
+		EMIT_SOUND(ENT(pev), CHAN_BODY, soundPath, 0.8, ATTN_NORM);
 	}
 
 	if( pev->watertype == CONTENT_LAVA )		// do damage
@@ -2513,16 +2503,7 @@ void CBasePlayer::PostThink()
 
 	if( ( FBitSet( pev->flags, FL_ONGROUND ) ) && ( pev->health > 0 ) && m_flFallVelocity >= PLAYER_FALL_PUNCH_THRESHHOLD )
 	{
-		// ALERT( at_console, "%f\n", m_flFallVelocity );
-		if( pev->watertype == CONTENT_WATER )
-		{
-			// Did he hit the world or a non-moving entity?
-			// BUG - this happens all the time in water, especially when
-			// BUG - water has current force
-			// if( !pev->groundentity || VARS(pev->groundentity )->velocity.z == 0 )
-				// EMIT_SOUND( ENT( pev ), CHAN_BODY, "player/pl_wade1.wav", 1, ATTN_NORM );
-		}
-		else if( m_flFallVelocity > PLAYER_MAX_SAFE_FALL_SPEED )
+		if( m_flFallVelocity > PLAYER_MAX_SAFE_FALL_SPEED )
 		{
 			// after this point, we start doing damage
 			float flFallDamage = g_pGameRules->FlPlayerFallDamage( this );

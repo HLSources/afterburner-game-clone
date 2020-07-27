@@ -126,6 +126,16 @@ static constexpr const char* const FootstepsWaterWade[] =
 	"footsteps/step_waterwade4.wav",
 };
 
+static constexpr const char* const FootstepsSwim[] =
+{
+	"footsteps/step_swim1.wav",
+	"footsteps/step_swim2.wav",
+	"footsteps/step_swim3.wav",
+	"footsteps/step_swim4.wav",
+	"footsteps/step_swim5.wav",
+	"footsteps/step_swim6.wav",
+};
+
 CFootstepSoundResources::CFootstepSoundResources() :
 	CBaseResourceCollection<FootstepSoundId, static_cast<size_t>(FootstepSoundId::Count)>()
 {
@@ -145,6 +155,7 @@ CFootstepSoundResources::CFootstepSoundResources() :
 	InitialiseResources(FootstepSoundId::MetalGrate, FootstepsMetalGrate);
 	InitialiseResources(FootstepSoundId::ShallowWater, FootstepsWater);
 	InitialiseResources(FootstepSoundId::DeepWater, FootstepsWaterWade);
+	InitialiseResources(FootstepSoundId::Swim, FootstepsSwim);
 }
 
 const char* CFootstepSoundResources::RandomFootstepSoundPath(FootstepSoundId id, Foot foot) const

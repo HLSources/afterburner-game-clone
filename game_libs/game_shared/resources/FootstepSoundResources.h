@@ -21,6 +21,7 @@ enum class FootstepSoundId
 	WoodGrit,
 	ShallowWater,
 	DeepWater,
+	Swim,
 	Count
 };
 
