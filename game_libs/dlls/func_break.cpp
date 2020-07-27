@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -149,7 +149,7 @@ void CBreakable::Spawn( void )
 		pev->takedamage	= DAMAGE_NO;
 	else
 		pev->takedamage	= DAMAGE_YES;
-  
+
 	pev->solid = SOLID_BSP;
 	pev->movetype = MOVETYPE_PUSH;
 	m_angle = pev->angles.y;
@@ -328,7 +328,7 @@ void CBreakable::Precache( void )
 	case matCeilingTile:
 		pGibName = "models/ceilinggibs.mdl";
 
-		PRECACHE_SOUND( "debris/bustceiling.wav" );  
+		PRECACHE_SOUND( "debris/bustceiling.wav" );
 		break;
 	case matNone:
 	case matLastMaterial:
@@ -431,7 +431,7 @@ void CBreakable::BreakTouch( CBaseEntity *pOther )
 
 	if( FBitSet( pev->spawnflags, SF_BREAK_TOUCH ) )
 	{
-		// can be broken when run into 
+		// can be broken when run into
 		flDamage = pevToucher->velocity.Length() * 0.01;
 
 		if( flDamage >= pev->health )
@@ -480,7 +480,7 @@ void CBreakable::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE us
 	}
 }
 
-void CBreakable::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType )
+void CBreakable::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, const TraceResult *ptr, int bitsDamageType )
 {
 	// random spark if this is a 'computer' object
 	if( RANDOM_LONG( 0, 1 ) )
@@ -502,7 +502,7 @@ void CBreakable::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vec
 						break;
 				}
 			}
-				break;			
+				break;
 			case matUnbreakableGlass:
 				UTIL_Ricochet( ptr->vecEndPos, RANDOM_FLOAT( 0.5, 1.5 ) );
 				break;
@@ -524,11 +524,11 @@ int CBreakable::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, flo
 	Vector vecTemp;
 
 	// if Attacker == Inflictor, the attack was a melee or other instant-hit attack.
-	// (that is, no actual entity projectile was involved in the attack so use the shooter's origin). 
-	if( pevAttacker == pevInflictor )	
+	// (that is, no actual entity projectile was involved in the attack so use the shooter's origin).
+	if( pevAttacker == pevInflictor )
 	{
 		vecTemp = pevInflictor->origin - ( pev->absmin + ( pev->size * 0.5 ) );
-		
+
 		// if a client hit the breakable with a crowbar, and breakable is crowbar-sensitive, break it now.
 		if( FBitSet ( pevAttacker->flags, FL_CLIENT ) &&
 				 FBitSet ( pev->spawnflags, SF_BREAK_CROWBAR ) && ( bitsDamageType & DMG_CLUB ) )
@@ -539,7 +539,7 @@ int CBreakable::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, flo
 	{
 		vecTemp = pevInflictor->origin - ( pev->absmin + ( pev->size * 0.5 ) );
 	}
-	
+
 	if( !IsBreakable() )
 		return 0;
 
@@ -690,7 +690,7 @@ void CBreakable::Die( void )
 		WRITE_COORD( pev->size.z );
 
 		// velocity
-		WRITE_COORD( vecVelocity.x ); 
+		WRITE_COORD( vecVelocity.x );
 		WRITE_COORD( vecVelocity.y );
 		WRITE_COORD( vecVelocity.z );
 
@@ -754,8 +754,8 @@ void CBreakable::Die( void )
 	}
 }
 
-BOOL CBreakable::IsBreakable( void ) 
-{ 
+BOOL CBreakable::IsBreakable( void )
+{
 	return m_Material != matUnbreakableGlass;
 }
 
@@ -833,7 +833,7 @@ void CPushable::Spawn( void )
 	m_maxSpeed = 400 - pev->friction;
 	SetBits( pev->flags, FL_FLOAT );
 	pev->friction = 0;
-	
+
 	pev->origin.z += 1;	// Pick up off of the floor
 	UTIL_SetOrigin( pev, pev->origin );
 
@@ -942,13 +942,13 @@ void CPushable::Move( CBaseEntity *pOther, int push )
 		{
 			if( pev->waterlevel < 1 )
 				return;
-			else 
+			else
 				factor = 0.1;
 		}
 		else
 			factor = 1;
 	}
-	else 
+	else
 		factor = 0.25;
 
 	pev->velocity.x += pevToucher->velocity.x * factor;

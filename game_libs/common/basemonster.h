@@ -282,7 +282,7 @@ public:
 
 	BOOL GetEnemy( void );
 	void MakeDamageBloodDecal( int cCount, float flNoise, TraceResult *ptr, const Vector &vecDir );
-	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
+	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, const TraceResult *ptr, int bitsDamageType);
 
 	// combat functions
 	float UpdateTarget( entvars_t *pevTarget );

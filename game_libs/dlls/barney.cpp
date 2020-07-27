@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   This source code contains proprietary and confidential information of
@@ -70,7 +70,7 @@ public:
 
 	void TalkInit( void );
 
-	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
+	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, const TraceResult *ptr, int bitsDamageType);
 	void Killed( entvars_t *pevAttacker, int iGib );
 
 	virtual int Save( CSave &save );
@@ -213,7 +213,7 @@ IMPLEMENT_CUSTOM_SCHEDULES( CBarney, CTalkMonster )
 
 void CBarney::StartTask( Task_t *pTask )
 {
-	CTalkMonster::StartTask( pTask );	
+	CTalkMonster::StartTask( pTask );
 }
 
 void CBarney::RunTask( Task_t *pTask )
@@ -235,9 +235,9 @@ void CBarney::RunTask( Task_t *pTask )
 
 //=========================================================
 // ISoundMask - returns a bit mask indicating which types
-// of sounds this monster regards. 
+// of sounds this monster regards.
 //=========================================================
-int CBarney::ISoundMask( void) 
+int CBarney::ISoundMask( void)
 {
 	return bits_SOUND_WORLD |
 			bits_SOUND_COMBAT |
@@ -249,7 +249,7 @@ int CBarney::ISoundMask( void)
 }
 
 //=========================================================
-// Classify - indicates this monster's place in the 
+// Classify - indicates this monster's place in the
 // relationship table.
 //=========================================================
 int CBarney::Classify( void )
@@ -283,7 +283,7 @@ void CBarney::SetYawSpeed( void )
 
 	switch ( m_Activity )
 	{
-	case ACT_IDLE:		
+	case ACT_IDLE:
 		ys = 70;
 		break;
 	case ACT_WALK:
@@ -346,7 +346,7 @@ void CBarney::BarneyFirePistol( void )
 	FireBullets( 1, vecShootOrigin, vecShootDir, VECTOR_CONE_2DEGREES, 1024, BULLET_MONSTER_9MM );
 
 	int pitchShift = RANDOM_LONG( 0, 20 );
-	
+
 	// Only shift about half the time
 	if( pitchShift > 10 )
 		pitchShift = 0;
@@ -437,7 +437,7 @@ void CBarney::Precache()
 	// when a level is loaded, nobody will talk (time is reset to 0)
 	TalkInit();
 	CTalkMonster::Precache();
-}	
+}
 
 // Init talk data
 void CBarney::TalkInit()
@@ -457,7 +457,7 @@ void CBarney::TalkInit()
 	m_szGrp[TLK_HELLO] = "BA_HELLO";
 
 	m_szGrp[TLK_PLHURT1] = "!BA_CUREA";
-	m_szGrp[TLK_PLHURT2] = "!BA_CUREB"; 
+	m_szGrp[TLK_PLHURT2] = "!BA_CUREB";
 	m_szGrp[TLK_PLHURT3] = "!BA_CUREC";
 
 	m_szGrp[TLK_PHELLO] = NULL;	//"BA_PHELLO";		// UNDONE
@@ -465,7 +465,7 @@ void CBarney::TalkInit()
 	m_szGrp[TLK_PQUESTION] = "BA_PQUEST";		// UNDONE
 
 	m_szGrp[TLK_SMELL] = "BA_SMELL";
-	
+
 	m_szGrp[TLK_WOUND] = "BA_WOUND";
 	m_szGrp[TLK_MORTAL] = "BA_MORTAL";
 
@@ -556,7 +556,7 @@ void CBarney::PainSound( void )
 }
 
 //=========================================================
-// DeathSound 
+// DeathSound
 //=========================================================
 void CBarney::DeathSound( void )
 {
@@ -574,9 +574,11 @@ void CBarney::DeathSound( void )
 	}
 }
 
-void CBarney::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType )
+void CBarney::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, const TraceResult *ptr, int bitsDamageType )
 {
-	switch( ptr->iHitgroup )
+	TraceResult newTr(*ptr);
+
+	switch( newTr.iHitgroup )
 	{
 	case HITGROUP_CHEST:
 	case HITGROUP_STOMACH:
@@ -591,17 +593,17 @@ void CBarney::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 			flDamage -= 20;
 			if( flDamage <= 0 )
 			{
-				UTIL_Ricochet( ptr->vecEndPos, 1.0 );
+				UTIL_Ricochet( newTr.vecEndPos, 1.0 );
 				flDamage = 0.01;
 			}
 		}
 
 		// always a head shot
-		ptr->iHitgroup = HITGROUP_HEAD;
+		newTr.iHitgroup = HITGROUP_HEAD;
 		break;
 	}
 
-	CTalkMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
+	CTalkMonster::TraceAttack( pevAttacker, flDamage, vecDir, &newTr, bitsDamageType );
 }
 
 void CBarney::Killed( entvars_t *pevAttacker, int iGib )
@@ -619,7 +621,7 @@ void CBarney::Killed( entvars_t *pevAttacker, int iGib )
 		DropItem( "weapon_9mmhandgun", vecGunPos, vecGunAngles );
 	}
 
-	SetUse( NULL );	
+	SetUse( NULL );
 	CTalkMonster::Killed( pevAttacker, iGib );
 }
 
@@ -642,7 +644,7 @@ Schedule_t *CBarney::GetScheduleOfType( int Type )
 	// Hook these to make a looping schedule
 	case SCHED_TARGET_FACE:
 		// call base class default so that barney will talk
-		// when 'used' 
+		// when 'used'
 		psched = CTalkMonster::GetScheduleOfType( Type );
 
 		if( psched == slIdleStand )
@@ -662,7 +664,7 @@ Schedule_t *CBarney::GetScheduleOfType( int Type )
 			return slIdleBaStand;
 		}
 		else
-			return psched;	
+			return psched;
 	}
 
 	return CTalkMonster::GetScheduleOfType( Type );
@@ -713,7 +715,7 @@ Schedule_t *CBarney::GetSchedule( void )
 				return GetScheduleOfType( SCHED_TAKE_COVER_FROM_ENEMY );
 		}
 		break;
-	case MONSTERSTATE_ALERT:	
+	case MONSTERSTATE_ALERT:
 	case MONSTERSTATE_IDLE:
 		if( HasConditions( bits_COND_LIGHT_DAMAGE | bits_COND_HEAVY_DAMAGE ) )
 		{
