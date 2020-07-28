@@ -29,7 +29,7 @@ typedef int		HIMAGE;		// handle to a graphic
 #define PIC_KEEP_8BIT	(1<<3)		// keep original 8-bit image (if present)
 
 typedef struct ui_globalvars_s
-{	
+{
 	float		time;		// unclamped host.realtime
 	float		frametime;
 
@@ -73,15 +73,15 @@ typedef struct ui_enginefuncs_s
 	int	(*pfnAddCommand)( const char *cmd_name, void (*function)(void) );
 	void	(*pfnClientCmd)( int execute_now, const char *szCmdString );
 	void	(*pfnDelCommand)( const char *cmd_name );
-	int       (*pfnCmdArgc)( void );	
+	int       (*pfnCmdArgc)( void );
 	char*	(*pfnCmdArgv)( int argc );
 	char*	(*pfnCmd_Args)( void );
 
-	// debug messages (in-menu shows only notify)	
-	void	(*Con_Printf)( char *fmt, ... );
-	void	(*Con_DPrintf)( char *fmt, ... );
-	void	(*Con_NPrintf)( int pos, char *fmt, ... );
-	void	(*Con_NXPrintf)( struct con_nprint_s *info, char *fmt, ... );
+	// debug messages (in-menu shows only notify)
+	void	(*Con_Printf)( const char *fmt, ... );
+	void	(*Con_DPrintf)( const char *fmt, ... );
+	void	(*Con_NPrintf)( int pos, const char *fmt, ... );
+	void	(*Con_NXPrintf)( struct con_nprint_s *info, const char *fmt, ... );
 
 	// sound handlers
 	void	(*pfnPlayLocalSound)( const char *szSound );
@@ -115,10 +115,11 @@ typedef struct ui_enginefuncs_s
 	int	(*pfnCreateMapsList)( int fRefresh );
 	int	(*pfnClientInGame)( void );
 	void	(*pfnClientJoin)( const struct netadr_s adr );
-	
+
 	// parse txt files
 	byte*	(*COM_LoadFile)( const char *filename, int *pLength );
 	char*	(*COM_ParseFile)( char *data, char *token );
+	char*	(*COM_ParseFileSafe)( char* data, char* token, size_t tokenLength );
 	void	(*COM_FreeFile)( void *buffer );
 
 	// keyfuncs
@@ -153,8 +154,8 @@ typedef struct ui_enginefuncs_s
 	void	(*pfnHostEndGame)( const char *szFinalMessage );
 
 	// menu interface is freezed at version 0.75
-	// new functions starts here 
-	float	(*pfnRandomFloat)( float flLow, float flHigh );	
+	// new functions starts here
+	float	(*pfnRandomFloat)( float flLow, float flHigh );
 	int	(*pfnRandomLong)( int lLow, int lHigh );
 
 	void	(*pfnSetCursor)( void *hCursor );			// change cursor

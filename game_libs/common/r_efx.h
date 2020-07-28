@@ -106,6 +106,7 @@ typedef struct tempent_s
 
 	vec3_t		tentOffset;	// if attached, client origin + tentOffset = tent origin.
 	cl_entity_t	entity;
+	int entityIndex;
 
 	// baseline.origin		- velocity
 	// baseline.renderamt	- starting fadeout intensity
@@ -125,6 +126,7 @@ struct efx_api_s
 	void		(*R_Bubbles)( float *mins, float *maxs, float height, int modelIndex, int count, float speed );
 	void		(*R_BubbleTrail)( float *start, float *end, float height, int modelIndex, int count, float speed );
 	void		(*R_BulletImpactParticles)( float *pos );
+	void		(*R_BulletImpactParticlesForSurface)( const float* pos, SurfaceProp surfaceProp );
 	void		(*R_EntityParticles)( struct cl_entity_s *ent );
 	void		(*R_Explosion)( float *pos, int model, float scale, float framerate, int flags );
 	void		(*R_FizzEffect)( struct cl_entity_s *pent, int modelIndex, int density );
@@ -169,7 +171,7 @@ struct efx_api_s
 	TEMPENTITY	*(*R_DefaultSprite)( float *pos, int spriteIndex, float framerate );
 	TEMPENTITY	*(*R_TempSprite)( float *pos, float *dir, float scale, int modelIndex, int rendermode, int renderfx, float a, float life, int flags );
 	int		(*Draw_DecalIndex)( int id );
-	int		(*Draw_DecalIndexFromName)( char *name );
+	int		(*Draw_DecalIndexFromName)( const char *name );
 	void		(*R_DecalShoot)( int textureIndex, int entity, int modelIndex, float *position, int flags );
 	void		(*R_AttachTentToPlayer)( int client, int modelIndex, float zoffset, float life );
 	void		(*R_KillAttachedTents)( int client );

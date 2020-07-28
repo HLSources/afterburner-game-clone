@@ -43,9 +43,9 @@ void PM_ConvertTrace( trace_t *out, pmtrace_t *in, edict_t *ent );
 //
 // pm_surface.c
 //
-const char *PM_TraceTexture( physent_t *pe, vec3_t vstart, vec3_t vend );
+texture_t *PM_TraceTexture( physent_t *pe, const float* vstart, const float* vend );
 msurface_t *PM_RecursiveSurfCheck( model_t *model, mnode_t *node, vec3_t p1, vec3_t p2 );
-msurface_t *PM_TraceSurface( physent_t *pe, vec3_t start, vec3_t end );
+msurface_t *PM_TraceSurface( physent_t *pe, const float* start, const float* end );
 int PM_TestLineExt( playermove_t *pmove, physent_t *ents, int numents, const vec3_t start, const vec3_t end, int flags );
 
 #endif//PM_LOCAL_H

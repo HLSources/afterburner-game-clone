@@ -23,6 +23,7 @@
 #include "player.h"
 #include "gamerules.h"
 #include "ammodefs.h"
+#include "eventConstructor/eventConstructor.h"
 
 LINK_ENTITY_TO_CLASS( weapon_rpg, CRpg )
 
@@ -446,7 +447,13 @@ void CRpg::PrimaryAttack()
 #else
 	flags = 0;
 #endif
-		PLAYBACK_EVENT( flags, m_pPlayer->edict(), m_usRpg );
+
+		using namespace EventConstructor;
+
+		CEventConstructor event;
+		event.InitSimple(flags, m_pPlayer->edict(), m_usRpg);
+
+		event.Send();
 
 		m_iClip--;
 

@@ -17,7 +17,9 @@
 
 #pragma once
 
+#include <cstdint>
 #include "event_flags.h"
+#include "vector_classes.h"
 
 // Fix warning in MSVC8
 #undef SERVER_EXECUTE
@@ -97,10 +99,31 @@ inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin = NU
 #define ENGINE_FPRINTF	(*g_engfuncs.pfnEngineFprintf)
 #define ALLOC_PRIVATE	(*g_engfuncs.pfnPvAllocEntPrivateData)
 
-inline void *GET_PRIVATE( edict_t *pent )
+template<typename T>
+static inline void WRITE_BYTES(const T* const valuePtr)
 {
-	if( pent )
+	for ( uint32_t index = 0; index < sizeof(*valuePtr); ++index )
+	{
+		WRITE_BYTE(reinterpret_cast<const uint8_t*>(valuePtr)[index]);
+	}
+}
+
+static inline void WRITE_VEC_PRECISE(const Vector& vec)
+{
+	for ( uint32_t axis = 0; axis < 3; ++axis )
+	{
+		const float value = vec[axis];
+		WRITE_BYTES(&value);
+	}
+}
+
+inline void* GET_PRIVATE( edict_t *pent )
+{
+	if ( pent )
+	{
 		return pent->pvPrivateData;
+	}
+
 	return NULL;
 }
 

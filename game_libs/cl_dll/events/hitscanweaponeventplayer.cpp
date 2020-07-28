@@ -13,6 +13,35 @@
 #include "ev_hldm.h"
 #include "rapidjson/document.h"
 #include "rapidjson_helpers/rapidjson_helpers.h"
+#include "debugging/hitscanweapondebugging.h"
+#include "eventCommands.h"
+
+namespace
+{
+	static inline void Debug_BeginBatch()
+	{
+		if ( EventCommands::HitscanEventDebuggingEnabled() )
+		{
+			HitscanWeaponDebugging::BeginBatch();
+		}
+	}
+
+	static inline void Debug_AddTrace(const Vector& begin, const Vector& end)
+	{
+		if ( EventCommands::HitscanEventDebuggingEnabled() )
+		{
+			HitscanWeaponDebugging::AddTraceToBatch(begin, end);
+		}
+	}
+
+	static inline void Debug_EndBatch()
+	{
+		if ( EventCommands::HitscanEventDebuggingEnabled() )
+		{
+			HitscanWeaponDebugging::EndBatch();
+		}
+	}
+}
 
 void HitscanWeaponEventPlayer::EventStart()
 {
@@ -23,7 +52,7 @@ void HitscanWeaponEventPlayer::EventStart()
 		V_PunchAxis(0, m_pHitscanAttack->ViewPunchY);
 	}
 
-	EjectShellFromViewModel(m_iShellModelIndex);
+	EjectShellFromViewModel(m_iShellModelIndex, m_pHitscanAttack->ShellModelType);
 	PlayFireSound();
 	CreateBulletTracers();
 }
@@ -32,31 +61,22 @@ void HitscanWeaponEventPlayer::CreateBulletTracers()
 {
 	const uint32_t numShots = m_pHitscanAttack->BulletsPerShot;
 
+	HitscanWeaponDebugging::Clear();
+	Debug_BeginBatch();
+
 	for ( uint32_t shot = 0; shot < numShots; ++shot )
 	{
 		vec3_t shotDir;
+		float spreadX = 0.0f;
+		float spreadY = 0.0f;
 
-		if ( numShots == 1 )
+		CGenericWeapon::GetSharedCircularGaussianSpread(shot, m_iRandomSeed, spreadX, spreadY);
+
+		for ( uint8_t axis = 0; axis < 3; ++axis )
 		{
-			for ( uint8_t axis = 0; axis < 3; ++axis )
-			{
-				shotDir[axis] = m_vecFwd[axis] + (m_flSpreadX * m_vecRight[axis]) + (m_flSpreadY * m_vecUp [axis]);
-			}
-		}
-		else
-		{
-			// We are firing multiple shots, so we need to generate the spread for each one.
-			float spreadX = 0.0f;
-			float spreadY = 0.0f;
-
-			CGenericWeapon::GetSharedCircularGaussianSpread(shot, m_iRandomSeed, spreadX, spreadY);
-
-			for ( uint8_t axis = 0; axis < 3; ++axis )
-			{
-				shotDir[axis] = m_vecFwd[axis] +
-					(spreadX * m_pHitscanAttack->SpreadX * m_vecRight[axis]) +
-					(spreadY * m_pHitscanAttack->SpreadY * m_vecUp[axis]);
-			}
+			shotDir[axis] = m_vecFwd[axis] +
+				(spreadX * m_pHitscanAttack->SpreadX * m_vecRight[axis]) +
+				(spreadY * m_pHitscanAttack->SpreadY * m_vecUp[axis]);
 		}
 
 		vec3_t traceEnd = m_vecGunPosition + (CGenericWeapon::DEFAULT_BULLET_TRACE_DISTANCE * shotDir);
@@ -84,8 +104,10 @@ void HitscanWeaponEventPlayer::CreateBulletTracers()
 		if ( traceResult.fraction != 1.0 )
 		{
 			EV_HLDM_PlayTextureSound(m_iEntIndex, &traceResult, m_vecGunPosition, traceEnd, BULLET_GENERIC);
-			EV_HLDM_DecalGunshot(&traceResult, BULLET_GENERIC);
+			EV_HLDM_DecalGunshotNew(m_iEntIndex, &traceResult, m_vecGunPosition, traceEnd);
 		}
+
+		Debug_AddTrace(m_vecGunPosition, traceResult.endpos);
 
 		if ( m_iTracerStride > 1 )
 		{
@@ -94,6 +116,8 @@ void HitscanWeaponEventPlayer::CreateBulletTracers()
 
 		gEngfuncs.pEventAPI->EV_PopPMStates();
 	}
+
+	Debug_EndBatch();
 }
 
 bool HitscanWeaponEventPlayer::Initialise()
@@ -110,8 +134,6 @@ bool HitscanWeaponEventPlayer::Initialise()
 	}
 
 	m_iShellModelIndex = gEngfuncs.pEventAPI->EV_FindModelIndex(m_pHitscanAttack->ShellModelName);
-	m_flSpreadX = m_pEventArgs->fparam1;
-	m_flSpreadY = m_pEventArgs->fparam2;
 	m_iRandomSeed = m_pEventArgs->iparam1;
 
 	return true;

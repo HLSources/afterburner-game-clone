@@ -1,6 +1,6 @@
 //========= Copyright (c) 1996-2002, Valve LLC, All rights reserved. ============
 //
-// Purpose: 
+// Purpose:
 //
 // $NoKeywords: $
 //=============================================================================
@@ -16,6 +16,7 @@
 #include "entity_state.h"
 #include "cl_entity.h"
 #include "triangleapi.h"
+#include "customGeometry/geometryStatics.h"
 
 extern "C"
 {
@@ -97,6 +98,8 @@ Non-transparent triangles-- add them here
 */
 void DLLEXPORT HUD_DrawNormalTriangles( void )
 {
+	CustomGeometry::RenderAllGeometry();
+
 	gHUD.m_Spectator.DrawOverview();
 #if defined( TEST_IT )
 //	Draw_Triangles();

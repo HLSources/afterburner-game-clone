@@ -8,6 +8,7 @@
 #include "cbase.h"
 #include "client.h"
 #include "botprofiles/botprofileparser.h"
+#include "mp_utils.h"
 
 void CBotFactory::LoadBotProfiles()
 {
@@ -76,7 +77,7 @@ bool CBotFactory::CreateBot(const CBotProfileTable::ProfileData* profile, const 
 		name = profile->playerName;
 	}
 
-	name = UTIL_SanitisePlayerNetName(name);
+	name = MPUtils::SanitisePlayerNetName(name);
 	edict_t* bot = g_engfuncs.pfnCreateFakeClient(name.String());
 
 	if ( !bot )

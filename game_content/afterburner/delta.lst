@@ -21,6 +21,7 @@ clientdata_t none
 	DEFINE_DELTA( punchangle[2], DT_SIGNED | DT_FLOAT, 16, 8.0 ),
 	DEFINE_DELTA( flags, DT_INTEGER, 32, 1.0 ), // Cut to 3 bits?
 	DEFINE_DELTA( weaponanim, DT_INTEGER, 8, 1.0 ),
+	DEFINE_DELTA( weaponScreenOverlay, DT_INTEGER, 4, 1.0 ),
 	DEFINE_DELTA( health, DT_SIGNED | DT_FLOAT, 10, 1.0 ), // Cut # of bits?
 	DEFINE_DELTA( maxspeed, DT_FLOAT, 16, 10.0 ),
 	DEFINE_DELTA( flDuckTime, DT_INTEGER, 10, 1.0 ),
@@ -92,7 +93,7 @@ entity_state_t gamedll Entity_Encode
 
 	DEFINE_DELTA( weaponmodel, DT_INTEGER, 10, 1.0 ),
 	DEFINE_DELTA( owner, DT_INTEGER, 5, 1.0 ),
-	DEFINE_DELTA( effects, DT_INTEGER, 8, 1.0 ),
+	DEFINE_DELTA( effects, DT_INTEGER, 32, 1.0 ),
 	DEFINE_DELTA( eflags, DT_INTEGER, 1, 1.0 ),
 	DEFINE_DELTA( angles[2], DT_ANGLE, 16, 1.0 ),
 	DEFINE_DELTA( colormap, DT_INTEGER, 16, 1.0 ),
@@ -146,7 +147,7 @@ entity_state_player_t gamedll Player_Encode
 	DEFINE_DELTA( team, DT_INTEGER, 4, 1.0 )
 	DEFINE_DELTA( playerclass, DT_INTEGER, 4, 1.0 )
 	DEFINE_DELTA( owner, DT_INTEGER, 5, 1.0 ),
-	DEFINE_DELTA( effects, DT_INTEGER, 8, 1.0 ),
+	DEFINE_DELTA( effects, DT_INTEGER, 32, 1.0 ),
 	DEFINE_DELTA( angles[2], DT_ANGLE, 16, 1.0 ),
 	DEFINE_DELTA( colormap, DT_INTEGER, 16, 1.0 ),
 	DEFINE_DELTA( framerate, DT_SIGNED | DT_FLOAT, 8, 16.0 ),
@@ -255,5 +256,8 @@ event_t none
 	DEFINE_DELTA( angles[0], DT_SIGNED | DT_FLOAT, 16, 8.0 ),
 	DEFINE_DELTA( angles[1], DT_SIGNED | DT_FLOAT, 16, 8.0 ),
 	DEFINE_DELTA( angles[2], DT_SIGNED | DT_FLOAT, 16, 8.0 ),
-	DEFINE_DELTA( ducking, DT_INTEGER, 1, 1.0 )
+	DEFINE_DELTA( ducking, DT_INTEGER, 1, 1.0 ),
+	DEFINE_DELTA( vecparam1[0], DT_SIGNED | DT_FLOAT, 16, 8.0 ),
+	DEFINE_DELTA( vecparam1[1], DT_SIGNED | DT_FLOAT, 16, 8.0 ),
+	DEFINE_DELTA( vecparam1[2], DT_SIGNED | DT_FLOAT, 16, 8.0 )
 }

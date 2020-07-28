@@ -41,6 +41,8 @@
 #include "pm_shared.h"
 #include "gameresources/GameResources.h"
 #include "prop_playercorpse.h"
+#include "gameplay/gameplaySystems.h"
+#include "resources/SoundResources.h"
 
 extern DLL_GLOBAL ULONG		g_ulModelIndexPlayer;
 extern DLL_GLOBAL BOOL		g_fGameOver;
@@ -729,6 +731,9 @@ void ServerDeactivate( void )
 	{
 		g_pGameRules->ServerDeactivate();
 	}
+
+	GameplaySystems::NotifyServerDeactivated();
+	GameplaySystems::Destroy();
 }
 
 void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
@@ -745,11 +750,15 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	for( i = 0; i < edictCount; i++ )
 	{
 		if( pEdictList[i].free )
+		{
 			continue;
+		}
 
 		// Clients aren't necessarily initialized until ClientPutInServer()
 		if( i < clientMax || !pEdictList[i].pvPrivateData )
+		{
 			continue;
+		}
 
 		pClass = CBaseEntity::Instance( &pEdictList[i] );
 		// Activate this entity if it's got a class & isn't dormant
@@ -768,6 +777,9 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 
 	if ( g_pGameRules )
 	{
+		GameplaySystems::Create(g_pGameRules->IsMultiplayer());
+		GameplaySystems::NotifyServerActivated();
+
 		g_pGameRules->ServerActivate();
 	}
 }
@@ -870,67 +882,6 @@ void ClientPrecache( void )
 	// setup precaches always needed
 	PRECACHE_SOUND( "player/sprayer.wav" );			// spray paint sound for PreAlpha
 
-	// PRECACHE_SOUND( "player/pl_jumpland2.wav" );		// UNDONE: play 2x step sound
-
-	PRECACHE_SOUND( "player/pl_fallpain2.wav" );
-	PRECACHE_SOUND( "player/pl_fallpain3.wav" );
-
-	PRECACHE_SOUND( "player/pl_step1.wav" );		// walk on concrete
-	PRECACHE_SOUND( "player/pl_step2.wav" );
-	PRECACHE_SOUND( "player/pl_step3.wav" );
-	PRECACHE_SOUND( "player/pl_step4.wav" );
-
-	PRECACHE_SOUND( "common/npc_step1.wav" );		// NPC walk on concrete
-	PRECACHE_SOUND( "common/npc_step2.wav" );
-	PRECACHE_SOUND( "common/npc_step3.wav" );
-	PRECACHE_SOUND( "common/npc_step4.wav" );
-
-	PRECACHE_SOUND( "player/pl_metal1.wav" );		// walk on metal
-	PRECACHE_SOUND( "player/pl_metal2.wav" );
-	PRECACHE_SOUND( "player/pl_metal3.wav" );
-	PRECACHE_SOUND( "player/pl_metal4.wav" );
-
-	PRECACHE_SOUND( "player/pl_dirt1.wav" );		// walk on dirt
-	PRECACHE_SOUND( "player/pl_dirt2.wav" );
-	PRECACHE_SOUND( "player/pl_dirt3.wav" );
-	PRECACHE_SOUND( "player/pl_dirt4.wav" );
-
-	PRECACHE_SOUND( "player/pl_duct1.wav" );		// walk in duct
-	PRECACHE_SOUND( "player/pl_duct2.wav" );
-	PRECACHE_SOUND( "player/pl_duct3.wav" );
-	PRECACHE_SOUND( "player/pl_duct4.wav" );
-
-	PRECACHE_SOUND( "player/pl_grate1.wav" );		// walk on grate
-	PRECACHE_SOUND( "player/pl_grate2.wav" );
-	PRECACHE_SOUND( "player/pl_grate3.wav" );
-	PRECACHE_SOUND( "player/pl_grate4.wav" );
-
-	PRECACHE_SOUND( "player/pl_slosh1.wav" );		// walk in shallow water
-	PRECACHE_SOUND( "player/pl_slosh2.wav" );
-	PRECACHE_SOUND( "player/pl_slosh3.wav" );
-	PRECACHE_SOUND( "player/pl_slosh4.wav" );
-
-	PRECACHE_SOUND( "player/pl_tile1.wav" );		// walk on tile
-	PRECACHE_SOUND( "player/pl_tile2.wav" );
-	PRECACHE_SOUND( "player/pl_tile3.wav" );
-	PRECACHE_SOUND( "player/pl_tile4.wav" );
-	PRECACHE_SOUND( "player/pl_tile5.wav" );
-
-	PRECACHE_SOUND( "player/pl_swim1.wav" );		// breathe bubbles
-	PRECACHE_SOUND( "player/pl_swim2.wav" );
-	PRECACHE_SOUND( "player/pl_swim3.wav" );
-	PRECACHE_SOUND( "player/pl_swim4.wav" );
-
-	PRECACHE_SOUND( "player/pl_ladder1.wav" );	// climb ladder rung
-	PRECACHE_SOUND( "player/pl_ladder2.wav" );
-	PRECACHE_SOUND( "player/pl_ladder3.wav" );
-	PRECACHE_SOUND( "player/pl_ladder4.wav" );
-
-	PRECACHE_SOUND( "player/pl_wade1.wav" );		// wade in water
-	PRECACHE_SOUND( "player/pl_wade2.wav" );
-	PRECACHE_SOUND( "player/pl_wade3.wav" );
-	PRECACHE_SOUND( "player/pl_wade4.wav" );
-
 	PRECACHE_SOUND( "debris/wood1.wav" );			// hit wood texture
 	PRECACHE_SOUND( "debris/wood2.wav" );
 	PRECACHE_SOUND( "debris/wood3.wav" );
@@ -948,13 +899,6 @@ void ClientPrecache( void )
 
 	// player gib sounds
 	PRECACHE_SOUND( "common/bodysplat.wav" );
-
-	// player pain sounds
-	PRECACHE_SOUND( "player/pl_pain2.wav" );
-	PRECACHE_SOUND( "player/pl_pain4.wav" );
-	PRECACHE_SOUND( "player/pl_pain5.wav" );
-	PRECACHE_SOUND( "player/pl_pain6.wav" );
-	PRECACHE_SOUND( "player/pl_pain7.wav" );
 
 	PRECACHE_MODEL( PLAYER_MODEL_PATH );
 
@@ -1777,6 +1721,7 @@ void UpdateClientData( const struct edict_s *ent, int sendweapons, struct client
 	cd->maxspeed		= pev->maxspeed;
 	cd->fov			= pev->fov;
 	cd->weaponanim		= pev->weaponanim;
+	cd->weaponScreenOverlay = pl->m_iWeaponScreenOverlay;
 
 	cd->pushmsec		= pev->pushmsec;
 
@@ -1985,4 +1930,9 @@ AllowLagCompensation
 int AllowLagCompensation( void )
 {
 	return 1;
+}
+
+const char* GetRandomWaterTransitionSound(void)
+{
+	return SoundResources::FootstepSounds.RandomResourcePath(FootstepSoundId::DeepWater);
 }

@@ -20,8 +20,7 @@ GNU General Public License for more details.
 #include "platform/android/android_priv.h"
 #include "errno.h"
 #include <pthread.h>
-#include <android/native_window.h>
-#include <android/native_window_jni.h>
+#include <sys/prctl.h>
 
 #ifndef JNICALL
 #define JNICALL // a1ba: workaround for my IDE, where Java files are not included
@@ -72,9 +71,9 @@ static const int s_android_scantokey[] =
 
 typedef enum event_type
 {
-	event_touch_down,
+	event_touch_down = 0,
 	event_touch_up,
-	event_touch_move,
+	event_touch_move, // compatible with touchEventType
 	event_key_down,
 	event_key_up,
 	event_set_pause,
@@ -89,7 +88,6 @@ typedef enum event_type
 	event_ondestroy,
 	event_onresume,
 	event_onfocuschange,
-	event_setwindow,
 } eventtype_t;
 
 typedef struct touchevent_s
@@ -142,7 +140,6 @@ typedef struct event_s
 		joyaxis_t axis;
 		joybutton_t button;
 		keyevent_t key;
-		ANativeWindow *window;
 	};
 } event_t;
 
@@ -163,7 +160,6 @@ static struct {
 } events = { PTHREAD_MUTEX_INITIALIZER, PTHREAD_MUTEX_INITIALIZER };
 
 struct jnimethods_s jni;
-struct nativeegl_s  negl;
 struct jnimouse_s   jnimouse;
 
 #define Android_Lock() pthread_mutex_lock(&events.mutex);
@@ -210,7 +206,7 @@ nativeSetPause
 */
 #define VA_ARGS(...) , ##__VA_ARGS__ // GCC extension
 #define DECLARE_JNI_INTERFACE( ret, name, ... ) \
-	JNIEXPORT ret JNICALL Java_in_celest_xash3d_XashActivity_##name( JNIEnv *env, jclass clazz VA_ARGS(__VA_ARGS__) )
+	JNIEXPORT ret JNICALL Java_su_xash_engine_XashActivity_##name( JNIEnv *env, jclass clazz VA_ARGS(__VA_ARGS__) )
 
 DECLARE_JNI_INTERFACE( int, nativeInit, jobject array )
 {
@@ -246,7 +242,7 @@ DECLARE_JNI_INTERFACE( int, nativeInit, jobject array )
 	/* Init callbacks. */
 
 	jni.env = env;
-	jni.actcls = (*env)->FindClass(env, "in/celest/xash3d/XashActivity");
+	jni.actcls = (*env)->FindClass(env, "su/xash/engine/XashActivity");
 	jni.enableTextInput = (*env)->GetStaticMethodID(env, jni.actcls, "showKeyboard", "(I)V");
 	jni.vibrate = (*env)->GetStaticMethodID(env, jni.actcls, "vibrate", "(I)V" );
 	jni.messageBox = (*env)->GetStaticMethodID(env, jni.actcls, "messageBox", "(Ljava/lang/String;Ljava/lang/String;)V");
@@ -258,6 +254,14 @@ DECLARE_JNI_INTERFACE( int, nativeInit, jobject array )
 	jni.loadID = (*env)->GetStaticMethodID(env, jni.actcls, "loadID", "()Ljava/lang/String;");
 	jni.showMouse = (*env)->GetStaticMethodID(env, jni.actcls, "showMouse", "(I)V");
 	jni.shellExecute = (*env)->GetStaticMethodID(env, jni.actcls, "shellExecute", "(Ljava/lang/String;)V");
+
+	jni.swapBuffers = (*env)->GetStaticMethodID(env, jni.actcls, "swapBuffers", "()V");
+	jni.toggleEGL = (*env)->GetStaticMethodID(env, jni.actcls, "toggleEGL", "(I)V");
+	jni.createGLContext = (*env)->GetStaticMethodID(env, jni.actcls, "createGLContext", "([I[I)Z");
+	jni.getGLAttribute = (*env)->GetStaticMethodID(env, jni.actcls, "getGLAttribute", "(I)I");
+	jni.deleteGLContext = (*env)->GetStaticMethodID(env, jni.actcls, "deleteGLContext", "()Z");
+	jni.getSelectedPixelFormat = (*env)->GetStaticMethodID(env, jni.actcls, "getSelectedPixelFormat", "()I");
+	jni.getSurface = (*env)->GetStaticMethodID(env, jni.actcls, "getNativeSurface", "()Landroid/view/Surface;");
 
 	/* Run the application. */
 
@@ -330,7 +334,16 @@ DECLARE_JNI_INTERFACE( void, nativeKey, jint down, jint code )
 	else
 	{
 		if( code >= ( sizeof( s_android_scantokey ) / sizeof( s_android_scantokey[0] ) ) )
+		{
+			Con_DPrintf( "nativeKey: unknown Android key %d\n", code );
 			return;
+		}
+
+		if( !s_android_scantokey[code] )
+		{
+			Con_DPrintf( "nativeKey: unmapped Android key %d\n", code );
+			return;
+		}
 
 		event = Android_AllocEvent();
 		event->type = down?event_key_down:event_key_up;
@@ -554,24 +567,6 @@ DECLARE_JNI_INTERFACE( int, nativeTestWritePermission, jstring jPath )
 	return ret;
 }
 
-DECLARE_JNI_INTERFACE( void, nativeSetSurface, jobject surface )
-{
-	Android_Lock();
-	if( surface )
-	{
-		negl.window = ANativeWindow_fromSurface( env, surface );
-	}
-	else
-	{
-		if( negl.window )
-		{
-			ANativeWindow_release( negl.window );
-			negl.window = NULL;
-		}
-	}
-	Android_Unlock();
-}
-
 JNIEXPORT jint JNICALL JNI_OnLoad( JavaVM *vm, void *reserved )
 {
 	return JNI_VERSION_1_6;
@@ -579,14 +574,19 @@ JNIEXPORT jint JNICALL JNI_OnLoad( JavaVM *vm, void *reserved )
 
 /*
 ========================
-Android_Init
+Platform_Init
 
 Initialize android-related cvars
 ========================
 */
-void Android_Init( void )
+void Platform_Init( void )
 {
 	android_sleep = Cvar_Get( "android_sleep", "1", FCVAR_ARCHIVE, "Enable sleep in background" );
+}
+
+void Platform_Shutdown( void )
+{
+
 }
 
 /*
@@ -707,7 +707,7 @@ void Android_SaveID( const char *id )
 Android_MouseMove
 ========================
 */
-void Android_MouseMove( float *x, float *y )
+void Platform_MouseMove( float *x, float *y )
 {
 	*x = jnimouse.x;
 	*y = jnimouse.y;
@@ -727,12 +727,12 @@ void Android_AddMove( float x, float y )
 	jnimouse.y += y;
 }
 
-void Platform_GetMousePos( int *x, int *y )
+void GAME_EXPORT Platform_GetMousePos( int *x, int *y )
 {
 	// stub
 }
 
-void Platform_SetMousePos( int x, int y )
+void GAME_EXPORT Platform_SetMousePos( int x, int y )
 {
 	// stub
 }
@@ -814,7 +814,7 @@ void Platform_RunEvents( void )
 		case event_touch_down:
 		case event_touch_up:
 		case event_touch_move:
-			IN_TouchEvent( events.queue[i].type, events.queue[i].arg,
+			IN_TouchEvent( (touchEventType)events.queue[i].type, events.queue[i].arg,
 						   events.queue[i].touch.x, events.queue[i].touch.y,
 						   events.queue[i].touch.dx, events.queue[i].touch.dy );
 			break;
@@ -842,10 +842,10 @@ void Platform_RunEvents( void )
 			// destroy EGL surface when hiding application
 			if( !events.queue[i].arg )
 			{
-				host.status = HOST_FRAME;
 				SNDDMA_Activate( true );
-				// (*jni.env)->CallStaticVoidMethod( jni.env, jni.actcls, jni.toggleEGL, 1 );
-				// Android_UpdateSurface();
+//				(*jni.env)->CallStaticVoidMethod( jni.env, jni.actcls, jni.toggleEGL, 1 );
+				Android_UpdateSurface( true );
+				host.status = HOST_FRAME;
 				SetBits( gl_vsync->flags, FCVAR_CHANGED ); // set swap interval
 				host.force_draw_version = true;
 				host.force_draw_version_time = host.realtime + FORCE_DRAW_VERSION_TIME;
@@ -853,20 +853,20 @@ void Platform_RunEvents( void )
 
 			if( events.queue[i].arg )
 			{
-				host.status = HOST_NOFOCUS;
 				SNDDMA_Activate( false );
-				// (*jni.env)->CallStaticVoidMethod( jni.env, jni.actcls, jni.toggleEGL, 0 );
-				// negl.valid = false;
+				Android_UpdateSurface( false );
+				host.status = HOST_NOFOCUS;
+//				(*jni.env)->CallStaticVoidMethod( jni.env, jni.actcls, jni.toggleEGL, 0 );
 			}
 			break;
 
 		case event_resize:
 			// reinitialize EGL and change engine screen size
-			if( host.status == HOST_NORMAL && ( refState.width != jni.width || refState.height != jni.height ) )
+			if( host.status == HOST_FRAME &&( refState.width != jni.width || refState.height != jni.height ) )
 			{
-				// (*jni.env)->CallStaticVoidMethod( jni.env, jni.actcls, jni.toggleEGL, 0 );
-				// (*jni.env)->CallStaticVoidMethod( jni.env, jni.actcls, jni.toggleEGL, 1 );
-				// Android_UpdateSurface();
+//				(*jni.env)->CallStaticVoidMethod( jni.env, jni.actcls, jni.toggleEGL, 0 );
+//				(*jni.env)->CallStaticVoidMethod( jni.env, jni.actcls, jni.toggleEGL, 1 );
+				Android_UpdateSurface( true );
 				SetBits( gl_vsync->flags, FCVAR_CHANGED ); // set swap interval
 				VID_SetMode();
 			}
@@ -920,14 +920,14 @@ void Platform_RunEvents( void )
 #endif
 			// disable sound during call/screen-off
 			SNDDMA_Activate( false );
-			host.status = HOST_NOFOCUS;
+//			host.status = HOST_NOFOCUS;
 			// stop blocking UI thread
 			(*jni.env)->CallStaticVoidMethod( jni.env, jni.actcls, jni.notify );
 
 			break;
 		case event_onresume:
 			// re-enable sound after onPause
-			host.status = HOST_FRAME;
+//			host.status = HOST_FRAME;
 			SNDDMA_Activate( true );
 			host.force_draw_version = true;
 			host.force_draw_version_time = host.realtime + FORCE_DRAW_VERSION_TIME;
@@ -935,9 +935,6 @@ void Platform_RunEvents( void )
 		case event_onfocuschange:
 			host.force_draw_version = true;
 			host.force_draw_version_time = host.realtime + FORCE_DRAW_VERSION_TIME;
-			break;
-		case event_setwindow:
-			negl.window = events.queue[i].window;
 			break;
 		}
 	}

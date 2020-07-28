@@ -37,6 +37,7 @@ inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin, ent
 #include "hulldefs.h"
 #include "utlstring.h"
 #include "debug_assert.h"
+#include "event_args.h"
 
 class CBaseEntity;
 
@@ -510,8 +511,7 @@ int SENTENCEG_GetIndex(const char *szrootname);
 int SENTENCEG_Lookup(const char *sample, char *sentencenum);
 
 void TEXTURETYPE_Init();
-char TEXTURETYPE_Find(char *name);
-float TEXTURETYPE_PlaySound(TraceResult *ptr,  Vector vecSrc, Vector vecEnd, int iBulletType);
+void TEXTURETYPE_PlaySound(TraceResult *ptr,  Vector vecSrc, Vector vecEnd, int iBulletType);
 
 // NOTE: use EMIT_SOUND_DYN to set the pitch of a sound. Pitch of 100
 // is no pitch shift.  Pitch > 100 up to 255 is a higher pitch, pitch < 100
@@ -545,9 +545,6 @@ void EMIT_GROUPNAME_SUIT(edict_t *entity, const char *groupname);
 
 #define RANDOM_SOUND_ARRAY( array ) (array) [ RANDOM_LONG(0,ARRAYSIZE( (array) )-1) ]
 
-#define PLAYBACK_EVENT( flags, who, index ) PLAYBACK_EVENT_FULL( flags, who, index, 0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 0, 0 );
-#define PLAYBACK_EVENT_DELAY( flags, who, index, delay ) PLAYBACK_EVENT_FULL( flags, who, index, delay, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 0, 0 );
-
 #define GROUP_OP_AND	0
 #define GROUP_OP_NAND	1
 
@@ -571,8 +568,4 @@ int UTIL_SharedRandomLong( unsigned int seed, int low, int high );
 float UTIL_SharedRandomFloat( unsigned int seed, float low, float high );
 
 float UTIL_WeaponTimeBase( void );
-
-CBasePlayer* UTIL_CBasePlayerByIndex( int playerIndex );
-const char* UTIL_GetPlayerNetName(CBasePlayer* player);
-CUtlString UTIL_SanitisePlayerNetName(const CUtlString& name);
 #endif // UTIL_H

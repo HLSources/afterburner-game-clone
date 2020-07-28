@@ -30,6 +30,8 @@ extern "C" {
 
 #define MAX_ALIAS_NAME	32
 
+struct event_fire_args_s;
+
 typedef struct cmdalias_s
 {
 	struct cmdalias_s	*next;
@@ -115,6 +117,17 @@ typedef struct hud_player_info_s
 	ulonglong_t	m_nSteamID;
 } hud_player_info_t;
 
+typedef struct sprite_draw_args_s
+{
+	int renderMode;
+	int frame;
+	int x;
+	int y;
+	int width;
+	int height;
+	const wrect_t* prc;
+} sprite_draw_args_t;
+
 typedef struct cl_enginefuncs_s
 {
 	// sprite handlers
@@ -126,6 +139,7 @@ typedef struct cl_enginefuncs_s
 	void	(*pfnSPR_Draw)( int frame, int x, int y, const wrect_t *prc );
 	void	(*pfnSPR_DrawHoles)( int frame, int x, int y, const wrect_t *prc );
 	void	(*pfnSPR_DrawAdditive)( int frame, int x, int y, const wrect_t *prc );
+	void	(*pfnSPR_DrawCustom)( const sprite_draw_args_t* args );
 	void	(*pfnSPR_EnableScissor)( int x, int y, int width, int height );
 	void	(*pfnSPR_DisableScissor)( void );
 	client_sprite_t *(*pfnSPR_GetList)( const char *psz, int *piCount );
@@ -205,10 +219,10 @@ typedef struct cl_enginefuncs_s
 	int	(*CL_CreateVisibleEntity)( int type, struct cl_entity_s *ent );
 
 	const struct model_s* (*GetSpritePointer)( HSPRITE hSprite );
-	void	(*pfnPlaySoundByNameAtLocation)( const char *szSound, float volume, float *origin );
+	void	(*pfnPlaySoundByNameAtLocation)( const char *szSound, float volume, const float *origin );
 
 	unsigned short (*pfnPrecacheEvent)( int type, const char* psz );
-	void	(*pfnPlaybackEvent)( int flags, const struct edict_s *pInvoker, unsigned short eventindex, float delay, float *origin, float *angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2 );
+	void	(*pfnPlaybackEvent)( const struct event_fire_args_s* );
 	void	(*pfnWeaponAnim)( int iAnim, int body );
 	float	(*pfnRandomFloat)( float flLow, float flHigh );
 	int	(*pfnRandomLong)( int lLow, int lHigh );
@@ -225,6 +239,7 @@ typedef struct cl_enginefuncs_s
 
 	byte*	(*COM_LoadFile)( const char *path, int usehunk, int *pLength );
 	char*	(*COM_ParseFile)( const char *data, const char *token );
+	char*	(*COM_ParseFileSafe)( char* data, char* token, size_t tokenLength );
 	void	(*COM_FreeFile)( void *buffer );
 
 	struct triangleapi_s	*pTriAPI;

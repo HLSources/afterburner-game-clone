@@ -402,7 +402,7 @@ mstudioanim_t *CStudioModelRenderer::StudioGetAnim( model_t *m_pSubModel, mstudi
 /*
 ====================
 StudioPlayerBlend
-
+TODO: This is duplicated between engine and game libs - really it should be common.
 ====================
 */
 void CStudioModelRenderer::StudioPlayerBlend( mstudioseqdesc_t *pseqdesc, int *pBlend, float *pPitch )

@@ -360,7 +360,7 @@ CL_WeaponAnim
 Set new weapon animation
 ==================
 */
-void CL_WeaponAnim( int iAnim, int body )
+void GAME_EXPORT CL_WeaponAnim( int iAnim, int body )
 {
 	cl_entity_t	*view = &clgame.viewent;
 
@@ -2022,7 +2022,7 @@ void CL_ParseUserMessage( sizebuf_t *msg, int svc_num )
 
 	if( iSize >= MAX_USERMSG_LENGTH )
 	{
-		Msg("WTF??? %d %d\n", i, svc_num );
+		Msg("Message type %d had a size of %d that exceeds the maximum allowed message size of %u.\n", svc_num, iSize, MAX_USERMSG_LENGTH);
 		return;
 	}
 

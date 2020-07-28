@@ -39,6 +39,10 @@ CHalfLifeRules::CHalfLifeRules( void )
 	RefreshSkillData();
 }
 
+CHalfLifeRules::~CHalfLifeRules()
+{
+}
+
 //=========================================================
 //=========================================================
 void CHalfLifeRules::Think( void )

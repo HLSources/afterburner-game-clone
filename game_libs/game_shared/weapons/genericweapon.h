@@ -14,6 +14,11 @@ class CBaseBotFightStyle;
 class CGenericWeapon : public CBasePlayerWeapon
 {
 public:
+	enum SpawnFlag
+	{
+		SF_DontDrop = (1 << 0)
+	};
+
 	CGenericWeapon();
 	virtual ~CGenericWeapon();
 	virtual void Spawn() override;
@@ -41,7 +46,7 @@ public:
 #endif
 
 	static constexpr float DEFAULT_BULLET_TRACE_DISTANCE = 8192;
-	static void GetSharedCircularGaussianSpread(uint32_t shot, int shared_rand, float& x, float& y);
+	static void GetSharedCircularGaussianSpread(uint32_t shotIndex, int shared_rand, float& x, float& y);
 
 protected:
 	enum class WeaponAttackType
@@ -68,6 +73,8 @@ protected:
 		return attackMode;
 	}
 
+	virtual const char* PickupSound() const override;
+
 	// Overridable functions for attack modes:
 	virtual void PrecacheAttackMode(const WeaponAtts::WABaseAttack& attackMode);
 	virtual bool InvokeWithAttackMode(WeaponAttackType type, const WeaponAtts::WABaseAttack* attackMode);
@@ -81,6 +88,7 @@ protected:
 	void DelayFiring(float secs, bool allowIfEarlier = false, WeaponAttackType attackType = WeaponAttackType::None);
 	bool HasAmmo(const WeaponAtts::WABaseAttack* attackMode, int minCount = 1, bool useClip = true) const;
 	bool DecrementAmmo(const WeaponAtts::WABaseAttack* attackMode, int decrement);
+	bool CanReload() const;
 
 	// Return the value to set m_fInSpecialReload to next.
 	virtual int HandleSpecialReload(int currentState);
@@ -154,6 +162,11 @@ private:
 class CGenericAmmo : public CBasePlayerAmmo
 {
 public:
+	enum SpawnFlag
+	{
+		SF_DontDrop = (1 << 0)
+	};
+
 	CGenericAmmo(const char* modelName, const CAmmoDef& ammoDef, const char* pickupSoundName = NULL)
 		: CBasePlayerAmmo(),
 		  m_szModelName(modelName),
@@ -168,6 +181,11 @@ public:
 		Precache();
 		SET_MODEL(ENT(pev), m_szModelName);
 		CBasePlayerAmmo::Spawn();
+
+		if ( pev->spawnflags & SF_DontDrop )
+		{
+			pev->movetype = MOVETYPE_NONE;
+		}
 	}
 
 	void Precache()

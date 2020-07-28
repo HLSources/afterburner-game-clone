@@ -131,7 +131,7 @@ void BaseWeaponEventPlayer::AnimateViewModel()
 	gEngfuncs.pEventAPI->EV_WeaponAnimation(animIndex, body);
 }
 
-void BaseWeaponEventPlayer::EjectShellFromViewModel(int shellIndex)
+void BaseWeaponEventPlayer::EjectShellFromViewModel(int shellIndex, ShellType shellType)
 {
 	vec3_t ShellVelocity;
 	vec3_t ShellOrigin;
@@ -149,33 +149,38 @@ void BaseWeaponEventPlayer::EjectShellFromViewModel(int shellIndex)
 						   SHELLEJECT_RIGHT_SCALE,
 						   SHELLEJECT_UP_SCALE);
 
-	EV_EjectBrass(ShellOrigin, ShellVelocity, m_vecEntAngles[YAW], shellIndex, TE_BOUNCE_SHELL);
+	EV_EjectBrass(ShellOrigin, ShellVelocity, m_vecEntAngles[YAW], shellIndex, shellType == ShellType::Shotgun ? TE_BOUNCE_SHOTSHELL : TE_BOUNCE_SHELL);
 }
 
 void BaseWeaponEventPlayer::PlayFireSound()
 {
-	if ( m_pAttackMode->AttackSounds.SoundNames.Count() > 0 )
+	const WeaponAtts::WASoundSet& soundSet = (EV_IsLocal(m_iEntIndex) && m_pAttackMode->HasViewModelAttackSounds())
+		? m_pAttackMode->ViewModelAttackSounds
+		: m_pAttackMode->AttackSounds;
+
+	const WeightedValueList<const char*>& soundNames = soundSet.SoundNames;
+
+	if ( soundNames.Count() < 1 )
 	{
-		const WeaponAtts::WASoundSet& soundSet = m_pAttackMode->AttackSounds;
-		const WeightedValueList<const char*>& soundNames = soundSet.SoundNames;
-
-		const float volume = (soundSet.MinVolume < soundSet.MaxVolume)
-			? gEngfuncs.pfnRandomFloat(soundSet.MinVolume, soundSet.MaxVolume)
-			: soundSet.MaxVolume;
-
-		const int pitch = (soundSet.MinPitch < soundSet.MaxPitch)
-			? gEngfuncs.pfnRandomLong(soundSet.MinPitch, soundSet.MaxPitch)
-			: soundSet.MaxPitch;
-
-		const char* const soundName = soundNames.ItemByProbabilisticValue(gEngfuncs.pfnRandomFloat(0.0f, 1.0f));
-
-		gEngfuncs.pEventAPI->EV_PlaySound(m_iEntIndex,
-										  m_vecEntOrigin,
-										  CHAN_WEAPON,
-										  soundName,
-										  volume,
-										  ATTN_NORM,
-										  0,
-										  pitch);
+		return;
 	}
+
+	const float volume = (soundSet.MinVolume < soundSet.MaxVolume)
+		? gEngfuncs.pfnRandomFloat(soundSet.MinVolume, soundSet.MaxVolume)
+		: soundSet.MaxVolume;
+
+	const int pitch = (soundSet.MinPitch < soundSet.MaxPitch)
+		? gEngfuncs.pfnRandomLong(soundSet.MinPitch, soundSet.MaxPitch)
+		: soundSet.MaxPitch;
+
+	const char* const soundName = soundNames.ItemByProbabilisticValue(gEngfuncs.pfnRandomFloat(0.0f, 1.0f));
+
+	gEngfuncs.pEventAPI->EV_PlaySound(m_iEntIndex,
+									  m_vecEntOrigin,
+									  CHAN_WEAPON,
+									  soundName,
+									  volume,
+									  ATTN_NORM,
+									  0,
+									  pitch);
 }

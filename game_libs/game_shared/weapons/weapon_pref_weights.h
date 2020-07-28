@@ -6,13 +6,17 @@
 // lower values.
 enum WeaponPreferenceWeight
 {
+	// For debug weapons - should never take priority.
+	WeaponPref_Debug = 0,
+
 	// Least preferable
 	WeaponPref_Fists = 1,
 	WeaponPref_P99,
 	WeaponPref_Raptor,
 	WeaponPref_Frinesi,
 	WeaponPref_GrenadeLauncher,
-	WeaponPref_Max = WeaponPref_GrenadeLauncher
+	WeaponPref_L96A1,
+	WeaponPref_Max = WeaponPref_L96A1
 	// Most preferable
 };
 

@@ -1,3 +1,5 @@
+#pragma once
+
 #include "weapon_fists.h"
 #include "weaponatts_collection.h"
 #include "weapon_pref_weights.h"
@@ -39,6 +41,8 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 
 	WAPlayerModel& pm = obj.PlayerModel;
 	pm.PlayerAnimExtension = "crowbar";
+
+	obj.Prediction.SetUpPrediction<CWeaponFists>();
 
 	obj.SkillRecords.AddToTail(WASkillRecord("sk_plr_dmg_fists", &skilldata_t::plrDmgFists));
 	obj.SkillRecords.AddToTail(WASkillRecord("sk_plr_dmg_fists_alt", &skilldata_t::plrDmgFistsAlt));

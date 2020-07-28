@@ -26,7 +26,7 @@ GNU General Public License for more details.
 #include "dlight.h"
 #include "gl_frustum.h"
 #include "ref_api.h"
-#include "mathlib.h"
+#include "xash3d_mathlib.h"
 #include "ref_params.h"
 #include "enginefeatures.h"
 #include "com_strings.h"
@@ -39,8 +39,8 @@ GNU General Public License for more details.
 #define offsetof(s,m)       (size_t)&(((s *)0)->m)
 #endif // offsetof
 
-#define ASSERT(x) if(!( x )) gEngfuncs.Host_Error( "assert failed at %s:%i\n", __FILE__, __LINE__ )
-#define Assert(x) if(!( x )) gEngfuncs.Host_Error( "assert failed at %s:%i\n", __FILE__, __LINE__ )
+#define ASSERT(x) if(!( x )) gEngfuncs.Host_Error( "assert %s failed at %s:%i\n", #x, __FILE__, __LINE__ )
+#define Assert(x) ASSERT(x)
 
 #include <stdio.h>
 
@@ -135,6 +135,7 @@ typedef struct
 	qboolean		drawOrtho;	// draw world as orthogonal projection
 
 	float		fov_x, fov_y;	// current view fov
+	float		viewmodelfov_x, viewmodelfov_y;
 
 	cl_entity_t	*currententity;
 	model_t		*currentmodel;
@@ -617,6 +618,7 @@ enum
 	GL_DEPTH_TEXTURE,
 	GL_DEBUG_OUTPUT,
 	GL_ARB_VERTEX_BUFFER_OBJECT_EXT,
+	GL_DRAW_RANGEELEMENTS_EXT,
 	GL_EXTCOUNT,		// must be last
 };
 

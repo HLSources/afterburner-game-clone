@@ -23,6 +23,7 @@ namespace WeaponAtts
 
 		Core.Validate();
 		ViewModel.Validate();
+		Prediction.Validate();
 	}
 
 	void WACollection::RegisterCvars() const

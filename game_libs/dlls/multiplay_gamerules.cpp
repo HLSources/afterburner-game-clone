@@ -1208,6 +1208,11 @@ void CHalfLifeMultiplay::GoToIntermission( void )
 	m_iEndIntermissionButtonHit = FALSE;
 }
 
+CBotGameRulesInterface* CHalfLifeMultiplay::BotGameRulesInterface()
+{
+	return m_pBotGameRulesInterface;
+}
+
 #define MAX_RULE_BUFFER 1024
 
 typedef struct mapcycle_item_s

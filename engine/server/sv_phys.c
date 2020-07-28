@@ -21,7 +21,7 @@ GNU General Public License for more details.
 #include "ref_common.h"
 
 typedef int (*PHYSICAPI)( int, server_physics_api_t*, physics_interface_t* );
-#ifndef XASH_DEDICATED
+#if !XASH_DEDICATED
 extern triangleapi_t gTriApi;
 #endif
 
@@ -202,7 +202,7 @@ qboolean SV_RunThink( edict_t *ent )
 		thinktime = ent->v.nextthink;
 		if( thinktime <= 0.0f || thinktime > (sv.time + sv.frametime))
 			return true;
-		
+
 		if( thinktime < sv.time )
 			thinktime = sv.time;	// don't let things stay in the past.
 						// it is possible to start that way
@@ -409,7 +409,8 @@ float SV_Submerged( edict_t *ent )
 		svs.groupmask = ent->v.groupinfo;
 		if( SV_PointContents( point ) == CONTENTS_WATER )
 			return (ent->v.maxs[2] - ent->v.mins[2]);
-	case 2:	// intentionally fallthrough
+		// intentionally fallthrough
+	case 2:
 		bottom = SV_RecursiveWaterLevel( center, ent->v.absmax[2] - center[2], 0.0f, 0 );
 		return bottom - start;
 	}
@@ -522,7 +523,7 @@ int SV_ClipVelocity( vec3_t in, vec3_t normal, vec3_t out, float overbounce )
 	blocked = 0;
 	if( normal[2] > 0.0f ) blocked |= 1;	// floor
 	if( !normal[2] ) blocked |= 2;	// step
-	
+
 	backoff = DotProduct( in, normal ) * overbounce;
 
 	for( i = 0; i < 3; i++ )
@@ -585,14 +586,14 @@ int SV_FlyMove( edict_t *ent, float time, trace_t *steptrace )
 		allFraction += trace.fraction;
 
 		if( trace.allsolid )
-		{	
+		{
 			// entity is trapped in another solid
 			VectorClear( ent->v.velocity );
 			return 4;
 		}
 
 		if( trace.fraction > 0.0f )
-		{	
+		{
 			// actually covered some distance
 			VectorCopy( trace.endpos, ent->v.origin );
 			VectorCopy( ent->v.velocity, original_velocity );
@@ -735,7 +736,7 @@ void SV_AddHalfGravity( edict_t *ent, float timestep )
 	ent->v.velocity[2] -= ( 0.5f * ent_gravity * sv_gravity.value * timestep );
 	ent->v.velocity[2] += ( ent->v.basevelocity[2] * sv.frametime );
 	ent->v.basevelocity[2] = 0.0f;
-	
+
 	// bound velocity
 	SV_CheckVelocity( ent );
 }
@@ -891,7 +892,7 @@ static edict_t *SV_PushMove( edict_t *pusher, float movetime )
 	int		num_moved, oldsolid;
 	vec3_t		mins, maxs, lmove;
 	sv_pushed_t	*p, *pushed_p;
-	edict_t		*check;	
+	edict_t		*check;
 
 	if( svgame.globals->changelevel || VectorIsNull( pusher->v.velocity ))
 	{
@@ -913,7 +914,7 @@ static edict_t *SV_PushMove( edict_t *pusher, float movetime )
 	VectorCopy( pusher->v.origin, pushed_p->origin );
 	VectorCopy( pusher->v.angles, pushed_p->angles );
 	pushed_p++;
-	
+
 	// move the pusher to it's final position
 	SV_LinearMove( pusher, movetime, 0.0f );
 	SV_LinkEdict( pusher, false );
@@ -967,14 +968,14 @@ static edict_t *SV_PushMove( edict_t *pusher, float movetime )
 		VectorCopy( check->v.angles, pushed_p->angles );
 		pushed_p++;
 
-		// try moving the contacted entity 
+		// try moving the contacted entity
 		pusher->v.solid = SOLID_NOT;
 		SV_PushEntity( check, lmove, vec3_origin, &block, pusher->v.dmg );
 		pusher->v.solid = oldsolid;
 
 		// if it is still inside the pusher, block
 		if( SV_TestEntityPosition( check, NULL ) && block )
-		{	
+		{
 			if( !SV_CanBlock( check ))
 				continue;
 
@@ -990,7 +991,7 @@ static edict_t *SV_PushMove( edict_t *pusher, float movetime )
 				SV_LinkEdict( p->ent, (p->ent == check) ? true : false );
 			}
 			return check;
-		}	
+		}
 	}
 
 	return NULL;
@@ -1030,7 +1031,7 @@ static edict_t *SV_PushRotate( edict_t *pusher, float movetime )
 	VectorCopy( pusher->v.origin, pushed_p->origin );
 	VectorCopy( pusher->v.angles, pushed_p->angles );
 	pushed_p++;
-	
+
 	// move the pusher to it's final position
 	SV_AngularMove( pusher, movetime, pusher->v.friction );
 	SV_LinkEdict( pusher, false );
@@ -1100,7 +1101,7 @@ static edict_t *SV_PushRotate( edict_t *pusher, float movetime )
 				lmove[2] = 0.0f; // let's the free falling
 		}
 
-		// try moving the contacted entity 
+		// try moving the contacted entity
 		pusher->v.solid = SOLID_NOT;
 		SV_PushEntity( check, lmove, amove, &block, pusher->v.dmg );
 		pusher->v.solid = oldsolid;
@@ -1111,7 +1112,7 @@ static edict_t *SV_PushRotate( edict_t *pusher, float movetime )
 
 		// if it is still inside the pusher, block
 		if( SV_TestEntityPosition( check, NULL ) && block )
-		{	
+		{
 			if( !SV_CanBlock( check ))
 				continue;
 
@@ -1182,7 +1183,7 @@ void SV_Physics_Pusher( edict_t *ent )
 				pBlocker = SV_PushRotate( ent, movetime );
 			}
 		}
-		else 
+		else
 		{
 			pBlocker = SV_PushMove( ent, movetime );
 		}
@@ -1245,7 +1246,7 @@ a glue two entities together
 void SV_Physics_Compound( edict_t *ent )
 {
 	edict_t	*parent;
-	
+
 	// regular thinking
 	if( !SV_RunThink( ent )) return;
 
@@ -1327,7 +1328,7 @@ void SV_Physics_Noclip( edict_t *ent )
 	// regular thinking
 	if( !SV_RunThink( ent )) return;
 
-	SV_CheckWater( ent );	
+	SV_CheckWater( ent );
 
 	VectorMA( ent->v.origin, sv.frametime, ent->v.velocity,  ent->v.origin );
 	VectorMA( ent->v.angles, sv.frametime, ent->v.avelocity, ent->v.angles );
@@ -1372,11 +1373,12 @@ void SV_CheckWaterTransition( edict_t *ent )
 	if( cont <= CONTENTS_WATER && cont > CONTENTS_TRANSLUCENT )
 	{
 		if( ent->v.watertype == CONTENTS_EMPTY )
-		{	
+		{
 			// just crossed into water
-			SV_StartSound( ent, CHAN_AUTO, "player/pl_wade1.wav", 1.0f, ATTN_NORM, 0, 100 );
+			const char* soundPath = svgame.dllFuncs.pfnGetRandomWaterTransitionSound();
+			SV_StartSound(ent, CHAN_AUTO, soundPath, 1.0f, ATTN_NORM, 0, 100);
 			ent->v.velocity[2] *= 0.5f;
-		}		
+		}
 
 		ent->v.watertype = cont;
 		ent->v.waterlevel = 1;
@@ -1406,10 +1408,11 @@ void SV_CheckWaterTransition( edict_t *ent )
 	else
 	{
 		if( ent->v.watertype != CONTENTS_EMPTY )
-		{	
+		{
 			// just crossed into water
-			SV_StartSound( ent, CHAN_AUTO, "player/pl_wade2.wav", 1.0f, ATTN_NORM, 0, 100 );
-		}		
+			const char* soundPath = svgame.dllFuncs.pfnGetRandomWaterTransitionSound();
+			SV_StartSound(ent, CHAN_AUTO, soundPath, 1.0f, ATTN_NORM, 0, 100);
+		}
 		ent->v.watertype = CONTENTS_EMPTY;
 		ent->v.waterlevel = 0;
 	}
@@ -1516,7 +1519,7 @@ void SV_Physics_Toss( edict_t *ent )
 
 	// stop if on ground
 	if( trace.plane.normal[2] > 0.7f )
-	{		
+	{
 		float	vel;
 
 		VectorAdd( ent->v.velocity, ent->v.basevelocity, move );
@@ -1545,7 +1548,7 @@ void SV_Physics_Toss( edict_t *ent )
 			if( ent->free ) return;
 		}
 	}
-	
+
 	// check for in water
 	SV_CheckWaterTransition( ent );
 }
@@ -1778,7 +1781,7 @@ void SV_Physics( void )
 {
 	edict_t	*ent;
 	int    	i;
-	
+
 	SV_CheckAllEnts ();
 
 	svgame.globals->time = sv.time;
@@ -1966,7 +1969,7 @@ pfnPointContents
 
 =============
 */
-static int pfnPointContents( const float *pos, int groupmask )
+static int GAME_EXPORT pfnPointContents( const float *pos, int groupmask )
 {
 	int	oldmask, cont;
 
@@ -2005,7 +2008,7 @@ const char* pfnGetModelName( int modelindex )
 
 static const byte *GL_TextureData( unsigned int texnum )
 {
-#ifndef XASH_DEDICATED
+#if !XASH_DEDICATED
 	return Host_IsDedicated() ? NULL : ref.dllFuncs.GL_TextureData( texnum );
 #else // XASH_DEDICATED
 	return NULL;
@@ -2021,7 +2024,7 @@ static server_physics_api_t gPhysicsAPI =
 	SV_GetHeadNode,
 	SV_ServerState,
 	Host_Error,
-#ifndef XASH_DEDICATED
+#if !XASH_DEDICATED
 	&gTriApi,	// ouch!
 	pfnDrawConsoleString,
 	pfnDrawSetTextColor,

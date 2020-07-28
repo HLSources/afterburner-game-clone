@@ -22,6 +22,8 @@
 #include "player.h"
 #include "gamerules.h"
 #include "ammodefs.h"
+#include "event_args.h"
+#include "eventConstructor/eventConstructor.h"
 
 // special deathmatch shotgun spreads
 #define VECTOR_CONE_DM_SHOTGUN	Vector( 0.08716, 0.04362, 0.00 )// 10 degrees by 5 degrees
@@ -153,11 +155,24 @@ void CShotgun::PrimaryAttack()
 		vecDir = m_pPlayer->FireBulletsPlayer( 6, vecSrc, vecAiming, VECTOR_CONE_10DEGREES, 2048, BULLET_PLAYER_BUCKSHOT, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );
 	}
 
-	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usSingleFire, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0 );
+	using namespace EventConstructor;
+	CEventConstructor event;
+
+	event
+		<< Flags(flags)
+		<< Invoker(m_pPlayer->edict())
+		<< EventIndex(m_usSingleFire)
+		<< FloatParam1(vecDir.x)
+		<< FloatParam1(vecDir.y)
+		;
+
+	event.Send();
 
 	if( !m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 )
+	{
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 );
+	}
 
 	//if( m_iClip != 0 )
 		m_flPumpTime = gpGlobals->time + 0.5;
@@ -224,11 +239,24 @@ void CShotgun::SecondaryAttack( void )
 		vecDir = m_pPlayer->FireBulletsPlayer( 12, vecSrc, vecAiming, VECTOR_CONE_10DEGREES, 2048, BULLET_PLAYER_BUCKSHOT, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );
 	}
 
-	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usDoubleFire, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0 );
+	using namespace EventConstructor;
+	CEventConstructor event;
+
+	event
+		<< Flags(flags)
+		<< Invoker(m_pPlayer->edict())
+		<< EventIndex(m_usDoubleFire)
+		<< FloatParam1(vecDir.x)
+		<< FloatParam1(vecDir.y)
+		;
+
+	event.Send();
 
 	if( !m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 )
+	{
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 );
+	}
 
 	//if( m_iClip != 0 )
 		m_flPumpTime = gpGlobals->time + 0.95;

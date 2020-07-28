@@ -106,7 +106,7 @@ typedef struct
 	// console fonts
 	cl_font_t		chars[CON_NUMFONTS];// fonts.wad/font1.fnt
 	cl_font_t		*curFont, *lastUsedFont;
-	
+
 	// console input
 	field_t		input;
 
@@ -171,7 +171,7 @@ void Con_SetColor_f( void )
 		break;
 	}
 }
-						
+
 /*
 ================
 Con_ClearNotify
@@ -180,7 +180,7 @@ Con_ClearNotify
 void Con_ClearNotify( void )
 {
 	int	i;
-	
+
 	for( i = 0; i < CON_LINES_COUNT; i++ )
 		CON_LINES( i ).addtime = 0.0;
 }
@@ -524,7 +524,7 @@ void Con_Bottom( void )
 Con_Visible
 ================
 */
-int Con_Visible( void )
+int GAME_EXPORT Con_Visible( void )
 {
 	return (con.vislines > 0);
 }
@@ -986,7 +986,7 @@ Con_DrawStringLen
 compute string width and height in screen pixels
 ====================
 */
-void Con_DrawStringLen( const char *pText, int *length, int *height )
+void GAME_EXPORT Con_DrawStringLen( const char *pText, int *length, int *height )
 {
 	int	curLength = 0;
 
@@ -1315,12 +1315,16 @@ void Con_Print( const char *txt )
 			Host_InputFrame();
 		}
 
+		// FIXME: disable updating screen, because when texture is bound any console print
+		// can re-bound it to console font texture
+#if 0
 		if( !inupdate )
 		{
 			inupdate = true;
 			SCR_UpdateScreen ();
 			inupdate = false;
 		}
+#endif
 	}
 }
 
@@ -1331,7 +1335,7 @@ Con_NPrint
 Draw a single debug line with specified height
 ================
 */
-void Con_NPrintf( int idx, const char *fmt, ... )
+void GAME_EXPORT Con_NPrintf( int idx, const char *fmt, ... )
 {
 	va_list	args;
 
@@ -1358,7 +1362,7 @@ Con_NXPrint
 Draw a single debug line with specified height, color and time to live
 ================
 */
-void Con_NXPrintf( con_nprint_t *info, const char *fmt, ... )
+void GAME_EXPORT Con_NXPrintf( con_nprint_t *info, const char *fmt, ... )
 {
 	va_list	args;
 
@@ -1387,7 +1391,7 @@ UI_NPrint
 Draw a single debug line with specified height (menu version)
 ================
 */
-void UI_NPrintf( int idx, const char *fmt, ... )
+void GAME_EXPORT UI_NPrintf( int idx, const char *fmt, ... )
 {
 	va_list	args;
 
@@ -1414,7 +1418,7 @@ UI_NXPrint
 Draw a single debug line with specified height, color and time to live (menu version)
 ================
 */
-void UI_NXPrintf( con_nprint_t *info, const char *fmt, ... )
+void GAME_EXPORT UI_NXPrintf( con_nprint_t *info, const char *fmt, ... )
 {
 	va_list	args;
 
@@ -1595,7 +1599,7 @@ void Field_CharEvent( field_t *edit, int ch )
 	if( ch < 32 ) return;
 
 	if( host.key_overstrike )
-	{	
+	{
 		if ( edit->cursor == MAX_STRING - 1 ) return;
 		edit->buffer[edit->cursor] = ch;
 		edit->cursor++;
@@ -1660,7 +1664,7 @@ void Field_DrawInputLine( int x, int y, field_t *edit )
 
 	if( host.key_overstrike && cursorChar && !((int)( host.realtime * 4 ) & 1 ))
 		hideChar = edit->cursor - prestep; // skip this char
-	
+
 	// draw it
 	Con_DrawGenericString( x, y, str, colorDefault, false, hideChar );
 
@@ -1805,7 +1809,7 @@ void Key_Console( int key )
 	}
 
 	if( key == K_MWHEELDOWN )
-	{	
+	{
 		if( Key_IsDown( K_CTRL ))
 			Con_PageDown( 8 );
 		else Con_PageDown( 2 );
@@ -1905,13 +1909,13 @@ int Con_DrawDebugLines( void )
 	int	y = 20;
 
 	defaultX = refState.width / 4;
-	
+
 	for( i = 0; i < MAX_DBG_NOTIFY; i++ )
 	{
 		if( host.realtime < con.notify[i].expire && con.notify[i].key_dest == cls.key_dest )
 		{
 			int	x, len;
-			int	fontTall;
+			int	fontTall = 0;
 
 			Con_DrawStringLen( con.notify[i].szNotify, &len, &fontTall );
 			x = refState.width - Q_max( defaultX, len ) - 10;
@@ -1945,7 +1949,7 @@ void Con_DrawDebug( void )
 	if( scr_download->value != -1.0f )
 	{
 		Q_snprintf( dlstring, sizeof( dlstring ), "Downloading [%d remaining]: ^2%s^7 %5.1f%% time %.f secs",
-		host.downloadcount, host.downloadfile, scr_download->value, Sys_DoubleTime() - timeStart ); 
+		host.downloadcount, host.downloadfile, scr_download->value, Sys_DoubleTime() - timeStart );
 		x = refState.width - 500;
 		y = con.curFont->charHeight * 1.05f;
 		Con_DrawString( x, y, dlstring, g_color_table[7] );
@@ -1994,7 +1998,7 @@ void Con_DrawNotify( void )
 			y += con.curFont->charHeight;
 		}
 	}
-	
+
 	if( cls.key_dest == key_message )
 	{
 		string	buf;
@@ -2200,14 +2204,14 @@ void Con_DrawConsole( void )
 	case ca_connecting:
 	case ca_connected:
 	case ca_validate:
-		// force to show console always for -dev 3 and higher 
+		// force to show console always for -dev 3 and higher
 		Con_DrawSolidConsole( con.vislines );
 		break;
 	case ca_active:
-	case ca_cinematic: 
+	case ca_cinematic:
 		if( Cvar_VariableInteger( "cl_background" ) || Cvar_VariableInteger( "sv_background" ))
 		{
-			if( cls.key_dest == key_console ) 
+			if( cls.key_dest == key_console )
 				Con_DrawSolidConsole( refState.height );
 		}
 		else
@@ -2234,7 +2238,7 @@ void Con_DrawVersion( void )
 {
 	// draws the current build
 	byte	*color = g_color_table[7];
-	int	i, stringLen, width = 0, charH;
+	int	i, stringLen, width = 0, charH = 0;
 	int	start, height = refState.height;
 	qboolean	draw_version = false;
 	string	curbuild;
@@ -2481,7 +2485,7 @@ Con_DefaultColor
 called from MainUI
 =========
 */
-void Con_DefaultColor( int r, int g, int b )
+void GAME_EXPORT Con_DefaultColor( int r, int g, int b )
 {
 	r = bound( 0, r, 255 );
 	g = bound( 0, g, 255 );

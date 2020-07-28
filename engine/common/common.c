@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 #include "common.h"
 #include "studio.h"
-#include "mathlib.h"
+#include "xash3d_mathlib.h"
 #include "const.h"
 #include "client.h"
 #include "library.h"
@@ -112,7 +112,7 @@ void COM_SetRandomSeed( int lSeed )
 		idum -= 22261048;
 }
 
-float COM_RandomFloat( float flLow, float flHigh )
+float GAME_EXPORT COM_RandomFloat( float flLow, float flHigh )
 {
 	float	fl;
 
@@ -122,10 +122,10 @@ float COM_RandomFloat( float flLow, float flHigh )
 	return (fl * (flHigh - flLow)) + flLow; // float in [low, high)
 }
 
-int COM_RandomLong( int lLow, int lHigh )
+int GAME_EXPORT COM_RandomLong( int lLow, int lHigh )
 {
 	dword	maxAcceptable;
-	dword	n, x = lHigh - lLow + 1; 	
+	dword	n, x = lHigh - lLow + 1;
 
 	if( idum == 0 ) COM_SetRandomSeed( 0 );
 
@@ -184,7 +184,7 @@ typedef struct
 
 typedef struct
 {
-	lzss_list_t	*hash_table;	
+	lzss_list_t	*hash_table;
 	lzss_node_t	*hash_node;
 	int		window_size;
 } lzss_state_t;
@@ -247,7 +247,7 @@ byte *LZSS_CompressNoAlloc( lzss_state_t *state, byte *pInput, int input_length,
 	lzss_header_t	*header = (lzss_header_t *)pStart;
 	byte		*pOutput = pStart + sizeof( lzss_header_t );
 	const byte	*pEncodedPosition = NULL;
-	byte		*pLookAhead = pInput; 
+	byte		*pLookAhead = pInput;
 	byte		*pWindow = pInput;
 	int		i, putCmdByte = 0;
 	byte		*pCmdByte = NULL;
@@ -309,9 +309,9 @@ byte *LZSS_CompressNoAlloc( lzss_state_t *state, byte *pInput, int input_length,
 			*pCmdByte = (*pCmdByte >> 1) | 0x80;
 			*pOutput++ = (( pLookAhead - pEncodedPosition - 1 ) >> LZSS_LOOKSHIFT );
 			*pOutput++ = (( pLookAhead - pEncodedPosition - 1 ) << LZSS_LOOKSHIFT ) | ( encoded_length - 1 );
-		} 
-		else 
-		{ 
+		}
+		else
+		{
 			*pCmdByte = ( *pCmdByte >> 1 );
 			*pOutput++ = *pLookAhead;
 			encoded_length = 1;
@@ -392,7 +392,7 @@ uint LZSS_Decompress( const byte *pInput, byte *pOutput )
 
 	while( 1 )
 	{
-		if( !getCmdByte ) 
+		if( !getCmdByte )
 			cmdByte = *pInput++;
 		getCmdByte = ( getCmdByte + 1 ) & 0x07;
 
@@ -405,15 +405,15 @@ uint LZSS_Decompress( const byte *pInput, byte *pOutput )
 			position |= ( *pInput >> LZSS_LOOKSHIFT );
 			count = ( *pInput++ & 0x0F ) + 1;
 
-			if( count == 1 ) 
+			if( count == 1 )
 				break;
 
 			pSource = pOutput - position - 1;
 			for( i = 0; i < count; i++ )
 				*pOutput++ = *pSource++;
 			totalBytes += count;
-		} 
-		else 
+		}
+		else
 		{
 			*pOutput++ = *pInput++;
 			totalBytes++;
@@ -443,13 +443,19 @@ interpert this character as single
 static int COM_IsSingleChar( char c )
 {
 	if( c == '{' || c == '}' || c == '\'' || c == ',' )
+	{
 		return true;
+	}
 
 	if( !host.com_ignorebracket && ( c == ')' || c == '(' ))
+	{
 		return true;
+	}
 
 	if( host.com_handlecolon && c == ':' )
+	{
 		return true;
+	}
 
 	return false;
 }
@@ -462,11 +468,153 @@ interpret symbol as whitespace
 ==============
 */
 
-static int COM_IsWhiteSpace( char space )
+static inline qboolean COM_IsWhiteSpace( char space )
 {
-	if( space == ' ' || space == '\t' || space == '\r' || space == '\n' )
-		return 1;
-	return 0;
+	return space == ' ' || space == '\t' || space == '\r' || space == '\n';
+}
+
+static inline char* COM_SkipWhitespace(char* str)
+{
+	if ( !str )
+	{
+		return NULL;
+	}
+
+	while ( COM_IsWhiteSpace(*str) )
+	{
+		++str;
+	}
+
+	return str;
+}
+
+static inline char* COM_SkipLine(char* str)
+{
+	if ( !str )
+	{
+		return NULL;
+	}
+
+	while ( *str && *str != '\n' )
+	{
+		++str;
+	}
+
+	return str;
+}
+
+// Assumes token is valid.
+static inline void COM_WriteToToken(char* token, size_t length, char ch, uint32_t index, qboolean useLength)
+{
+	if ( !useLength )
+	{
+		// No checks.
+		token[index] = ch;
+	}
+	else if ( index < length )
+	{
+		// Enforce termination if we overflow.
+		token[index] = (index == length - 1) ? '\0' : ch;
+	}
+}
+
+static char* COM_ParseFileInternal(char* data, char* token, size_t tokenLength, qboolean useLength)
+{
+	int c = 0;
+	int len = 0;
+
+	if( !token || (useLength && tokenLength == 0) )
+	{
+		return NULL;
+	}
+
+	token[0] = 0;
+
+	if( !data )
+	{
+		return NULL;
+	}
+
+	while ( true )
+	{
+		data = COM_SkipWhitespace(data);
+
+		if ( !(*data) )
+		{
+			// End of file.
+			return NULL;
+		}
+
+		// If the next token is not a comment, we can progress.
+		// If it is, skip the comment and then go back to skip
+		// any more whitespace.
+		if ( !(data[0] == '/' && data[1] == '/') )
+		{
+			break;
+		}
+
+		data = COM_SkipLine(data);
+	}
+
+	c = *data;
+
+	// Handle quoted strings specially.
+	if ( c == '\"' )
+	{
+		data++;
+
+		while( true )
+		{
+			c = (byte)*data;
+
+			// unexpected line end
+			if ( !c )
+			{
+				COM_WriteToToken(token, tokenLength, '\0', len, useLength);
+				return data;
+			}
+
+			data++;
+
+			if ( c == '\"' )
+			{
+				COM_WriteToToken(token, tokenLength, '\0', len, useLength);
+				return data;
+			}
+
+			COM_WriteToToken(token, tokenLength, c, len, useLength);
+			len++;
+		}
+	}
+
+	// Parse single characters
+	if( COM_IsSingleChar( c ))
+	{
+		COM_WriteToToken(token, tokenLength, c, len, useLength);
+		len++;
+
+		COM_WriteToToken(token, tokenLength, '\0', len, useLength);
+		return data + 1;
+	}
+
+	// Parse a regular word
+	do
+	{
+		COM_WriteToToken(token, tokenLength, c, len, useLength);
+		data++;
+		len++;
+
+		c = ((byte)*data);
+
+		if ( COM_IsSingleChar(c))
+		{
+			break;
+		}
+	}
+	while( c > ' ' );
+
+	COM_WriteToToken(token, tokenLength, '\0', len, useLength);
+	return data;
 }
 
 /*
@@ -478,83 +626,12 @@ text parser
 */
 char *COM_ParseFile( char *data, char *token )
 {
-	int	c, len;
+	return COM_ParseFileInternal(data, token, 0, false);
+}
 
-	if( !token )
-		return NULL;
-	
-	len = 0;
-	token[0] = 0;
-	
-	if( !data )
-		return NULL;
-// skip whitespace
-skipwhite:
-	while(( c = ((byte)*data)) <= ' ' )
-	{
-		if( c == 0 )
-			return NULL;	// end of file;
-		data++;
-	}
-	
-	// skip // comments
-	if( c=='/' && data[1] == '/' )
-	{
-		while( *data && *data != '\n' )
-			data++;
-		goto skipwhite;
-	}
-
-	// handle quoted strings specially
-	if( c == '\"' )
-	{
-		data++;
-		while( 1 )
-		{
-			c = (byte)*data;
-
-			// unexpected line end
-			if( !c )
-			{
-				token[len] = 0;
-				return data;
-			}
-			data++;
-
-			if( c == '\"' )
-			{
-				token[len] = 0;
-				return data;
-			}
-			token[len] = c;
-			len++;
-		}
-	}
-
-	// parse single characters
-	if( COM_IsSingleChar( c ))
-	{
-		token[len] = c;
-		len++;
-		token[len] = 0;
-		return data + 1;
-	}
-
-	// parse a regular word
-	do
-	{
-		token[len] = c;
-		data++;
-		len++;
-		c = ((byte)*data);
-
-		if( COM_IsSingleChar( c ))
-			break;
-	} while( c > 32 );
-	
-	token[len] = 0;
-
-	return data;
+char* COM_ParseFileSafe(char* data, char* token, size_t tokenLength)
+{
+	return COM_ParseFileInternal(data, token, tokenLength, true);
 }
 
 /*
@@ -628,7 +705,7 @@ COM_FileSize
 
 =============
 */
-int COM_FileSize( const char *filename )
+int GAME_EXPORT COM_FileSize( const char *filename )
 {
 	return FS_FileSize( filename, false );
 }
@@ -639,7 +716,7 @@ COM_AddAppDirectoryToSearchPath
 
 =============
 */
-void COM_AddAppDirectoryToSearchPath( const char *pszBaseDir, const char *appName )
+void GAME_EXPORT COM_AddAppDirectoryToSearchPath( const char *pszBaseDir, const char *appName )
 {
 	FS_AddGameHierarchy( pszBaseDir, FS_NOWRITE_PATH );
 }
@@ -652,7 +729,7 @@ Finds the file in the search path, copies over the name with the full path name.
 This doesn't search in the pak file.
 ===========
 */
-int COM_ExpandFilename( const char *fileName, char *nameOutBuffer, int nameOutBufferSize )
+int GAME_EXPORT COM_ExpandFilename( const char *fileName, char *nameOutBuffer, int nameOutBufferSize )
 {
 	const char	*path;
 	char		result[MAX_SYSPATH];
@@ -665,7 +742,7 @@ int COM_ExpandFilename( const char *fileName, char *nameOutBuffer, int nameOutBu
 	// models\barney.mdl - D:\Xash3D\bshift\models\barney.mdl
 	if(( path = FS_GetDiskPath( fileName, false )) != NULL )
 	{
-		Q_sprintf( result, "%s/%s", host.rootdir, path );		
+		Q_sprintf( result, "%s/%s", host.rootdir, path );
 
 		// check for enough room
 		if( Q_strlen( result ) > nameOutBufferSize )
@@ -771,7 +848,7 @@ void COM_HexConvert( const char *pszInput, int nInputLength, byte *pOutput )
 	for( i = 0; i < nInputLength; i += 2 )
 	{
 		pIn = &pszInput[i];
-		*p = COM_Nibble( pIn[0] ) << 4 | COM_Nibble( pIn[1] );		
+		*p = COM_Nibble( pIn[0] ) << 4 | COM_Nibble( pIn[1] );
 		p++;
 	}
 }
@@ -817,7 +894,7 @@ char *COM_MemFgets( byte *pMemFile, int fileSize, int *filePos, char *pBuffer, i
 
 		// copy it out
 		memcpy( pBuffer, pMemFile + *filePos, size );
-		
+
 		// If the buffer isn't full, terminate (this is always true)
 		if( size < bufferSize ) pBuffer[size] = 0;
 
@@ -853,7 +930,7 @@ COM_LoadFileForMe
 
 =============
 */
-byte* COM_LoadFileForMe( const char *filename, int *pLength )
+byte* GAME_EXPORT COM_LoadFileForMe( const char *filename, int *pLength )
 {
 	string	name;
 	byte	*file, *pfile;
@@ -904,7 +981,7 @@ COM_SaveFile
 
 =============
 */
-int COM_SaveFile( const char *filename, const void *data, int len )
+int GAME_EXPORT COM_SaveFile( const char *filename, const void *data, int len )
 {
 	// check for empty filename
 	if( !COM_CheckString( filename ))
@@ -923,9 +1000,9 @@ COM_FreeFile
 
 =============
 */
-void COM_FreeFile( void *buffer )
+void GAME_EXPORT COM_FreeFile( void *buffer )
 {
-	free( buffer ); 
+	free( buffer );
 }
 
 /*
@@ -953,7 +1030,7 @@ pfnGetModelType
 
 =============
 */
-int pfnGetModelType( model_t *mod )
+int GAME_EXPORT pfnGetModelType( model_t *mod )
 {
 	if( !mod ) return mod_bad;
 	return mod->type;
@@ -965,7 +1042,7 @@ pfnGetModelBounds
 
 =============
 */
-void pfnGetModelBounds( model_t *mod, float *mins, float *maxs )
+void GAME_EXPORT pfnGetModelBounds( model_t *mod, float *mins, float *maxs )
 {
 	if( mod )
 	{
@@ -986,7 +1063,7 @@ pfnCvar_RegisterServerVariable
 standard path to register game variable
 =============
 */
-void pfnCvar_RegisterServerVariable( cvar_t *variable )
+void GAME_EXPORT pfnCvar_RegisterServerVariable( cvar_t *variable )
 {
 	if( variable != NULL )
 		SetBits( variable->flags, FCVAR_EXTDLL );
@@ -1001,7 +1078,7 @@ use with precaution: this cvar will NOT unlinked
 after game.dll is unloaded
 =============
 */
-void pfnCvar_RegisterEngineVariable( cvar_t *variable )
+void GAME_EXPORT pfnCvar_RegisterEngineVariable( cvar_t *variable )
 {
 	Cvar_RegisterVariable( (convar_t *)variable );
 }
@@ -1051,7 +1128,7 @@ pfnCVarDirectSet
 allow to set cvar directly
 =============
 */
-void pfnCVarDirectSet( cvar_t *var, const char *szValue )
+void GAME_EXPORT pfnCVarDirectSet( cvar_t *var, const char *szValue )
 {
 	Cvar_DirectSet( (convar_t *)var, szValue );
 }
@@ -1062,7 +1139,7 @@ COM_CompareFileTime
 
 =============
 */
-int COM_CompareFileTime( const char *filename1, const char *filename2, int *iCompare )
+int GAME_EXPORT COM_CompareFileTime( const char *filename1, const char *filename2, int *iCompare )
 {
 	int	bRet = 0;
 
@@ -1090,7 +1167,7 @@ COM_CheckParm
 
 =============
 */
-int COM_CheckParm( char *parm, char **ppnext )
+int GAME_EXPORT COM_CheckParm( char *parm, char **ppnext )
 {
 	int	i = Sys_CheckParm( parm );
 
@@ -1110,7 +1187,7 @@ pfnTime
 
 =============
 */
-float pfnTime( void )
+float GAME_EXPORT pfnTime( void )
 {
 	return (float)Sys_DoubleTime();
 }
@@ -1121,7 +1198,7 @@ pfnGetGameDir
 
 =============
 */
-void pfnGetGameDir( char *szGetGameDir )
+void GAME_EXPORT pfnGetGameDir( char *szGetGameDir )
 {
 	if( !szGetGameDir ) return;
 	Q_strcpy( szGetGameDir, GI->gamefolder );

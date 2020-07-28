@@ -21,9 +21,6 @@ GNU General Public License for more details.
 #include <time.h>
 #include "stdio.h"
 #include "crtlib.h"
-#if HAVE_TGMATH_H
-#include <tgmath.h>
-#endif
 
 void Q_strnupr( const char *in, char *out, size_t size_out )
 {
@@ -710,11 +707,11 @@ of all text functions.
 char *va( const char *format, ... )
 {
 	va_list		argptr;
-	static char	string[256][1024], *s;
+	static char	string[16][1024], *s;
 	static int	stringindex = 0;
 
 	s = string[stringindex];
-	stringindex = (stringindex + 1) & 255;
+	stringindex = (stringindex + 1) & 15;
 	va_start( argptr, format );
 	Q_vsnprintf( s, sizeof( string[0] ), format, argptr );
 	va_end( argptr );
@@ -888,6 +885,37 @@ void COM_ReplaceExtension( char *path, const char *extension )
 {
 	COM_StripExtension( path );
 	COM_DefaultExtension( path, extension );
+}
+
+/*
+============
+COM_RemoveLineFeed
+============
+*/
+void COM_RemoveLineFeed( char *str )
+{
+	while( *str != '\0' )
+	{
+		if( *str == '\r' || *str == '\n' )
+			*str = '\0';
+
+		++str;
+	}
+}
+
+/*
+============
+COM_PathSlashFix
+============
+*/
+void COM_PathSlashFix( char *path )
+{
+	size_t	len;
+
+	len = Q_strlen( path );
+
+	if( path[len - 1] != '\\' || path[len - 1] != '/' )
+		Q_strcpy( &path[len], "/" );
 }
 
 int matchpattern( const char *in, const char *pattern, qboolean caseinsensitive )

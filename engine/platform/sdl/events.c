@@ -12,8 +12,7 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
-
-#if defined( XASH_SDL ) && !defined( XASH_DEDICATED )
+#if defined( XASH_SDL ) && !XASH_DEDICATED
 #include <SDL.h>
 #include <ctype.h>
 
@@ -25,8 +24,6 @@ GNU General Public License for more details.
 #include "events.h"
 #include "sound.h"
 #include "vid_common.h"
-
-static int wheelbutton;
 
 #if ! SDL_VERSION_ATLEAST( 2, 0, 0 )
 #define SDL_SCANCODE_A SDLK_a
@@ -367,14 +364,6 @@ SDLash_EventFilter
 */
 static void SDLash_EventFilter( SDL_Event *event )
 {
-	static int mdown;
-
-	if( wheelbutton )
-	{
-		Key_Event( wheelbutton, false );
-		wheelbutton = 0;
-	}
-
 	switch ( event->type )
 	{
 	/* Mouse events */
@@ -422,9 +411,12 @@ static void SDLash_EventFilter( SDL_Event *event )
 		break;
 #if SDL_VERSION_ATLEAST( 2, 0, 0 )
 	case SDL_MOUSEWHEEL:
-		wheelbutton = event->wheel.y < 0 ? K_MWHEELDOWN : K_MWHEELUP;
+	{
+		int wheelbutton = event->wheel.y < 0 ? K_MWHEELDOWN : K_MWHEELUP;
 		Key_Event( wheelbutton, true );
+		Key_Event( wheelbutton, false );
 		break;
+	}
 
 	/* Touch events */
 	case SDL_FINGERDOWN:
@@ -573,7 +565,6 @@ static void SDLash_EventFilter( SDL_Event *event )
 				break;
 
 			VID_SaveWindowSize( event->window.data1, event->window.data2 );
-			SCR_VidInit(); // tell the client.dll that vid_mode has changed
 			break;
 		}
 		default:
@@ -582,8 +573,7 @@ static void SDLash_EventFilter( SDL_Event *event )
 #else
 	case SDL_VIDEORESIZE:
 		VID_SaveWindowSize( event->resize.w, event->resize.h );
-		SCR_VidInit();
-		break; // tell the client.dll that vid_mode has changed
+		break;
 	case SDL_ACTIVEEVENT:
 		SDLash_ActiveEvent( event->active.gain );
 		break;
@@ -627,4 +617,4 @@ void Platform_PreCreateMove( void )
 	}
 }
 
-#endif //  defined( XASH_SDL ) && !defined( XASH_DEDICATED )
+#endif //  defined( XASH_SDL ) && !XASH_DEDICATED

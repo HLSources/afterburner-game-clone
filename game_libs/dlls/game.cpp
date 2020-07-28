@@ -22,6 +22,9 @@
 #include "projectInterface/IProjectInterface.h"
 #include "projectInterface_server.h"
 #include "gameresources/GameResources.h"
+#include "hitbox_debugging/hitbox_commands.h"
+#include "customGeometry/commands.h"
+#include "resources/SoundResources.h"
 
 cvar_t displaysoundlist = {"displaysoundlist","0"};
 
@@ -49,7 +52,8 @@ cvar_t allowmonsters	= { "mp_allowmonsters","0", FCVAR_SERVER };
 cvar_t bhopcap		= { "mp_bhopcap", "1", FCVAR_SERVER };
 
 // Avoid respawning players closer to where they last died than this.
-cvar_t mp_respawn_avoid_radius = { "mp_respawn_avoid_radius", "256", FCVAR_SERVER };
+cvar_t mp_respawn_avoid_radius = { "mp_respawn_avoid_radius", "192", FCVAR_SERVER };
+cvar_t mp_corpse_show_time = { "mp_corpse_show_time", "30", FCVAR_SERVER };
 
 cvar_t allow_spectators = { "allow_spectators", "1", FCVAR_SERVER };	// 0 prevents players from being spectators
 cvar_t multibyte_only = { "mp_multibyte_only", "0", FCVAR_SERVER };
@@ -872,6 +876,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &sk_player_leg3 );
 
 	CVAR_REGISTER( &mp_respawn_avoid_radius );
+	CVAR_REGISTER( &mp_corpse_show_time );
 
 	CWeaponRegistry::StaticInstance().RegisterCvars();
 
@@ -879,6 +884,8 @@ void GameDLLInit( void )
 
 	Bot_RegisterCVars();
 	BotCommands::Initialise();
+	CustomGeometry::InitialiseCommands();
+	HitboxDebugging::Initialise();
 
 	SERVER_COMMAND( "exec skill.cfg\n" );
 }

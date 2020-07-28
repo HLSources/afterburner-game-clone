@@ -2,6 +2,7 @@
 #include "util.h"
 #include "weaponatts_meleeattack.h"
 #include "gamerules.h"
+#include "eventConstructor/eventConstructor.h"
 
 namespace
 {
@@ -155,8 +156,7 @@ void CGenericMeleeWeapon::AttackStrike()
 				damagePerShot = gSkillData.*dmgPtr;
 			}
 
-			TraceResult attackTr;
-			pEntity->TraceAttack(m_pPlayer->pev, damagePerShot, gpGlobals->v_forward, &attackTr, DMG_CLUB);
+			pEntity->TraceAttack(m_pPlayer->pev, damagePerShot, gpGlobals->v_forward, &tr, DMG_CLUB);
 
 			ApplyMultiDamage(m_pPlayer->pev, m_pPlayer->pev);
 		}
@@ -170,18 +170,10 @@ void CGenericMeleeWeapon::AttackStrike()
 		{
 			vec3_t traceEnd = m_vecAttackTraceStart + ((m_vecContactPointOnSurface - m_vecAttackTraceStart) * 2);
 
-			float texSoundVolume = TEXTURETYPE_PlaySound(&tr, m_vecAttackTraceStart, traceEnd, BULLET_MELEE);
+			TEXTURETYPE_PlaySound(&tr, m_vecAttackTraceStart, traceEnd, BULLET_MELEE);
 
-			if( g_pGameRules->IsMultiplayer() )
-			{
-				// override the volume here, cause we don't play texture sounds in multiplayer,
-				// and fvolbar is going to be 0 from the above call.
-
-				texSoundVolume = 1.0f;
-			}
-
-			PlaySound(*worldHitSounds, CHAN_ITEM, texSoundVolume);
-			m_pPlayer->m_iWeaponVolume = static_cast<int>(static_cast<float>(m_pCachedAttack->Volume) * texSoundVolume);
+			PlaySound(*worldHitSounds, CHAN_ITEM, 1.0f);
+			m_pPlayer->m_iWeaponVolume = m_pCachedAttack->Volume;
 		}
 
 		if ( m_pCachedAttack->DecalOnImpact )
@@ -239,18 +231,16 @@ bool CGenericMeleeWeapon::CheckForContact(const WeaponAtts::WAMeleeAttack* melee
 
 void CGenericMeleeWeapon::FireEvent(const WeaponAtts::WAMeleeAttack* meleeAttack)
 {
-	PLAYBACK_EVENT_FULL(DefaultEventFlags(),
-						m_pPlayer->edict(),
-						m_AttackModeEvents[meleeAttack->Signature()->Index],
-						0.0,
-						(float*)&g_vecZero,
-						(float*)&g_vecZero,
-						0,
-						0,
-						0,
-						0,
-						0,
-						0);
+	using namespace EventConstructor;
+	CEventConstructor event;
+
+	event
+		<< Flags(DefaultEventFlags())
+		<< Invoker(m_pPlayer->edict())
+		<< EventIndex(m_AttackModeEvents[meleeAttack->Signature()->Index])
+		;
+
+	event.Send();
 }
 
 void CGenericMeleeWeapon::InitTraceVecs(const WeaponAtts::WAMeleeAttack* meleeAttack)

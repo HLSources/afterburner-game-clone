@@ -204,7 +204,7 @@ public:
 	void SetYawSpeed( void );
 	int Classify( void );
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
-	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
+	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, const TraceResult *ptr, int bitsDamageType );
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 
 	BOOL CheckMeleeAttack1( float flDot, float flDist );		// Swipe
@@ -248,7 +248,6 @@ private:
 	static const char *pAttackHitSounds[];
 	static const char *pBeamAttackSounds[];
 	static const char *pAttackMissSounds[];
-	static const char *pRicSounds[];
 	static const char *pFootSounds[];
 	static const char *pIdleSounds[];
 	static const char *pAlertSounds[];
@@ -306,22 +305,6 @@ const char *CGargantua::pAttackMissSounds[] =
 {
 	"zombie/claw_miss1.wav",
 	"zombie/claw_miss2.wav",
-};
-
-const char *CGargantua::pRicSounds[] =
-{
-#if 0
-	"weapons/ric1.wav",
-	"weapons/ric2.wav",
-	"weapons/ric3.wav",
-	"weapons/ric4.wav",
-	"weapons/ric5.wav",
-#else
-	"debris/metal4.wav",
-	"debris/metal6.wav",
-	"weapons/ric4.wav",
-	"weapons/ric5.wav",
-#endif
 };
 
 const char *CGargantua::pFootSounds[] =
@@ -778,9 +761,6 @@ void CGargantua::Precache()
 	for( i = 0; i < ARRAYSIZE( pAttackMissSounds ); i++ )
 		PRECACHE_SOUND( pAttackMissSounds[i] );
 
-	for( i = 0; i < ARRAYSIZE( pRicSounds ); i++ )
-		PRECACHE_SOUND( pRicSounds[i] );
-
 	for( i = 0; i < ARRAYSIZE( pFootSounds ); i++ )
 		PRECACHE_SOUND( pFootSounds[i] );
 
@@ -816,7 +796,7 @@ void CGargantua::UpdateOnRemove()
 	FlameDestroy();
 }
 
-void CGargantua::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType )
+void CGargantua::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, const TraceResult *ptr, int bitsDamageType )
 {
 	ALERT( at_aiconsole, "CGargantua::TraceAttack\n" );
 
@@ -844,8 +824,6 @@ void CGargantua::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vec
 		{
 			UTIL_Ricochet( ptr->vecEndPos, RANDOM_FLOAT( 0.5 ,1.5 ) );
 			pev->dmgtime = gpGlobals->time;
-			//if ( RANDOM_LONG( 0, 100 ) < 25 )
-			//	EMIT_SOUND_DYN( ENT( pev ), CHAN_BODY, pRicSounds[RANDOM_LONG( 0, ARRAYSIZE( pRicSounds ) - 1 )], 1.0, ATTN_NORM, 0, PITCH_NORM );
 		}
 		flDamage = 0;
 	}

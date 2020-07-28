@@ -39,6 +39,13 @@
 #include "gameresources/GameResources.h"
 #include "prop_playercorpse.h"
 #include "spawnpointmanager.h"
+#include "customGeometry/messageWriter.h"
+#include "gameplay/gameplaySystems.h"
+#include "gameplay/gameplaySystemsBase.h"
+#include "gameplay/spawnpointmanager.h"
+#include "screenOverlays/messageWriter.h"
+#include "com_model.h"
+#include "resources/SoundResources.h"
 
 // #define DUCKFIX
 
@@ -148,6 +155,7 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 	//DEFINE_FIELD( CBasePlayer, m_nCustomSprayFrames, FIELD_INTEGER ), // Don't need to restore
 };
 
+bool userMessagesRegistered = false;
 int giPrecacheGrunt = 0;
 int gmsgShake = 0;
 int gmsgFade = 0;
@@ -192,7 +200,7 @@ int gmsgStatusValue = 0;
 void LinkUserMessages( void )
 {
 	// Already taken care of?
-	if( gmsgSelAmmo )
+	if( userMessagesRegistered )
 	{
 		return;
 	}
@@ -235,22 +243,27 @@ void LinkUserMessages( void )
 
 	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
+
+	CustomGeometry::CMessageWriter::RegisterUserMessage();
+	ScreenOverlays::CMessageWriter::RegisterUserMessage();
+
+	userMessagesRegistered = true;
 }
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer )
 
 void CBasePlayer::Pain( void )
 {
-	float flRndSound;//sound randomizer
+	if ( m_flNextPainTime > gpGlobals->time )
+	{
+		return;
+	}
 
-	flRndSound = RANDOM_FLOAT( 0, 1 );
+	// TODO: Need to decide on subtype (male/female/bond).
+	const char* path = SoundResources::PlayerSounds.RandomResourcePath(PlayerSoundId::PainMale);
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, path, 1.0f, ATTN_NORM);
 
-	if( flRndSound <= 0.33 )
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain5.wav", 1, ATTN_NORM );
-	else if( flRndSound <= 0.66 )
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain6.wav", 1, ATTN_NORM );
-	else
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain7.wav", 1, ATTN_NORM );
+	m_flNextPainTime = gpGlobals->time + 0.45f;
 }
 
 Vector VecVelocityForDamage( float flDamage )
@@ -333,28 +346,9 @@ int TrainSpeed( int iSpeed, int iMax )
 
 void CBasePlayer::DeathSound( void )
 {
-	// water death sounds
-	/*
-	if( pev->waterlevel == 3 )
-	{
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/h2odeath.wav", 1, ATTN_NONE );
-		return;
-	}
-	*/
-
-	// temporarily using pain sounds for death sounds
-	switch( RANDOM_LONG( 1, 5 ) )
-	{
-	case 1:
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain5.wav", 1, ATTN_NORM );
-		break;
-	case 2:
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain6.wav", 1, ATTN_NORM );
-		break;
-	case 3:
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain7.wav", 1, ATTN_NORM );
-		break;
-	}
+	// TODO: Need to decide on subtype (male/female/bond).
+	const char* path = SoundResources::PlayerSounds.RandomResourcePath(PlayerSoundId::DieMale);
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, path, 1.0f, ATTN_NORM);
 
 	// play one of the suit death alarms
 	EMIT_GROUPNAME_SUIT( ENT( pev ), "HEV_DEAD" );
@@ -381,7 +375,7 @@ Vector CBasePlayer::GetGunPosition()
 //=========================================================
 // TraceAttack
 //=========================================================
-void CBasePlayer::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType )
+void CBasePlayer::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, const TraceResult *ptr, int bitsDamageType )
 {
 	if( pev->takedamage )
 	{
@@ -528,6 +522,11 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 
 	m_bitsDamageType |= bitsDamage; // Save this so we can report it to the client
 	m_bitsHUDDamage = -1;  // make sure the damage bits get resent
+
+	if ( !(bitsDamage & DMG_DROWN) && pev->health > 0 )
+	{
+		Pain();
+	}
 
 	while( fTookDamage && ( !ftrivial || ( bitsDamage & DMG_TIMEBASED ) ) && ffound && bitsDamage )
 	{
@@ -1118,10 +1117,12 @@ void CBasePlayer::WaterMove()
 		// not underwater
 
 		// play 'up for air' sound
-		if( pev->air_finished < gpGlobals->time )
-			EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_wade1.wav", 1, ATTN_NORM );
-		else if( pev->air_finished < gpGlobals->time + 9 )
-			EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_wade2.wav", 1, ATTN_NORM );
+		// This +9 second offset is pretty arbitrary, but whatever, Valve.
+		if( pev->air_finished < gpGlobals->time + 9 )
+		{
+			const char* soundPath = SoundResources::FootstepSounds.RandomResourcePath(FootstepSoundId::DeepWater);
+			EMIT_SOUND(ENT(pev), CHAN_VOICE, soundPath, 1, ATTN_NORM);
+		}
 
 		pev->air_finished = gpGlobals->time + AIRTIME;
 		pev->dmg = 2;
@@ -1181,23 +1182,11 @@ void CBasePlayer::WaterMove()
 
 	// make bubbles
 	air = (int)( pev->air_finished - gpGlobals->time );
+
 	if( !RANDOM_LONG( 0, 0x1f ) && RANDOM_LONG( 0, AIRTIME - 1 ) >= air )
 	{
-		switch( RANDOM_LONG( 0, 3 ) )
-		{
-			case 0:
-				EMIT_SOUND( ENT( pev ), CHAN_BODY, "player/pl_swim1.wav", 0.8, ATTN_NORM );
-				break;
-			case 1:
-				EMIT_SOUND( ENT( pev ), CHAN_BODY, "player/pl_swim2.wav", 0.8, ATTN_NORM );
-				break;
-			case 2:
-				EMIT_SOUND( ENT( pev ), CHAN_BODY, "player/pl_swim3.wav", 0.8, ATTN_NORM );
-				break;
-			case 3:
-				EMIT_SOUND( ENT( pev ), CHAN_BODY, "player/pl_swim4.wav", 0.8, ATTN_NORM );
-				break;
-		}
+		const char* soundPath = SoundResources::FootstepSounds.RandomResourcePath(FootstepSoundId::Swim);
+		EMIT_SOUND(ENT(pev), CHAN_BODY, soundPath, 0.8, ATTN_NORM);
 	}
 
 	if( pev->watertype == CONTENT_LAVA )		// do damage
@@ -2514,16 +2503,7 @@ void CBasePlayer::PostThink()
 
 	if( ( FBitSet( pev->flags, FL_ONGROUND ) ) && ( pev->health > 0 ) && m_flFallVelocity >= PLAYER_FALL_PUNCH_THRESHHOLD )
 	{
-		// ALERT( at_console, "%f\n", m_flFallVelocity );
-		if( pev->watertype == CONTENT_WATER )
-		{
-			// Did he hit the world or a non-moving entity?
-			// BUG - this happens all the time in water, especially when
-			// BUG - water has current force
-			// if( !pev->groundentity || VARS(pev->groundentity )->velocity.z == 0 )
-				// EMIT_SOUND( ENT( pev ), CHAN_BODY, "player/pl_wade1.wav", 1, ATTN_NORM );
-		}
-		else if( m_flFallVelocity > PLAYER_MAX_SAFE_FALL_SPEED )
+		if( m_flFallVelocity > PLAYER_MAX_SAFE_FALL_SPEED )
 		{
 			// after this point, we start doing damage
 			float flFallDamage = g_pGameRules->FlPlayerFallDamage( this );
@@ -2642,6 +2622,21 @@ pt_end:
 #endif
 }
 
+void CBasePlayer::SetScreenOverlay(ScreenOverlays::OverlayId id)
+{
+	if ( m_iWeaponScreenOverlay == id )
+	{
+		return;
+	}
+
+	m_iWeaponScreenOverlay = id;
+
+	ScreenOverlays::CMessageWriter msgWriter;
+	msgWriter.SetTargetClient(this);
+	msgWriter.SetId(m_iWeaponScreenOverlay);
+	msgWriter.WriteMessage();
+}
+
 void CBasePlayer::Spawn( void )
 {
 	pev->classname = MAKE_STRING( "player" );
@@ -2730,6 +2725,7 @@ void CBasePlayer::Spawn( void )
 	m_fWeapon = FALSE;
 	m_pClientActiveItem = NULL;
 	m_iClientBattery = -1;
+	m_iWeaponScreenOverlay = ScreenOverlays::Overlay_None;
 
 	// reset all ammo values to 0
 	for( int i = 0; i < MAX_AMMO_SLOTS; i++ )
@@ -2741,6 +2737,7 @@ void CBasePlayer::Spawn( void )
 	m_lastx = m_lasty = 0;
 
 	m_flNextChatTime = gpGlobals->time;
+	m_flNextPainTime = gpGlobals->time;
 
 	g_pGameRules->PlayerSpawn( this );
 }
@@ -2823,7 +2820,8 @@ int CBasePlayer::Restore( CRestore &restore )
 
 		// default to normal spawn
 		ASSERT(g_pGameRules);
-		edict_t *pentSpawnSpot = g_pGameRules->SpawnPointManager()->GetNextSpawnPoint(this)->edict();
+		CGameplaySystemsBase* gpSys = GameplaySystems::GetBase();
+		edict_t *pentSpawnSpot = gpSys->SpawnPointManager().GetNextSpawnPoint(this)->edict();
 		pev->origin = VARS( pentSpawnSpot )->origin + Vector( 0, 0, 1 );
 		pev->angles = VARS( pentSpawnSpot )->angles;
 	}
@@ -3410,11 +3408,18 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 			Vector start = pev->origin + pev->view_ofs;
 			Vector end = start + gpGlobals->v_forward * 1024;
 			UTIL_TraceLine( start, end, ignore_monsters, edict(), &tr );
+
 			if( tr.pHit )
+			{
 				pWorld = tr.pHit;
-			const char *pTextureName = TRACE_TEXTURE( pWorld, start, end );
-			if( pTextureName )
-				ALERT( at_console, "Texture: %s\n", pTextureName );
+			}
+
+			texture_t* texture = TRACE_TEXTURE( pWorld, start, end );
+
+			if( texture )
+			{
+				ALERT( at_console, "Texture: %s\n", texture->name );
+			}
 		}
 		break;
 	case 195:

@@ -1,10 +1,11 @@
 $cd "."
+$cdtexture "." "..\w_p99"
 $modelname "p_p99.mdl"
 
 $root "Bip01"
 $scale 1.0
 
-$flags 0 
+$flags 0
 $origin 0.000000 0.000000 0.000000
 $eyeposition 0.000000 0.000000 0.000000
 $bbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000

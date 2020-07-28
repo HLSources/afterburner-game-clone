@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -21,6 +21,8 @@
 #include "nodes.h"
 #include "player.h"
 #include "gamerules.h"
+#include "event_args.h"
+#include "eventConstructor/eventConstructor.h"
 
 #define	CROWBAR_BODYHIT_VOLUME 128
 #define	CROWBAR_WALLHIT_VOLUME 512
@@ -37,7 +39,7 @@ enum crowbar_e
 	CROWBAR_ATTACK2MISS,
 	CROWBAR_ATTACK2HIT,
 	CROWBAR_ATTACK3MISS,
-#ifndef CROWBAR_IDLE_ANIM	
+#ifndef CROWBAR_IDLE_ANIM
 	CROWBAR_ATTACK3HIT
 #else
 	CROWBAR_ATTACK3HIT,
@@ -203,9 +205,16 @@ int CCrowbar::Swing( int fFirst )
 #endif
 	if( fFirst )
 	{
-		PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usCrowbar, 
-		0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0, 0, 0,
-		0, 0, 0 );
+		using namespace EventConstructor;
+		CEventConstructor event;
+
+		event
+			<< Flags(FEV_NOTHOST)
+			<< Invoker(m_pPlayer->edict())
+			<< EventIndex(m_usCrowbar)
+			;
+
+		event.Send();
 	}
 
 	if( tr.flFraction >= 1.0 )
@@ -261,12 +270,12 @@ int CCrowbar::Swing( int fFirst )
 #endif
 			{
 				// first swing does full damage
-				pEntity->TraceAttack( m_pPlayer->pev, gSkillData.plrDmgCrowbar, gpGlobals->v_forward, &tr, DMG_CLUB ); 
+				pEntity->TraceAttack( m_pPlayer->pev, gSkillData.plrDmgCrowbar, gpGlobals->v_forward, &tr, DMG_CLUB );
 			}
 			else
 			{
 				// subsequent swings do half
-				pEntity->TraceAttack( m_pPlayer->pev, gSkillData.plrDmgCrowbar / 2, gpGlobals->v_forward, &tr, DMG_CLUB ); 
+				pEntity->TraceAttack( m_pPlayer->pev, gSkillData.plrDmgCrowbar / 2, gpGlobals->v_forward, &tr, DMG_CLUB );
 			}
 			ApplyMultiDamage( m_pPlayer->pev, m_pPlayer->pev );
 
@@ -300,24 +309,16 @@ int CCrowbar::Swing( int fFirst )
 
 		if( fHitWorld )
 		{
-			float fvolbar = TEXTURETYPE_PlaySound( &tr, vecSrc, vecSrc + ( vecEnd - vecSrc ) * 2, BULLET_PLAYER_CROWBAR );
-
-			if( g_pGameRules->IsMultiplayer() )
-			{
-				// override the volume here, cause we don't play texture sounds in multiplayer, 
-				// and fvolbar is going to be 0 from the above call.
-
-				fvolbar = 1;
-			}
+			TEXTURETYPE_PlaySound( &tr, vecSrc, vecSrc + ( vecEnd - vecSrc ) * 2, BULLET_PLAYER_CROWBAR );
 
 			// also play crowbar strike
 			switch( RANDOM_LONG( 0, 1 ) )
 			{
 			case 0:
-				EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/cbar_hit1.wav", fvolbar, ATTN_NORM, 0, 98 + RANDOM_LONG( 0, 3 ) ); 
+				EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/cbar_hit1.wav", 1.0, ATTN_NORM, 0, 98 + RANDOM_LONG( 0, 3 ) );
 				break;
 			case 1:
-				EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/cbar_hit2.wav", fvolbar, ATTN_NORM, 0, 98 + RANDOM_LONG( 0, 3 ) );
+				EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/cbar_hit2.wav", 1.0, ATTN_NORM, 0, 98 + RANDOM_LONG( 0, 3 ) );
 				break;
 			}
 

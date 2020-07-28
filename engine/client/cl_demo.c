@@ -1169,9 +1169,9 @@ void CL_StopPlayback( void )
 /*
 ==================
 CL_GetDemoComment
-==================
-*/
-int CL_GetDemoComment( const char *demoname, char *comment )
+================== 
+*/  
+int GAME_EXPORT CL_GetDemoComment( const char *demoname, char *comment )
 {
 	file_t		*demfile;
 	demoheader_t	demohdr;

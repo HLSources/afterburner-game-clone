@@ -23,6 +23,7 @@
 #endif // !HLDEMO_BUILD
 
 #include <stdio.h>
+#include <stdint.h>
 #include "custom.h"
 #include "cvardef.h"
 //
@@ -33,6 +34,8 @@
 //		include progdefs.h
 // This is conveniently done for them in extdll.h
 //
+
+typedef struct texture_s texture_t;
 
 typedef enum
 {
@@ -90,6 +93,7 @@ typedef struct
 } CDStatus;
 
 typedef unsigned int	CRC32_t;
+struct event_fire_args_s;
 
 // Engine hands this to DLLs for functionality callbacks
 typedef struct enginefuncs_s
@@ -130,7 +134,7 @@ typedef struct enginefuncs_s
 	int	(*pfnTraceMonsterHull)( edict_t *pEdict, const float *v1, const float *v2, int fNoMonsters, edict_t *pentToSkip, TraceResult *ptr );
 	void	(*pfnTraceHull)( const float *v1, const float *v2, int fNoMonsters, int hullNumber, edict_t *pentToSkip, TraceResult *ptr );
 	void	(*pfnTraceModel)( const float *v1, const float *v2, int hullNumber, edict_t *pent, TraceResult *ptr );
-	const char *(*pfnTraceTexture)( edict_t *pTextureEntity, const float *v1, const float *v2 );
+	texture_t *(*pfnTraceTexture)( edict_t *pTextureEntity, const float *v1, const float *v2 );
 	void	(*pfnTraceSphere)( const float *v1, const float *v2, int fNoMonsters, float radius, edict_t *pentToSkip, TraceResult *ptr );
 	void	(*pfnGetAimVector)( edict_t *ent, float speed, float *rgflReturn );
 	void	(*pfnServerCommand)( const char *str );
@@ -219,7 +223,7 @@ typedef struct enginefuncs_s
 	void	(*pfnSetPhysicsKeyValue)( const edict_t *pClient, const char *key, const char *value );
 	const char *(*pfnGetPhysicsInfoString)( const edict_t *pClient );
 	unsigned short (*pfnPrecacheEvent)( int type, const char*psz );
-	void	(*pfnPlaybackEvent)( int flags, const edict_t *pInvoker, unsigned short eventindex, float delay, float *origin, float *angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2 );
+	void	(*pfnPlaybackEvent)( const struct event_fire_args_s* args );
 
 	unsigned char *(*pfnSetFatPVS)( float *org );
 	unsigned char *(*pfnSetFatPAS)( float *org );
@@ -268,9 +272,19 @@ typedef struct enginefuncs_s
 	void	(*pfnQueryClientCvarValue)( const edict_t *player, const char *cvarName );
 	void	(*pfnQueryClientCvarValue2)( const edict_t *player, const char *cvarName, int requestID );
 	int	(*CheckParm)( char *parm, char **ppnext );
+
+	// Afterburner extensions begin here
+
 	float (*pfnModelSequenceDuration)( int modelIndex, int anim );
+	uint32_t (*pfnGetHitboxCount)(const edict_t* edict);
+
+	// Expects points list to be 8*3 floats long
+	// TODO: Replace points with a known struct?
+	qboolean (*pfnGetTransformedHitboxPoints)(const edict_t* edict, uint32_t hitboxIndex, float* points);
+
+	int (*pfnGetHitboxHitGroup)(const edict_t* edict, uint32_t hitboxIndex);
 } enginefuncs_t;
-// ONLY ADD NEW FUNCTIONS TO THE END OF THIS STRUCT.  INTERFACE VERSION IS FROZEN AT 138
+// ONLY ADD NEW FUNCTIONS TO THE END OF THIS STRUCT.
 
 // Passed to pfnKeyValue
 typedef struct KeyValueData_s
@@ -437,7 +451,6 @@ typedef struct
 
 	void	(*pfnPM_Move)( struct playermove_s *ppmove, qboolean server );
 	void	(*pfnPM_Init)( struct playermove_s *ppmove );
-	char	(*pfnPM_FindTextureType)( const char *name );
 	void	(*pfnSetupVisibility)( struct edict_s *pViewEntity, struct edict_s *pClient, unsigned char **pvs, unsigned char **pas );
 	void	(*pfnUpdateClientData) ( const struct edict_s *ent, int sendweapons, struct clientdata_s *cd );
 	int	(*pfnAddToFullPack)( struct entity_state_s *state, int e, edict_t *ent, edict_t *host, int hostflags, int player, unsigned char *pSet );
@@ -467,9 +480,14 @@ typedef struct
 	// Most games right now should return 0, until client-side weapon prediction code is written
 	//  and tested for them.
 	int	(*pfnAllowLagCompensation)( void );
-} DLL_FUNCTIONS;
 
-extern DLL_FUNCTIONS		gEntityInterface;
+	// Afterburner extensions start here
+
+	// This isn't a fantastic way to do this, but really we should factor out the bits of the engine
+	// which play contents sounds for movement (eg. water) and do all that stuff in the game libs.
+	// For now, this will do as a hacky solution.
+	const char* (*pfnGetRandomWaterTransitionSound)(void);
+} DLL_FUNCTIONS;
 
 // Current version.
 #define NEW_DLL_FUNCTIONS_VERSION	1

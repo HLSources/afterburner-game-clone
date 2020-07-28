@@ -1,2 +1,6 @@
 # TrenchBroom compile artefacts
 *-compile.*
+*.bsp
+*.ext
+*.prt
+*.lin

@@ -233,7 +233,7 @@ void Sys_RestoreCrashHandler( void )
 
 #include "library.h"
 
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__ANDROID__) || defined(__linux__)
+#if XASH_FREEBSD || XASH_NETBSD || XASH_ANDROID || XASH_LINUX
 #define HAVE_UCONTEXT_H 1
 #endif
 
@@ -242,6 +242,24 @@ void Sys_RestoreCrashHandler( void )
 #endif
 #include <signal.h>
 #include <sys/mman.h>
+
+#ifdef XASH_DYNAMIC_DLADDR
+static int d_dladdr( void *sym, Dl_info *info )
+{
+	static int (*dladdr_real) ( void *sym, Dl_info *info );
+
+	if( !dladdr_real )
+		dladdr_real = dlsym( (void*)(size_t)(-1), "dladdr" );
+
+	memset( info, 0, sizeof( *info ) );
+
+	if( !dladdr_real )
+		return -1;
+
+	return dladdr_real(  sym, info );
+}
+#define dladdr d_dladdr
+#endif
 
 int printframe( char *buf, int len, int i, void *addr )
 {
@@ -269,6 +287,11 @@ struct sigaction oldFilter;
 #define STACK_DUMP_STR "Stack dump:\n"
 #define ALIGN( x, y ) (((int) (x) + ((y)-1)) & ~((y)-1))
 
+// Usage of write() in this function causes an unused result error on GCC.
+// Because it's not my code and I'm not going to dive in and keep track of returns myself,
+// I'm just going to disable this warning here so that we can compile without issue.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-result"
 static void Sys_Crash( int signal, siginfo_t *si, void *context)
 {
 	void *pc, **bp, **sp; // this must be set for every OS!
@@ -276,22 +299,22 @@ static void Sys_Crash( int signal, siginfo_t *si, void *context)
 	int len, logfd, i = 0;
 	size_t pagesize;
 
-#if defined(__OpenBSD__)
+#if XASH_OPENBSD
 	struct sigcontext *ucontext = (struct sigcontext*)context;
 #else
 	ucontext_t *ucontext = (ucontext_t*)context;
 #endif
 
-#if defined(__x86_64__)
-	#if defined(__FreeBSD__)
+#if XASH_AMD64
+	#if XASH_FREEBSD
 		pc = (void*)ucontext->uc_mcontext.mc_rip;
 		bp = (void**)ucontext->uc_mcontext.mc_rbp;
 		sp = (void**)ucontext->uc_mcontext.mc_rsp;
-	#elif defined(__NetBSD__)
+	#elif XASH_NETBSD
 		pc = (void*)ucontext->uc_mcontext.__gregs[REG_RIP];
 		bp = (void**)ucontext->uc_mcontext.__gregs[REG_RBP];
 		sp = (void**)ucontext->uc_mcontext.__gregs[REG_RSP];
-	#elif defined(__OpenBSD__)
+	#elif XASH_OPENBSD
 		pc = (void*)ucontext->sc_rip;
 		bp = (void**)ucontext->sc_rbp;
 		sp = (void**)ucontext->sc_rsp;
@@ -300,16 +323,16 @@ static void Sys_Crash( int signal, siginfo_t *si, void *context)
 		bp = (void**)ucontext->uc_mcontext.gregs[REG_RBP];
 		sp = (void**)ucontext->uc_mcontext.gregs[REG_RSP];
 	#endif
-#elif defined(__i386__)
-	#if defined(__FreeBSD__)
+#elif XASH_X86
+	#if XASH_FREEBSD
 		pc = (void*)ucontext->uc_mcontext.mc_eip;
 		bp = (void**)ucontext->uc_mcontext.mc_ebp;
 		sp = (void**)ucontext->uc_mcontext.mc_esp;
-	#elif defined(__NetBSD__)
+	#elif XASH_NETBSD
 		pc = (void*)ucontext->uc_mcontext.__gregs[REG_EIP];
 		bp = (void**)ucontext->uc_mcontext.__gregs[REG_EBP];
 		sp = (void**)ucontext->uc_mcontext.__gregs[REG_ESP];
-	#elif defined(__OpenBSD__)
+	#elif XASH_OPENBSD
 		pc = (void*)ucontext->sc_eip;
 		bp = (void**)ucontext->sc_ebp;
 		sp = (void**)ucontext->sc_esp;
@@ -318,11 +341,11 @@ static void Sys_Crash( int signal, siginfo_t *si, void *context)
 		bp = (void**)ucontext->uc_mcontext.gregs[REG_EBP];
 		sp = (void**)ucontext->uc_mcontext.gregs[REG_ESP];
 	#endif
-#elif defined(__aarch64__) // arm not tested
+#elif XASH_ARM64
 	pc = (void*)ucontext->uc_mcontext.pc;
 	bp = (void*)ucontext->uc_mcontext.regs[29];
 	sp = (void*)ucontext->uc_mcontext.sp;
-#elif defined(__arm__)
+#elif XASH_ARM
 	pc = (void*)ucontext->uc_mcontext.arm_pc;
 	bp = (void*)ucontext->uc_mcontext.arm_fp;
 	sp = (void*)ucontext->uc_mcontext.arm_sp;
@@ -334,7 +357,7 @@ static void Sys_Crash( int signal, siginfo_t *si, void *context)
 	len = Q_snprintf( message, sizeof( message ), "Ver: %s %s (build %i-%s, %s-%s)\n",
 		XASH_ENGINE_NAME, XASH_VERSION, Q_buildnum(), Q_buildcommit(), Q_buildos(), Q_buildarch() );
 
-#if !defined(__FreeBSD__) && !defined(__NetBSD__) && !defined(__OpenBSD__)
+#if !XASH_BSD
 	len += Q_snprintf( message + len, sizeof( message ) - len, "Crash: signal %d errno %d with code %d at %p %p\n", signal, si->si_errno, si->si_code, si->si_addr, si->si_ptr );
 #else
 	len += Q_snprintf( message + len, sizeof( message ) - len, "Crash: signal %d errno %d with code %d at %p\n", signal, si->si_errno, si->si_code, si->si_addr );
@@ -415,6 +438,7 @@ static void Sys_Crash( int signal, siginfo_t *si, void *context)
 
 	Sys_Quit();
 }
+#pragma GCC diagnostic pop
 
 void Sys_SetupCrashHandler( void )
 {

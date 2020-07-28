@@ -5,7 +5,6 @@
 #include <EGL/egl.h>
 #include <android/log.h>
 #include <jni.h>
-#include <sys/prctl.h>
 
 extern struct jnimethods_s
 {
@@ -23,21 +22,16 @@ extern struct jnimethods_s
 	jmethodID loadID;
 	jmethodID showMouse;
 	jmethodID shellExecute;
+	jmethodID swapBuffers;
+	jmethodID toggleEGL;
+	jmethodID createGLContext;
+	jmethodID getGLAttribute;
+	jmethodID deleteGLContext;
+	jmethodID getSelectedPixelFormat;
+	jmethodID getSurface;
 	int width, height;
 } jni;
 
-extern struct nativeegl_s
-{
-	qboolean valid;
-	void *window;
-	EGLDisplay dpy;
-	EGLSurface surface;
-	EGLContext context;
-	EGLConfig cfg;
-	EGLint numCfg;
-
-	const char *extensions;
-} negl;
 
 extern struct jnimouse_s
 {
@@ -47,6 +41,6 @@ extern struct jnimouse_s
 //
 // vid_android.c
 //
-void Android_UpdateSurface( void );
+void Android_UpdateSurface( qboolean active );
 
 #endif // ANDROID_PRIV_H

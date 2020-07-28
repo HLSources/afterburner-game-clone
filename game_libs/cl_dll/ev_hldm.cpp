@@ -46,12 +46,17 @@
 #include "hitscanweaponeventplayer.h"
 #include "projectileweaponeventplayer.h"
 #include "meleeweaponeventplayer.h"
+#include "resources/SoundResources.h"
+#include "resources/SurfaceAttributes.h"
+#include "sound/ClientSoundInstance.h"
+#include "resources/TextureResources.h"
+
+// TODO: Make into a convar?
+static constexpr float BULLET_RICOCHET_NOISE_CHANCE = 0.5f;
 
 static std::unique_ptr<BaseWeaponEventPlayer> EventPlayers[MAX_WEAPONS][WeaponAtts::WACollection::MAX_ATTACK_MODES];
 
 extern engine_studio_api_t IEngineStudio;
-
-extern "C" char PM_FindTextureType( char *name );
 
 void V_PunchAxis( int axis, float punch );
 void VectorAngles( const float *forward, float *angles );
@@ -162,154 +167,48 @@ void EV_HandleGenericWeaponFire(event_args_t* args)
 	eventPlayer->PlayEvent(args, signature);
 }
 
-// play a strike sound based on the texture that was hit by the attack traceline.  VecSrc/VecEnd are the
-// original traceline endpoints used by the attacker, iBulletType is the type of bullet that hit the texture.
-// returns volume of strike instrument (crowbar) to play
-float EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *vecEnd, int iBulletType )
+SurfaceProp EV_HLDM_GetSurfacePropForTexture(int idx, pmtrace_t* ptr, float *vecSrc, float *vecEnd)
 {
-	// hit the world, try to play sound based on texture material type
-	char chTextureType = CHAR_TEX_CONCRETE;
-	float fvol;
-	float fvolbar;
-	const char *rgsz[4];
-	int cnt;
-	float fattn = ATTN_NORM;
-	int entity;
-	char *pTextureName;
-	char texname[64];
-	char szbuffer[64];
+	int entity = gEngfuncs.pEventAPI->EV_IndexFromTrace(ptr);
 
-	entity = gEngfuncs.pEventAPI->EV_IndexFromTrace( ptr );
-
-	// FIXME check if playtexture sounds movevar is set
-	//
-	chTextureType = 0;
-
-	// Player
-	if( entity >= 1 && entity <= gEngfuncs.GetMaxClients() )
+	if ( entity >= 1 && entity <= gEngfuncs.GetMaxClients() )
 	{
-		// hit body
-		chTextureType = CHAR_TEX_FLESH;
+		return SurfaceProp_Flesh;
 	}
-	else if( entity == 0 )
+
+	if ( entity == 0 )
 	{
-		// get texture from entity or world (world is ent(0))
-		pTextureName = (char *)gEngfuncs.pEventAPI->EV_TraceTexture( ptr->ent, vecSrc, vecEnd );
+		texture_t* texture = gEngfuncs.pEventAPI->EV_TraceTexture(ptr->ent, vecSrc, vecEnd);
 
-		if ( pTextureName )
+		if ( texture )
 		{
-			strcpy( texname, pTextureName );
-			pTextureName = texname;
-
-			// strip leading '-0' or '+0~' or '{' or '!'
-			if( *pTextureName == '-' || *pTextureName == '+' )
-			{
-				pTextureName += 2;
-			}
-
-			if( *pTextureName == '{' || *pTextureName == '!' || *pTextureName == '~' || *pTextureName == ' ' )
-			{
-				pTextureName++;
-			}
-
-			// '}}'
-			strcpy( szbuffer, pTextureName );
-			szbuffer[CBTEXTURENAMEMAX - 1] = 0;
-
-			// get texture type
-			chTextureType = PM_FindTextureType( szbuffer );
+			return static_cast<SurfaceProp>(texture->surfaceType);
 		}
 	}
 
-	switch (chTextureType)
+	return SurfaceProp_None;
+}
+
+// play a strike sound based on the texture that was hit by the attack traceline.  VecSrc/VecEnd are the
+// original traceline endpoints used by the attacker, iBulletType is the type of bullet that hit the texture.
+void EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *vecEnd, int iBulletType )
+{
+	SurfaceProp texSurfaceProp = EV_HLDM_GetSurfacePropForTexture(idx, ptr, vecSrc, vecEnd);
+
+	if ( texSurfaceProp == SurfaceProp_None || (texSurfaceProp == SurfaceProp_Flesh && iBulletType == BULLET_PLAYER_CROWBAR) )
 	{
-	default:
-	case CHAR_TEX_CONCRETE:
-		fvol = 0.9;
-		fvolbar = 0.6;
-		rgsz[0] = "player/pl_step1.wav";
-		rgsz[1] = "player/pl_step2.wav";
-		cnt = 2;
-		break;
-	case CHAR_TEX_METAL:
-		fvol = 0.9;
-		fvolbar = 0.3;
-		rgsz[0] = "player/pl_metal1.wav";
-		rgsz[1] = "player/pl_metal2.wav";
-		cnt = 2;
-		break;
-	case CHAR_TEX_DIRT:
-		fvol = 0.9;
-		fvolbar = 0.1;
-		rgsz[0] = "player/pl_dirt1.wav";
-		rgsz[1] = "player/pl_dirt2.wav";
-		rgsz[2] = "player/pl_dirt3.wav";
-		cnt = 3;
-		break;
-	case CHAR_TEX_VENT:
-		fvol = 0.5;
-		fvolbar = 0.3;
-		rgsz[0] = "player/pl_duct1.wav";
-		rgsz[1] = "player/pl_duct1.wav";
-		cnt = 2;
-		break;
-	case CHAR_TEX_GRATE:
-		fvol = 0.9;
-		fvolbar = 0.5;
-		rgsz[0] = "player/pl_grate1.wav";
-		rgsz[1] = "player/pl_grate4.wav";
-		cnt = 2;
-		break;
-	case CHAR_TEX_TILE:
-		fvol = 0.8;
-		fvolbar = 0.2;
-		rgsz[0] = "player/pl_tile1.wav";
-		rgsz[1] = "player/pl_tile3.wav";
-		rgsz[2] = "player/pl_tile2.wav";
-		rgsz[3] = "player/pl_tile4.wav";
-		cnt = 4;
-		break;
-	case CHAR_TEX_SLOSH:
-		fvol = 0.9;
-		fvolbar = 0.0;
-		rgsz[0] = "player/pl_slosh1.wav";
-		rgsz[1] = "player/pl_slosh3.wav";
-		rgsz[2] = "player/pl_slosh2.wav";
-		rgsz[3] = "player/pl_slosh4.wav";
-		cnt = 4;
-		break;
-	case CHAR_TEX_WOOD:
-		fvol = 0.9;
-		fvolbar = 0.2;
-		rgsz[0] = "debris/wood1.wav";
-		rgsz[1] = "debris/wood2.wav";
-		rgsz[2] = "debris/wood3.wav";
-		cnt = 3;
-		break;
-	case CHAR_TEX_GLASS:
-	case CHAR_TEX_COMPUTER:
-		fvol = 0.8;
-		fvolbar = 0.2;
-		rgsz[0] = "debris/glass1.wav";
-		rgsz[1] = "debris/glass2.wav";
-		rgsz[2] = "debris/glass3.wav";
-		cnt = 3;
-		break;
-	case CHAR_TEX_FLESH:
-		if( iBulletType == BULLET_PLAYER_CROWBAR )
-			return 0.0; // crowbar already makes this sound
-		fvol = 1.0;
-		fvolbar = 0.2;
-		rgsz[0] = "weapons/bullet_hit1.wav";
-		rgsz[1] = "weapons/bullet_hit2.wav";
-		fattn = 1.0;
-		cnt = 2;
-		break;
+		// Don't play any sound.
+		return;
 	}
 
-	// play material hit sound
-	gEngfuncs.pEventAPI->EV_PlaySound( 0, ptr->endpos, CHAN_STATIC, rgsz[gEngfuncs.pfnRandomLong( 0, cnt - 1 )], fvol, fattn, 0, 96 + gEngfuncs.pfnRandomLong( 0, 0xf ) );
-	return fvolbar;
+	CSurfaceAttributes& surfAttsMaster = CSurfaceAttributes::StaticInstance();
+	const CSurfaceAttributes::Attributes& surfaceAtts = surfAttsMaster.GetAttributes(static_cast<SurfaceProp>(texSurfaceProp));
+
+	if( surfaceAtts.ricochetChance > 0.0f && surfaceAtts.ricochetSoundVol > 0.0f && gEngfuncs.pfnRandomFloat(0.0f, 1.0f) <= surfaceAtts.ricochetChance )
+	{
+		const char* soundPath = SoundResources::WeaponSounds.RandomResourcePath(WeaponSoundId::BulletRicochet);
+		gEngfuncs.pEventAPI->EV_PlaySound(-1, ptr->endpos, 0, soundPath, surfaceAtts.ricochetSoundVol, ATTN_NORM, 0, gEngfuncs.pfnRandomLong(97, 103));
+	}
 }
 
 char *EV_HLDM_DamageDecal( physent_t *pe )
@@ -331,49 +230,35 @@ char *EV_HLDM_DamageDecal( physent_t *pe )
 		idx = gEngfuncs.pfnRandomLong( 0, 4 );
 		sprintf( decalname, "{shot%i", idx + 1 );
 	}
+
 	return decalname;
 }
 
-void EV_HLDM_GunshotDecalTrace( pmtrace_t *pTrace, char *decalName )
+const CSurfaceAttributes::Attributes& GetSurfaceAttributes(int idx, pmtrace_t* ptr, float *vecSrc, float *vecEnd, SurfaceProp* outSurface = nullptr)
 {
-	int iRand;
-	physent_t *pe;
+	SurfaceProp surfaceProp = EV_HLDM_GetSurfacePropForTexture(idx, ptr, vecSrc, vecEnd);
 
-	gEngfuncs.pEfxAPI->R_BulletImpactParticles( pTrace->endpos );
-
-	iRand = gEngfuncs.pfnRandomLong( 0, 0x7FFF );
-	if( iRand < ( 0x7fff / 2 ) )// not every bullet makes a sound.
+	if ( outSurface )
 	{
-		switch( iRand % 5 )
-		{
-		case 0:
-			gEngfuncs.pEventAPI->EV_PlaySound( -1, pTrace->endpos, 0, "weapons/ric1.wav", 1.0, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		case 1:
-			gEngfuncs.pEventAPI->EV_PlaySound( -1, pTrace->endpos, 0, "weapons/ric2.wav", 1.0, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		case 2:
-			gEngfuncs.pEventAPI->EV_PlaySound( -1, pTrace->endpos, 0, "weapons/ric3.wav", 1.0, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		case 3:
-			gEngfuncs.pEventAPI->EV_PlaySound( -1, pTrace->endpos, 0, "weapons/ric4.wav", 1.0, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		case 4:
-			gEngfuncs.pEventAPI->EV_PlaySound( -1, pTrace->endpos, 0, "weapons/ric5.wav", 1.0, ATTN_NORM, 0, PITCH_NORM );
-			break;
-		}
+		*outSurface = surfaceProp;
 	}
 
-	pe = gEngfuncs.pEventAPI->EV_GetPhysent( pTrace->ent );
+	CSurfaceAttributes& surfAttsMaster = CSurfaceAttributes::StaticInstance();
+	return surfAttsMaster.GetAttributes(surfaceProp);
+}
+
+void EV_HLDM_GunshotDecalTrace( pmtrace_t *pTrace, const char *decalName, float scale )
+{
+	physent_t* pe = gEngfuncs.pEventAPI->EV_GetPhysent( pTrace->ent );
 
 	// Only decal brush models such as the world etc.
-	if(  decalName && decalName[0] && pe && ( pe->solid == SOLID_BSP || pe->movetype == MOVETYPE_PUSHSTEP ) )
+	if( decalName && decalName[0] && pe && ( pe->solid == SOLID_BSP || pe->movetype == MOVETYPE_PUSHSTEP ) )
 	{
 		if( gEngfuncs.pfnGetCvarFloat("r_decals") )
 		{
-			gEngfuncs.pEfxAPI->R_DecalShoot(
+			gEngfuncs.pEfxAPI->R_FireCustomDecal(
 				gEngfuncs.pEfxAPI->Draw_DecalIndex( gEngfuncs.pEfxAPI->Draw_DecalIndexFromName( decalName ) ),
-				gEngfuncs.pEventAPI->EV_IndexFromTrace( pTrace ), 0, pTrace->endpos, 0 );
+				gEngfuncs.pEventAPI->EV_IndexFromTrace( pTrace ), 0, pTrace->endpos, 0, scale );
 		}
 	}
 }
@@ -397,10 +282,40 @@ void EV_HLDM_DecalGunshot( pmtrace_t *pTrace, int iBulletType )
 		case BULLET_GENERIC:
 		default:
 			// smoke and decal
-			EV_HLDM_GunshotDecalTrace( pTrace, EV_HLDM_DamageDecal( pe ) );
+			gEngfuncs.pEfxAPI->R_BulletImpactParticles( pTrace->endpos );
+			EV_HLDM_GunshotDecalTrace( pTrace, EV_HLDM_DamageDecal( pe ), 1.0f );
 			break;
 		}
 	}
+}
+
+void EV_HLDM_DecalGunshotNew(int idx, pmtrace_t *ptr, float *vecSrc, float *vecEnd)
+{
+	physent_t* pe = gEngfuncs.pEventAPI->EV_GetPhysent(ptr->ent);
+
+	if ( !pe || (pe->solid != SOLID_BSP && pe->movetype != MOVETYPE_PUSHSTEP))
+	{
+		return;
+	}
+
+	SurfaceProp surfaceProp = SurfaceProp_None;
+	const CSurfaceAttributes::Attributes& atts = GetSurfaceAttributes(idx, ptr, vecSrc, vecEnd, &surfaceProp);
+
+	if ( atts.decal == SurfaceDecalId::None )
+	{
+		return;
+	}
+
+	const char* decalPath = TextureResources::Decals.RandomResourcePath(atts.decal);
+	const float scale = TextureResources::Decals.GetAttributes(atts.decal).scale;
+
+	if ( scale <= 0.0f )
+	{
+		return;
+	}
+
+	gEngfuncs.pEfxAPI->R_BulletImpactParticlesForSurface( ptr->endpos, surfaceProp );
+	EV_HLDM_GunshotDecalTrace(ptr, decalPath, scale);
 }
 
 void EV_HLDM_CheckTracer( int idx, float *vecSrc, float *end, float *forward, float *right, int iBulletType )
@@ -498,29 +413,8 @@ void EV_HLDM_FireBullets( int idx, float *forward, float *right, float *up, int 
 		// do damage, paint decals
 		if( tr.fraction != 1.0 )
 		{
-			switch( iBulletType )
-			{
-			default:
-			case BULLET_PLAYER_9MM:
-				EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecEnd, iBulletType );
-				EV_HLDM_DecalGunshot( &tr, iBulletType );
-				break;
-			case BULLET_PLAYER_MP5:
-				EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecEnd, iBulletType );
-				EV_HLDM_DecalGunshot( &tr, iBulletType );
-				break;
-			case BULLET_PLAYER_BUCKSHOT:
-				EV_HLDM_DecalGunshot( &tr, iBulletType );
-				break;
-			case BULLET_PLAYER_357:
-				EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecEnd, iBulletType );
-				EV_HLDM_DecalGunshot( &tr, iBulletType );
-				break;
-			case BULLET_GENERIC:
-				EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecEnd, iBulletType );
-				EV_HLDM_DecalGunshot( &tr, iBulletType );
-				break;
-			}
+			EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecEnd, iBulletType );
+			EV_HLDM_DecalGunshot( &tr, iBulletType );
 		}
 
 		gEngfuncs.pEventAPI->EV_PopPMStates();

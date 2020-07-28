@@ -96,9 +96,6 @@ typedef struct ref_globals_s
 	vec3_t viewangles;
 	vec3_t vforward, vright, vup;
 
-	cl_entity_t	*currententity;
-	model_t		*currentmodel;
-
 	// todo: fill this without engine help
 	// move to local
 
@@ -334,9 +331,9 @@ typedef struct ref_api_s
 
 	// remap
 	struct remap_info_s *(*CL_GetRemapInfoForEntity)( cl_entity_t *e );
-	void (*CL_AllocRemapInfo)( int topcolor, int bottomcolor );
+	void (*CL_AllocRemapInfo)( cl_entity_t *ent, int topcolor, int bottomcolor );
 	void (*CL_FreeRemapInfo)( struct remap_info_s *info );
-	void (*CL_UpdateRemapInfo)( int topcolor, int bottomcolor );
+	void (*CL_UpdateRemapInfo)( cl_entity_t *ent, int topcolor, int bottomcolor );
 
 	// utils
 	void  (*CL_ExtraUpdate)( void );
@@ -375,6 +372,7 @@ typedef struct ref_api_s
 	// filesystem
 	byte*	(*COM_LoadFile)( const char *path, fs_offset_t *pLength, qboolean gamedironly );
 	char*	(*COM_ParseFile)( char *data, char *token );
+	char*	(*COM_ParseFileSafe)( char* data, char* token, size_t tokenLength );
 	// use Mem_Free instead
 	// void	(*COM_FreeFile)( void *buffer );
 	int (*FS_FileExists)( const char *filename, int gamedironly );
@@ -412,7 +410,7 @@ typedef struct ref_api_s
 
 	// event api
 	struct physent_s *(*EV_GetPhysent)( int idx );
-	struct msurface_s *( *EV_TraceSurface )( int ground, float *vstart, float *vend );
+	struct msurface_s *( *EV_TraceSurface )( int ground, const float *vstart, const float *vend );
 	struct pmtrace_s *(*PM_TraceLine)( float *start, float *end, int flags, int usehull, int ignore_pe );
 	struct pmtrace_s *(*EV_VisTraceLine )( float *start, float *end, int flags );
 	struct pmtrace_s (*CL_TraceLine)( vec3_t start, vec3_t end, int flags );
@@ -588,6 +586,8 @@ typedef struct ref_interface_s
 	void		(*R_NewMap)( void );
 	// clear the render entities before each frame
 	void		(*R_ClearScene)( void );
+	// GL_GetProcAddress for client renderer
+	void*		(*R_GetProcAddress)( const char *name );
 
 	// TriAPI Interface
 	// NOTE: implementation isn't required to be compatible

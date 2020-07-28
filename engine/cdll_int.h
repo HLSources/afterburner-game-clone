@@ -113,6 +113,18 @@ typedef struct hud_player_info_s
 struct screenfade_s;
 struct tagPOINT;
 struct event_args_s;
+struct event_fire_args_s;
+
+typedef struct sprite_draw_args_s
+{
+	int renderMode;
+	int frame;
+	int x;
+	int y;
+	int width;
+	int height;
+	const wrect_t* prc;
+} sprite_draw_args_t;
 
 typedef struct cl_enginefuncs_s
 {
@@ -125,6 +137,7 @@ typedef struct cl_enginefuncs_s
 	void	(*pfnSPR_Draw)( int frame, int x, int y, const wrect_t *prc );
 	void	(*pfnSPR_DrawHoles)( int frame, int x, int y, const wrect_t *prc );
 	void	(*pfnSPR_DrawAdditive)( int frame, int x, int y, const wrect_t *prc );
+	void	(*pfnSPR_DrawCustom)( const sprite_draw_args_t* args );
 	void	(*pfnSPR_EnableScissor)( int x, int y, int width, int height );
 	void	(*pfnSPR_DisableScissor)( void );
 	client_sprite_t *(*pfnSPR_GetList)( char *psz, int *piCount );
@@ -204,10 +217,10 @@ typedef struct cl_enginefuncs_s
 	int	(*CL_CreateVisibleEntity)( int type, struct cl_entity_s *ent );
 
 	const struct model_s* (*GetSpritePointer)( HSPRITE hSprite );
-	void	(*pfnPlaySoundByNameAtLocation)( char *szSound, float volume, float *origin );
+	void	(*pfnPlaySoundByNameAtLocation)( const char *szSound, float volume, const float *origin );
 
 	unsigned short (*pfnPrecacheEvent)( int type, const char* psz );
-	void	(*pfnPlaybackEvent)( int flags, const struct edict_s *pInvoker, unsigned short eventindex, float delay, float *origin, float *angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2 );
+	void	(*pfnPlaybackEvent)( const struct event_fire_args_s* args );
 	void	(*pfnWeaponAnim)( int iAnim, int body );
 	float	(*pfnRandomFloat)( float flLow, float flHigh );
 	int	(*pfnRandomLong)( int lLow, int lHigh );
@@ -225,6 +238,7 @@ typedef struct cl_enginefuncs_s
 
 	byte*	(*COM_LoadFile)( const char *path, int usehunk, int *pLength );
 	char*	(*COM_ParseFile)( char *data, char *token );
+	char*	(*COM_ParseFileSafe)( char* data, char* token, size_t tokenLength );
 	void	(*COM_FreeFile)( void *buffer );
 
 	struct triangleapi_s	*pTriAPI;
@@ -298,7 +312,7 @@ typedef struct cl_enginefuncs_s
 	void		(*pfnConstructTutorMessageDecayBuffer)( int *buffer, int buflen );
 	void		(*pfnResetTutorMessageDecayData)( void );
 
-	void		(*pfnPlaySoundByNameAtPitch)( char *szSound, float volume, int pitch );
+	void		(*pfnPlaySoundByNameAtPitch)( const char *szSound, float volume, int pitch );
 	void		(*pfnFillRGBABlend)( int x, int y, int width, int height, int r, int g, int b, int a );
 	int		(*pfnGetAppID)( void );
 	cmdalias_t	*(*pfnGetAliases)( void );

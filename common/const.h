@@ -14,6 +14,9 @@
 ****/
 #ifndef CONST_H
 #define CONST_H
+
+#include "surfaceprops.h"
+
 //
 // Constants shared by the engine and dlls
 // This header file included by engine files and DLL files.
@@ -114,6 +117,9 @@
 #define EF_LIGHT			64	// rocket flare glow sprite
 #define EF_NODRAW			128	// don't draw entity
 
+#define EF_HIDEVIEWMODEL	(1<<23)	// View model will not be drawn, but events will still play.
+#define EF_NOREFLECT		(1<<24)	// Entity won't reflecting in mirrors
+#define EF_REFLECTONLY		(1<<25)	// Entity will be drawing only in mirrors
 #define EF_WATERSIDES		(1<<26)	// Do not remove sides for func_water entity
 #define EF_FULLBRIGHT		(1<<27)	// Just get fullbright
 #define EF_NOSHADOW			(1<<28)	// ignore shadow for this entity
@@ -571,6 +577,11 @@
 // byte ( color ) this is an index into an array of color vectors in the engine. (0 - )
 // byte ( length * 10 )
 
+#define TE_HITPUFF 128
+// coord (origin)
+// coord (origin)
+// coord (origin)
+
 #define MSG_BROADCAST		0	// unreliable to all
 #define MSG_ONE			1	// reliable to one (msg_entity)
 #define MSG_ALL			2	// reliable to all
@@ -727,6 +738,7 @@ enum
 	kRenderFxExplode,			// Scale up really big!
 	kRenderFxGlowShell,			// Glowing Shell
 	kRenderFxClampMinScale,		// Keep this sprite from getting very small (SPRITES only!)
+	kRenderFxLightMultiplier	//CTM !!!CZERO added to tell the studiorender that the value in iuser2 is a lightmultiplier
 };
 
 typedef int		func_t;

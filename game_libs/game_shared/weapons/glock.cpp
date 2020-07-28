@@ -21,6 +21,8 @@
 #include "nodes.h"
 #include "player.h"
 #include "ammodefs.h"
+#include "event_args.h"
+#include "eventConstructor/eventConstructor.h"
 
 LINK_ENTITY_TO_CLASS( weapon_glock, CGlock )
 LINK_ENTITY_TO_CLASS( weapon_9mmhandgun, CGlock )
@@ -155,13 +157,27 @@ void CGlock::GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim )
 	Vector vecDir;
 	vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, Vector( flSpread, flSpread, flSpread ), 8192, BULLET_PLAYER_9MM, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );
 
-	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), fUseAutoAim ? m_usFireGlock1 : m_usFireGlock2, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, ( m_iClip == 0 ) ? 1 : 0, 0 );
+	using namespace EventConstructor;
+	CEventConstructor event;
+
+	event
+		<< Flags(flags)
+		<< Invoker(m_pPlayer->edict())
+		<< EventIndex(fUseAutoAim ? m_usFireGlock1 : m_usFireGlock2)
+		<< FloatParam1(vecDir.x)
+		<< FloatParam2(vecDir.y)
+		<< BoolParam1(m_iClip == 0)
+		;
+
+	event.Send();
 
 	m_flNextPrimaryAttack = m_flNextSecondaryAttack = GetNextAttackDelay( flCycleTime );
 
 	if( !m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 )
+	{
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 );
+	}
 
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 }

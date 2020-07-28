@@ -24,6 +24,8 @@
 #include "soundent.h"
 #include "gamerules.h"
 #include "ammodefs.h"
+#include "event_args.h"
+#include "eventConstructor/eventConstructor.h"
 
 enum w_squeak_e
 {
@@ -509,7 +511,17 @@ void CSqueak::PrimaryAttack()
 #else
 		flags = 0;
 #endif
-		PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usSnarkFire, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 0, 0 );
+
+		using namespace EventConstructor;
+		CEventConstructor event;
+
+		event
+			<< Flags(flags)
+			<< Invoker(m_pPlayer->edict())
+			<< EventIndex(m_usSnarkFire)
+			;
+
+		event.Send();
 
 		if( tr.fAllSolid == 0 && tr.fStartSolid == 0 && tr.flFraction > 0.25 )
 		{

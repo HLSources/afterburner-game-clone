@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   This source code contains proprietary and confidential information of
@@ -82,7 +82,7 @@ public:
 	void IdleSound( void );
 	CUSTOM_SCHEDULES
 
-	int Save( CSave &save ); 
+	int Save( CSave &save );
 	int Restore( CRestore &restore );
 	static TYPEDESCRIPTION m_SaveData[];
 
@@ -139,9 +139,9 @@ void CHAssassin::IdleSound( void )
 
 //=========================================================
 // ISoundMask - returns a bit mask indicating which types
-// of sounds this monster regards. 
+// of sounds this monster regards.
 //=========================================================
-int CHAssassin::ISoundMask( void ) 
+int CHAssassin::ISoundMask( void )
 {
 	return	bits_SOUND_WORLD |
 		bits_SOUND_COMBAT |
@@ -150,7 +150,7 @@ int CHAssassin::ISoundMask( void )
 }
 
 //=========================================================
-// Classify - indicates this monster's place in the 
+// Classify - indicates this monster's place in the
 // relationship table.
 //=========================================================
 int CHAssassin::Classify( void )
@@ -172,7 +172,7 @@ void CHAssassin::SetYawSpeed( void )
 	case ACT_TURN_RIGHT:
 		ys = 360;
 		break;
-	default:	
+	default:
 		ys = 360;
 		break;
 	}
@@ -208,7 +208,7 @@ void CHAssassin::Shoot( void )
 	UTIL_MakeVectors( pev->angles );
 
 	Vector vecShellVelocity = gpGlobals->v_right * RANDOM_FLOAT( 40, 90 ) + gpGlobals->v_up * RANDOM_FLOAT( 75, 200 ) + gpGlobals->v_forward * RANDOM_FLOAT( -40, 40 );
-	EjectBrass( pev->origin + gpGlobals->v_up * 32 + gpGlobals->v_forward * 12, vecShellVelocity, pev->angles.y, m_iShell, TE_BOUNCE_SHELL ); 
+	EjectBrass( pev->origin + gpGlobals->v_up * 32 + gpGlobals->v_forward * 12, vecShellVelocity, pev->angles.y, m_iShell, TE_BOUNCE_SHELL );
 	FireBullets( 1, vecShootOrigin, vecShootDir, Vector( m_flDiviation, m_flDiviation, m_flDiviation ), 2048, BULLET_MONSTER_9MM ); // shoot +-8 degrees
 
 	switch( RANDOM_LONG( 0, 1 ) )
@@ -310,7 +310,7 @@ void CHAssassin::Precache()
 	PRECACHE_SOUND( "debris/beamstart1.wav" );
 
 	m_iShell = PRECACHE_MODEL( "models/shell.mdl" );// brass shell
-}	
+}
 
 //=========================================================
 // AI Schedules Specific to this monster
@@ -369,8 +369,8 @@ Schedule_t slAssassinExposed[] =
 };
 
 //=========================================================
-// Take cover from enemy! Tries lateral cover before node 
-// cover! 
+// Take cover from enemy! Tries lateral cover before node
+// cover!
 //=========================================================
 Task_t	tlAssassinTakeCoverFromEnemy[] =
 {
@@ -398,8 +398,8 @@ Schedule_t slAssassinTakeCoverFromEnemy[] =
 };
 
 //=========================================================
-// Take cover from enemy! Tries lateral cover before node 
-// cover! 
+// Take cover from enemy! Tries lateral cover before node
+// cover!
 //=========================================================
 Task_t tlAssassinTakeCoverFromEnemy2[] =
 {
@@ -520,14 +520,14 @@ Schedule_t slAssassinJump[] =
 	{
 		tlAssassinJump,
 		ARRAYSIZE( tlAssassinJump ),
-		0, 
-		0, 
+		0,
+		0,
 		"AssassinJump"
 	},
 };
 
 //=========================================================
-// repel 
+// repel
 //=========================================================
 Task_t tlAssassinJumpAttack[] =
 {
@@ -541,14 +541,14 @@ Schedule_t slAssassinJumpAttack[] =
 	{
 		tlAssassinJumpAttack,
 		ARRAYSIZE( tlAssassinJumpAttack ),
-		0, 
+		0,
 		0,
 		"AssassinJumpAttack"
 	},
 };
 
 //=========================================================
-// repel 
+// repel
 //=========================================================
 Task_t	tlAssassinJumpLand[] =
 {
@@ -593,7 +593,7 @@ DEFINE_CUSTOM_SCHEDULES( CHAssassin )
 IMPLEMENT_CUSTOM_SCHEDULES( CHAssassin, CBaseMonster )
 
 //=========================================================
-// CheckMeleeAttack1 - jump like crazy if the enemy gets too close. 
+// CheckMeleeAttack1 - jump like crazy if the enemy gets too close.
 //=========================================================
 BOOL CHAssassin::CheckMeleeAttack1( float flDot, float flDist )
 {
@@ -645,7 +645,7 @@ BOOL CHAssassin::CheckRangeAttack1( float flDot, float flDist )
 }
 
 //=========================================================
-// CheckRangeAttack2 - toss grenade is enemy gets in the way and is too close. 
+// CheckRangeAttack2 - toss grenade is enemy gets in the way and is too close.
 //=========================================================
 BOOL CHAssassin::CheckRangeAttack2( float flDot, float flDist )
 {
@@ -711,26 +711,7 @@ void CHAssassin::RunAI( void )
 
 	if( m_Activity == ACT_RUN || m_Activity == ACT_WALK )
 	{
-		static int iStep = 0;
-		iStep = !iStep;
-		if( iStep )
-		{
-			switch( RANDOM_LONG( 0, 3 ) )
-			{
-			case 0:
-				EMIT_SOUND( ENT( pev ), CHAN_BODY, "player/pl_step1.wav", 0.5, ATTN_NORM );
-				break;
-			case 1:
-				EMIT_SOUND( ENT( pev ), CHAN_BODY, "player/pl_step3.wav", 0.5, ATTN_NORM );
-				break;
-			case 2:
-				EMIT_SOUND( ENT( pev ), CHAN_BODY, "player/pl_step2.wav", 0.5, ATTN_NORM );
-				break;
-			case 3:
-				EMIT_SOUND( ENT( pev ), CHAN_BODY, "player/pl_step4.wav", 0.5, ATTN_NORM );
-				break;
-			}
-		}
+		// Used to play sounds here, but these have been removed now that we have per-surface defined sounds.
 	}
 }
 
@@ -760,7 +741,7 @@ void CHAssassin::StartTask( Task_t *pTask )
 }
 
 //=========================================================
-// RunTask 
+// RunTask
 //=========================================================
 void CHAssassin::RunTask( Task_t *pTask )
 {
@@ -796,7 +777,7 @@ void CHAssassin::RunTask( Task_t *pTask )
 			TaskComplete();
 		}
 		break;
-	default: 
+	default:
 		CBaseMonster::RunTask( pTask );
 		break;
 	}
@@ -939,7 +920,7 @@ Schedule_t *CHAssassin::GetSchedule( void )
 
 //=========================================================
 //=========================================================
-Schedule_t *CHAssassin::GetScheduleOfType( int Type ) 
+Schedule_t *CHAssassin::GetScheduleOfType( int Type )
 {
 	// ALERT( at_console, "%d\n", m_iFrustration );
 	switch( Type )

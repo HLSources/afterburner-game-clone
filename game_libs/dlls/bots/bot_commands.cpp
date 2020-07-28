@@ -5,9 +5,15 @@
 #include "gamerules.h"
 #include "botgamerulesinterface.h"
 #include "botregister.h"
+#include "mp_utils.h"
 
 namespace BotCommands
 {
+	static CHalfLifeMultiplay* GetGameRules()
+	{
+		return g_pGameRules ? dynamic_cast<CHalfLifeMultiplay*>(g_pGameRules) : nullptr;
+	}
+
 	void Initialise()
 	{
 		g_engfuncs.pfnAddServerCommand("bot_add", &Bot_Add);
@@ -20,15 +26,15 @@ namespace BotCommands
 
 	void Bot_Add(void)
 	{
-		CHalfLifeMultiplay* mpGameRules = dynamic_cast<CHalfLifeMultiplay*>(g_pGameRules);
+		CHalfLifeMultiplay* gameRules = GetGameRules();
 
-		if ( !mpGameRules )
+		if ( !gameRules || !gameRules->IsMultiplayer() )
 		{
 			ALERT(at_error, "Cannot add bots when not in multiplayer game.\n");
 			return;
 		}
 
-		CBotGameRulesInterface* bgri = g_pGameRules ? g_pGameRules->BotGameRulesInterface() : NULL;
+		CBotGameRulesInterface* bgri = g_pGameRules ? gameRules->BotGameRulesInterface() : NULL;
 
 		if ( !bgri )
 		{
@@ -92,7 +98,7 @@ namespace BotCommands
 
 		for ( int clientIndex = 1; clientIndex <= gpGlobals->maxClients; ++clientIndex )
 		{
-			CBasePlayer* player = UTIL_CBasePlayerByIndex(clientIndex);
+			CBasePlayer* player = MPUtils::CBasePlayerFromIndex(clientIndex);
 
 			if ( !player || !player->IsFakeClient() )
 			{

@@ -17,7 +17,7 @@
 #define PLAYER_H
 
 #include "enginecallback.h"
-
+#include "screenOverlays/screenOverlayIds.h"
 #include "pm_materials.h"
 
 #define PLAYER_FATAL_FALL_SPEED		1024// approx 60 feet
@@ -213,7 +213,7 @@ public:
 	virtual void PostThink( void );
 	virtual Vector GetGunPosition( void );
 	virtual int TakeHealth( float flHealth, int bitsDamageType );
-	virtual void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
+	virtual void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, const TraceResult *ptr, int bitsDamageType);
 	virtual int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 	virtual void	Killed( entvars_t *pevAttacker, int iGib );
 	virtual Vector BodyTarget( const Vector &posSrc ) { return Center( ) + pev->view_ofs * RANDOM_FLOAT( 0.5, 1.1 ); };		// position to shoot at
@@ -310,6 +310,7 @@ public:
 
 	void SetCustomDecalFrames( int nFrames );
 	int GetCustomDecalFrames( void );
+	void SetScreenOverlay(ScreenOverlays::OverlayId id);
 
 	Vector m_vecLastViewAngles;
 
@@ -317,6 +318,7 @@ public:
 	float m_flAmmoStartCharge;
 	float m_flPlayAftershock;
 	float m_flNextAmmoBurn;// while charging, when to absorb another unit of player's ammo?
+	ScreenOverlays::OverlayId m_iWeaponScreenOverlay;
 
 	//Player ID
 	void InitStatusBar( void );
@@ -328,6 +330,7 @@ public:
 	char m_SbarString1[SBAR_STRING_SIZE];
 
 	float m_flNextChatTime;
+	float m_flNextPainTime;
 
 	bool m_bSentBhopcap; // If false, the player just joined and needs a bhopcap message.
 };

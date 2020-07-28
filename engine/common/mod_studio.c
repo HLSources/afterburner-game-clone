@@ -59,6 +59,14 @@ static int			cache_current;
 static int			cache_current_hull;
 static int			cache_current_plane;
 
+static inline void FixAnglesForQuake(vec3_t angles)
+{
+	if( !FBitSet(host.features, ENGINE_COMPENSATE_QUAKE_BUG) )
+	{
+		angles[PITCH] = -angles[PITCH];
+	}
+}
+
 /*
 ====================
 Mod_InitStudioHull
@@ -258,9 +266,7 @@ hull_t *Mod_HullForStudio( model_t *model, float frame, int sequence, vec3_t ang
 	if( !mod_studiohdr ) return NULL; // probably not a studiomodel
 
 	VectorCopy( angles, angles2 );
-
-	if( !FBitSet( host.features, ENGINE_COMPENSATE_QUAKE_BUG ))
-		angles2[PITCH] = -angles2[PITCH]; // stupid quake bug
+	FixAnglesForQuake(angles2);
 
 	pBlendAPI->SV_StudioSetupBones( model, frame, sequence, angles2, origin, pcontroller, pblending, -1, pEdict );
 	phitbox = (mstudiobbox_t *)((byte *)mod_studiohdr + mod_studiohdr->hitboxindex);
@@ -292,6 +298,173 @@ hull_t *Mod_HullForStudio( model_t *model, float frame, int sequence, vec3_t ang
 	return studio_hull;
 }
 
+uint32_t Mod_GetHitboxCount(const edict_t* edict)
+{
+	model_t* model = NULL;
+	studiohdr_t* header = NULL;
+
+	if ( !edict )
+	{
+		return 0;
+	}
+
+	model = SV_ModelHandle(edict->v.modelindex);
+
+	if ( !model )
+	{
+		return 0;
+	}
+
+	header = (studiohdr_t*)Mod_StudioExtradata(model);
+
+	if( !header )
+	{
+		return 0;
+	}
+
+	return header->numhitboxes;
+}
+
+void Mod_StudioPlayerBlend( mstudioseqdesc_t *pseqdesc, int *pBlend, float *pPitch )
+{
+	if ( !pseqdesc || !pBlend || !pPitch )
+	{
+		return;
+	}
+
+	// calc up/down pointing
+	*pBlend = (*pPitch * 3);
+
+	if( *pBlend < pseqdesc->blendstart[0] )
+	{
+		*pPitch -= pseqdesc->blendstart[0] / 3.0f;
+		*pBlend = 0;
+	}
+	else if( *pBlend > pseqdesc->blendend[0] )
+	{
+		*pPitch -= pseqdesc->blendend[0] / 3.0f;
+		*pBlend = 255;
+	}
+	else
+	{
+		if( pseqdesc->blendend[0] - pseqdesc->blendstart[0] < 0.1f ) // catch qc error
+		{
+			*pBlend = 127;
+		}
+		else
+		{
+			*pBlend = 255.0f * (*pBlend - pseqdesc->blendstart[0]) / (pseqdesc->blendend[0] - pseqdesc->blendstart[0]);
+		}
+
+		*pPitch = 0;
+	}
+}
+
+static void SetUpBones(const edict_t* edict, model_t* mod)
+{
+	studiohdr_t* pstudio;
+	mstudioseqdesc_t* pseqdesc;
+	byte controller[4];
+	byte blending[2];
+	vec3_t angles;
+	int iBlend;
+
+	pstudio = Mod_StudioExtradata( mod );
+	pseqdesc = (mstudioseqdesc_t *)((byte *)pstudio + pstudio->seqindex) + edict->v.sequence;
+	VectorCopy( edict->v.angles, angles );
+
+	Mod_StudioPlayerBlend( pseqdesc, &iBlend, &angles[PITCH] );
+
+	controller[0] = controller[1] = 0x7F;
+	controller[2] = controller[3] = 0x7F;
+	blending[0] = (byte)iBlend;
+	blending[1] = 0;
+
+	FixAnglesForQuake(angles);
+
+	pBlendAPI->SV_StudioSetupBones(mod,
+								   edict->v.frame,
+								   edict->v.sequence,
+								   angles,
+								   edict->v.origin,
+								   controller,
+								   blending,
+								   -1,
+								   edict);
+}
+
+qboolean Mod_GetTransformedHitboxPoints(const edict_t* edict, uint32_t hitboxIndex, Mod_BoxPoints* box)
+{
+	model_t* model = NULL;
+	const mstudiobbox_t* hitbox = NULL;
+
+	if ( !edict || !box )
+	{
+		return false;
+	}
+
+	model = SV_ModelHandle(edict->v.modelindex);
+
+	if ( !model )
+	{
+		return false;
+	}
+
+	mod_studiohdr = (studiohdr_t*)Mod_StudioExtradata(model);
+
+	if( !mod_studiohdr || hitboxIndex >= mod_studiohdr->numhitboxes )
+	{
+		return false;
+	}
+
+	SetUpBones(edict, model);
+
+	hitbox = (mstudiobbox_t*)((byte*)mod_studiohdr + mod_studiohdr->hitboxindex) + hitboxIndex;
+
+	for ( uint32_t index = 0; index < ARRAYSIZE(box->points); ++index )
+	{
+		vec3_t point;
+
+		// Alternate X quickest, then Y, then Z.
+		point[0] = ((index / 1) % 2 == 1) ? hitbox->bbmax[0] : hitbox->bbmin[0];
+		point[1] = ((index / 2) % 2 == 1) ? hitbox->bbmax[1] : hitbox->bbmin[1];
+		point[2] = ((index / 4) % 2 == 1) ? hitbox->bbmax[2] : hitbox->bbmin[2];
+
+		Matrix3x4_VectorTransform(studio_bones[hitbox->bone], point, box->points[index]);
+	}
+
+	return true;
+}
+
+int Mod_GetHitboxHitGroup(const edict_t* edict, uint32_t hitboxIndex)
+{
+	model_t* model = NULL;
+	studiohdr_t* header = NULL;
+	const mstudiobbox_t* hitbox = NULL;
+
+	if ( !edict )
+	{
+		return -1;
+	}
+
+	model = SV_ModelHandle(edict->v.modelindex);
+
+	if ( !model )
+	{
+		return -1;
+	}
+
+	header = (studiohdr_t*)Mod_StudioExtradata(model);
+
+	if( !header || hitboxIndex >= header->numhitboxes )
+	{
+		return -1;
+	}
+
+	hitbox = (mstudiobbox_t*)((byte*)header + header->hitboxindex) + hitboxIndex;
+	return hitbox->group;
+}
+
 /*
 ===============================================================================
 
@@ -320,19 +493,19 @@ static void Mod_StudioCalcBoneAdj( float *adj, const byte *pcontroller )
 		if( i == STUDIO_MOUTH )
 			continue; // ignore mouth
 
-		if( i <= MAXSTUDIOCONTROLLERS )
+		if( i >= MAXSTUDIOCONTROLLERS )
+			continue;
+
+		// check for 360% wrapping
+		if( pbonecontroller[j].type & STUDIO_RLOOP )
 		{
-			// check for 360% wrapping
-			if( pbonecontroller[j].type & STUDIO_RLOOP )
-			{
-				value = pcontroller[i] * (360.0f / 256.0f) + pbonecontroller[j].start;
-			}
-			else
-			{
-				value = pcontroller[i] / 255.0f;
-				value = bound( 0.0f, value, 1.0f );
-				value = (1.0f - value) * pbonecontroller[j].start + value * pbonecontroller[j].end;
-			}
+			value = pcontroller[i] * (360.0f / 256.0f) + pbonecontroller[j].start;
+		}
+		else
+		{
+			value = pcontroller[i] / 255.0f;
+			value = bound( 0.0f, value, 1.0f );
+			value = (1.0f - value) * pbonecontroller[j].start + value * pbonecontroller[j].end;
 		}
 
 		switch( pbonecontroller[j].type & STUDIO_TYPES )
@@ -772,9 +945,7 @@ void Mod_StudioGetAttachment( const edict_t *e, int iAtt, float *origin, float *
 	pAtt = (mstudioattachment_t *)((byte *)mod_studiohdr + mod_studiohdr->attachmentindex) + iAtt;
 
 	VectorCopy( e->v.angles, angles2 );
-
-	if( !FBitSet( host.features, ENGINE_COMPENSATE_QUAKE_BUG ))
-		angles2[PITCH] = -angles2[PITCH];
+	FixAnglesForQuake(angles2);
 
 	pBlendAPI->SV_StudioSetupBones( mod, e->v.frame, e->v.sequence, angles2, e->v.origin, e->v.controller, e->v.blending, pAtt->bone, e );
 
@@ -1074,65 +1245,65 @@ void Mod_LoadStudioModel( model_t *mod, const void *buffer, qboolean *loaded )
 
 	if( !Host_IsDedicated() )
 	{
-	if( phdr->numtextures == 0 )
-	{
-		studiohdr_t	*thdr;
-		byte		*in, *out;
-		void		*buffer2 = NULL;
-		size_t		size1, size2;
-
-		buffer2 = FS_LoadFile( Mod_StudioTexName( mod->name ), NULL, false );
-		thdr = R_StudioLoadHeader( mod, buffer2 );
-
-		if( !thdr )
+		if( phdr->numtextures == 0 )
 		{
-			Con_Printf( S_WARN "Mod_LoadStudioModel: %s missing textures file\n", mod->name );
-			if( buffer2 ) Mem_Free( buffer2 );
+			studiohdr_t	*thdr;
+			byte		*in, *out;
+			void		*buffer2 = NULL;
+			size_t		size1, size2;
+
+			buffer2 = FS_LoadFile( Mod_StudioTexName( mod->name ), NULL, false );
+			thdr = R_StudioLoadHeader( mod, buffer2 );
+
+			if( !thdr )
+			{
+				Con_Printf( S_WARN "Mod_LoadStudioModel: %s missing textures file\n", mod->name );
+				if( buffer2 ) Mem_Free( buffer2 );
+			}
+			else
+			{
+				ref.dllFuncs.Mod_StudioLoadTextures( mod, thdr );
+
+				// give space for textures and skinrefs
+				size1 = thdr->numtextures * sizeof( mstudiotexture_t );
+				size2 = thdr->numskinfamilies * thdr->numskinref * sizeof( short );
+				mod->cache.data = Mem_Calloc( loadmodel->mempool, phdr->length + size1 + size2 );
+				memcpy( loadmodel->cache.data, buffer, phdr->length ); // copy main mdl buffer
+				phdr = (studiohdr_t *)loadmodel->cache.data; // get the new pointer on studiohdr
+				phdr->numskinfamilies = thdr->numskinfamilies;
+				phdr->numtextures = thdr->numtextures;
+				phdr->numskinref = thdr->numskinref;
+				phdr->textureindex = phdr->length;
+				phdr->skinindex = phdr->textureindex + size1;
+
+				in = (byte *)thdr + thdr->textureindex;
+				out = (byte *)phdr + phdr->textureindex;
+				memcpy( out, in, size1 + size2 );	// copy textures + skinrefs
+				phdr->length += size1 + size2;
+				Mem_Free( buffer2 ); // release T.mdl
+			}
 		}
 		else
 		{
-				ref.dllFuncs.Mod_StudioLoadTextures( mod, thdr );
-
-			// give space for textures and skinrefs
-			size1 = thdr->numtextures * sizeof( mstudiotexture_t );
-			size2 = thdr->numskinfamilies * thdr->numskinref * sizeof( short );
-			mod->cache.data = Mem_Calloc( loadmodel->mempool, phdr->length + size1 + size2 );
-			memcpy( loadmodel->cache.data, buffer, phdr->length ); // copy main mdl buffer
+			// NOTE: don't modify source buffer because it's used for CRC computing
+			loadmodel->cache.data = Mem_Calloc( loadmodel->mempool, phdr->length );
+			memcpy( loadmodel->cache.data, buffer, phdr->length );
 			phdr = (studiohdr_t *)loadmodel->cache.data; // get the new pointer on studiohdr
-			phdr->numskinfamilies = thdr->numskinfamilies;
-			phdr->numtextures = thdr->numtextures;
-			phdr->numskinref = thdr->numskinref;
-			phdr->textureindex = phdr->length;
-			phdr->skinindex = phdr->textureindex + size1;
+			ref.dllFuncs.Mod_StudioLoadTextures( mod, phdr );
 
-			in = (byte *)thdr + thdr->textureindex;
-			out = (byte *)phdr + phdr->textureindex;
-			memcpy( out, in, size1 + size2 );	// copy textures + skinrefs
-			phdr->length += size1 + size2;
-			Mem_Free( buffer2 ); // release T.mdl
+			// NOTE: we wan't keep raw textures in memory. just cutoff model pointer above texture base
+			loadmodel->cache.data = Mem_Realloc( loadmodel->mempool, loadmodel->cache.data, phdr->texturedataindex );
+			phdr = (studiohdr_t *)loadmodel->cache.data; // get the new pointer on studiohdr
+			phdr->length = phdr->texturedataindex;	// update model size
 		}
 	}
 	else
 	{
-		// NOTE: don't modify source buffer because it's used for CRC computing
+		// just copy model into memory
 		loadmodel->cache.data = Mem_Calloc( loadmodel->mempool, phdr->length );
 		memcpy( loadmodel->cache.data, buffer, phdr->length );
-		phdr = (studiohdr_t *)loadmodel->cache.data; // get the new pointer on studiohdr
-			ref.dllFuncs.Mod_StudioLoadTextures( mod, phdr );
 
-		// NOTE: we wan't keep raw textures in memory. just cutoff model pointer above texture base
-		loadmodel->cache.data = Mem_Realloc( loadmodel->mempool, loadmodel->cache.data, phdr->texturedataindex );
-		phdr = (studiohdr_t *)loadmodel->cache.data; // get the new pointer on studiohdr
-		phdr->length = phdr->texturedataindex;	// update model size
-	}
-	}
-	else
-	{
-	// just copy model into memory
-	loadmodel->cache.data = Mem_Calloc( loadmodel->mempool, phdr->length );
-	memcpy( loadmodel->cache.data, buffer, phdr->length );
-
-	phdr = loadmodel->cache.data;
+		phdr = loadmodel->cache.data;
 	}
 
 	// setup bounding box

@@ -24,6 +24,9 @@
 #include "parsemsg.h"
 #include "projectInterface/IProjectInterface.h"
 #include "projectInterface_client.h"
+#include "customGeometry/geometryStatics.h"
+#include "customGeometry/logger_client.h"
+#include "events/eventCommands.h"
 
 #if defined(GOLDSOURCE_SUPPORT) && (defined(_WIN32) || defined(__linux__) || defined(__APPLE__)) && (defined(__i386) || defined(_M_IX86))
 #define USE_VGUI_FOR_GOLDSOURCE_SUPPORT
@@ -37,6 +40,11 @@ extern "C"
 }
 
 #include <string.h>
+#include "cl_dll.h"
+#include "ui/screenOverlays/ScreenOverlayContainer.h"
+#include "ui/screenOverlays/DebugCommands.h"
+#include "resources/SoundResources.h"
+#include "gameresources/GameResources.h"
 
 cl_enginefunc_t gEngfuncs;
 CHud gHUD;
@@ -73,7 +81,6 @@ int		DLLEXPORT HUD_UpdateClientData( client_data_t *cdata, float flTime );
 void	DLLEXPORT HUD_Reset ( void );
 void	DLLEXPORT HUD_PlayerMove( struct playermove_s *ppmove, int server );
 void	DLLEXPORT HUD_PlayerMoveInit( struct playermove_s *ppmove );
-char	DLLEXPORT HUD_PlayerMoveTexture( char *name );
 int		DLLEXPORT HUD_ConnectionlessPacket( const struct netadr_s *net_from, const char *args, char *response_buffer, int *response_buffer_size );
 int		DLLEXPORT HUD_GetHullBounds( int hullnumber, float *mins, float *maxs );
 void	DLLEXPORT HUD_Frame( double time );
@@ -140,11 +147,6 @@ int DLLEXPORT HUD_ConnectionlessPacket( const struct netadr_s *net_from, const c
 void DLLEXPORT HUD_PlayerMoveInit( struct playermove_s *ppmove )
 {
 	PM_Init( ppmove );
-}
-
-char DLLEXPORT HUD_PlayerMoveTexture( char *name )
-{
-	return PM_FindTextureType( name );
 }
 
 void DLLEXPORT HUD_PlayerMove( struct playermove_s *ppmove, int server )
@@ -240,6 +242,9 @@ so the HUD can reinitialize itself.
 
 int DLLEXPORT HUD_VidInit( void )
 {
+	ScreenOverlays::CScreenOverlayContainer& container = ScreenOverlays::CScreenOverlayContainer::StaticInstance();
+	container.VidInit();
+
 	gHUD.VidInit();
 #ifdef USE_VGUI_FOR_GOLDSOURCE_SUPPORT
 	vgui::Panel* root=(vgui::Panel*)gEngfuncs.VGui_GetPanel();
@@ -275,10 +280,23 @@ the hud variables.
 
 void DLLEXPORT HUD_Init( void )
 {
+	// We don't have any robust event-like system for the game DLLs to know when a user is connecting,
+	// when they're disconnecting, when they're changing map, etc.
+	// We just use this init function to re-initialise things when they connect to a server.
+	CustomGeometry::Initialise();
+	CustomGeometry::CLogger_Client::StaticInstance().RegisterCvar();
+	EventCommands::Initialise();
+	ScreenOverlays::InitialiseDebugCommands();
+	CGameResources::StaticInstance().Initialise();
+
 	InitInput();
+
+	ScreenOverlays::CScreenOverlayContainer& container = ScreenOverlays::CScreenOverlayContainer::StaticInstance();
+	container.Initialise();
+
 	gHUD.Init();
 
-	gEngfuncs.pfnHookUserMsg( "Bhopcap", __MsgFunc_Bhopcap );
+	HOOK_MESSAGE(Bhopcap);
 }
 
 /*
@@ -292,6 +310,9 @@ redraw the HUD.
 
 int DLLEXPORT HUD_Redraw( float time, int intermission )
 {
+	ScreenOverlays::CScreenOverlayContainer& container = ScreenOverlays::CScreenOverlayContainer::StaticInstance();
+	container.DrawCurrentOverlay(time);
+
 	gHUD.Redraw( time, intermission );
 
 	return 1;
@@ -327,6 +348,10 @@ Called at start and end of demos to restore to "non"HUD state.
 
 void DLLEXPORT HUD_Reset( void )
 {
+	ScreenOverlays::CScreenOverlayContainer& container = ScreenOverlays::CScreenOverlayContainer::StaticInstance();
+	container.ResetCurrentOverlay();
+	container.VidInit();
+
 	gHUD.VidInit();
 }
 

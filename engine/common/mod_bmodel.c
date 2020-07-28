@@ -15,7 +15,7 @@ GNU General Public License for more details.
 #include "common.h"
 #include "mod_local.h"
 #include "sprite.h"
-#include "mathlib.h"
+#include "xash3d_mathlib.h"
 #include "alias.h"
 #include "studio.h"
 #include "wadfile.h"
@@ -25,6 +25,8 @@ GNU General Public License for more details.
 #include "server.h"			// LUMP_ error codes
 #include "ref_common.h"
 #include "stb_image.h"
+#include "textureproperties.h"
+
 typedef struct wadlist_s
 {
 	char			wadnames[MAX_MAP_WADS][32];
@@ -66,14 +68,14 @@ typedef struct
 		dleaf_t		*leafs;
 		dleaf32_t		*leafs32;
 	};
-	int			numleafs;
+	size_t			numleafs;
 
 	union
 	{
 		dclipnode_t	*clipnodes;
 		dclipnode32_t	*clipnodes32;
 	};
-	int			numclipnodes;
+	size_t			numclipnodes;
 
 	dtexinfo_t		*texinfo;
 	size_t			numtexinfo;
@@ -163,7 +165,7 @@ typedef struct
 
 typedef struct
 {
-	const int		lumpnumber;
+	int		lumpnumber;
 	const size_t	mincount;
 	const size_t	maxcount;
 	const int		entrysize;
@@ -1108,7 +1110,7 @@ static void Mod_CalcSurfaceExtents( msurface_t *surf )
 			info->lightextents[i] = surf->extents[i];
 		}
 
-#if !defined XASH_DEDICATED && 0 // REFTODO:
+#if !XASH_DEDICATED && 0 // REFTODO:
 		if( !FBitSet( tex->flags, TEX_SPECIAL ) && ( surf->extents[i] > 16384 ) && ( tr.block_size == BLOCK_SIZE_DEFAULT ))
 			Con_Reportf( S_ERROR "Bad surface extents %i\n", surf->extents[i] );
 #endif // XASH_DEDICATED
@@ -1921,14 +1923,14 @@ static void CreateDefaultTexture(texture_t** texture)
 	*texture = Mem_Calloc(loadmodel->mempool, sizeof(texture_t));
 	Q_strncpy((*texture)->name, "*default", sizeof((*texture)->name));
 
-#ifndef XASH_DEDICATED
+#if !XASH_DEDICATED
 	if( !Host_IsDedicated() )
 	{
 		(*texture)->gl_texturenum = R_GetBuiltinTexture( REF_DEFAULT_TEXTURE );
 		(*texture)->width = 16;
 		(*texture)->height = 16;
 	}
-#endif
+#endif // XASH_DEDICATED
 }
 
 static void LoadTexture(dbspmodel_t* bmod, const int32_t* miptexOffsets, uint32_t targetIndex, qboolean loadFromWad)
@@ -1994,7 +1996,7 @@ static void LoadTexture(dbspmodel_t* bmod, const int32_t* miptexOffsets, uint32_
 		}
 	}
 
-#ifndef XASH_DEDICATED
+#if !XASH_DEDICATED
 	if( !Host_IsDedicated() )
 	{
 		// check for multi-layered sky texture (quake1 specific)
@@ -2109,7 +2111,7 @@ static void LoadTexture(dbspmodel_t* bmod, const int32_t* miptexOffsets, uint32_
 			}
 		}
 	}
-#endif
+#endif // XASH_DEDICATED
 }
 
 static void SequenceAnimatedTextures(uint32_t base)
@@ -2252,9 +2254,117 @@ static void SequenceAnimatedTextures(uint32_t base)
 	}
 }
 
+static qboolean LoadPNGTextureData(const dpngtexturepath_t* in, texture_t** out, const char* texName)
+{
+	byte* pngData = NULL;
+	qboolean success = false;
+
+	do
+	{
+		int width = 0;
+		int height = 0;
+		fs_offset_t pngDataSize = 0;
+		int textureNum = 0;
+
+		pngData = FS_LoadFile(texName, &pngDataSize, false);
+
+		if ( !pngData || pngDataSize < 1 )
+		{
+			Con_Printf(S_ERROR "LoadPngTexture: Map '%s' texture '%s' not found.\n", loadmodel->name, texName);
+			break;
+		}
+
+		// Not sure if this is the best way to do this?
+		// Really these kinds of implementation details should be handled by the FS loader,
+		// but it seems that there's no good way of getting this information right now.
+		if ( !stbi_info_from_memory(pngData, pngDataSize, &width, &height, NULL) )
+		{
+			Con_Printf(S_ERROR "LoadPngTexture: Map '%s' texture '%s' failed to retrieve dimensions.\n", loadmodel->name, texName);
+			break;
+		}
+
+		textureNum = ref.dllFuncs.GL_LoadTexture(texName, pngData, pngDataSize, TF_MAKELUMA);
+
+		if ( textureNum <= 0 )
+		{
+			Con_Printf(S_ERROR "LoadPngTexture: Map '%s' texture '%s' failed to load.\n", loadmodel->name, texName);
+			break;
+		}
+
+		*out = Mem_Calloc(loadmodel->mempool, sizeof(texture_t));
+
+		(*out)->width = width;
+		(*out)->height = height;
+
+		Q_strncpy((*out)->name, in->path, sizeof((*out)->name));
+		(*out)->gl_texturenum = textureNum;
+		success = true;
+	}
+	while ( false );
+
+	if ( pngData )
+	{
+		Mem_Free(pngData);
+	}
+
+	if ( !success )
+	{
+		CreateDefaultTexture(out);
+	}
+
+	return success;
+}
+
+static void LoadTextureProperties(texture_t* out, const char* propertiesFilePath)
+{
+	char* inText = NULL;
+	byte* inFile = FS_LoadFile(propertiesFilePath, NULL, false);
+
+	if ( !inFile )
+	{
+		return;
+	}
+
+	inText = (char*)inFile;
+
+	while ( true )
+	{
+		char key[32];
+		char value[32];
+
+		inText = COM_ParseFileSafe(inText, key, sizeof(key));
+
+		if ( !inText )
+		{
+			// No more content
+			break;
+		}
+
+		inText = COM_ParseFileSafe(inText, value, sizeof(value));
+
+		if ( !inText )
+		{
+			Con_Printf(S_WARN "LoadTextureProperties: Properties file %s contained key '%s' with no matching value\n",
+					   propertiesFilePath,
+					   key);
+			break;
+		}
+
+		if ( !TextureProperties_Parse(out, key, value) )
+		{
+			Con_Printf(S_WARN "LoadTextureProperties: Properties file %s contained invalid property '%s %s'\n",
+					   propertiesFilePath,
+					   key,
+					   value);
+		}
+	}
+
+	Mem_Free(inFile);
+}
+
 static void LoadPNGTexture(const dpngtexturepath_t* in, texture_t** out)
 {
-	char texName[64];
+	char nameBuffer[96];
 	byte* pngData = NULL;
 	fs_offset_t pngDataSize = 0;
 
@@ -2273,61 +2383,23 @@ static void LoadPNGTexture(const dpngtexturepath_t* in, texture_t** out)
 		return;
 	}
 
-	Q_snprintf(texName, sizeof(texName), "%s.png", in->path);
+	Q_snprintf(nameBuffer, sizeof(nameBuffer), "%s.png", in->path);
 
-	if ( !FS_FileExists(texName, false) )
+	if ( !FS_FileExists(nameBuffer, false) )
 	{
-		Con_Printf(S_ERROR "LoadPngTexture: Map '%s' texture '%s' not found.\n", loadmodel->name, texName);
+		Con_Printf(S_ERROR "LoadPngTexture: Map '%s' texture '%s' not found.\n", loadmodel->name, nameBuffer);
 		CreateDefaultTexture(out);
 		return;
 	}
 
-	pngData = FS_LoadFile(texName, &pngDataSize, false);
-
-	if ( !pngData || pngDataSize < 1 )
+	if ( !LoadPNGTextureData(in, out, nameBuffer) )
 	{
-		Con_Printf(S_ERROR "LoadPngTexture: Map '%s' texture '%s' not found.\n", loadmodel->name, texName);
-		CreateDefaultTexture(out);
-	}
-	else
-	{
-		int width = 0;
-		int height = 0;
-
-		// Not sure if this is the best way to do this?
-		// Really these kinds of implementation details should be handled by the FS loader,
-		// but it seems that there's no way of getting this information right now.
-		if ( stbi_info_from_memory(pngData, pngDataSize, &width, &height, NULL) )
-		{
-			const int textureNum = ref.dllFuncs.GL_LoadTexture(texName, pngData, pngDataSize, TF_MAKELUMA);
-
-			if ( textureNum > 0 )
-			{
-				*out = Mem_Calloc(loadmodel->mempool, sizeof(texture_t));
-
-				(*out)->width = width;
-				(*out)->height = height;
-
-				Q_strncpy((*out)->name, in->path, sizeof((*out)->name));
-				(*out)->gl_texturenum = textureNum;
-			}
-			else
-			{
-				Con_Printf(S_ERROR "LoadPngTexture: Map '%s' texture '%s' failed to load.\n", loadmodel->name, texName);
-				CreateDefaultTexture(out);
-			}
-		}
-		else
-		{
-			Con_Printf(S_ERROR "LoadPngTexture: Map '%s' texture '%s' failed to retrieve dimensions.\n", loadmodel->name, texName);
-			CreateDefaultTexture(out);
-		}
+		// Don't load any property data if the main image could not be loaded.
+		return;
 	}
 
-	if ( pngData )
-	{
-		Mem_Free(pngData);
-	}
+	Q_snprintf(nameBuffer, sizeof(nameBuffer), "%s.props", in->path);
+	LoadTextureProperties(*out, nameBuffer);
 }
 
 static void LoadEmbeddedMiptex(dbspmodel_t* bmod, const int32_t* offsets, uint32_t index, texture_t** out)
@@ -2500,14 +2572,14 @@ static void Mod_LoadTextures( dbspmodel_t *bmod )
 {
 	if( bmod->isworld )
 	{
-#ifndef XASH_DEDICATED
+#if !XASH_DEDICATED
 		// release old sky layers first
 		if( !Host_IsDedicated() )
 		{
 			ref.dllFuncs.GL_FreeTexture( R_GetBuiltinTexture( REF_ALPHASKY_TEXTURE ));
 			ref.dllFuncs.GL_FreeTexture( R_GetBuiltinTexture( REF_SOLIDSKY_TEXTURE ));
 		}
-#endif
+#endif // XASH_DEDICATED
 	}
 
 	if( !bmod->texdatasize )
@@ -2706,7 +2778,7 @@ static void Mod_LoadSurfaces( dbspmodel_t *bmod )
 			next_lightofs = 99999999;
 		}
 
-#ifndef XASH_DEDICATED // TODO: Do we need subdivide on server?
+#if !XASH_DEDICATED // TODO: Do we need subdivide on server?
 		if( FBitSet( out->flags, SURF_DRAWTURB ) && !Host_IsDedicated() )
 			ref.dllFuncs.GL_SubdivideSurface( out ); // cut up polygon for warps
 #endif
@@ -3117,6 +3189,15 @@ qboolean Mod_LoadBmodelLumps( const byte *mod_base, qboolean isworld )
 	if( isworld ) world.flags = 0;	// clear world settings
 	bmod->isworld = isworld;
 
+	if( header->version == HLBSP_VERSION &&
+		header->lumps[LUMP_ENTITIES].fileofs <= 1024 &&
+		(header->lumps[LUMP_ENTITIES].filelen % sizeof( dplane_t )) == 0 )
+	{
+		// blue-shift swapped lumps
+		srclumps[0].lumpnumber = LUMP_PLANES;
+		srclumps[1].lumpnumber = LUMP_ENTITIES;
+	}
+
 	// loading base lumps
 	for( i = 0; i < ARRAYSIZE( srclumps ); i++ )
 		Mod_LoadLump( mod_base, &srclumps[i], &worldstats[i], isworld ? (LUMP_SAVESTATS|LUMP_SILENT) : 0 );
@@ -3157,7 +3238,7 @@ qboolean Mod_LoadBmodelLumps( const byte *mod_base, qboolean isworld )
 	if( isworld )
 	{
 		loadmodel = mod;		// restore pointer to world
-#ifndef XASH_DEDICATED
+#if !XASH_DEDICATED
 		Mod_InitDebugHulls();	// FIXME: build hulls for separate bmodels (shells, medkits etc)
 		world.deluxedata = bmod->deluxedata_out;	// deluxemap data pointer
 		world.shadowdata = bmod->shadowdata_out;	// occlusion data pointer
@@ -3220,6 +3301,15 @@ qboolean Mod_TestBmodelLumps( const char *name, const byte *mod_base, qboolean s
 			Con_Printf( S_ERROR "%s has unrecognised version number %i\n", name, header->version );
 		loadstat.numerrors++;
 		break;
+	}
+
+	if( header->version == HLBSP_VERSION &&
+		header->lumps[LUMP_ENTITIES].fileofs <= 1024 &&
+		(header->lumps[LUMP_ENTITIES].filelen % sizeof( dplane_t )) == 0 )
+	{
+		// blue-shift swapped lumps
+		srclumps[0].lumpnumber = LUMP_PLANES;
+		srclumps[1].lumpnumber = LUMP_ENTITIES;
 	}
 
 	// loading base lumps

@@ -1,6 +1,7 @@
 #include "genericprojectileweapon.h"
 #include "soundent.h"
 #include "weaponatts_projectileattack.h"
+#include "eventConstructor/eventConstructor.h"
 
 void CGenericProjectileWeapon::Precache()
 {
@@ -44,7 +45,12 @@ bool CGenericProjectileWeapon::InvokeWithAttackMode(WeaponAttackType type, const
 
 	if ( m_AttackModeEvents[projectileAttack->Signature()->Index] )
 	{
-		PLAYBACK_EVENT(DefaultEventFlags(), m_pPlayer->edict(), m_AttackModeEvents[projectileAttack->Signature()->Index]);
+		using namespace EventConstructor;
+
+		CEventConstructor event;
+		event.InitSimple(DefaultEventFlags(), m_pPlayer->edict(), m_AttackModeEvents[projectileAttack->Signature()->Index]);
+
+		event.Send();
 	}
 
 	DelayFiring(1.0f / projectileAttack->AttackRate);

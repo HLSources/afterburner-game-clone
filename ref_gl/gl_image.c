@@ -514,7 +514,7 @@ GL_SetTextureDimensions
 */
 static void GL_SetTextureDimensions( gl_texture_t *tex, int width, int height, int depth )
 {
-	int	maxTextureSize;
+	int	maxTextureSize = 0;
 	int	maxDepthSize = 1;
 
 	Assert( tex != NULL );
@@ -539,6 +539,8 @@ static void GL_SetTextureDimensions( gl_texture_t *tex, int width, int height, i
 		maxDepthSize = glConfig.max_3d_texture_size;
 		maxTextureSize = glConfig.max_3d_texture_size;
 		break;
+	default:
+		Assert( false );
 	}
 
 	// store original sizes

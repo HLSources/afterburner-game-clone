@@ -14,7 +14,7 @@ GNU General Public License for more details.
 */
 
 #include "common.h"
-#include "mathlib.h"
+#include "xash3d_mathlib.h"
 #include "mod_local.h"
 #include "pm_local.h"
 #include "pm_movevars.h"
@@ -461,7 +461,7 @@ pmtrace_t PM_PlayerTraceExt( playermove_t *pmove, vec3_t start, vec3_t end, int 
 			// run custom sweep callback
 			if( pmove->server || Host_IsLocalClient( ))
 				SV_ClipPMoveToEntity( pe, start, mins, maxs, end, &trace_bbox );
-#ifndef XASH_DEDICATED
+#if !XASH_DEDICATED
 			else CL_ClipPMoveToEntity( pe, start, mins, maxs, end, &trace_bbox );
 #endif
 		}
@@ -630,7 +630,7 @@ int PM_TestPlayerPosition( playermove_t *pmove, vec3_t pos, pmtrace_t *ptrace, p
 			// run custom sweep callback
 			if( pmove->server || Host_IsLocalClient( ))
 				SV_ClipPMoveToEntity( pe, pos, mins, maxs, pos, &trace );
-#ifndef XASH_DEDICATED
+#if !XASH_DEDICATED
 			else CL_ClipPMoveToEntity( pe, pos, mins, maxs, pos, &trace );
 #endif
 

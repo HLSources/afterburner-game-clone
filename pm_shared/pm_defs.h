@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-
+#pragma once
 #ifndef PM_DEFS_H
 #define PM_DEFS_H
 
@@ -36,8 +36,25 @@
 // PM_PlayerTrace results.
 #include "pmtrace.h"
 
-
+#include "com_model.h"
 #include "usercmd.h"
+
+typedef struct pm_event_fire_args_s
+{
+	int flags;
+	int clientIndex;
+	unsigned short eventIndex;
+	float delay;
+	const float* vec3Origin;
+	const float* vec3Angles;
+	float fparam1;
+	float fparam2;
+	int iparam1;
+	int iparam2;
+	int bparam1;
+	int bparam2;
+	const float* vec3param1;
+} pm_event_fire_args_t;
 
 // physent_t
 typedef struct physent_s
@@ -100,12 +117,12 @@ typedef struct playermove_s
 	vec3_t		velocity;		// Current movement direction.
 	vec3_t		movedir;		// For waterjumping, a forced forward velocity so we can fly over lip of ledge.
 	vec3_t		basevelocity;	// Velocity of the conveyor we are standing, e.g.
-	
+
 	// For ducking/dead
 	vec3_t		view_ofs;		// Our eye position.
 	float		flDuckTime;	// Time we started duck
 	qboolean		bInDuck;		// In process of ducking or ducked already?
-	
+
 	// For walking/falling
 	int		flTimeStepSound;	// Next time we can play a step sound
 	int		iStepLeft;
@@ -134,9 +151,6 @@ typedef struct playermove_s
 	int		watertype;
 	int		oldwaterlevel;
 
-	char		sztexturename[256];
-	char		chtexturetype;
-
 	float		maxspeed;
 	float		clientmaxspeed;	// Player specific maxspeed
 
@@ -157,13 +171,13 @@ typedef struct playermove_s
 	// world state
 
 	// Number of entities to clip against.
-	int		numphysent;    
+	int		numphysent;
 	physent_t		physents[MAX_PHYSENTS];
 
 	// Number of momvement entities (ladders)
 	int		nummoveent;
 	// just a list of ladders
-	physent_t		moveents[MAX_MOVEENTS];	
+	physent_t		moveents[MAX_MOVEENTS];
 
 	// All things being rendered, for tracing against things you don't actually collide with
 	int		numvisent;
@@ -181,7 +195,7 @@ typedef struct playermove_s
 	struct movevars_s	*movevars;
 	vec3_t		player_mins[4];
 	vec3_t		player_maxs[4];
-	
+
 	// Common functions
 	const char	*(*PM_Info_ValueForKey) ( const char *s, const char *key );
 	void		(*PM_Particle)( const float *origin, int color, float life, int zpos, int zvel );
@@ -193,10 +207,15 @@ typedef struct playermove_s
 	void		(*PM_StuckTouch)( int hitent, pmtrace_t *ptraceresult );
 	int		(*PM_PointContents)( float *p, int *truecontents /*filled in if this is non-null*/ );
 	int		(*PM_TruePointContents)( float *p );
-	int		(*PM_HullPointContents)( struct hull_s *hull, int num, float *p );   
+	int		(*PM_HullPointContents)( struct hull_s *hull, int num, float *p );
+#ifdef __MINGW32__
+	pmtrace_t		*(*PM_PlayerTrace_real)( pmtrace_t * retvalue, float *start, float *end, int traceFlags, int ignore_pe );
+
+#else
 	pmtrace_t		(*PM_PlayerTrace)( float *start, float *end, int traceFlags, int ignore_pe );
+#endif
 	struct pmtrace_s	*(*PM_TraceLine)( float *start, float *end, int flags, int usehulll, int ignore_pe );
-	int			(*RandomLong)( int lLow, int lHigh );
+	int		(*RandomLong)( int lLow, int lHigh );
 	float		(*RandomFloat)( float flLow, float flHigh );
 	int		(*PM_GetModelType)( struct model_s *mod );
 	void		(*PM_GetModelBounds)( struct model_s *mod, float *mins, float *maxs );
@@ -211,11 +230,34 @@ typedef struct playermove_s
 	// Run functions for this frame?
 	qboolean		runfuncs;
 	void		(*PM_PlaySound)( int channel, const char *sample, float volume, float attenuation, int fFlags, int pitch );
-	const char	*(*PM_TraceTexture)( int ground, float *vstart, float *vend );
-	void		(*PM_PlaybackEventFull)( int flags, int clientindex, unsigned short eventindex, float delay, float *origin, float *angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2 );
+	texture_t	*(*PM_TraceTexture)( int ground, float *vstart, float *vend );
+	void		(*PM_PlaybackEventFull)( const struct pm_event_fire_args_s* inArgs );
+#ifdef __MINGW32__
+	pmtrace_t		*(*PM_PlayerTraceEx_real) (pmtrace_t *retvalue, float *start, float *end, int traceFlags, int (*pfnIgnore)( physent_t *pe ));
+#else
 	pmtrace_t		(*PM_PlayerTraceEx) (float *start, float *end, int traceFlags, int (*pfnIgnore)( physent_t *pe ));
+#endif
 	int		(*PM_TestPlayerPositionEx) (float *pos, pmtrace_t *ptrace, int (*pfnIgnore)( physent_t *pe ));
 	struct pmtrace_s	*(*PM_TraceLineEx)( float *start, float *end, int flags, int usehulll, int (*pfnIgnore)( physent_t *pe ));
-	struct msurface_s	*(*PM_TraceSurface)( int ground, float *vstart, float *vend );
+	struct msurface_s	*(*PM_TraceSurface)( int ground, const float *vstart, const float *vend );
 } playermove_t;
+
+#ifdef __MINGW32__
+static pmtrace_t _pm_globalresult, _pm_globaltmp;
+	static inline pmtrace_t PM_PlayerTrace_wrap( float *start, float *end, int traceFlags, int ignore_pe, playermove_t *pmove )
+	{
+		_pm_globaltmp = pmove->touchindex[MAX_PHYSENTS -1];
+		pmove->PM_PlayerTrace_real( &_pm_globalresult, start, end, traceFlags, ignore_pe );
+		return _pm_globalresult;
+	}
+	static inline pmtrace_t PM_PlayerTraceEx_wrap( float *start, float *end, int traceFlags, int (*pfnIgnore)( physent_t *pe ), playermove_t *pmove )
+	{
+		_pm_globaltmp = pmove->touchindex[MAX_PHYSENTS -1];
+		pmove->PM_PlayerTraceEx_real( &_pm_globalresult, start, end, traceFlags, pfnIgnore );
+		return _pm_globalresult;
+	}
+#define PM_PlayerTrace(a,b,c,d) touchindex[MAX_PHYSENTS -1] = PM_PlayerTrace_wrap( a, b, c, d, pmove );pmove->touchindex[MAX_PHYSENTS -1] = _pm_globaltmp
+#define PM_PlayerTraceEx(a,b,c,d) touchindex[MAX_PHYSENTS -1] = PM_PlayerTraceEx_wrap( a, b, c, d, pmove );pmove->touchindex[MAX_PHYSENTS -1] = _pm_globaltmp
+#endif
+
 #endif//PM_DEFS_H

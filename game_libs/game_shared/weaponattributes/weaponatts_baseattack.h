@@ -38,6 +38,10 @@ namespace WeaponAtts
 		// If specified, attack uses this body index for the view model.
 		int ViewModelBodyOverride = -1;
 
+		// If non-empty, this set of sounds will be played to the player holding the weapon.
+		// The normal AttackSounds will be played to all other players.
+		WASoundSet ViewModelAttackSounds;
+
 		virtual Classification Classify() const = 0;
 
 		virtual void Validate() const override
@@ -46,15 +50,20 @@ namespace WeaponAtts
 			ASSERTSZ_Q(AttackRate > 0.0f, "Attack rate must be positive.");
 		}
 
-		const AttackModeSignature* Signature() const
+		inline const AttackModeSignature* Signature() const
 		{
 			return &m_Signature;
 		}
 
-		void SetSignature(WeaponId_e id, uint32_t index)
+		inline void SetSignature(WeaponId_e id, uint32_t index)
 		{
 			m_Signature.WeaponId = id;
 			m_Signature.Index = index;
+		}
+
+		inline bool HasViewModelAttackSounds() const
+		{
+			return ViewModelAttackSounds.SoundNames.Count() > 0;
 		}
 
 	private:

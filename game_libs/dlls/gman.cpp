@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   This source code contains proprietary and confidential information of
@@ -36,14 +36,14 @@ public:
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	int ISoundMask ( void );
 
-	int Save( CSave &save ); 
+	int Save( CSave &save );
 	int Restore( CRestore &restore );
 	static TYPEDESCRIPTION m_SaveData[];
 
 	void StartTask( Task_t *pTask );
 	void RunTask( Task_t *pTask );
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
-	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
+	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, const TraceResult *ptr, int bitsDamageType);
 
 	void PlayScriptedSentence( const char *pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity *pListener );
 
@@ -63,7 +63,7 @@ TYPEDESCRIPTION	CGMan::m_SaveData[] =
 IMPLEMENT_SAVERESTORE( CGMan, CBaseMonster )
 
 //=========================================================
-// Classify - indicates this monster's place in the 
+// Classify - indicates this monster's place in the
 // relationship table.
 //=========================================================
 int CGMan::Classify( void )
@@ -189,7 +189,7 @@ void CGMan::RunTask( Task_t *pTask )
 			// turn towards vector
 			SetBoneController( 0, yaw );
 		}
-		else 
+		else
 		{
 			SetBoneController( 0, 0 );
 		}
@@ -221,7 +221,7 @@ int CGMan::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float fl
 	return TRUE;
 }
 
-void CGMan::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType)
+void CGMan::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, const TraceResult *ptr, int bitsDamageType)
 {
 	UTIL_Ricochet( ptr->vecEndPos, 1.0 );
 	AddMultiDamage( pevAttacker, this, flDamage, bitsDamageType );

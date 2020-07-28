@@ -14,7 +14,7 @@ GNU General Public License for more details.
 */
 
 #include "common.h"
-#include "mathlib.h"
+#include "xash3d_mathlib.h"
 #include "server.h"
 #include "const.h"
 #include "pm_defs.h"
@@ -149,22 +149,8 @@ void SV_WaterMove( edict_t *ent )
 	{
 		if( flags & FL_INWATER )
 		{
-			// leave the water.
-			switch( COM_RandomLong( 0, 3 ))
-			{
-			case 0:
-				SV_StartSound( ent, CHAN_BODY, "player/pl_wade1.wav", 1.0f, ATTN_NORM, 0, 100 );
-				break;
-			case 1:
-				SV_StartSound( ent, CHAN_BODY, "player/pl_wade2.wav", 1.0f, ATTN_NORM, 0, 100 );
-				break;
-			case 2:
-				SV_StartSound( ent, CHAN_BODY, "player/pl_wade3.wav", 1.0f, ATTN_NORM, 0, 100 );
-				break;
-			case 3:
-				SV_StartSound( ent, CHAN_BODY, "player/pl_wade4.wav", 1.0f, ATTN_NORM, 0, 100 );
-				break;
-			}
+			const char* soundPath = svgame.dllFuncs.pfnGetRandomWaterTransitionSound();
+			SV_StartSound(ent, CHAN_BODY, soundPath, 1.0f, ATTN_NORM, 0, 100);
 
 			ent->v.flags = flags & ~FL_INWATER;
 		}
@@ -196,22 +182,8 @@ void SV_WaterMove( edict_t *ent )
 	{
 		if( watertype == CONTENTS_WATER )
 		{
-			// entering the water
-			switch( COM_RandomLong( 0, 3 ))
-			{
-			case 0:
-				SV_StartSound( ent, CHAN_BODY, "player/pl_wade1.wav", 1.0f, ATTN_NORM, 0, 100 );
-				break;
-			case 1:
-				SV_StartSound( ent, CHAN_BODY, "player/pl_wade2.wav", 1.0f, ATTN_NORM, 0, 100 );
-				break;
-			case 2:
-				SV_StartSound( ent, CHAN_BODY, "player/pl_wade3.wav", 1.0f, ATTN_NORM, 0, 100 );
-				break;
-			case 3:
-				SV_StartSound( ent, CHAN_BODY, "player/pl_wade4.wav", 1.0f, ATTN_NORM, 0, 100 );
-				break;
-			}
+			const char* soundPath = svgame.dllFuncs.pfnGetRandomWaterTransitionSound();
+			SV_StartSound(ent, CHAN_BODY, soundPath, 1.0f, ATTN_NORM, 0, 100);
 		}
 
 		ent->v.flags = flags | FL_INWATER;

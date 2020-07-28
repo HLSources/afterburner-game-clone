@@ -1,5 +1,4 @@
 #include "spawnpointmanager.h"
-#include "debug_assert.h"
 #include "game.h"
 
 namespace
@@ -19,30 +18,57 @@ const char* const CSpawnPointManager::SpawnPointClassNames[SP__Count] =
 	"info_player_coop"
 };
 
-CSpawnPointManager::CSpawnPointManager(CGameRules& gameRules) :
-	m_pGameRules(&gameRules)
+void CSpawnPointManager::Initialise()
 {
+	for ( uint32_t index = 0; index < SP__Count; ++index )
+	{
+		CSpawnPointList& list = m_Lists[index];
+		const char* className = SpawnPointClassNames[index];
+
+		if ( index == SP_Default )
+		{
+			// See if there is an override.
+			if ( !FStringNull(gpGlobals->startspot) )
+			{
+				const char* overrideString = STRING(gpGlobals->startspot);
+
+				if ( overrideString && *overrideString )
+				{
+					className = overrideString;
+				}
+			}
+		}
+
+		list.Initialise(className);
+		list.RandomiseIndices();
+	}
 }
 
-CBaseEntity* CSpawnPointManager::GetNextSpawnPoint(CBasePlayer* player, uint32_t flags)
+CBaseEntity* CSpawnPointManager::GetNextSpawnPoint(CBasePlayer* player, SpawnPointType spType, uint32_t flags)
 {
 	CBaseEntity* spawnPoint = nullptr;
 	const char* spawnPointClassName = "";
 
-	if ( m_pGameRules->IsCoOp() )
+	switch ( spType )
 	{
-		spawnPoint = GetNextCoOpSpawnPoint();
-		spawnPointClassName = SpawnPointClassNames[SP_CoOp];
-	}
-	else if ( m_pGameRules->IsDeathmatch() )
-	{
-		spawnPoint = GetNextDeathmatchSpawnPoint(player, flags);
-		spawnPointClassName = SpawnPointClassNames[SP_Deathmatch];
-	}
-	else
-	{
-		spawnPoint = GetNextDefaultSpawnPoint();
-		spawnPointClassName = SpawnPointClassNames[SP_Default];
+		case SP_Deathmatch:
+		{
+			spawnPoint = GetNextDeathmatchSpawnPoint(player, flags);
+			spawnPointClassName = SpawnPointClassNames[SP_Deathmatch];
+			break;
+		}
+		case SP_CoOp:
+		{
+			spawnPoint = GetNextCoOpSpawnPoint();
+			spawnPointClassName = SpawnPointClassNames[SP_CoOp];
+			break;
+		}
+		default:
+		{
+			spawnPoint = GetNextDefaultSpawnPoint();
+			spawnPointClassName = SpawnPointClassNames[SP_Default];
+			break;
+		}
 	}
 
 	if ( !spawnPoint )
@@ -185,31 +211,5 @@ void CSpawnPointManager::KillPlayersAtPoint(const vec3_t& origin, CBasePlayer* p
 				entInSphere->TakeDamage(worldVars, worldVars, entInSphere->pev->max_health, DMG_GENERIC);
 			}
 		}
-	}
-}
-
-void CSpawnPointManager::Initialise()
-{
-	for ( uint32_t index = 0; index < SP__Count; ++index )
-	{
-		CSpawnPointList& list = m_Lists[index];
-		const char* className = SpawnPointClassNames[index];
-
-		if ( index == SP_Default )
-		{
-			// See if there is an override.
-			if ( !FStringNull(gpGlobals->startspot) )
-			{
-				const char* overrideString = STRING(gpGlobals->startspot);
-
-				if ( overrideString && *overrideString )
-				{
-					className = overrideString;
-				}
-			}
-		}
-
-		list.Initialise(className);
-		list.RandomiseIndices();
 	}
 }

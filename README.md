@@ -54,6 +54,7 @@ Many thanks to:
 * Developers of [rapidjson library](http://rapidjson.org/).
 * Contributors to [XeNTaX game reverse-engineering forums](https://forum.xentax.com/).
 * Various Nightfire modders over the years whose tools and reverse-engineering have proven invaluable when developing this mod (specifically Tres, 009, Ford, UltimateSniper).
+* ZapSplat.com for various free sound effects.
 
 For posterity, the Xash3D engine readme is below.
 
@@ -61,6 +62,10 @@ For posterity, the Xash3D engine readme is below.
 
 ## Xash3D FWGS Engine Readme
 [![Build Status](https://api.travis-ci.org/FWGS/xash3d-fwgs.svg?branch=master)](https://travis-ci.org/FWGS/xash3d-fwgs) [![Discord Server](https://img.shields.io/discord/355697768582610945.svg)](https://discord.gg/TbnHcVb)
+=======
+# Xash3D FWGS Engine
+[![Build Status](https://api.travis-ci.org/FWGS/xash3d-fwgs.svg?branch=master)](https://travis-ci.org/FWGS/xash3d-fwgs) [![FreeBSD Build Status](https://img.shields.io/cirrus/github/FWGS/xash3d-fwgs?label=freebsd%20build)](https://cirrus-ci.com/github/FWGS/xash3d-fwgs) [![Discord Server](https://img.shields.io/discord/355697768582610945.svg)](https://discord.gg/TbnHcVb) \
+[![Download Stable](https://img.shields.io/badge/download-stable-yellow)](https://github.com/FWGS/xash3d-fwgs/releases/latest) [![Download Testing](https://img.shields.io/badge/downloads-testing-orange)](https://github.com/FWGS/xash3d-deploy/tree/anewengine-master)
 
 Xash3D FWGS is a fork of Xash3D Engine by Unkle Mike with extended features and crossplatform.
 
@@ -70,19 +75,15 @@ as well as to give game developers well known workflow and extend it.
 Read more about Xash3D on ModDB: https://www.moddb.com/engines/xash3d-engine
 ```
 
-Latest release build: https://github.com/FWGS/xash3d-fwgs/releases/latest
-
-Latest development build: https://github.com/FWGS/xash3d-deploy/tree/newengine-master
-
 ## Fork features
 * HLSDK 2.4 support.
-* Crossplatform: officially supported x86 and ARM on Windows/Linux/BSD/Android. (see Documentation/ports.md for more info)
+* Crossplatform: supported x86 and ARM on Windows/Linux/BSD/Android. ([see docs for more info](Documentation/ports.md))
 * Modern compilers support: say no more to MSVC6.
 * Better multiplayer support: multiple master servers, headless dedicated server.
 * Mobility API: allows better game integration on mobile devices(vibration, touch controls)
 * Different input methods: touch, gamepad and classic mouse & keyboard.
 * TrueType font rendering, as a part of mainui_cpp.
-* Multiple renderers support(OpenGL, GLES, Software)
+* Multiple renderers support: OpenGL, GLESv1, GLESv2, Software
 * A set of small improvements, without broken compatibility.
 
 ## Planned fork features
@@ -92,12 +93,14 @@ Latest development build: https://github.com/FWGS/xash3d-deploy/tree/newengine-m
 
 ## Contributing
 * Before sending an issue, check if someone already reported your issue. Make sure you're following "How To Ask Questions The Smart Way" guide by Eric Steven Raymond. Read more: http://www.catb.org/~esr/faqs/smart-questions.html
-* Before sending a PR, check if you followed our coding guide in CODING_STYLE.md file.
+* Before sending a PR, check if you followed our contribution guide in CONTRIBUTING.md file.
 
 ## Build instructions
 We are using Waf build system. If you have some Waf-related questions, I recommend you to read https://waf.io/book/
 
 If you're stuck somewhere and you need a clear example, read `.travis.yml` and `scripts/build*.sh`.
+
+NOTE: NEVER USE GitHub's ZIP ARCHIVES. They are broken and don't contain external dependencies sources we're using.
 
 ### Prerequisites
 #### Windows(Visual Studio)
@@ -118,11 +121,9 @@ Even if Xash3D FWGS does support targetting 64-bit, you can't load games without
 
 `$ sudo dpkg --add-architecture i386`
 * Install development tools
-  * For 32-bit engine on amd64:
-
+  * For 32-bit engine on amd64: \
     `$ sudo apt install build-essential gcc-multilib g++-multilib python libsdl2-dev:i386 libfontconfig-dev:i386 libfreetype6-dev:i386`
-  * For everything else:
-
+  * For everything else: \
     `$ sudo apt install build-essential python libsdl2-dev libfontconfig-dev libfreetype6-dev`
 * Clone this repostory:
 `$ git clone --recursive https://github.com/FWGS/xash3d-fwgs`

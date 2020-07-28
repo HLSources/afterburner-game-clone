@@ -55,6 +55,8 @@ void CSpawnPointList::FindAllSpawnPoints()
 		handle = spawnPoint;
 		m_SpawnPoints.AddToTail(handle);
 	}
+
+	m_iNextSpawnPointIndex = 0;
 }
 
 void CSpawnPointList::MakeIndicesSequential()

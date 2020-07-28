@@ -13,8 +13,6 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-#ifndef XASH_DEDICATED
-
 #include "common.h"
 #include "client.h"
 #include "library.h"
@@ -254,7 +252,7 @@ static render_api_t gRenderAPI =
 	NULL, // GL_TexGen,
 	NULL, // GL_TextureTarget,
 	NULL, // GL_SetTexCoordArrayMode,
-	GL_GetProcAddress,
+	NULL, // GL_GetProcAddress,
 	NULL, // GL_UpdateTexSize,
 	NULL,
 	NULL,
@@ -311,6 +309,7 @@ static void R_FillRenderAPIFromRef( render_api_t *to, const ref_interface_t *fro
 	to->GL_DrawParticles         = from->GL_DrawParticles;
 	to->LightVec                 = from->LightVec;
 	to->StudioGetTexture         = from->StudioGetTexture;
+	to->GL_GetProcAddress        = from->R_GetProcAddress;
 }
 
 /*
@@ -345,5 +344,3 @@ qboolean R_InitRenderAPI( void )
 	// render interface is missed
 	return true;
 }
-
-#endif // XASH_DEDICATED

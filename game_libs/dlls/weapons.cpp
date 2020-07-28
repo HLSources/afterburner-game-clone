@@ -33,7 +33,7 @@
 #include "weaponregistry.h"
 #include "weaponinfo.h"
 #include "weaponatts_collection.h"
-#include "gameresources/GameResources.h"
+#include "resources/SoundResources.h"
 
 extern CGraph WorldGraph;
 extern int gEvilImpulse101;
@@ -399,23 +399,7 @@ void W_Precache( void )
 	PRECACHE_SOUND( "weapons/debris2.wav" );// explosion aftermaths
 	PRECACHE_SOUND( "weapons/debris3.wav" );// explosion aftermaths
 
-	PRECACHE_SOUND( "weapons/bullet_hit1.wav" );	// hit by bullet
-	PRECACHE_SOUND( "weapons/bullet_hit2.wav" );	// hit by bullet
-
-	PRECACHE_SOUND( "items/weapondrop1.wav" );// weapon falls to the ground
-
-	CSoundResources& soundRes = CGameResources::StaticInstance().SoundResources();
-
-	for ( uint32_t soundTypeIndex = 0; soundTypeIndex < CSoundResources::ST__Count; ++soundTypeIndex )
-	{
-		CSoundResources::SoundType soundType = static_cast<CSoundResources::SoundType>(soundTypeIndex);
-		size_t count = soundRes.SoundCount(soundType);
-
-		for ( uint32_t index = 0; index < count; ++index )
-		{
-			PRECACHE_SOUND(soundRes.SoundPath(soundType, index));
-		}
-	}
+	SoundResources::PrecacheAll();
 }
 
 TYPEDESCRIPTION	CBasePlayerItem::m_SaveData[] =
@@ -492,7 +476,8 @@ void CBasePlayerItem::FallThink( void )
 		if( !FNullEnt( pev->owner ) )
 		{
 			int pitch = 95 + RANDOM_LONG( 0, 29 );
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "items/weapondrop1.wav", 1, ATTN_NORM, 0, pitch );
+			const char* soundPath = SoundResources::ItemSounds.RandomResourcePath(ItemSoundId::WeaponDrop);
+			EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, soundPath, 1, ATTN_NORM, 0, pitch );
 		}
 
 		// lie flat
@@ -608,7 +593,7 @@ void CBasePlayerItem::DefaultTouch( CBaseEntity *pOther )
 	if( pOther->AddPlayerItem( this ) )
 	{
 		AttachToPlayer( pPlayer );
-		EMIT_SOUND( ENT( pPlayer->pev ), CHAN_ITEM, "items/gunpickup1.wav", 1, ATTN_NORM );
+		EMIT_SOUND( ENT( pPlayer->pev ), CHAN_ITEM, PickupSound(), 1, ATTN_NORM );
 	}
 
 	SUB_UseTargets( pOther, USE_TOGGLE, 0 ); // UNDONE: when should this happen?
@@ -889,7 +874,8 @@ BOOL CBasePlayerWeapon::AddPrimaryAmmo( int iCount, char *szName, int iMaxClip, 
 		{
 			// play the "got ammo" sound only if we gave some ammo to a player that already had this gun.
 			// if the player is just getting this gun for the first time, DefaultTouch will play the "picked up gun" sound for us.
-			EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM );
+			const char* soundPath = SoundResources::ItemSounds.RandomResourcePath(ItemSoundId::AmmoPickup);
+			EMIT_SOUND( ENT( pev ), CHAN_ITEM, soundPath, 1, ATTN_NORM );
 		}
 	}
 
@@ -907,9 +893,15 @@ BOOL CBasePlayerWeapon::AddSecondaryAmmo( int iCount, char *szName, int iMax )
 	if( iIdAmmo > 0 )
 	{
 		m_iSecondaryAmmoType = iIdAmmo;
-		EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM );
+		const char* soundPath = SoundResources::ItemSounds.RandomResourcePath(ItemSoundId::AmmoPickup);
+		EMIT_SOUND( ENT( pev ), CHAN_ITEM, soundPath, 1, ATTN_NORM );
 	}
 	return iIdAmmo > 0 ? TRUE : FALSE;
+}
+
+const char* CBasePlayerItem::PickupSound() const
+{
+	return SoundResources::ItemSounds.RandomResourcePath(ItemSoundId::WeaponPickup);
 }
 
 //=========================================================
@@ -1405,7 +1397,8 @@ void CWeaponBox::Touch( CBaseEntity *pOther )
 		}
 	}
 
-	EMIT_SOUND( pOther->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
+	const char* soundPath = SoundResources::ItemSounds.RandomResourcePath(ItemSoundId::WeaponPickup);
+	EMIT_SOUND( pOther->edict(), CHAN_ITEM, soundPath, 1, ATTN_NORM );
 	SetTouch( NULL );
 	UTIL_Remove(this);
 }

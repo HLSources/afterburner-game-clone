@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -28,13 +28,14 @@
 #include "skill.h"
 #include "items.h"
 #include "gamerules.h"
+#include "resources/SoundResources.h"
 
 extern int gmsgItemPickup;
 
 class CWorldItem : public CBaseEntity
 {
 public:
-	void KeyValue( KeyValueData *pkvd ); 
+	void KeyValue( KeyValueData *pkvd );
 	void Spawn( void );
 	int m_iType;
 };
@@ -56,7 +57,7 @@ void CWorldItem::Spawn( void )
 {
 	CBaseEntity *pEntity = NULL;
 
-	switch( m_iType ) 
+	switch( m_iType )
 	{
 	case 44: // ITEM_BATTERY:
 		pEntity = CBaseEntity::Create( "item_battery", pev->origin, pev->angles );
@@ -125,12 +126,12 @@ void CItem::ItemTouch( CBaseEntity *pOther )
 	{
 		SUB_UseTargets( pOther, USE_TOGGLE, 0 );
 		SetTouch( NULL );
-		
-		// player grabbed the item. 
+
+		// player grabbed the item.
 		g_pGameRules->PlayerGotItem( pPlayer, this );
 		if( g_pGameRules->ItemShouldRespawn( this ) == GR_ITEM_RESPAWN_YES )
 		{
-			Respawn(); 
+			Respawn();
 		}
 		else
 		{
@@ -151,7 +152,7 @@ CBaseEntity* CItem::Respawn( void )
 	UTIL_SetOrigin( pev, g_pGameRules->VecItemRespawnSpot( this ) );// blip to whereever you should respawn.
 
 	SetThink( &CItem::Materialize );
-	pev->nextthink = g_pGameRules->FlItemRespawnTime( this ); 
+	pev->nextthink = g_pGameRules->FlItemRespawnTime( this );
 	return this;
 }
 
@@ -174,7 +175,7 @@ void CItem::Materialize( void )
 class CItemSuit : public CItem
 {
 	void Spawn( void )
-	{ 
+	{
 		Precache();
 		SET_MODEL( ENT( pev ), "models/w_suit.mdl" );
 		CItem::Spawn();
@@ -203,7 +204,7 @@ LINK_ENTITY_TO_CLASS( item_suit, CItemSuit )
 class CItemBattery : public CItem
 {
 	void Spawn( void )
-	{ 
+	{
 		Precache();
 		SET_MODEL( ENT( pev ), "models/w_battery.mdl" );
 		CItem::Spawn();
@@ -211,7 +212,6 @@ class CItemBattery : public CItem
 	void Precache( void )
 	{
 		PRECACHE_MODEL( "models/w_battery.mdl" );
-		PRECACHE_SOUND( "items/gunpickup2.wav" );
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
@@ -229,7 +229,8 @@ class CItemBattery : public CItem
 			pPlayer->pev->armorvalue += gSkillData.batteryCapacity;
 			pPlayer->pev->armorvalue = Q_min( pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY );
 
-			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
+			const char* soundPath = SoundResources::ItemSounds.RandomResourcePath(ItemSoundId::WeaponPickup);
+			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, soundPath, 1, ATTN_NORM );
 
 			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
 				WRITE_STRING( STRING( pev->classname ) );
@@ -261,7 +262,7 @@ LINK_ENTITY_TO_CLASS( item_armor_plate, CItemBattery )
 class CItemAntidote : public CItem
 {
 	void Spawn( void )
-	{ 
+	{
 		Precache();
 		SET_MODEL( ENT( pev ), "models/w_antidote.mdl" );
 		CItem::Spawn();
@@ -284,7 +285,7 @@ LINK_ENTITY_TO_CLASS( item_antidote, CItemAntidote )
 class CItemSecurity : public CItem
 {
 	void Spawn( void )
-	{ 
+	{
 		Precache();
 		SET_MODEL( ENT( pev ), "models/w_security.mdl" );
 		CItem::Spawn();
@@ -305,7 +306,7 @@ LINK_ENTITY_TO_CLASS( item_security, CItemSecurity )
 class CItemLongJump : public CItem
 {
 	void Spawn( void )
-	{ 
+	{
 		Precache();
 		SET_MODEL( ENT( pev ), "models/w_longjump.mdl" );
 		CItem::Spawn();
@@ -332,7 +333,7 @@ class CItemLongJump : public CItem
 			MESSAGE_END();
 
 			EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_A1" );	// Play the longjump sound UNDONE: Kelly? correct sound?
-			return TRUE;		
+			return TRUE;
 		}
 		return FALSE;
 	}

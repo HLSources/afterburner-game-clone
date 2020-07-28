@@ -1,6 +1,20 @@
+#include <memory>
 #include "generichitscanweapon.h"
 #include "weaponatts_hitscanattack.h"
 #include "skill.h"
+#include "eventConstructor/eventConstructor.h"
+
+#ifndef CLIENT_DLL
+#include "weaponregistry.h"
+#include "weapondebugevents/weapondebugevent_hitscanfire.h"
+#endif
+
+CGenericHitscanWeapon::~CGenericHitscanWeapon()
+{
+#ifndef CLIENT_DLL
+	Debug_DeleteHitscanEvent();
+#endif
+}
 
 void CGenericHitscanWeapon::WeaponIdle()
 {
@@ -24,7 +38,10 @@ void CGenericHitscanWeapon::PrecacheAttackMode(const WeaponAtts::WABaseAttack& a
 
 	const WeaponAtts::WAHitscanAttack& hitscanAttack = static_cast<const WeaponAtts::WAHitscanAttack&>(attackMode);
 
-	PRECACHE_MODEL(hitscanAttack.ShellModelName);
+	if ( hitscanAttack.ShellModelName )
+	{
+		PRECACHE_MODEL(hitscanAttack.ShellModelName);
+	}
 }
 
 bool CGenericHitscanWeapon::InvokeWithAttackMode(const CGenericWeapon::WeaponAttackType type, const WeaponAtts::WABaseAttack* attackMode)
@@ -73,18 +90,18 @@ bool CGenericHitscanWeapon::InvokeWithAttackMode(const CGenericWeapon::WeaponAtt
 
 	if ( m_AttackModeEvents[hitscanAttack->Signature()->Index] )
 	{
-		PLAYBACK_EVENT_FULL(DefaultEventFlags(),
-							m_pPlayer->edict(),
-							m_AttackModeEvents[hitscanAttack->Signature()->Index],
-							0.0,
-							(float *)&g_vecZero,
-							(float *)&g_vecZero,
-							vecDir.x,
-							vecDir.y,
-							m_pPlayer->random_seed,
-							0,
-							m_iClip == 0 ? 1 : 0,
-							0);
+		using namespace EventConstructor;
+		CEventConstructor event;
+
+		event
+			<< Flags(DefaultEventFlags())
+			<< Invoker(m_pPlayer->edict())
+			<< EventIndex(m_AttackModeEvents[hitscanAttack->Signature()->Index])
+			<< IntParam1(m_pPlayer->random_seed)
+			<< BoolParam1(m_iClip == 0)
+			;
+
+		event.Send();
 	}
 
 	DelayFiring(1.0f / hitscanAttack->AttackRate);
@@ -121,9 +138,9 @@ Vector CGenericHitscanWeapon::FireBulletsPlayer(const WeaponAtts::WAHitscanAttac
 	gMultiDamage.type = DMG_BULLET | DMG_NEVERGIB;
 
 	const uint32_t numShots = hitscanAttack.BulletsPerShot;
-	for( uint32_t shot = 1; shot <= numShots; shot++ )
+	for( uint32_t shot = 0; shot < numShots; shot++ )
 	{
-		float damagePerShot = 1.0f;
+		float damagePerShot = 0.0f;
 		const WeaponAtts::WASkillRecord::SkillDataEntryPtr dmgPtr = hitscanAttack.BaseDamagePerShot;
 		if ( dmgPtr )
 		{
@@ -135,10 +152,11 @@ Vector CGenericHitscanWeapon::FireBulletsPlayer(const WeaponAtts::WAHitscanAttac
 		Vector vecDir = vecDirShooting +
 						(x * hitscanAttack.SpreadX * vecRight) +
 						(y * hitscanAttack.SpreadY * vecUp);
-		Vector vecEnd;
 
-		vecEnd = vecSrc + vecDir * DEFAULT_BULLET_TRACE_DISTANCE;
+		Vector vecEnd = vecSrc + (vecDir * DEFAULT_BULLET_TRACE_DISTANCE);
 		UTIL_TraceLine(vecSrc, vecEnd, dont_ignore_monsters, ENT(pev), &tr);
+
+		Debug_HitscanBulletFired(vecSrc, tr);
 
 		// do damage, paint decals
 		if( tr.flFraction != 1.0 )
@@ -150,26 +168,71 @@ Vector CGenericHitscanWeapon::FireBulletsPlayer(const WeaponAtts::WAHitscanAttac
 		}
 
 		// make bullet trails
+		// TODO: This should be clientside in the event playback.
 		UTIL_BubbleTrail(vecSrc, tr.vecEndPos, (int)((DEFAULT_BULLET_TRACE_DISTANCE * tr.flFraction) / 64.0));
 	}
 
+	Debug_FinaliseHitscanEvent();
 	ApplyMultiDamage(pev, pevAttacker);
 
 	return Vector(x * hitscanAttack.SpreadX, y * hitscanAttack.SpreadY, 0.0);
 #endif
 }
 
+////////////////////////////////////////////
+// SERVER
+////////////////////////////////////////////
+#ifndef CLIENT_DLL
+void CGenericHitscanWeapon::Debug_HitscanBulletFired(const Vector& start, const TraceResult& tr)
+{
+	CWeaponDebugEventSource& evSource = CWeaponRegistry::StaticInstance().DebugEventSource();
+
+	if ( !evSource.EventHasSubscribers(CWeaponDebugEvent_Base::EventType::Event_HitscanFire) )
+	{
+		return;
+	}
+
+	if ( !m_pHitscanFireEvent )
+	{
+		m_pHitscanFireEvent = new CWeaponDebugEvent_HitscanFire(*this);
+	}
+
+	m_pHitscanFireEvent->AddTrace(start, tr);
+}
+
+void CGenericHitscanWeapon::Debug_FinaliseHitscanEvent()
+{
+	if ( !m_pHitscanFireEvent )
+	{
+		return;
+	}
+
+	// The hitscan fire event will only have been created if we had event subscribers in the first place,
+	// so no need to check this.
+	CWeaponDebugEventSource& evSource = CWeaponRegistry::StaticInstance().DebugEventSource();
+	evSource.FireEvent(m_pHitscanFireEvent);
+
+	Debug_DeleteHitscanEvent();
+}
+
+void CGenericHitscanWeapon::Debug_DeleteHitscanEvent()
+{
+	delete m_pHitscanFireEvent;
+	m_pHitscanFireEvent = nullptr;
+}
+#endif
+
+////////////////////////////////////////////
+// CLIENT
+////////////////////////////////////////////
 #ifdef CLIENT_DLL
 Vector CGenericHitscanWeapon::FireBulletsPlayer_Client(const WeaponAtts::WAHitscanAttack& hitscanAttack)
 {
-	float x = 0, y = 0;
+	float x = 0.0f;
+	float y = 0.0f;
 
-	const uint32_t numShots = hitscanAttack.BulletsPerShot;
-	for( uint32_t shot = 1; shot <= numShots; shot++ )
-	{
-		GetSharedCircularGaussianSpread(shot, m_pPlayer->random_seed, x, y);
-	}
-
+	// Just return the last vector we would have generated.
+	GetSharedCircularGaussianSpread(hitscanAttack.BulletsPerShot - 1, m_pPlayer->random_seed, x, y);
 	return Vector(x * hitscanAttack.SpreadX, y * hitscanAttack.SpreadY, 0.0);
 }
 #endif

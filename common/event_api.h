@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -16,7 +16,10 @@
 #ifndef EVENT_API_H
 #define EVENT_API_H
 
-#define EVENT_API_VERSION	1
+#define EVENT_API_VERSION	2
+
+struct event_fire_args_s;
+typedef struct texture_s texture_t;
 
 typedef struct event_api_s
 {
@@ -38,15 +41,15 @@ typedef struct event_api_s
 	void	( *EV_PlayerTrace )( float *start, float *end, int traceFlags, int ignore_pe, struct pmtrace_s *tr );
 	void	( *EV_WeaponAnimation )( int sequence, int body );
 	unsigned short ( *EV_PrecacheEvent )( int type, const char* psz );
-	void	( *EV_PlaybackEvent )( int flags, const struct edict_s *pInvoker, unsigned short eventindex, float delay, float *origin, float *angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2 );
-	const char *( *EV_TraceTexture )( int ground, float *vstart, float *vend );
+	void	( *EV_PlaybackEvent )( const struct event_fire_args_s* inArgs );
+	texture_t *( *EV_TraceTexture )( int ground, const float *vstart, const float *vend );
 	void	( *EV_StopAllSounds )( int entnum, int entchannel );
 	void	( *EV_KillEvents )( int entnum, const char *eventname );
 
 	// Xash3D extension
 	void	( *EV_PlayerTraceExt )( float *start, float *end, int traceFlags, int (*pfnIgnore)( struct physent_s *pe ), struct pmtrace_s *tr );
 	const char *(*EV_SoundForIndex)( int index );
-	struct msurface_s *( *EV_TraceSurface )( int ground, float *vstart, float *vend );
+	struct msurface_s *( *EV_TraceSurface )( int ground, const float *vstart, const float *vend );
 	struct movevars_s *( *EV_GetMovevars )( void );
 	struct pmtrace_s *( *EV_VisTraceLine )( float *start, float *end, int flags );
 	struct physent_s *( *EV_GetVisent )( int idx );

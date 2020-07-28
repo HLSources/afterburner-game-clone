@@ -32,12 +32,12 @@ static constexpr float FRINESI_FIRE_RATE_AUTO = 4.0f;
 
 static constexpr uint8_t FRINESI_PELLETS_PER_SHOT = 6;
 
-static const CAmmoDef Ammo_Frinesi =
+static constexpr CAmmoDef Ammo_Frinesi =
 {
 	"ammo_frinesi",	// ClassName
 	"ammodef_frinesi",	// AmmoName
-	72,	// MaxCarry
-	125	// AmmoBoxGive
+	125,	// MaxCarry
+	72	// AmmoBoxGive
 };
 
 static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACollection& obj)
@@ -74,6 +74,8 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	pm.WorldModelName = "models/weapon_frinesi/w_frinesi.mdl";
 	pm.PlayerAnimExtension = "shotgun";
 
+	obj.Prediction.SetUpPrediction<CWeaponFrinesi>();
+
 	obj.SkillRecords.AddToTail(WASkillRecord("sk_plr_dmg_frinesi_auto", &skilldata_t::plrDmgFrinesiAuto));
 	obj.SkillRecords.AddToTail(WASkillRecord("sk_plr_dmg_frinesi_pump", &skilldata_t::plrDmgFrinesiPump));
 
@@ -99,6 +101,7 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	priAttack->MuzzleFlashBrightness = NORMAL_GUN_FLASH;
 	priAttack->ViewPunchY = -5.0f;
 	priAttack->ShellModelName = "models/shotgunshell.mdl";
+	priAttack->ShellModelType = ShellType::Shotgun;
 	priAttack->SpecialReload = true;
 
 	priAttack->ViewModelAnimList_Attack << FRINESI_SHOOT;

@@ -25,6 +25,8 @@
 #include "cbase.h"
 #include "trains.h"
 #include "saverestore.h"
+#include "event_args.h"
+#include "eventConstructor/eventConstructor.h"
 
 static void PlatSpawnInsideTrigger(entvars_t* pevPlatform);
 
@@ -1058,8 +1060,19 @@ void CFuncTrackTrain::StopSound( void )
 
 		us_encode = us_sound;
 
-		PLAYBACK_EVENT_FULL( FEV_RELIABLE | FEV_UPDATE, edict(), m_usAdjustPitch, 0.0,
-			(float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, us_encode, 0, 1, 0 );
+		using namespace EventConstructor;
+		CEventConstructor event;
+
+		event
+			<< Flags(FEV_RELIABLE | FEV_UPDATE)
+			<< Invoker(edict())
+			<< EventIndex(m_usAdjustPitch)
+			<< IntParam1(us_encode)
+			<< BoolParam1(true)
+			;
+
+		event.Send();
+
 		/*
 		STOP_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noise ) );
 		*/
@@ -1106,8 +1119,18 @@ void CFuncTrackTrain::UpdateSound( void )
 
 		us_encode = us_sound | us_pitch | us_volume;
 
-		PLAYBACK_EVENT_FULL( FEV_RELIABLE | FEV_UPDATE, edict(), m_usAdjustPitch, 0.0,
-			(float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, us_encode, 0, 0, 0 );
+		event_fire_args_t args;
+		memset(&args, 0, sizeof(args));
+
+		args.flags = FEV_RELIABLE | FEV_UPDATE;
+		args.invoker = edict();
+		args.eventIndex = m_usAdjustPitch;
+		args.vec3Origin = g_vecZero;
+		args.vec3Angles = g_vecZero;
+		args.iparam1 = us_encode;
+		args.vec3param1 = g_vecZero;
+
+		PLAYBACK_EVENT_FULL(&args);
 	}
 }
 

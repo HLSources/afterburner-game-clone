@@ -111,16 +111,18 @@ typedef enum
 
 typedef enum
 {
-	CONTEXT_TYPE_GL = 0,
+	CONTEXT_TYPE_GL = 0, // compatibility profile
 	CONTEXT_TYPE_GLES_1_X,
-	CONTEXT_TYPE_GLES_2_X
+	CONTEXT_TYPE_GLES_2_X,
+	CONTEXT_TYPE_GL_CORE
 } gl_context_type_t;
 
 typedef enum
 {
-	GLES_WRAPPER_NONE = 0,		// native GLES
+	GLES_WRAPPER_NONE = 0,		// native GL
 	GLES_WRAPPER_NANOGL,		// used on GLES platforms
 	GLES_WRAPPER_WES,		// used on GLES platforms
+	GLES_WRAPPER_GL4ES,		// used on GLES platforms
 } gles_wrapper_t;
 
 // 30 bytes here
@@ -130,7 +132,7 @@ typedef struct modelstate_s
 	short		frame;		// 10 bits multiple by 4, should be enough
 	byte		blending[2];
 	byte		controller[4];
-	byte		poseparam[16];		
+	byte		poseparam[16];
 	byte		body;
 	byte		skin;
 	short		scale;		// model scale (multiplied by 16)
@@ -161,7 +163,7 @@ typedef struct render_api_s
 	int		(*RenderGetParm)( int parm, int arg );	// generic
 	void		(*GetDetailScaleForTexture)( int texture, float *xScale, float *yScale );
 	void		(*GetExtraParmsForTexture)( int texture, byte *red, byte *green, byte *blue, byte *alpha );
-	lightstyle_t*	(*GetLightStyle)( int number ); 
+	lightstyle_t*	(*GetLightStyle)( int number );
 	dlight_t*		(*GetDynamicLight)( int number );
 	dlight_t*		(*GetEntityLight)( int number );
 	byte		(*LightToTexGamma)( byte color );	// software gamma support
@@ -190,8 +192,8 @@ typedef struct render_api_s
 
 	// AVIkit support
 	void		*(*AVI_LoadVideo)( const char *filename, qboolean load_audio );
-	int		(*AVI_GetVideoInfo)( void *Avi, long *xres, long *yres, float *duration );
-	long		(*AVI_GetVideoFrameNumber)( void *Avi, float time );
+	int		(*AVI_GetVideoInfo)( void *Avi, int *xres, int *yres, float *duration ); // a1ba: changed longs to int
+	int		(*AVI_GetVideoFrameNumber)( void *Avi, float time );
 	byte		*(*AVI_GetVideoFrame)( void *Avi, long frame );
 	void		(*AVI_UploadRawFrame)( int texture, int cols, int rows, int width, int height, const byte *data );
 	void		(*AVI_FreeVideo)( void *Avi );

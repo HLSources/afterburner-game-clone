@@ -14,7 +14,8 @@ GNU General Public License for more details.
 */
 
 #include "imagelib.h"
-#include "mathlib.h"
+#include "xash3d_mathlib.h"
+#include "img_dds.h"
 
 qboolean Image_CheckDXT3Alpha( dds_t *hdr, byte *fin )
 {
@@ -106,11 +107,13 @@ void Image_DXTGetPixelFormat( dds_t *hdr )
 			break;
 		case TYPE_DXT2:
 			image.flags &= ~IMAGE_HAS_ALPHA; // alpha is already premultiplied by color
+			// intentionally fallthrough
 		case TYPE_DXT3:
 			image.type = PF_DXT3;
 			break;
 		case TYPE_DXT4:
 			image.flags &= ~IMAGE_HAS_ALPHA; // alpha is already premultiplied by color
+			// intentionally fallthrough
 		case TYPE_DXT5:
 			image.type = PF_DXT5;
 			break;

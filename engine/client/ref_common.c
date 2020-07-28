@@ -30,9 +30,12 @@ GL_FreeImage
 Frees image by name
 ================
 */
-void GL_FreeImage( const char *name )
+void GAME_EXPORT GL_FreeImage( const char *name )
 {
 	int	texnum;
+
+	if( !ref.initialized )
+		return;
 
 	if(( texnum = ref.dllFuncs.GL_FindTexture( name )) != 0 )
 		 ref.dllFuncs.GL_FreeTexture( texnum );
@@ -328,6 +331,7 @@ static ref_api_t gEngfuncs =
 
 	FS_LoadFile,
 	COM_ParseFile,
+	COM_ParseFileSafe,
 	FS_FileExists,
 	FS_AllowDirectPaths,
 
@@ -563,7 +567,7 @@ static void SetWidthAndHeightFromCommandLine( void )
 
 static void SetFullscreenModeFromCommandLine( void )
 {
-#ifndef __ANDROID__
+#if !XASH_MOBILE_PLATFORM
 	if ( Sys_CheckParm("-fullscreen") )
 	{
 		Cvar_Set( "fullscreen", "1" );
@@ -632,7 +636,7 @@ qboolean R_Init( void )
 	string refopt;
 
 	gl_vsync = Cvar_Get( "gl_vsync", "0", FCVAR_ARCHIVE,  "enable vertical syncronization" );
-	gl_showtextures = Cvar_Get( "gl_showtextures", "0", FCVAR_CHEAT, "show all uploaded textures" );
+	gl_showtextures = Cvar_Get( "r_showtextures", "0", FCVAR_CHEAT, "show all uploaded textures" );
 	r_adjust_fov = Cvar_Get( "r_adjust_fov", "1", FCVAR_ARCHIVE, "making FOV adjustment for wide-screens" );
 	r_decals = Cvar_Get( "r_decals", "4096", FCVAR_ARCHIVE, "sets the maximum number of decals" );
 	gl_wgl_msaa_samples = Cvar_Get( "gl_wgl_msaa_samples", "0", FCVAR_GLCONFIG, "samples number for multisample anti-aliasing" );

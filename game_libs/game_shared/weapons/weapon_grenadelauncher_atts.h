@@ -1,3 +1,5 @@
+#pragma once
+
 #include "weapon_grenadelauncher.h"
 #include "weaponatts_collection.h"
 #include "weapon_pref_weights.h"
@@ -30,7 +32,7 @@ DEV_CVAR(grenadelauncher_launch_speed, "1000");
 DEV_CVAR(grenadelauncher_launch_pitch_adjust, "5");
 #undef DEV_CVAR
 
-static const CAmmoDef Ammo_GrenadeLauncher =
+static constexpr CAmmoDef Ammo_GrenadeLauncher =
 {
 	"ammo_grenadelauncher",	// ClassName
 	"ammodef_grenadelauncher",	// AmmoName
@@ -62,6 +64,8 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	pm.PlayerModelName = "models/weapon_grenadelauncher/p_grenadelauncher.mdl";
 	pm.WorldModelName = "models/weapon_grenadelauncher/w_grenadelauncher.mdl";
 	pm.PlayerAnimExtension = "gauss";
+
+	obj.Prediction.SetUpPrediction<CWeaponGrenadeLauncher>();
 
 	obj.SkillRecords.AddToTail(WASkillRecord("sk_plr_dmg_grenadelauncher", &skilldata_t::plrDmgGrenadeLauncher));
 	obj.SkillRecords.AddToTail(WASkillRecord("sk_plr_selfdmg_mult_grenadelauncher", &skilldata_t::plrSelfDmgMultGrenadeLauncher));

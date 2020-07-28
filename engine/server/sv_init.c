@@ -115,7 +115,7 @@ int SV_ModelIndex( const char *filename )
 	Q_strncpy( sv.model_precache[i], name, sizeof( sv.model_precache[i] ));
 
 	if( sv.state != ss_loading )
-	{	
+	{
 		// send the update to everyone
 		SV_SendSingleResource( name, t_model, i, sv.model_precache_flags[i] );
 		Con_Printf( S_WARN "late precache of %s\n", name );
@@ -131,7 +131,7 @@ SV_SoundIndex
 register unique sound for client
 ================
 */
-int SV_SoundIndex( const char *filename )
+int GAME_EXPORT SV_SoundIndex( const char *filename )
 {
 	char	name[MAX_QPATH];
 	int	i;
@@ -166,7 +166,7 @@ int SV_SoundIndex( const char *filename )
 	Q_strncpy( sv.sound_precache[i], name, sizeof( sv.sound_precache[i] ));
 
 	if( sv.state != ss_loading )
-	{	
+	{
 		// send the update to everyone
 		SV_SendSingleResource( name, t_sound, i, 0 );
 		Con_Printf( S_WARN "late precache of %s\n", name );
@@ -224,7 +224,7 @@ SV_GenericIndex
 register generic resourse for a server and client
 ================
 */
-int SV_GenericIndex( const char *filename )
+int GAME_EXPORT SV_GenericIndex( const char *filename )
 {
 	char	name[MAX_QPATH];
 	int	i;
@@ -372,9 +372,9 @@ void SV_CreateResourceList( void )
 	}
 
 	// just send names
-	for( i = 0; i < MAX_DECALS && host.draw_decals[i][0]; i++ )
+	for( i = 0; i < MAX_DECALS && host.draw_decals[i].path[0]; i++ )
 	{
-		SV_AddResource( t_decal, host.draw_decals[i], 0, 0, i );
+		SV_AddResource( t_decal, host.draw_decals[i].path, 0, 0, i );
 	}
 
 	for( i = 1; i < MAX_EVENTS; i++ )
@@ -494,7 +494,7 @@ void SV_FreeOldEntities( void )
 	edict_t	*ent;
 	int	i;
 
-	// at end of frame kill all entities which supposed to it 
+	// at end of frame kill all entities which supposed to it
 	for( i = svs.maxclients + 1; i < svgame.numEntities; i++ )
 	{
 		ent = EDICT_NUM( i );
@@ -885,7 +885,7 @@ qboolean SV_SpawnServer( const char *mapname, const char *startspot, qboolean ba
 	memset( &sv, 0, sizeof( sv ));	// wipe the entire per-level structure
 	sv.time = svgame.globals->time = 1.0f;	// server spawn time it's always 1.0 second
 	sv.background = background;
-	
+
 	// initialize buffers
 	MSG_Init( &sv.signon, "Signon", sv.signon_buf, sizeof( sv.signon_buf ));
 	MSG_Init( &sv.multicast, "Multicast", sv.multicast_buf, sizeof( sv.multicast_buf ));

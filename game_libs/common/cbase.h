@@ -122,13 +122,13 @@ class CSquadMonster;
 class EHANDLE
 {
 private:
-	edict_t *m_pent;
-	int m_serialnumber;
+	edict_t* m_pent = nullptr;
+	int m_serialnumber = 0;
 public:
-	edict_t *Get( void ) const;
-	edict_t *Set( edict_t *pent );
+	edict_t* Get( void ) const;
+	edict_t* Set( edict_t *pent );
 
-	operator int () const;
+	operator bool () const;
 
 	operator CBaseEntity*() const;
 
@@ -136,7 +136,13 @@ public:
 	CBaseEntity* operator ->() const;
 
 	template<typename T>
-	T* EntityCast() const
+	T* StaticCast() const
+	{
+		return static_cast<T*>(operator CBaseEntity*());
+	}
+
+	template<typename T>
+	T* DynamicCast() const
 	{
 		return dynamic_cast<T*>(operator CBaseEntity*());
 	}
@@ -175,12 +181,12 @@ public:
 
 	static TYPEDESCRIPTION m_SaveData[];
 
-	virtual void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
+	virtual void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, const TraceResult *ptr, int bitsDamageType);
 	virtual int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 	virtual int TakeHealth( float flHealth, int bitsDamageType );
 	virtual void Killed( entvars_t *pevAttacker, int iGib );
 	virtual int BloodColor( void ) { return DONT_BLEED; }
-	virtual void TraceBleed( float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
+	virtual void TraceBleed( float flDamage, Vector vecDir, const TraceResult *ptr, int bitsDamageType );
 	virtual BOOL IsTriggered( CBaseEntity *pActivator ) {return TRUE; }
 	virtual CBaseMonster *MyMonsterPointer( void ) { return NULL; }
 	virtual CSquadMonster *MySquadMonsterPointer( void ) { return NULL; }
@@ -681,25 +687,30 @@ public:
 // It will allocate the class and entity if necessary
 //
 template <class T>
-T* GetClassPtr(entvars_t *pev = nullptr)
+T* GetClassPtr(entvars_t* pev = nullptr)
 {
-	// allocate entity if necessary
+	// Allocate entity if necessary.
 	if( !pev )
 	{
 		pev = VARS(CREATE_ENTITY());
 	}
 
-	// get the private data
-	T* classPtr = (T*)GET_PRIVATE(ENT( pev ));
+	// Cast to CBaseEntity* first, because this should always be allowed
+	// (we never create any entities that do not derive from CBaseEntity).
+	CBaseEntity* classPtr = reinterpret_cast<CBaseEntity*>(GET_PRIVATE(ENT(pev)));
 
 	if ( !classPtr )
 	{
-		// allocate private data
+		// Allocate private data for the target class.
 		classPtr = new(pev) T;
 		classPtr->pev = pev;
+		return static_cast<T*>(classPtr);
 	}
-
-	return classPtr;
+	else
+	{
+		// Dynamic cast, to check that the entity is actually the class we want.
+		return dynamic_cast<T*>(classPtr);
+	}
 }
 
 template<typename T>

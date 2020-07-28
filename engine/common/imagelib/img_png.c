@@ -16,9 +16,13 @@ GNU General Public License for more details.
 #define MINIZ_HEADER_FILE_ONLY
 #include "miniz.h"
 #include "imagelib.h"
-#include "mathlib.h"
-#ifndef _WIN32
-#include <netinet/in.h>
+#include "xash3d_mathlib.h"
+#include "img_png.h"
+
+#if defined(XASH_NO_NETWORK)
+	#include "platform/stub/net_stub.h"
+#elif !XASH_WIN32
+	#include <netinet/in.h>
 #endif
 
 static const char png_sign[] = {0x89, 'P', 'N', 'G', '\r', '\n', 0x1a, '\n'};
@@ -37,7 +41,7 @@ qboolean Image_LoadPNG( const char *name, const byte *buffer, fs_offset_t filesi
 	int		ret;
 	short		p, a, b, c, pa, pb, pc;
 	byte		*buf_p, *pixbuf, *raw, *prior, *idat_buf = NULL, *uncompressed_buffer = NULL, *rowend;
-	uint	 	chunk_len, crc32, crc32_check, oldsize = 0, newsize, rowsize;
+	uint	 	chunk_len, crc32, crc32_check, oldsize = 0, newsize = 0, rowsize;
 	uint	 	uncompressed_size, pixel_size, i, y, filter_type, chunk_sign;
 	qboolean 	has_iend_chunk = false;
 	z_stream 	stream = {0};
@@ -176,7 +180,7 @@ qboolean Image_LoadPNG( const char *name, const byte *buffer, fs_offset_t filesi
 		buf_p += chunk_len;
 
 		// get real chunk CRC
-		memcpy( &crc32, buf_p, sizeof( crc32 ) );		
+		memcpy( &crc32, buf_p, sizeof( crc32 ) );
 
 		// check chunk CRC
 		if( ntohl( crc32 ) != crc32_check )
@@ -201,6 +205,7 @@ qboolean Image_LoadPNG( const char *name, const byte *buffer, fs_offset_t filesi
 	{
 		Con_DPrintf( S_ERROR "Image_LoadPNG: IEND chunk has wrong size (%s)\n", name );
 		Mem_Free( idat_buf );
+		return false;
 	}
 
 	if( oldsize == 0 )
@@ -217,13 +222,21 @@ qboolean Image_LoadPNG( const char *name, const byte *buffer, fs_offset_t filesi
 	case PNG_CT_RGBA:
 		pixel_size = 4;
 		break;
+	default:
+		pixel_size = 0; // make compiler happy
+		ASSERT( false );
+		break;
 	}
 
 	image.type = PF_RGBA_32; // always exctracted to 32-bit buffer
 	image.width = png_hdr.ihdr_chunk.width;
 	image.height = png_hdr.ihdr_chunk.height;
 	image.size = image.height * image.width * 4;
-	image.flags |= IMAGE_HAS_ALPHA | IMAGE_HAS_COLOR;
+	image.flags |= IMAGE_HAS_COLOR;
+
+	if( png_hdr.ihdr_chunk.colortype == PNG_CT_RGBA )
+		image.flags |= IMAGE_HAS_ALPHA;
+
 	image.depth = 1;
 
 	rowsize = pixel_size * image.width;
@@ -295,7 +308,7 @@ qboolean Image_LoadPNG( const char *name, const byte *buffer, fs_offset_t filesi
 		Con_DPrintf( S_ERROR "Image_LoadPNG: Found unknown filter type (%s)\n", name );
 		Mem_Free( uncompressed_buffer );
 		Mem_Free( image.rgba );
-		return false; 
+		return false;
 	}
 
 	for( y = 1; y < image.height; y++ )
@@ -407,9 +420,11 @@ qboolean Image_SavePNG( const char *name, rgbdata_t *pix )
 	if( FS_FileExists( name, false ) && !Image_CheckFlag( IL_ALLOW_OVERWRITE ))
 		return false; // already existed
 
+	// bogus parameter check
 	if( !pix->buffer )
 		return false;
 
+	// get image description
 	switch( pix->type )
 	{
 	case PF_RGB_24:
@@ -552,7 +567,7 @@ qboolean Image_SavePNG( const char *name, rgbdata_t *pix )
 	png_ftr.idat_crc32 = htonl( crc32 );
 
 	// write IEND chunk length
-	png_ftr.iend_len = 0;	
+	png_ftr.iend_len = 0;
 
 	// write IEND chunk signature
 	memcpy( png_ftr.iend_sign, iend_sign, sizeof( iend_sign ) );

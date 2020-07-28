@@ -45,7 +45,7 @@ XASH SPECIFIC			- sort of hack that works only in Xash3D not in GoldSrc
 #include <stdlib.h> // rand, adbs
 #include <stdarg.h> // va
 
-#ifndef _WIN32
+#if !XASH_WIN32
 #include <stddef.h> // size_t
 #else
 #include <sys/types.h> // off_t
@@ -60,7 +60,7 @@ XASH SPECIFIC			- sort of hack that works only in Xash3D not in GoldSrc
 	#error "Please select timer backend"
 #endif
 
-#ifndef XASH_DEDICATED
+#if !XASH_DEDICATED
 	#if XASH_VIDEO == VIDEO_NULL
 		#error "Please select video backend"
 	#endif
@@ -119,7 +119,8 @@ typedef enum
 #include "con_nprint.h"
 #include "crclib.h"
 
-#define XASH_VERSION	"0.99"		// engine current version
+#define XASH_VERSION        "0.20" // engine current version
+#define XASH_COMPAT_VERSION "0.99" // version we are based on
 
 // PERFORMANCE INFO
 #define MIN_FPS         20.0f		// host minimum fps value for maxfps.
@@ -380,6 +381,12 @@ typedef struct
 	float		scale;		// curstate.scale
 } tentlist_t;
 
+typedef struct decalentry_s
+{
+	char name[32];
+	char path[MAX_QPATH];
+} decalentry_t;
+
 typedef struct host_parm_s
 {
 	HINSTANCE			hInst;
@@ -408,7 +415,7 @@ typedef struct host_parm_s
 	uint		framecount;	// global framecount
 
 	// list of unique decal indexes
-	char		draw_decals[MAX_DECALS][MAX_QPATH];
+	decalentry_t draw_decals[MAX_DECALS];
 
 	vec3_t		player_mins[MAX_MAP_HULLS];	// 4 hulls allowed
 	vec3_t		player_maxs[MAX_MAP_HULLS];	// 4 hulls allowed
@@ -441,8 +448,8 @@ typedef struct host_parm_s
 	qboolean		movevars_changed;
 	qboolean		renderinfo_changed;
 
-	char		rootdir[256];	// member root directory
-	char		rodir[256];		// readonly root
+	char		rootdir[MAX_OSPATH];	// member root directory
+	char		rodir[MAX_OSPATH];		// readonly root
 	char		gamefolder[MAX_QPATH];	// it's a default gamefolder
 	byte		*imagepool;	// imagelib mempool
 	byte		*soundpool;	// soundlib mempool
@@ -665,6 +672,7 @@ uint Sound_GetApproxWavePlayLen( const char *filepath );
 // build.c
 //
 int Q_buildnum( void );
+int Q_buildnum_compat( void );
 const char *Q_buildos( void );
 const char *Q_buildarch( void );
 const char *Q_buildcommit( void );
@@ -673,8 +681,11 @@ const char *Q_buildcommit( void );
 //
 // host.c
 //
+typedef void( *pfnChangeGame )( const char *progname );
+
 qboolean Host_IsQuakeCompatible( void );
 void EXPORT Host_Shutdown( void );
+int EXPORT Host_Main( int argc, char **argv, const char *progname, int bChangeGame, pfnChangeGame func );
 int Host_CompareFileTime( int ft1, int ft2 );
 void Host_NewInstance( const char *name, const char *finalmsg );
 void Host_EndGame( qboolean abort, const char *message, ... ) _format( 2 );
@@ -846,7 +857,8 @@ void CL_LegacyUpdateInfo( void );
 void CL_CharEvent( int key );
 qboolean CL_DisableVisibility( void );
 int CL_PointContents( const vec3_t point );
-char *COM_ParseFile( char *data, char *token );
+char* COM_ParseFile( char *data, char *token );
+char* COM_ParseFileSafe( char* data, char* token, size_t tokenLength );
 byte *COM_LoadFile( const char *filename, int usehunk, int *pLength );
 int CL_GetDemoComment( const char *demoname, char *comment );
 void COM_AddAppDirectoryToSearchPath( const char *pszBaseDir, const char *appName );

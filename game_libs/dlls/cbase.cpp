@@ -26,7 +26,6 @@ void EntvarsKeyvalue( entvars_t *pev, KeyValueData *pkvd );
 
 extern "C" void PM_Move ( struct playermove_s *ppmove, int server );
 extern "C" void PM_Init ( struct playermove_s *ppmove  );
-extern "C" char PM_FindTextureType( const char *name );
 
 extern Vector VecBModelOrigin( entvars_t* pevBModel );
 extern DLL_GLOBAL Vector g_vecAttackDir;
@@ -79,7 +78,6 @@ static DLL_FUNCTIONS gFunctionTable =
 
 	PM_Move,					//pfnPM_Move
 	PM_Init,					//pfnPM_Init				Server version of player movement initialization
-	PM_FindTextureType,			//pfnPM_FindTextureType
 
 	SetupVisibility,			//pfnSetupVisibility        Set up PVS and PAS for networking for this client
 	UpdateClientData,			//pfnUpdateClientData       Set up data sent only to specific client
@@ -469,24 +467,27 @@ CBaseEntity *EHANDLE::operator = ( CBaseEntity *pEntity )
 	{
 		m_pent = ENT( pEntity->pev );
 		if( m_pent )
+		{
 			m_serialnumber = m_pent->serialnumber;
+		}
 	}
 	else
 	{
 		m_pent = NULL;
 		m_serialnumber = 0;
 	}
+
 	return pEntity;
 }
 
-EHANDLE::operator int () const
+EHANDLE::operator bool () const
 {
-	return Get() != NULL;
+	return Get() != nullptr;
 }
 
 CBaseEntity* EHANDLE::operator -> () const
 {
-	return (CBaseEntity *)GET_PRIVATE( Get() );
+	return operator CBaseEntity*();
 }
 
 // give health

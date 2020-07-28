@@ -1278,7 +1278,7 @@ BOOL CBaseEntity::FVisible( const Vector &vecOrigin )
 TraceAttack
 ================
 */
-void CBaseEntity::TraceAttack(entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType)
+void CBaseEntity::TraceAttack(entvars_t *pevAttacker, float flDamage, Vector vecDir, const TraceResult *ptr, int bitsDamageType)
 {
 	Vector vecOrigin = ptr->vecEndPos - vecDir * 4;
 
@@ -1300,7 +1300,7 @@ void CBaseEntity::TraceAttack(entvars_t *pevAttacker, float flDamage, Vector vec
 //=========================================================
 // TraceAttack
 //=========================================================
-void CBaseMonster::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType )
+void CBaseMonster::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, const TraceResult *ptr, int bitsDamageType )
 {
 	Vector vecOrigin = ptr->vecEndPos - vecDir * 4;
 
@@ -1323,7 +1323,7 @@ void CBaseMonster::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector v
 //=========================================================
 // TraceAttack
 //=========================================================
-void CBaseMonster::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType )
+void CBaseMonster::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, const TraceResult *ptr, int bitsDamageType )
 {
 	if( pev->takedamage )
 	{
@@ -1576,7 +1576,7 @@ Vector CBaseEntity::FireBulletsPlayer( ULONG cShots, Vector vecSrc, Vector vecDi
 	return Vector( x * vecSpread.x, y * vecSpread.y, 0.0 );
 }
 
-void CBaseEntity::TraceBleed( float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType )
+void CBaseEntity::TraceBleed( float flDamage, Vector vecDir, const TraceResult *ptr, int bitsDamageType )
 {
 	if( BloodColor() == DONT_BLEED )
 		return;

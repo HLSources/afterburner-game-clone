@@ -33,7 +33,6 @@ class CBasePlayerAmmo;
 // This file doesn't currently pull in any headers, so forward-declaring this to avoid
 // adding more dependencies.
 class CBotGameRulesInterface;
-class CSpawnPointManager;
 
 // weapon respawning return codes
 enum
@@ -168,7 +167,6 @@ public:
 	virtual const char *SetDefaultPlayerTeam( CBasePlayer *pPlayer ) { return ""; }
 
 	// Sounds
-	virtual BOOL PlayTextureSounds( void ) { return TRUE; }
 	virtual BOOL PlayFootstepSounds( CBasePlayer *pl, float fvol ) { return TRUE; }
 
 	// Monsters
@@ -176,12 +174,6 @@ public:
 
 	// Immediately end a multiplayer game
 	virtual void EndMultiplayerGame( void ) {}
-
-	virtual CBotGameRulesInterface* BotGameRulesInterface() { return NULL; }
-	CSpawnPointManager* SpawnPointManager() { return m_pSpawnPointManager; }
-
-private:
-	CSpawnPointManager* m_pSpawnPointManager;
 };
 
 extern CGameRules *InstallGameRules( void );
@@ -195,7 +187,7 @@ class CHalfLifeRules : public CGameRules
 {
 public:
 	CHalfLifeRules ( void );
-	virtual ~CHalfLifeRules() {}
+	virtual ~CHalfLifeRules();
 
 	// GR_Think
 	virtual void Think( void );
@@ -209,8 +201,6 @@ public:
 	virtual BOOL IsMultiplayer( void );
 	virtual BOOL IsDeathmatch( void );
 	virtual BOOL IsCoOp( void );
-	virtual void ServerActivate(void) override {}
-	virtual void ServerDeactivate(void) override {}
 
 	// Client connection/disconnection
 	virtual BOOL ClientConnected( edict_t *pEntity, const char *pszName, const char *pszAddress, char szRejectReason[ 128 ] );
@@ -373,7 +363,6 @@ public:
 	virtual const char *GetTeamID( CBaseEntity *pEntity ) {return "";}
 	virtual int PlayerRelationship( CBaseEntity *pPlayer, CBaseEntity *pTarget );
 
-	virtual BOOL PlayTextureSounds( void ) { return FALSE; }
 	virtual BOOL PlayFootstepSounds( CBasePlayer *pl, float fvol );
 
 	// Monsters
@@ -382,7 +371,7 @@ public:
 	// Immediately end a multiplayer game
 	virtual void EndMultiplayerGame( void ) { GoToIntermission(); }
 
-	virtual CBotGameRulesInterface* BotGameRulesInterface() override { return m_pBotGameRulesInterface; }
+	CBotGameRulesInterface* BotGameRulesInterface();
 
 protected:
 	virtual void ChangeLevel( void );
@@ -393,7 +382,6 @@ protected:
 
 private:
 	CBotGameRulesInterface* m_pBotGameRulesInterface;
-	CSpawnPointManager* m_pSpawnPointManager;
 };
 
 extern DLL_GLOBAL CGameRules *g_pGameRules;

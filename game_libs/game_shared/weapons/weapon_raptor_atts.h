@@ -1,3 +1,5 @@
+#pragma once
+
 #include "weapon_raptor.h"
 #include "weaponatts_collection.h"
 #include "weapon_pref_weights.h"
@@ -29,7 +31,7 @@ enum RaptorAttackMode_e
 // Rounds per second:
 static constexpr float RAPTOR_FIRE_RATE = 1.0f / 0.4f;
 
-static const CAmmoDef Ammo_Raptor =
+static constexpr CAmmoDef Ammo_Raptor =
 {
 	"ammo_raptor",	// ClassName
 	"ammodef_raptor",	// AmmoName
@@ -62,6 +64,8 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	pm.PlayerModelName = "models/weapon_raptor/p_raptor.mdl";
 	pm.WorldModelName = "models/weapon_raptor/w_raptor.mdl";
 	pm.PlayerAnimExtension = "python";
+
+	obj.Prediction.SetUpPrediction<CWeaponRaptor>();
 
 	obj.SkillRecords.AddToTail(WASkillRecord("sk_plr_dmg_raptor", &skilldata_t::plrDmgRaptor));
 

@@ -67,7 +67,7 @@ public:
 	inline Vector( void ): x( 0.0f ), y( 0.0f ), z( 0.0f )								{ }
 	inline Vector( float X, float Y, float Z ): x( 0.0f ), y( 0.0f ), z( 0.0f )	{ x = X; y = Y; z = Z;				}
 	inline Vector( const Vector& v ): x( 0.0f ), y( 0.0f ), z( 0.0f )	{ x = v.x; y = v.y; z = v.z;			}
-	inline Vector( float rgfl[3] ): x( 0.0f ), y( 0.0f ), z( 0.0f )	{ x = rgfl[0]; y = rgfl[1]; z = rgfl[2];	}
+	inline explicit Vector( const float rgfl[3] ): x( 0.0f ), y( 0.0f ), z( 0.0f )	{ x = rgfl[0]; y = rgfl[1]; z = rgfl[2];	}
 
 	// Operators
 	inline Vector operator-( void ) const			{ return Vector( -x, -y, -z );			}
@@ -130,3 +130,4 @@ inline Vector CrossProduct( const Vector& a, const Vector& b ) { return Vector( 
 #define VectorCopy(a,b) {(b)[0]=(a)[0];(b)[1]=(a)[1];(b)[2]=(a)[2];}
 #define VectorClear(a) {(a)[0]=0.0;(a)[1]=0.0;(a)[2]=0.0;}
 #define DotProduct(x, y) ((x)[0] * (y)[0] + (x)[1] * (y)[1] + (x)[2] * (y)[2])
+#define DotProduct2D(x, y) ((x)[0] * (y)[0] + (x)[1] * (y)[1])

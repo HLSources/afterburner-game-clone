@@ -9,6 +9,7 @@
 
 #include <memory.h>
 #include <stdlib.h>
+#include <algorithm>
 
 #include "hud.h"
 #include "cl_util.h"
@@ -20,6 +21,10 @@
 #include "pm_defs.h"
 #include "pmtrace.h"
 #include "pm_shared.h"
+#include "debug_assert.h"
+#include "utlstring.h"
+#include "resources/SoundResources.h"
+#include "com_model.h"
 
 void Game_AddObjects( void );
 
@@ -35,7 +40,7 @@ extern "C"
 	void DLLEXPORT HUD_TxferLocalOverrides( struct entity_state_s *state, const struct clientdata_s *client );
 	void DLLEXPORT HUD_ProcessPlayerState( struct entity_state_s *dst, const struct entity_state_s *src );
 	void DLLEXPORT HUD_TxferPredictionData ( struct entity_state_s *ps, const struct entity_state_s *pps, struct clientdata_s *pcd, const struct clientdata_s *ppcd, struct weapon_data_s *wd, const struct weapon_data_s *pwd );
-	void DLLEXPORT HUD_TempEntUpdate( double frametime, double client_time, double cl_gravity, struct tempent_s **ppTempEntFree, struct tempent_s **ppTempEntActive, int ( *Callback_AddVisibleEntity )( struct cl_entity_s *pEntity ), void ( *Callback_TempEntPlaySound )( struct tempent_s *pTemp, float damp ) );
+	void DLLEXPORT HUD_TempEntUpdate( double frametime, double client_time, double cl_gravity, struct tempent_s **ppTempEntFree, struct tempent_s **ppTempEntActive, int ( *Callback_AddVisibleEntity )( struct cl_entity_s *pEntity ) );
 	struct cl_entity_s DLLEXPORT *HUD_GetUserEntity( int index );
 }
 
@@ -184,6 +189,7 @@ void DLLEXPORT HUD_TxferPredictionData( struct entity_state_s *ps, const struct 
 	pcd->m_flNextAttack			= ppcd->m_flNextAttack;
 	pcd->fov				= ppcd->fov;
 	pcd->weaponanim				= ppcd->weaponanim;
+	pcd->weaponScreenOverlay	= ppcd->weaponScreenOverlay;
 	pcd->tfstate				= ppcd->tfstate;
 	pcd->maxspeed				= ppcd->maxspeed;
 
@@ -539,29 +545,122 @@ void DLLEXPORT HUD_StudioEvent( const struct mstudioevent_s *event, const struct
 {
 	switch( event->event )
 	{
-	case 5001:
+	case 5001:	// Muzzle flash from attachment 0
 		gEngfuncs.pEfxAPI->R_MuzzleFlash( (float *)&entity->attachment[0], atoi( event->options ) );
 		break;
-	case 5011:
+	case 5011:	// Muzzle flash from attachment 1
 		gEngfuncs.pEfxAPI->R_MuzzleFlash( (float *)&entity->attachment[1], atoi( event->options ) );
 		break;
-	case 5021:
+	case 5021:	// Muzzle flash from attachment 2
 		gEngfuncs.pEfxAPI->R_MuzzleFlash( (float *)&entity->attachment[2], atoi( event->options ) );
 		break;
-	case 5031:
+	case 5031:	// Muzzle flash from attachment 3
 		gEngfuncs.pEfxAPI->R_MuzzleFlash( (float *)&entity->attachment[3], atoi( event->options ) );
 		break;
-	case 5002:
+	case 5002:	// Spark from attachment 0
 		gEngfuncs.pEfxAPI->R_SparkEffect( (float *)&entity->attachment[0], atoi( event->options ), -100, 100 );
 		break;
-	// Client side sound
-	case 5004:
-		gEngfuncs.pfnPlaySoundByNameAtLocation( (char *)event->options, 1.0, (float *)&entity->attachment[0] );
+	case 5004:	// Play a client-side sound at attachment 0 origin (note that the sound does not follow the model)
+		gEngfuncs.pfnPlaySoundByNameAtLocation( event->options, 1.0, (const float *)&entity->attachment[0] );
 		break;
-	case 5005:
+	case 5005:	// Play an ambient client-side sound
 		gEngfuncs.pfnPlaySoundByName((char*)event->options, 1.0f);
 	default:
 		break;
+	}
+}
+
+const char* GetShellTextureImpactSound(ShellType shellType, const Vector& begin, const Vector& end, const pmtrace_t& trace)
+{
+	texture_t* texture = gEngfuncs.pEventAPI->EV_TraceTexture(0, begin, end);
+	SurfaceProp surfaceProp = texture ? static_cast<SurfaceProp>(texture->surfaceType) : SurfaceProp_None;
+	return SoundResources::ShellSounds.RandomResourcePathForImpact(shellType, surfaceProp);
+}
+
+// Adapted from engine - there's no real reason for this to be engine code,
+// especially now we're managing sound resources on the mod DLL side of things.
+void PlayTempEntSound(TEMPENTITY *pTemp, float damp, const Vector& begin, const Vector& end, const pmtrace_t& trace)
+{
+	float fvol = 0.8f;
+	qboolean isshellcasing = false;
+	int	zvel = 0;
+	const char* soundPath = nullptr;
+
+	ASSERT( pTemp != NULL );
+
+	switch( pTemp->hitSound )
+	{
+	case BOUNCE_GLASS:
+		soundPath = SoundResources::SurfaceSounds.RandomResourcePath(SurfaceSoundId::HitGlassA);
+		break;
+	case BOUNCE_METAL:
+		soundPath = SoundResources::SurfaceSounds.RandomResourcePath(SurfaceSoundId::HitMetal);
+		break;
+	case BOUNCE_FLESH:
+		soundPath = SoundResources::SurfaceSounds.RandomResourcePath(SurfaceSoundId::HitFlesh);
+		break;
+	case BOUNCE_WOOD:
+		soundPath = SoundResources::SurfaceSounds.RandomResourcePath(SurfaceSoundId::HitWood);
+		break;
+	case BOUNCE_SHRAP:
+		soundPath = SoundResources::WeaponSounds.RandomResourcePath(WeaponSoundId::BulletRicochet);
+		break;
+	case BOUNCE_SHOTSHELL:
+		soundPath = GetShellTextureImpactSound(ShellType::Shotgun, begin, end, trace);
+		isshellcasing = true; // shell casings have different playback parameters
+		fvol = 0.5f;
+		break;
+	case BOUNCE_SHELL:
+		// TODO: Trace to find out surfaceprop, then choose appropriate shell sound.
+		soundPath = GetShellTextureImpactSound(ShellType::Default, begin, end, trace);
+		isshellcasing = true; // shell casings have different playback parameters
+		break;
+	case BOUNCE_CONCRETE:
+		soundPath = SoundResources::SurfaceSounds.RandomResourcePath(SurfaceSoundId::HitConcrete);
+		break;
+	default:	// null sound
+		return;
+	}
+
+	zvel = abs( pTemp->entity.baseline.origin[2] );
+
+	// only play one out of every n
+	if( isshellcasing )
+	{
+		// play first bounce, then 1 out of 3
+		if( zvel < 200 && gEngfuncs.pfnRandomLong( 0, 3 ))
+		{
+			return;
+		}
+	}
+	else
+	{
+		if( gEngfuncs.pfnRandomLong( 0, 5 ))
+		{
+			return;
+		}
+	}
+
+	if( damp > 0.0f )
+	{
+		int	pitch = PITCH_NORM;
+
+		if( isshellcasing )
+		{
+			fvol *= std::min( 1.0f, ((float)zvel) / 350.0f );
+		}
+		else
+		{
+			fvol *= std::min( 1.0f, ((float)zvel) / 450.0f );
+		}
+
+		if( !gEngfuncs.pfnRandomLong( 0, 3 ) && !isshellcasing )
+		{
+			pitch = gEngfuncs.pfnRandomLong( 95, 105 );
+		}
+
+		// TODO: SND_STOP_LOOPING is (1 << 10). Should this be exposed to the DLLs somehow?
+		gEngfuncs.pEventAPI->EV_PlaySound(pTemp->entityIndex, pTemp->entity.origin, CHAN_BODY, soundPath, fvol, ATTN_NORM, (1 << 10), pitch);
 	}
 }
 
@@ -572,14 +671,15 @@ CL_UpdateTEnts
 Simulation and cleanup of temporary entities
 =================
 */
+
+// This function is awful. Refactor.
 void DLLEXPORT HUD_TempEntUpdate (
 	double frametime,   // Simulation time
 	double client_time, // Absolute time on client
 	double cl_gravity,  // True gravity on client
 	TEMPENTITY **ppTempEntFree,   // List of freed temporary ents
 	TEMPENTITY **ppTempEntActive, // List
-	int		( *Callback_AddVisibleEntity )( cl_entity_t *pEntity ),
-	void	( *Callback_TempEntPlaySound )( TEMPENTITY *pTemp, float damp ) )
+	int		( *Callback_AddVisibleEntity )( cl_entity_t *pEntity ) )
 {
 	static int gTempEntFrame = 0;
 	int			i;
@@ -588,7 +688,9 @@ void DLLEXPORT HUD_TempEntUpdate (
 
 	// Nothing to simulate
 	if( !*ppTempEntActive )
+	{
 		return;
+	}
 
 	// in order to have tents collide with players, we have to run the player prediction code so
 	// that the client has the player list. We run this code once when we detect any COLLIDEALL
@@ -618,7 +720,9 @@ void DLLEXPORT HUD_TempEntUpdate (
 			}
 			pTemp = pTemp->next;
 		}
-		goto finish;
+
+		gEngfuncs.pEventAPI->EV_PopPMStates();
+		return;
 	}
 
 	pprev = NULL;
@@ -629,6 +733,10 @@ void DLLEXPORT HUD_TempEntUpdate (
 
 	while( pTemp )
 	{
+		pmtrace_t pmtrace;
+		Vector traceStart;
+		Vector traceEnd;
+		float traceFraction = 1.0f;
 		int active;
 
 		active = 1;
@@ -764,7 +872,6 @@ void DLLEXPORT HUD_TempEntUpdate (
 			if( pTemp->flags & ( FTENT_COLLIDEALL | FTENT_COLLIDEWORLD ) )
 			{
 				vec3_t	traceNormal( 0.0f, 0.0f, 0.0f );
-				float	traceFraction = 1;
 
 				if( pTemp->flags & FTENT_COLLIDEALL )
 				{
@@ -783,6 +890,8 @@ void DLLEXPORT HUD_TempEntUpdate (
 						{
 							traceFraction = pmtrace.fraction;
 							VectorCopy( pmtrace.plane.normal, traceNormal );
+							VectorCopy(pTemp->entity.prevstate.origin, traceStart);
+							VectorCopy(pTemp->entity.origin, traceEnd);
 
 							if( pTemp->hitcallback )
 							{
@@ -793,8 +902,6 @@ void DLLEXPORT HUD_TempEntUpdate (
 				}
 				else if( pTemp->flags & FTENT_COLLIDEWORLD )
 				{
-					pmtrace_t pmtrace;
-
 					gEngfuncs.pEventAPI->EV_SetTraceHull( 2 );
 
 					gEngfuncs.pEventAPI->EV_PlayerTrace( pTemp->entity.prevstate.origin, pTemp->entity.origin, PM_STUDIO_BOX | PM_WORLD_ONLY, -1, &pmtrace );
@@ -803,6 +910,8 @@ void DLLEXPORT HUD_TempEntUpdate (
 					{
 						traceFraction = pmtrace.fraction;
 						VectorCopy( pmtrace.plane.normal, traceNormal );
+						VectorCopy(pTemp->entity.prevstate.origin, traceStart);
+						VectorCopy(pTemp->entity.origin, traceEnd);
 
 						if( pTemp->flags & FTENT_SPARKSHOWER )
 						{
@@ -848,7 +957,7 @@ void DLLEXPORT HUD_TempEntUpdate (
 
 					if( pTemp->hitSound )
 					{
-						Callback_TempEntPlaySound( pTemp, damp );
+						PlayTempEntSound(pTemp, damp, traceStart, traceEnd, pmtrace);
 					}
 
 					if( pTemp->flags & FTENT_COLLIDEKILL )
@@ -923,7 +1032,7 @@ void DLLEXPORT HUD_TempEntUpdate (
 		}
 		pTemp = pnext;
 	}
-finish:
+
 	// Restore state info
 	gEngfuncs.pEventAPI->EV_PopPMStates();
 }

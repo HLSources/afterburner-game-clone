@@ -106,6 +106,7 @@ typedef struct tempent_s
 
 	vec3_t		tentOffset;	// if attached, client origin + tentOffset = tent origin.
 	cl_entity_t	entity;
+	int entityIndex;
 
 	// baseline.origin		- velocity
 	// baseline.renderamt	- starting fadeout intensity
@@ -113,6 +114,7 @@ typedef struct tempent_s
 } TEMPENTITY;
 
 typedef struct efx_api_s efx_api_t;
+typedef enum _SurfaceProp SurfaceProp;
 
 struct efx_api_s
 {
@@ -125,6 +127,7 @@ struct efx_api_s
 	void		(*R_Bubbles)( const float *mins, const float *maxs, float height, int modelIndex, int count, float speed );
 	void		(*R_BubbleTrail)( const float *start, const float *end, float height, int modelIndex, int count, float speed );
 	void		(*R_BulletImpactParticles)( const float *pos );
+	void		(*R_BulletImpactParticlesForSurface)( const float* pos, SurfaceProp surfaceProp );
 	void		(*R_EntityParticles)( struct cl_entity_s *ent );
 	void		(*R_Explosion)( float *pos, int model, float scale, float framerate, int flags );
 	void		(*R_FizzEffect)( struct cl_entity_s *pent, int modelIndex, int density );

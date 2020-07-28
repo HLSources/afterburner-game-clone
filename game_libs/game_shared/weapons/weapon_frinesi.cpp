@@ -58,7 +58,7 @@ CWeaponFrinesi::CWeaponFrinesi()
 
 void CWeaponFrinesi::Precache()
 {
-	CGenericWeapon::Precache();
+	CGenericHitscanWeapon::Precache();
 	PRECACHE_SOUND(FRINESI_COCK_SOUND);
 
 	// Cache the durations for our reload animations, so we can use them later.
@@ -92,7 +92,7 @@ void CWeaponFrinesi::SecondaryAttack()
 
 void CWeaponFrinesi::Holster(int skipLocal)
 {
-	CGenericWeapon::Holster(skipLocal);
+	CGenericHitscanWeapon::Holster(skipLocal);
 	DelayPendingActions(0.1f, true);
 }
 
@@ -212,7 +212,7 @@ void CWeaponFrinesi::PlayPumpSound()
 
 bool CWeaponFrinesi::ReadPredictionData(const weapon_data_t* from)
 {
-	if ( !CGenericWeapon::ReadPredictionData(from) )
+	if ( !CGenericHitscanWeapon::ReadPredictionData(from) )
 	{
 		return false;
 	}
@@ -223,7 +223,7 @@ bool CWeaponFrinesi::ReadPredictionData(const weapon_data_t* from)
 
 bool CWeaponFrinesi::WritePredictionData(weapon_data_t* to)
 {
-	if ( !CGenericWeapon::WritePredictionData(to) )
+	if ( !CGenericHitscanWeapon::WritePredictionData(to) )
 	{
 		return false;
 	}
@@ -243,11 +243,11 @@ TYPEDESCRIPTION	CWeaponFrinesi::m_SaveData[] =
 	DEFINE_FIELD(CWeaponFrinesi, m_flNextPumpTime, FIELD_FLOAT)
 };
 
-IMPLEMENT_SAVERESTORE(CWeaponFrinesi, CGenericWeapon)
+IMPLEMENT_SAVERESTORE(CWeaponFrinesi, CGenericHitscanWeapon)
 
 float CWeaponFrinesi::Bot_CalcDesireToUse(CBaseBot& bot, CBaseEntity& enemy, float distanceToEnemy) const
 {
-	return static_cast<float>(WeaponPref_Frinesi) / static_cast<float>(WeaponPref_Max);
+	return static_cast<float>(WeaponAttributes().Core.SwitchWeight) / static_cast<float>(WeaponPref_Max);
 }
 
 void CWeaponFrinesi::Bot_SetFightStyle(CBaseBotFightStyle& fightStyle) const

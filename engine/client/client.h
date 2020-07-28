@@ -17,7 +17,7 @@ GNU General Public License for more details.
 #define CLIENT_H
 
 #include "xash3d_types.h"
-#include "mathlib.h"
+#include "xash3d_mathlib.h"
 #include "cdll_int.h"
 #include "menu_int.h"
 #include "cl_entity.h"
@@ -696,6 +696,7 @@ extern convar_t	*rate;
 extern convar_t	*m_ignore;
 extern convar_t	*r_showtree;
 extern convar_t	*ui_renderworld;
+extern convar_t *viewmodel_fov;
 
 //=============================================================================
 
@@ -710,7 +711,7 @@ dlight_t *CL_GetEntityLight( int number );
 //
 // cl_cmds.c
 //
-void CL_Quit_f( void );
+void CL_Quit_f( void ) NORETURN;
 void CL_ScreenShot_f( void );
 void CL_SnapShot_f( void );
 void CL_PlayCDTrack_f( void );
@@ -792,8 +793,7 @@ void CL_ParseEvent( sizebuf_t *msg );
 void CL_ParseReliableEvent( sizebuf_t *msg );
 void CL_SetEventIndex( const char *szEvName, int ev_index );
 void CL_QueueEvent( int flags, int index, float delay, event_args_t *args );
-void CL_PlaybackEvent( int flags, const edict_t *pInvoker, word eventindex, float delay, float *origin,
-	float *angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2 );
+void CL_PlaybackEvent( const struct event_fire_args_s* inArgs );
 void CL_RegisterEvent( int lastnum, const char *szEvName, pfnEventHook func, void* pUserData );
 void CL_BatchResourceRequest( qboolean initialize );
 int CL_EstimateNeededResources( void );
@@ -840,7 +840,7 @@ void CL_GetMousePosition( int *mx, int *my ); // TODO: move to input
 cl_entity_t* CL_GetViewModel( void );
 void pfnGetScreenFade( struct screenfade_s *fade );
 physent_t *pfnGetPhysent( int idx );
-struct msurface_s *pfnTraceSurface( int ground, float *vstart, float *vend );
+struct msurface_s *pfnTraceSurface( int ground, const float *vstart, const float *vend );
 movevars_t *pfnGetMoveVars( void );
 
 _inline cl_entity_t *CL_EDICT_NUM( int n )
@@ -955,9 +955,9 @@ void CL_EmitEntities( void );
 // cl_remap.c
 //
 remap_info_t *CL_GetRemapInfoForEntity( cl_entity_t *e );
-void CL_AllocRemapInfo( int topcolor, int bottomcolor );
+void CL_AllocRemapInfo( cl_entity_t *ent, int topcolor, int bottomcolor );
 void CL_FreeRemapInfo( remap_info_t *info );
-void CL_UpdateRemapInfo( int topcolor, int bottomcolor );
+void CL_UpdateRemapInfo( cl_entity_t *ent, int topcolor, int bottomcolor );
 void CL_ClearAllRemaps( void );
 
 //

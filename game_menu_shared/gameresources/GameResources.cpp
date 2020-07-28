@@ -13,16 +13,6 @@ CGameResources& CGameResources::StaticInstance()
 	return *resources;
 }
 
-CSoundResources& CGameResources::SoundResources()
-{
-	return m_SoundResources;
-}
-
-const CSoundResources& CGameResources::SoundResources() const
-{
-	return m_SoundResources;
-}
-
 CUtlString CGameResources::MultiplayerModelFullPath(const CUtlString& modelName)
 {
 	CUtlString path("models/player/");
@@ -38,7 +28,6 @@ const CUtlVector<CUtlString>& CGameResources::MultiplayerModelList() const
 void CGameResources::Initialise()
 {
 	InitMultiplayerModelList();
-	m_SoundResources.Initialise();
 }
 
 void CGameResources::InitMultiplayerModelList()

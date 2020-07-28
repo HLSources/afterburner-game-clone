@@ -8,11 +8,6 @@
 #include "cl_entity.h"
 #endif
 
-namespace
-{
-	static constexpr const char* DEFAULT_WEAPON_PICKUP_SOUND = "items/gunpickup1.wav";
-}
-
 CGenericWeapon::CGenericWeapon()
 	: CBasePlayerWeapon(),
 	  m_pPrimaryAttackMode(nullptr),
@@ -50,7 +45,14 @@ void CGenericWeapon::Spawn()
 
 	m_iDefaultAmmo = WeaponAttributes().Ammo.PrimaryAmmoOnFirstPickup;
 
-	FallInit();// get ready to fall down.
+	if ( !(pev->spawnflags & SF_DontDrop) )
+	{
+		FallInit();
+	}
+	else
+	{
+		Materialize();
+	}
 }
 
 void CGenericWeapon::Precache()
@@ -71,6 +73,7 @@ void CGenericWeapon::Precache()
 void CGenericWeapon::PrecacheAttackMode(const WeaponAtts::WABaseAttack& attackMode)
 {
 	PrecacheSoundSet(attackMode.AttackSounds);
+	PrecacheSoundSet(attackMode.ViewModelAttackSounds);
 
 	const uint32_t index = attackMode.Signature()->Index;
 
@@ -94,7 +97,11 @@ void CGenericWeapon::PrecacheSoundSet(const WeaponAtts::WASoundSet& sounds)
 
 void CGenericWeapon::PrecacheCore(const WeaponAtts::WACore& core)
 {
-	PRECACHE_SOUND(core.PickupSoundOverride ? core.PickupSoundOverride : DEFAULT_WEAPON_PICKUP_SOUND);
+	if ( core.PickupSoundOverride )
+	{
+		// Default pickup sound is precached as part of the sound resources system.
+		PRECACHE_SOUND(core.PickupSoundOverride);
+	}
 }
 
 void CGenericWeapon::PrecacheViewModel(const WeaponAtts::WAViewModel& viewModel)
@@ -230,21 +237,22 @@ bool CGenericWeapon::InvokeWithAttackMode(WeaponAttackType type, const WeaponAtt
 // TODO: Allow this to handle secondary too? Do we need this?
 void CGenericWeapon::Reload()
 {
+	if ( !CanReload() )
+	{
+		return;
+	}
+
 	const WeaponAtts::WAAmmoBasedAttack* ammoAttack = dynamic_cast<const WeaponAtts::WAAmmoBasedAttack*>(m_pPrimaryAttackMode);
 
 	if ( !ammoAttack )
 	{
+		// Checked in CanReload(), so this should never happen.
+		ASSERT(false);
 		return;
 	}
 
 	const WeaponAtts::WACollection& atts = WeaponAttributes();
 	const int maxClip = atts.Ammo.MaxClip;
-
-	if ( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] < 1 || m_iClip == maxClip ||
-		 m_flNextPrimaryAttack > UTIL_WeaponTimeBase() )
-	{
-		return;
-	}
 
 	if ( ammoAttack->SpecialReload )
 	{
@@ -636,6 +644,41 @@ bool CGenericWeapon::DecrementAmmo(const WeaponAtts::WABaseAttack* attackMode, i
 	}
 }
 
+bool CGenericWeapon::CanReload() const
+{
+	const WeaponAtts::WAAmmoBasedAttack* ammoAttack = dynamic_cast<const WeaponAtts::WAAmmoBasedAttack*>(m_pPrimaryAttackMode);
+
+	if ( !ammoAttack )
+	{
+		return false;
+	}
+
+	const WeaponAtts::WACollection& atts = WeaponAttributes();
+	const int maxClip = atts.Ammo.MaxClip;
+
+	if ( maxClip == WEAPON_NOCLIP ||
+		 m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] < 1 ||
+		 m_iClip == maxClip ||
+		 m_flNextPrimaryAttack > UTIL_WeaponTimeBase() )
+	{
+		return false;
+	}
+
+	return true;
+}
+
+const char* CGenericWeapon::PickupSound() const
+{
+	const WeaponAtts::WACollection& atts = WeaponAttributes();
+
+	if ( atts.Core.PickupSoundOverride )
+	{
+		return atts.Core.PickupSoundOverride;
+	}
+
+	return CBasePlayerWeapon::PickupSound();
+}
+
 int CGenericWeapon::iItemSlot()
 {
 	ASSERT(m_iWeaponSlot >= 0);
@@ -667,8 +710,16 @@ void CGenericWeapon::FindWeaponSlotInfo()
 	ASSERTSZ(false, "No slot/position found for this weapon.");
 }
 
-void CGenericWeapon::GetSharedCircularGaussianSpread(uint32_t shot, int shared_rand, float& x, float& y)
+void CGenericWeapon::GetSharedCircularGaussianSpread(uint32_t shotIndex, int shared_rand, float& x, float& y)
 {
-	x = UTIL_SharedRandomFloat( shared_rand + shot, -0.5, 0.5 ) + UTIL_SharedRandomFloat( shared_rand + ( 1 + shot ) , -0.5, 0.5 );
-	y = UTIL_SharedRandomFloat( shared_rand + ( 2 + shot ), -0.5, 0.5 ) + UTIL_SharedRandomFloat( shared_rand + ( 3 + shot ), -0.5, 0.5 );
+	// We make 4 calls to UTIL_SharedRandomFloat. For each shot that is fired, we want to generate 4
+	// pseudo-random numbers from a consistent seed, so we increment the seed in a way that will
+	// allow each call to UTIL_SharedRandomFloat return a different value.
+	static constexpr uint32_t NUM_COMPONENTS = 4;
+
+	x = UTIL_SharedRandomFloat( shared_rand + (shotIndex * NUM_COMPONENTS) + 0, -0.5, 0.5 ) +
+		UTIL_SharedRandomFloat( shared_rand + (shotIndex * NUM_COMPONENTS) + 1 , -0.5, 0.5 );
+
+	y = UTIL_SharedRandomFloat( shared_rand + (shotIndex * NUM_COMPONENTS) + 2, -0.5, 0.5 ) +
+		UTIL_SharedRandomFloat( shared_rand + (shotIndex * NUM_COMPONENTS) + 3, -0.5, 0.5 );
 }

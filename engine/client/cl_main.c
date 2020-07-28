@@ -91,7 +91,7 @@ clgame_static_t	clgame;
 void CL_InternetServers_f( void );
 
 //======================================================================
-int CL_Active( void )
+int GAME_EXPORT CL_Active( void )
 {
 	return ( cls.state == ca_active );
 }
@@ -3357,7 +3357,7 @@ qboolean CL_PrecacheResources( void )
 			break;
 		case t_decal:
 			if( !FBitSet( pRes->ucFlags, RES_CUSTOM ))
-				Q_strncpy( host.draw_decals[pRes->nIndex], pRes->szFileName, sizeof( host.draw_decals[0] ));
+				Q_strncpy( host.draw_decals[pRes->nIndex].path, pRes->szFileName, sizeof( host.draw_decals[0].path ));
 			break;
 		case t_generic:
 			Q_strncpy( cl.files_precache[pRes->nIndex], pRes->szFileName, sizeof( cl.files_precache[0] ));

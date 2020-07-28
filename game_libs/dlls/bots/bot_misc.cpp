@@ -37,6 +37,7 @@
 #include "bot.h"
 #include "bot_misc.h"
 #include "nodes.h"
+#include "mp_utils.h"
 
 CBaseBotGlobals BotGlobals;
 
@@ -116,7 +117,7 @@ void CBaseBotGlobals::HandleAutoAdjDifficulty( void )
 
 			for ( int i = 1; i <= gpGlobals->maxClients; i++ )
 			{
-				CBasePlayer *pPlayer = UTIL_CBasePlayerByIndex( i );
+				CBasePlayer *pPlayer = MPUtils::CBasePlayerFromIndex(i);
 
 				if ( pPlayer )
 				{
