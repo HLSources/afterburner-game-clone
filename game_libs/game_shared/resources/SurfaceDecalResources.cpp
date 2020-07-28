@@ -130,6 +130,7 @@ CSurfaceDecalResources::CSurfaceDecalResources() :
 	InitialiseResources(SurfaceDecalId::Stone, StoneDecals);
 	InitialiseResources(SurfaceDecalId::Wood, WoodDecals);
 
+	// The larger the value, the smaller the decal.
 	Atts(SurfaceDecalId::None).scale = 0.0f;
 	Atts(SurfaceDecalId::Generic).scale = 6.0f;
 	Atts(SurfaceDecalId::Carpet).scale = 6.0f;
@@ -144,5 +145,5 @@ CSurfaceDecalResources::CSurfaceDecalResources() :
 	Atts(SurfaceDecalId::Scorch).scale = 1.0f;
 	Atts(SurfaceDecalId::Snow).scale = 6.0f;
 	Atts(SurfaceDecalId::Stone).scale = 8.0f;
-	Atts(SurfaceDecalId::Wood).scale = 6.0f;
+	Atts(SurfaceDecalId::Wood).scale = 8.0f;
 }
