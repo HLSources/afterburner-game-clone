@@ -737,7 +737,7 @@ static image_t *R_RecursiveFindWaterTexture( const mnode_t *node, const mnode_t 
 	image_t *tex = NULL;
 
 	// assure the initial node is not null
-	// we could check it here, but we would rather check it 
+	// we could check it here, but we would rather check it
 	// outside the call to get rid of one additional recursion level
 	Assert( node != NULL );
 
@@ -758,7 +758,7 @@ static image_t *R_RecursiveFindWaterTexture( const mnode_t *node, const mnode_t 
 		// find texture
 		pleaf = (mleaf_t *)node;
 		mark = pleaf->firstmarksurface;
-		c = pleaf->nummarksurfaces;	
+		c = pleaf->nummarksurfaces;
 
 		for( i = 0; i < c; i++, mark++ )
 		{
@@ -914,7 +914,7 @@ void R_DrawEntitiesOnList( void )
 		else tr.blend = 1.0f; // draw as solid but sorted by distance
 
 		if( tr.blend <= 0.0f ) continue;
-	
+
 		Assert( RI.currententity != NULL );
 		Assert( RI.currentmodel != NULL );
 
@@ -1809,6 +1809,8 @@ void R_DrawCubemapView( const vec3_t origin, const vec3_t angles, int size )
 	rvp.viewport[0] = rvp.viewport[1] = 0;
 	rvp.viewport[2] = rvp.viewport[3] = size;
 	rvp.fov_x = rvp.fov_y = 90.0f; // this is a final fov value
+	rvp.viewmodelfov_x = 90.0f;
+	rvp.viewmodelfov_y = 90.0f;
 
 	// setup origin & angles
 	VectorCopy( origin, rvp.vieworigin );
@@ -2132,4 +2134,3 @@ int CL_FxBlend( cl_entity_t *e )
 
 	return blend;
 }
-
