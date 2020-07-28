@@ -26,7 +26,8 @@ jobs:
     - name: Set up for 32-bit compile
       run: |
         sudo dpkg --add-architecture i386
-        sudo apt install gcc-multilib g++-multilib libsdl2-dev:i386 libfontconfig-dev:i386 libfreetype6-dev:i386
+        sudo apt-get update
+        sudo apt-get install gcc-multilib g++-multilib libsdl2-dev:i386 libfontconfig-dev:i386 libfreetype6-dev:i386
     # Runs a set of commands using the runners shell
     - name: Configure for release
       run: python3 waf configure --disable-vgui --win-style-install --build-type=release --prefix=./build/release/${{runner.temp}}
