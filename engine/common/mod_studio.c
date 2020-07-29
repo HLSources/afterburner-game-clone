@@ -367,7 +367,7 @@ static void SetUpBones(const edict_t* edict, model_t* mod)
 	byte controller[4];
 	byte blending[2];
 	vec3_t angles;
-	int iBlend;
+	int iBlend = 0;
 
 	pstudio = Mod_StudioExtradata( mod );
 	pseqdesc = (mstudioseqdesc_t *)((byte *)pstudio + pstudio->seqindex) + edict->v.sequence;
