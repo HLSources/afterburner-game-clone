@@ -16,6 +16,9 @@
 #ifndef FUNC_BREAK_H
 #define FUNC_BREAK_H
 
+#include "resources/SurfaceSoundResources.h"
+#include "resources/MaterialBreakSoundResources.h"
+
 typedef enum
 {
 	expRandom,
@@ -55,7 +58,6 @@ public:
 	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, const TraceResult *ptr, int bitsDamageType );
 
 	BOOL IsBreakable( void );
-	BOOL SparkWhenHit( void );
 
 	int DamageDecal( int bitsDamageType );
 
@@ -68,9 +70,7 @@ public:
 	inline int ExplosionMagnitude( void ) { return pev->impulse; }
 	inline void ExplosionSetMagnitude( int magnitude ) { pev->impulse = magnitude; }
 
-	static void MaterialSoundPrecache( Materials precacheMaterial );
 	static void MaterialSoundRandom( edict_t *pEdict, Materials soundMaterial, float volume );
-	static const char **MaterialSoundList( Materials precacheMaterial, int &soundCount );
 
 	static const char *pSoundsWood[];
 	static const char *pSoundsFlesh[];
@@ -87,5 +87,9 @@ public:
 	float m_angle;
 	string_t m_iszGibModel;
 	string_t m_iszSpawnObject;
+
+private:
+	static SurfaceSoundId SurfaceSoundIdForMaterial(Materials material);
+	static MaterialBreakSoundId BreakSoundIdForMaterial(Materials material);
 };
 #endif	// FUNC_BREAK_H

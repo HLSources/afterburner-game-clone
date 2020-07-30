@@ -10,6 +10,7 @@ namespace SoundResources
 	CFootstepSoundResources FootstepSounds;
 	CPlayerSoundResources PlayerSounds;
 	CShellImpactSoundResources ShellSounds;
+	CMaterialBreakSoundResources BreakSounds;
 
 	static void Precache(const IIterableResourceCollection& collection)
 	{
@@ -29,5 +30,6 @@ namespace SoundResources
 		Precache(FootstepSounds);
 		Precache(PlayerSounds);
 		Precache(ShellSounds);
+		Precache(BreakSounds);
 	}
 }

@@ -1517,7 +1517,6 @@ void CEnvShooter::KeyValue( KeyValueData *pkvd )
 void CEnvShooter::Precache( void )
 {
 	m_iGibModelIndex = PRECACHE_MODEL( STRING( pev->model ) );
-	CBreakable::MaterialSoundPrecache( (Materials)m_iGibMaterial );
 }
 
 CGib *CEnvShooter::CreateGib( void )

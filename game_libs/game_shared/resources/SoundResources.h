@@ -6,6 +6,7 @@
 #include "FootstepSoundResources.h"
 #include "PlayerSoundResources.h"
 #include "ShellImpactSoundResources.h"
+#include "MaterialBreakSoundResources.h"
 
 namespace SoundResources
 {
@@ -15,6 +16,7 @@ namespace SoundResources
 	extern CFootstepSoundResources FootstepSounds;
 	extern CPlayerSoundResources PlayerSounds;
 	extern CShellImpactSoundResources ShellSounds;
+	extern CMaterialBreakSoundResources BreakSounds;
 
 	void PrecacheAll();
 }

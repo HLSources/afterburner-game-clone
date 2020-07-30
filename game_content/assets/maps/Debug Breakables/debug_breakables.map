@@ -1,0 +1,209 @@
+// Game: Afterburner
+// Format: Nightfire
+// entity 0
+{
+"classname" "worldspawn"
+"mapversion" "510"
+"_tb_textures" "textures;textures/airfield;textures/austria;textures/casino;textures/caviar;textures/common;textures/decals;textures/detail;textures/dev;textures/envmap;textures/island;textures/japanese;textures/knox;textures/liquids;textures/missile;textures/osato;textures/power;textures/romania;textures/space;textures/special;textures/wahoo"
+// brush 0
+{
+( -128 -64 -16 ) ( -128 -63 -16 ) ( -128 -64 -15 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( -64 -256 -16 ) ( -64 -256 -15 ) ( -63 -256 -16 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( -64 -64 -16 ) ( -63 -64 -16 ) ( -64 -63 -16 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 64 64 16 ) ( 64 65 16 ) ( 65 64 16 ) power/paintedfloor03 [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 0.5 0.5 0 wld_lightmap [ 16 0 ]
+( 64 64 16 ) ( 65 64 16 ) ( 64 64 17 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 464 64 16 ) ( 464 64 17 ) ( 464 65 16 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+}
+// brush 1
+{
+( -160 -256 16 ) ( -160 -255 16 ) ( -160 -256 17 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( -160 -256 16 ) ( -160 -256 17 ) ( -159 -256 16 ) special/nodraw [ 1 0 0 16 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( -160 -256 16 ) ( -159 -256 16 ) ( -160 -255 16 ) special/nodraw [ 1 0 0 16 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( -128 64 224 ) ( -128 65 224 ) ( -127 64 224 ) special/nodraw [ 1 0 0 16 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( -128 64 32 ) ( -127 64 32 ) ( -128 64 33 ) special/nodraw [ 1 0 0 16 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( -128 64 32 ) ( -128 64 33 ) ( -128 65 32 ) caviar/wall_corrbolted [ 0 1 0 -36.3776 ] [ 0 0 -1 18.143 ] 0 0.5 0.557016 0 wld_lightmap [ 16 0 ]
+}
+// brush 2
+{
+( -128 48 16 ) ( -128 49 16 ) ( -128 48 17 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( -96 64 16 ) ( -96 64 17 ) ( -95 64 16 ) caviar/wall_corrbolted [ 1 0 0 -36.3776 ] [ 0 0 -1 18.143 ] 0 0.5 0.557016 0 wld_lightmap [ 16 0 ]
+( -96 48 16 ) ( -95 48 16 ) ( -96 49 16 ) special/nodraw [ 1 0 0 -32 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( -32 64 224 ) ( -32 65 224 ) ( -31 64 224 ) special/nodraw [ 1 0 0 -32 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( -32 96 224 ) ( -31 96 224 ) ( -32 96 225 ) special/nodraw [ 1 0 0 -32 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 464 64 224 ) ( 464 64 225 ) ( 464 65 224 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+}
+// brush 3
+{
+( -128 -256 224 ) ( -128 -256 225 ) ( -128 -257 224 ) special/nodraw [ 0 -1 0 0 ] [ 0 0 1 0 ] 180 1 -1 32 wld_lightmap [ 16 0 ]
+( 320 -288 224 ) ( 319 -288 224 ) ( 320 -288 225 ) special/nodraw [ -1 0 0 0 ] [ 0 0 1 0 ] 180 1 -1 32 wld_lightmap [ 16 0 ]
+( 384 -240 16 ) ( 383 -240 16 ) ( 384 -241 16 ) special/nodraw [ -1 0 0 0 ] [ 0 1 0 0 ] 180 1 1 32 wld_lightmap [ 16 0 ]
+( 320 -256 224 ) ( 320 -257 224 ) ( 319 -256 224 ) special/nodraw [ -1 0 0 0 ] [ 0 1 0 0 ] 180 1 1 32 wld_lightmap [ 16 0 ]
+( 384 -256 16 ) ( 384 -256 17 ) ( 383 -256 16 ) caviar/wall_corrbolted [ 1 0 0 -36.3776 ] [ 0 0 -1 18.143 ] 0 0.5 0.557016 0 wld_lightmap [ 16 0 ]
+( 464 -240 16 ) ( 464 -241 16 ) ( 464 -240 17 ) special/nodraw [ 0 -1 0 0 ] [ 0 0 1 0 ] 180 1 -1 32 wld_lightmap [ 16 0 ]
+}
+// brush 4
+{
+( 464 -256 32 ) ( 464 -256 33 ) ( 464 -257 32 ) caviar/wall_corrbolted [ 0 1 0 -36.3776 ] [ 0 0 -1 18.143 ] 0 0.5 0.557016 0 wld_lightmap [ 16 0 ]
+( 464 -256 32 ) ( 463 -256 32 ) ( 464 -256 33 ) special/nodraw [ -1 0 0 -32 ] [ 0 0 1 0 ] 180 1 -1 32 wld_lightmap [ 16 0 ]
+( 496 64 16 ) ( 495 64 16 ) ( 496 63 16 ) special/nodraw [ -1 0 0 -32 ] [ 0 1 0 0 ] 180 1 1 32 wld_lightmap [ 16 0 ]
+( 464 -256 224 ) ( 464 -257 224 ) ( 463 -256 224 ) special/nodraw [ -1 0 0 -32 ] [ 0 1 0 0 ] 180 1 1 32 wld_lightmap [ 16 0 ]
+( 496 64 16 ) ( 496 64 17 ) ( 495 64 16 ) special/nodraw [ -1 0 0 -32 ] [ 0 0 1 0 ] 180 1 -1 32 wld_lightmap [ 16 0 ]
+( 496 64 16 ) ( 496 63 16 ) ( 496 64 17 ) special/nodraw [ 0 -1 0 0 ] [ 0 0 1 0 ] 180 1 -1 32 wld_lightmap [ 16 0 ]
+}
+// brush 5
+{
+( -128 -64 224 ) ( -128 -63 224 ) ( -128 -64 225 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 48 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( -64 -256 224 ) ( -64 -256 225 ) ( -63 -256 224 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 48 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( -64 -64 224 ) ( -63 -64 224 ) ( -64 -63 224 ) power/concrete_floorC [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 0.5 0.5 0 wld_lightmap [ 16 0 ]
+( 64 64 256 ) ( 64 65 256 ) ( 65 64 256 ) special/nodraw [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 64 64 256 ) ( 65 64 256 ) ( 64 64 257 ) special/nodraw [ 1 0 0 0 ] [ 0 0 -1 48 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+( 464 64 256 ) ( 464 64 257 ) ( 464 65 256 ) special/nodraw [ 0 1 0 0 ] [ 0 0 -1 48 ] 0 1 1 32 wld_lightmap [ 16 0 ]
+}
+}
+// entity 1
+{
+"classname" "info_player_start"
+"origin" "-16 16 52"
+"angle" "270"
+}
+// entity 2
+{
+"classname" "func_breakable"
+"material" "1"
+"health" "50"
+// brush 0
+{
+( -48 -240 16 ) ( -48 -239 16 ) ( -48 -240 17 ) austria/in_wood [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( -48 -240 16 ) ( -48 -240 17 ) ( -47 -240 16 ) austria/in_wood [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( -48 -240 16 ) ( -47 -240 16 ) ( -48 -239 16 ) austria/in_wood [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( -16 -208 48 ) ( -16 -207 48 ) ( -15 -208 48 ) austria/in_wood [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( -16 -192 32 ) ( -15 -192 32 ) ( -16 -192 33 ) austria/in_wood [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 0 -208 32 ) ( 0 -208 33 ) ( 0 -207 32 ) austria/in_wood [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+}
+}
+// entity 3
+{
+"classname" "func_breakable"
+"material" "2"
+"health" "50"
+// brush 0
+{
+( 16 -240 16 ) ( 16 -239 16 ) ( 16 -240 17 ) airfield/metal_generic_01 [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 16 -240 16 ) ( 16 -240 17 ) ( 17 -240 16 ) airfield/metal_generic_01 [ 1 0 0 -64 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 16 -240 16 ) ( 17 -240 16 ) ( 16 -239 16 ) airfield/metal_generic_01 [ 1 0 0 -64 ] [ 0 -1 0 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 48 -208 48 ) ( 48 -207 48 ) ( 49 -208 48 ) airfield/metal_generic_01 [ 1 0 0 -64 ] [ 0 -1 0 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 48 -192 32 ) ( 49 -192 32 ) ( 48 -192 33 ) airfield/metal_generic_01 [ 1 0 0 -64 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 64 -208 32 ) ( 64 -208 33 ) ( 64 -207 32 ) airfield/metal_generic_01 [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+}
+}
+// entity 4
+{
+"classname" "func_breakable"
+"material" "3"
+"health" "50"
+// brush 0
+{
+( 80 -240 16 ) ( 80 -239 16 ) ( 80 -240 17 ) dev/flesh [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 80 -240 16 ) ( 80 -240 17 ) ( 81 -240 16 ) dev/flesh [ 1 0 0 -128 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 80 -240 16 ) ( 81 -240 16 ) ( 80 -239 16 ) dev/flesh [ 1 0 0 -128 ] [ 0 -1 0 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 112 -208 48 ) ( 112 -207 48 ) ( 113 -208 48 ) dev/flesh [ 1 0 0 -128 ] [ 0 -1 0 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 112 -192 32 ) ( 113 -192 32 ) ( 112 -192 33 ) dev/flesh [ 1 0 0 -128 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 128 -208 32 ) ( 128 -208 33 ) ( 128 -207 32 ) dev/flesh [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+}
+}
+// entity 5
+{
+"classname" "func_breakable"
+"material" "4"
+"health" "50"
+// brush 0
+{
+( 144 -240 16 ) ( 144 -239 16 ) ( 144 -240 17 ) caviar/DirtyConcrete_01 [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 144 -240 16 ) ( 144 -240 17 ) ( 145 -240 16 ) caviar/DirtyConcrete_01 [ 1 0 0 -64 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 144 -240 16 ) ( 145 -240 16 ) ( 144 -239 16 ) caviar/DirtyConcrete_01 [ 1 0 0 -64 ] [ 0 -1 0 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 176 -208 48 ) ( 176 -207 48 ) ( 177 -208 48 ) caviar/DirtyConcrete_01 [ 1 0 0 -64 ] [ 0 -1 0 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 176 -192 32 ) ( 177 -192 32 ) ( 176 -192 33 ) caviar/DirtyConcrete_01 [ 1 0 0 -64 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 192 -208 32 ) ( 192 -208 33 ) ( 192 -207 32 ) caviar/DirtyConcrete_01 [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+}
+}
+// entity 6
+{
+"classname" "func_breakable"
+"material" "5"
+"health" "50"
+// brush 0
+{
+( 208 -240 16 ) ( 208 -239 16 ) ( 208 -240 17 ) wahoo/Floortile4 [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 208 -240 16 ) ( 208 -240 17 ) ( 209 -240 16 ) wahoo/Floortile4 [ 1 0 0 -128 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 208 -240 16 ) ( 209 -240 16 ) ( 208 -239 16 ) wahoo/Floortile4 [ 1 0 0 -128 ] [ 0 -1 0 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 240 -208 48 ) ( 240 -207 48 ) ( 241 -208 48 ) wahoo/Floortile4 [ 1 0 0 -128 ] [ 0 -1 0 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 240 -192 32 ) ( 241 -192 32 ) ( 240 -192 33 ) wahoo/Floortile4 [ 1 0 0 -128 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 256 -208 32 ) ( 256 -208 33 ) ( 256 -207 32 ) wahoo/Floortile4 [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+}
+}
+// entity 7
+{
+"classname" "func_breakable"
+"material" "6"
+"health" "50"
+// brush 0
+{
+( 272 -240 16 ) ( 272 -239 16 ) ( 272 -240 17 ) island/isle_computer5_5 [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 272 -240 16 ) ( 272 -240 17 ) ( 273 -240 16 ) island/isle_computer5_5 [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 272 -240 16 ) ( 273 -240 16 ) ( 272 -239 16 ) island/isle_computer5_5 [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 304 -208 48 ) ( 304 -207 48 ) ( 305 -208 48 ) island/isle_computer5_5 [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 304 -192 32 ) ( 305 -192 32 ) ( 304 -192 33 ) island/isle_computer5_5 [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 320 -208 32 ) ( 320 -208 33 ) ( 320 -207 32 ) island/isle_computer5_5 [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+}
+}
+// entity 8
+{
+"classname" "func_breakable"
+"material" "7"
+"health" "50"
+// brush 0
+{
+( 336 -240 16 ) ( 336 -239 16 ) ( 336 -240 17 ) japanese/glass_black [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 336 -240 16 ) ( 336 -240 17 ) ( 337 -240 16 ) japanese/glass_black [ 1 0 0 -64 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 336 -240 16 ) ( 337 -240 16 ) ( 336 -239 16 ) japanese/glass_black [ 1 0 0 -64 ] [ 0 -1 0 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 368 -208 48 ) ( 368 -207 48 ) ( 369 -208 48 ) japanese/glass_black [ 1 0 0 -64 ] [ 0 -1 0 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 368 -192 32 ) ( 369 -192 32 ) ( 368 -192 33 ) japanese/glass_black [ 1 0 0 -64 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 384 -208 32 ) ( 384 -208 33 ) ( 384 -207 32 ) japanese/glass_black [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+}
+}
+// entity 9
+{
+"classname" "func_breakable"
+"material" "8"
+"health" "50"
+// brush 0
+{
+( 400 -240 16 ) ( 400 -239 16 ) ( 400 -240 17 ) island/rock_wall_big1_4 [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 400 -240 16 ) ( 400 -240 17 ) ( 401 -240 16 ) island/rock_wall_big1_4 [ 1 0 0 -128 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 400 -240 16 ) ( 401 -240 16 ) ( 400 -239 16 ) island/rock_wall_big1_4 [ 1 0 0 -128 ] [ 0 -1 0 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 432 -208 48 ) ( 432 -207 48 ) ( 433 -208 48 ) island/rock_wall_big1_4 [ 1 0 0 -128 ] [ 0 -1 0 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 432 -192 32 ) ( 433 -192 32 ) ( 432 -192 33 ) island/rock_wall_big1_4 [ 1 0 0 -128 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( 448 -208 32 ) ( 448 -208 33 ) ( 448 -207 32 ) island/rock_wall_big1_4 [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+}
+}
+// entity 10
+{
+"classname" "func_breakable"
+"material" "0"
+"health" "50"
+// brush 0
+{
+( -112 -240 16 ) ( -112 -239 16 ) ( -112 -240 17 ) osato/glass_02 [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( -112 -240 16 ) ( -112 -240 17 ) ( -111 -240 16 ) osato/glass_02 [ 1 0 0 64 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( -112 -240 16 ) ( -111 -240 16 ) ( -112 -239 16 ) osato/glass_02 [ 1 0 0 64 ] [ 0 -1 0 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( -80 -208 48 ) ( -80 -207 48 ) ( -79 -208 48 ) osato/glass_02 [ 1 0 0 64 ] [ 0 -1 0 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( -80 -192 32 ) ( -79 -192 32 ) ( -80 -192 33 ) osato/glass_02 [ 1 0 0 64 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+( -64 -208 32 ) ( -64 -208 33 ) ( -64 -207 32 ) osato/glass_02 [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 0 wld_lightmap [ 16 0 ]
+}
+}
+// entity 11
+{
+"classname" "light"
+"origin" "184 -104 152"
+"_light" "255 255 255 200"
+}
