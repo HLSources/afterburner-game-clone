@@ -28,7 +28,7 @@ INCLUDE_PATHS = \
 	"../game_shared/gameplay",
 	"../../game_menu_shared",
 	"../miniutl",
-	"../utils/false_vgui/include"
+	"../utils/false_vgui/include",
 	"hl",
 	"events",
 	"projectInterface_client"
