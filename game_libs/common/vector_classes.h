@@ -130,3 +130,4 @@ inline Vector CrossProduct( const Vector& a, const Vector& b ) { return Vector( 
 #define VectorCopy(a,b) {(b)[0]=(a)[0];(b)[1]=(a)[1];(b)[2]=(a)[2];}
 #define VectorClear(a) {(a)[0]=0.0;(a)[1]=0.0;(a)[2]=0.0;}
 #define DotProduct(x, y) ((x)[0] * (y)[0] + (x)[1] * (y)[1] + (x)[2] * (y)[2])
+#define DotProduct2D(x, y) ((x)[0] * (y)[0] + (x)[1] * (y)[1])

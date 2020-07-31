@@ -92,7 +92,7 @@ public:
 	void PainSound( void );
 	void AttackSound( void );
 	void PrescheduleThink( void );
-	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
+	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, const TraceResult *ptr, int bitsDamageType );
 	int IRelationship( CBaseEntity *pTarget );
 	void StopTalking( void );
 	BOOL ShouldSpeak( void );
@@ -212,7 +212,7 @@ int CAGrunt::ISoundMask( void )
 //=========================================================
 // TraceAttack
 //=========================================================
-void CAGrunt::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType )
+void CAGrunt::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, const TraceResult *ptr, int bitsDamageType )
 {
 	if( ptr->iHitgroup == 10 && ( bitsDamageType & ( DMG_BULLET | DMG_SLASH | DMG_CLUB ) ) )
 	{

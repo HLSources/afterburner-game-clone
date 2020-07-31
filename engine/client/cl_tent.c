@@ -44,6 +44,7 @@ model_t		*cl_sprite_dot = NULL;
 model_t		*cl_sprite_ricochet = NULL;
 model_t		*cl_sprite_shell = NULL;
 model_t		*cl_sprite_glow = NULL;
+model_t		*cl_sprite_hitpuff = NULL;
 
 const char *cl_default_sprites[] =
 {
@@ -55,6 +56,7 @@ const char *cl_default_sprites[] =
 	"sprites/animglow01.spr",
 	"sprites/richo1.spr",
 	"sprites/shellchrome.spr",
+	"sprites/hitpuff.spr"
 };
 
 const char *cl_weapon_shell_sounds[] =
@@ -90,6 +92,7 @@ INTERNAL RESOURCE
 */
 void CL_LoadClientSprites( void )
 {
+	// TODO: This is disgusting, refactor.
 	cl_sprite_muzzleflash[0] = CL_LoadClientSprite( cl_default_sprites[0] );
 	cl_sprite_muzzleflash[1] = CL_LoadClientSprite( cl_default_sprites[1] );
 	cl_sprite_muzzleflash[2] = CL_LoadClientSprite( cl_default_sprites[2] );
@@ -98,6 +101,7 @@ void CL_LoadClientSprites( void )
 	cl_sprite_glow = CL_LoadClientSprite( cl_default_sprites[4] );
 	cl_sprite_ricochet = CL_LoadClientSprite( cl_default_sprites[5] );
 	cl_sprite_shell = CL_LoadClientSprite( cl_default_sprites[6] );
+	cl_sprite_hitpuff = CL_LoadClientSprite( cl_default_sprites[7] );
 }
 
 /*
@@ -1125,6 +1129,34 @@ TEMPENTITY *R_TempSprite( vec3_t pos, const vec3_t dir, float scale, int modelIn
 
 	if( life ) pTemp->die = cl.time + life;
 	else pTemp->die = cl.time + ( pTemp->frameMax * 0.1f ) + 1.0f;
+	pTemp->entity.curstate.frame = 0;
+
+	return pTemp;
+}
+
+TEMPENTITY* R_HitPuffSprite( vec3_t pos )
+{
+	TEMPENTITY* pTemp = NULL;
+
+	pTemp = CL_TempEntAlloc( pos, cl_sprite_hitpuff );
+
+	if( !pTemp )
+	{
+		return NULL;
+	}
+
+	pTemp->entity.curstate.framerate = 10;
+	pTemp->entity.curstate.rendermode = kRenderTransAdd;
+	pTemp->entity.curstate.renderfx = 0;
+	pTemp->entity.curstate.scale = 0.05f;
+	pTemp->entity.baseline.renderamt = 255;
+	pTemp->entity.curstate.renderamt = 255;
+	pTemp->flags |= FTENT_FADEOUT;
+
+	VectorCopy( vec3_origin, pTemp->entity.baseline.origin );
+
+	pTemp->die = cl.time + 0.35f;
+	pTemp->fadeSpeed = 2.0;
 	pTemp->entity.curstate.frame = 0;
 
 	return pTemp;
@@ -2279,6 +2311,12 @@ void CL_ParseTempEntity( sizebuf_t *msg )
 		color = MSG_ReadByte( &buf );
 		scale = (float)(MSG_ReadByte( &buf ) * 0.1f);
 		R_UserTracerParticle( pos, pos2, life, color, scale, 0, NULL );
+		break;
+	case TE_HITPUFF:
+		pos[0] = MSG_ReadCoord(&buf);
+		pos[1] = MSG_ReadCoord(&buf);
+		pos[2] = MSG_ReadCoord(&buf);
+		R_HitPuffSprite(pos);
 		break;
 	default:
 		Con_DPrintf( S_ERROR "ParseTempEntity: illegible TE message %i\n", type );

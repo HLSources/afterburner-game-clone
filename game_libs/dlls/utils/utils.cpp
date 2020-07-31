@@ -1111,13 +1111,28 @@ int UTIL_PointContents(	const Vector &vec )
 	return POINT_CONTENTS(vec);
 }
 
+static void BloodEffectForLowViolence(const Vector &origin)
+{
+	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, origin );
+		WRITE_BYTE( TE_HITPUFF );
+		WRITE_COORD( origin.x );
+		WRITE_COORD( origin.y );
+		WRITE_COORD( origin.z );
+	MESSAGE_END();
+}
+
 void UTIL_BloodStream( const Vector &origin, const Vector &direction, int color, int amount )
 {
 	if( !UTIL_ShouldShowBlood( color ) )
+	{
+		BloodEffectForLowViolence(origin);
 		return;
+	}
 
 	if( g_Language == LANGUAGE_GERMAN && color == BLOOD_COLOR_RED )
+	{
 		color = 0;
+	}
 
 	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, origin );
 		WRITE_BYTE( TE_BLOODSTREAM );
@@ -1135,7 +1150,10 @@ void UTIL_BloodStream( const Vector &origin, const Vector &direction, int color,
 void UTIL_BloodDrips( const Vector &origin, const Vector &direction, int color, int amount )
 {
 	if( !UTIL_ShouldShowBlood( color ) )
+	{
+		BloodEffectForLowViolence(origin);
 		return;
+	}
 
 	if( color == DONT_BLEED || amount == 0 )
 		return;

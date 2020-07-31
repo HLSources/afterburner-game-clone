@@ -194,9 +194,9 @@ void CBaseAnimating::GetAutomovement( Vector &origin, Vector &angles, float flIn
 void CBaseAnimating::SetBodygroup( int iGroup, int iValue ) { }
 int CBaseAnimating::GetBodygroup( int iGroup ) { return 0; }
 Vector CBaseMonster::GetGunPosition( void ) { return g_vecZero; }
-void CBaseEntity::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType ) { }
+void CBaseEntity::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, const TraceResult *ptr, int bitsDamageType ) { }
 void CBaseEntity::FireBullets( ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage, entvars_t *pevAttacker ) { }
-void CBaseEntity::TraceBleed( float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType ) { }
+void CBaseEntity::TraceBleed( float flDamage, Vector vecDir, const TraceResult *ptr, int bitsDamageType ) { }
 void CBaseMonster::MakeDamageBloodDecal( int cCount, float flNoise, TraceResult *ptr, const Vector &vecDir ) { }
 BOOL CBaseMonster::FGetNodeRoute( Vector vecDest ) { return TRUE; }
 int CBaseMonster::FindHintNode( void ) { return NO_NODE; }
@@ -215,7 +215,7 @@ void CBaseMonster::CorpseFallThink( void ) { }
 void CBaseMonster::MonsterInitDead( void ) { }
 BOOL CBaseMonster::BBoxFlat( void ) { return TRUE; }
 BOOL CBaseMonster::GetEnemy( void ) { return FALSE; }
-void CBaseMonster::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType) { }
+void CBaseMonster::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, const TraceResult *ptr, int bitsDamageType) { }
 CBaseEntity* CBaseMonster::DropItem( const char *pszItemName, const Vector &vecPos, const Vector &vecAng ) { return NULL; }
 BOOL CBaseMonster::ShouldFadeOnDeath( void ) { return FALSE; }
 void CBaseMonster::RadiusDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int iClassIgnore, int bitsDamageType ) { }
@@ -242,7 +242,7 @@ int CBaseMonster::Save( class CSave & ) { return 1; }
 int TrainSpeed( int iSpeed, int iMax ) { return 0; }
 void CBasePlayer::DeathSound( void ) { }
 int CBasePlayer::TakeHealth( float flHealth, int bitsDamageType ) { return 0; }
-void CBasePlayer::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType) { }
+void CBasePlayer::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, const TraceResult *ptr, int bitsDamageType) { }
 int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType ) { return 0; }
 void CBasePlayer::PackDeadPlayerItems( void ) { }
 void CBasePlayer::RemoveAllItems( BOOL removeSuit ) { }

@@ -181,7 +181,7 @@ public:
 	void StartTask( Task_t *pTask );
 	Schedule_t *GetSchedule( void );
 	Schedule_t *GetScheduleOfType( int Type );
-	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
+	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, const TraceResult *ptr, int bitsDamageType );
 
 	void NodeStart( int iszNextNode );
 	void NodeReach( void );
@@ -535,7 +535,7 @@ void CBigMomma::HandleAnimEvent( MonsterEvent_t *pEvent )
 	}
 }
 
-void CBigMomma::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType )
+void CBigMomma::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, const TraceResult *ptr, int bitsDamageType )
 {
 	if( ptr->iHitgroup != 1 )
 	{

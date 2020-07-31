@@ -181,12 +181,12 @@ public:
 
 	static TYPEDESCRIPTION m_SaveData[];
 
-	virtual void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
+	virtual void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, const TraceResult *ptr, int bitsDamageType);
 	virtual int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 	virtual int TakeHealth( float flHealth, int bitsDamageType );
 	virtual void Killed( entvars_t *pevAttacker, int iGib );
 	virtual int BloodColor( void ) { return DONT_BLEED; }
-	virtual void TraceBleed( float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
+	virtual void TraceBleed( float flDamage, Vector vecDir, const TraceResult *ptr, int bitsDamageType );
 	virtual BOOL IsTriggered( CBaseEntity *pActivator ) {return TRUE; }
 	virtual CBaseMonster *MyMonsterPointer( void ) { return NULL; }
 	virtual CSquadMonster *MySquadMonsterPointer( void ) { return NULL; }

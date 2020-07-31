@@ -1914,7 +1914,8 @@ int Con_DrawDebugLines( void )
 	{
 		if( host.realtime < con.notify[i].expire && con.notify[i].key_dest == cls.key_dest )
 		{
-			int	x, len;
+			int	x = 0;
+			int len = 0;
 			int	fontTall = 0;
 
 			Con_DrawStringLen( con.notify[i].szNotify, &len, &fontTall );
@@ -1922,7 +1923,9 @@ int Con_DrawDebugLines( void )
 			fontTall += 1;
 
 			if( y + fontTall > refState.height - 20 )
+			{
 				return count;
+			}
 
 			count++;
 			y = 20 + fontTall * i;

@@ -1150,6 +1150,8 @@ void R_DrawCubemapView( const vec3_t origin, const vec3_t angles, int size )
 	rvp.viewport[0] = rvp.viewport[1] = 0;
 	rvp.viewport[2] = rvp.viewport[3] = size;
 	rvp.fov_x = rvp.fov_y = 90.0f; // this is a final fov value
+	rvp.viewmodelfov_x = 90.0f;
+	rvp.viewmodelfov_y = 90.0f;
 
 	// setup origin & angles
 	VectorCopy( origin, rvp.vieworigin );

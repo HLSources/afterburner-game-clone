@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   This source code contains proprietary and confidential information of
@@ -23,7 +23,7 @@
 #include "effects.h"
 #include "customentity.h"
 
-typedef struct 
+typedef struct
 {
 	int isValid;
 	EHANDLE hGrunt;
@@ -63,7 +63,7 @@ public:
 	void EXPORT CommandUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 
 	// int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
-	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
+	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, const TraceResult *ptr, int bitsDamageType );
 	void ShowDamage( void );
 
 	CBaseEntity *m_pGoalEnt;
@@ -304,7 +304,7 @@ CBaseMonster *COsprey::MakeGrunt( Vector vecSrc )
 			pBeam->SetThink( &CBaseEntity::SUB_Remove );
 			pBeam->pev->nextthink = gpGlobals->time + -4096.0 * tr.flFraction / pGrunt->pev->velocity.z + 0.5;
 
-			// ALERT( at_console, "%d at %.0f %.0f %.0f\n", i, m_vecOrigin[i].x, m_vecOrigin[i].y, m_vecOrigin[i].z );  
+			// ALERT( at_console, "%d at %.0f %.0f %.0f\n", i, m_vecOrigin[i].x, m_vecOrigin[i].y, m_vecOrigin[i].z );
 			pGrunt->m_vecLastPosition = m_vecOrigin[i];
 			m_hGrunt[i] = pGrunt;
 			return pGrunt;
@@ -445,14 +445,14 @@ void COsprey::Flight()
 		CBaseEntity *pPlayer = NULL;
 
 		pPlayer = UTIL_FindEntityByClassname( NULL, "player" );
-		// UNDONE: this needs to send different sounds to every player for multiplayer.	
+		// UNDONE: this needs to send different sounds to every player for multiplayer.
 		if( pPlayer )
 		{
 			float pitch = DotProduct( m_velocity - pPlayer->pev->velocity, ( pPlayer->pev->origin - pev->origin ).Normalize() );
 
 			pitch = (int)( 100 + pitch / 75.0 );
 
-			if( pitch > 250 ) 
+			if( pitch > 250 )
 				pitch = 250;
 			if( pitch < 50 )
 				pitch = 50;
@@ -576,12 +576,12 @@ void COsprey::DyingThink( void )
 			WRITE_COORD( 132 );
 
 			// velocity
-			WRITE_COORD( pev->velocity.x ); 
+			WRITE_COORD( pev->velocity.x );
 			WRITE_COORD( pev->velocity.y );
 			WRITE_COORD( pev->velocity.z );
 
 			// randomization
-			WRITE_BYTE( 50 ); 
+			WRITE_BYTE( 50 );
 
 			// Model
 			WRITE_SHORT( m_iTailGibs );	//model id#
@@ -682,12 +682,12 @@ void COsprey::DyingThink( void )
 			WRITE_COORD( 128 );
 
 			// velocity
-			WRITE_COORD( m_velocity.x ); 
+			WRITE_COORD( m_velocity.x );
 			WRITE_COORD( m_velocity.y );
 			WRITE_COORD( fabs( m_velocity.z ) * 0.25 );
 
 			// randomization
-			WRITE_BYTE( 40 ); 
+			WRITE_BYTE( 40 );
 
 			// Model
 			WRITE_SHORT( m_iBodyGibs );	//model id#
@@ -740,7 +740,7 @@ void COsprey::ShowDamage( void )
 	}
 }
 
-void COsprey::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType )
+void COsprey::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, const TraceResult *ptr, int bitsDamageType )
 {
 	// ALERT( at_console, "%d %.0f\n", ptr->iHitgroup, flDamage );
 

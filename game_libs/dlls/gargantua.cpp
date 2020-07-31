@@ -204,7 +204,7 @@ public:
 	void SetYawSpeed( void );
 	int Classify( void );
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
-	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
+	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, const TraceResult *ptr, int bitsDamageType );
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 
 	BOOL CheckMeleeAttack1( float flDot, float flDist );		// Swipe
@@ -796,7 +796,7 @@ void CGargantua::UpdateOnRemove()
 	FlameDestroy();
 }
 
-void CGargantua::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType )
+void CGargantua::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, const TraceResult *ptr, int bitsDamageType )
 {
 	ALERT( at_aiconsole, "CGargantua::TraceAttack\n" );
 
