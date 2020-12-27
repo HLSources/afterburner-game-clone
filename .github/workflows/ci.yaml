@@ -43,9 +43,9 @@ jobs:
     - name: Install
       run: python3 waf install --strip-to-file
     - name: Create .tar.gz
-      run: tar -zcvf 'afterburner-linux-32bit-${{GITHUB_SHA}}.tar.gz' --exclude='*.debug' ./build/release/${{runner.temp}}
+      run: tar -zcvf 'afterburner-linux-32bit-$GITHUB_SHA.tar.gz' --exclude='*.debug' ./build/release/${{runner.temp}}
     - name: Archive build artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: afterburner-linux-32bit-${{GITHUB_SHA}}
-        path: afterburner-linux-32bit-${{GITHUB_SHA}}.tar.gz
+        name: afterburner-linux-32bit-$GITHUB_SHA
+        path: afterburner-linux-32bit-$GITHUB_SHA.tar.gz
