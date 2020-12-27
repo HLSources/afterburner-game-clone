@@ -27,7 +27,7 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
       with:
-        submodules: 'recursive'
+        submodules: recursive
     - name: Set up for 32-bit compile
       run: |
         sudo dpkg --add-architecture i386
@@ -35,7 +35,7 @@ jobs:
         sudo apt-get install gcc-multilib g++-multilib libsdl2-dev:i386 libfontconfig-dev:i386 libfreetype6-dev:i386
     # Runs a set of commands using the runners shell
     - name: Configure for release
-      run: python3 waf configure --disable-vgui --win-style-install --build-type=release --prefix=./build/release/${{runner.temp}}
+      run: python3 waf configure --disable-vgui --win-style-install --build-type=release --prefix="${{runner.temp}}/afterburner-release"
     - name: Clean
       run: python3 waf clean
     - name: Build
@@ -43,9 +43,11 @@ jobs:
     - name: Install
       run: python3 waf install --strip-to-file
     - name: Create .tar.gz
-      run: tar -zcvf 'afterburner-linux-32bit-$GITHUB_SHA.tar.gz' --exclude='*.debug' ./build/release/${{runner.temp}}
+      run: |
+        cd "${{runner.temp}}/afterburner-release"
+        tar -zcvf "afterburner-linux-32bit-${{env.GITHUB_SHA}}.tar.gz" --exclude="*.debug" .
     - name: Archive build artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: afterburner-linux-32bit-$GITHUB_SHA
-        path: afterburner-linux-32bit-$GITHUB_SHA.tar.gz
+        name: afterburner-linux-32bit-${{env.GITHUB_SHA}}.tar.gz
+        path: afterburner-linux-32bit-${{env.GITHUB_SHA}}.tar.gz
