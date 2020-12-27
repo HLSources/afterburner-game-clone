@@ -45,9 +45,9 @@ jobs:
     - name: Create .tar.gz
       run: |
         cd "${{runner.temp}}"
-        tar -zcvf "afterburner-linux-32bit-${{env.GITHUB_SHA}}.tar.gz" --exclude="*.debug" ./afterburner-release
+        tar -zcvf "afterburner-linux-32bit.tar.gz" --exclude="*.debug" ./afterburner-release
     - name: Archive build artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: afterburner-linux-32bit-${{env.GITHUB_SHA}}.tar.gz
-        path: afterburner-linux-32bit-${{env.GITHUB_SHA}}.tar.gz
+        name: afterburner-linux-32bit.tar.gz
+        path: "${{runner.temp}}/afterburner-linux-32bit.tar.gz"
