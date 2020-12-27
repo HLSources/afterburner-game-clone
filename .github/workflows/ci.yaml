@@ -44,7 +44,7 @@ jobs:
       run: python3 waf build
     - name: Install
       run: python3 waf install --strip-to-file
-    -name: Create .tar.gz
+    - name: Create .tar.gz
       run: tar -zcvf ${{artifactName}}.tar.gz --exclude='*.debug' ./build/release/${{runner.temp}}
     - name: Archive build artifacts
       uses: actions/upload-artifact@v2
