@@ -45,9 +45,9 @@ jobs:
     - name: Install
       run: python3 waf install --strip-to-file
     - name: Archive build artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: afterburner-build
-          path: |
-            build/release/${{runner.temp}}
-            !build/release/${{runner.temp}}/*.pdb
+      uses: actions/upload-artifact@v2
+      with:
+        name: afterburner-build
+        path: |
+          build/release/${{runner.temp}}
+          !build/release/${{runner.temp}}/*.pdb
