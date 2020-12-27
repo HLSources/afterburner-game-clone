@@ -13,7 +13,7 @@ name: CI
 # While testing, let's just use the test branch
 on:
 	push:
-		branches: [ github-actions ]
+		branches: [ 'github-actions' ]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
