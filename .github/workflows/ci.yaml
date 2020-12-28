@@ -50,7 +50,12 @@ jobs:
     - name: Archive build artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: ${{env.artifactName}}.tar.gz
+        name: afterburner-linux-32bit
         # For some stupid reason, the $GITHUB_SHA variable is not expanded in this path string.
         # Instead, we use a wildcard for the .tar.gz file
         path: "${{runner.temp}}/*.tar.gz"
+    - name: Bump version and push tag
+      uses: anothrNick/github-tag-action@1.26.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        WITH_V: true
