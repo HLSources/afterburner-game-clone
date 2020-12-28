@@ -60,6 +60,9 @@ jobs:
     runs-on: windows-latest
     env:
       artifactName: afterburner-windows-32bit-$GITHUB_SHA
+      sdl2url: https://www.libsdl.org/release/SDL2-devel-2.0.14-VC.zip
     steps:
-    - name: Test to see if Python is available
-      run: python --version
+    - name: Download SDL2
+      run: python -c "import requests; sdl2file = requests.get('${{env.sdl2url}}'); open('${{runner.temp}}/SDL2/SDL2.zip', 'wb').write(sdl2file.content)"
+    - name: Check SDL2 downloaded
+      run: ls "${{runner.temp}}/SDL2"
