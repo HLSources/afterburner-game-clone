@@ -54,6 +54,7 @@ on:
 #         # Instead, we use a wildcard for the .tar.gz file
 #         path: "${{runner.temp}}/*.tar.gz"
 
+jobs:
   build-windows:
     name: Build on Windows Latest
     runs-on: windows-latest
