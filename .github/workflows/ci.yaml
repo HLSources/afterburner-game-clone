@@ -59,7 +59,7 @@ jobs:
     name: Build on Windows Latest
     runs-on: windows-latest
     env:
-      artifactName: afterburner-windows-32bit-$GITHUB_SHA
+      artifactName: afterburner-windows-32bit-$env:GITHUB_SHA
       sdl2url: https://www.libsdl.org/release/SDL2-devel-2.0.14-VC.zip
     steps:
     - name: Install Python wget
