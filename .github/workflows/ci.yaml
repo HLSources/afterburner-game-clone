@@ -84,11 +84,9 @@ jobs:
     - name: Install
       run: python waf install --strip-to-file
     - name: Create Zip
-      run: Compress-Archive -LiteralPath "${{runner.temp}}\${{env.artifactName}}" -DestinationPath "${{env.artifactName}}.zip"
+      run: Compress-Archive -LiteralPath "${{runner.temp}}\${{env.artifactName}}" -DestinationPath "${{runner.temp}}\${{env.artifactName}}.zip"
     - name: Archive build artifacts
       uses: actions/upload-artifact@v2
       with:
         name: afterburner-windows-32bit
-        # For some stupid reason, the $GITHUB_SHA variable is not expanded in this path string.
-        # Instead, we use a wildcard for the .zip file
         path: "${{runner.temp}}/*.zip"
