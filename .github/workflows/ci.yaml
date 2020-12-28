@@ -65,12 +65,13 @@ jobs:
       - name: Install 7Zip
         run: |
           $Installer7Zip = $env:TEMP + "\7z1900-x64.msi";
-          Invoke-WebRequest "https://www.7-zip.org/a/7z1900-x64.msi" -OutFile
-          $Installer7Zip;
+          Invoke-WebRequest "https://www.7-zip.org/a/7z1900-x64.msi" -OutFile $Installer7Zip;
           msiexec /i $Installer7Zip /qb;
           Remove-Item $Installer7Zip;
       - name: Test 7Zip
         run: 7z
+    # Later, we will run:
+    #   & "C:\Program Files\7-Zip\7z.exe" "a" "-tzip" "myzip.zip" "myfolder\" "-xr!*.pdb" "-xr!*.lib"
     # - name: Install Python wget
     #   run: python -m pip install wget
     # - name: Download SDL2
