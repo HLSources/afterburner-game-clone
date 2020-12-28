@@ -51,4 +51,6 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: ${{env.artifactName}}.tar.gz
-        path: "${{runner.temp}}/${{env.artifactName}}.tar.gz"
+        # For some stupid reason, the $GITHUB_SHA variable is not expanded in this path string.
+        # Instead, we use a wildcard for the .tar.gz file
+        path: "${{runner.temp}}/*.tar.gz"
