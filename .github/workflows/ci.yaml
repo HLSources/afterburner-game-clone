@@ -70,4 +70,23 @@ jobs:
         md SDL2 -ea 0
         python -c "import wget; wget.download('${{env.sdl2url}}', 'SDL2/SDL2.zip')"
         popd
-        ls "${{runner.temp}}\SDL2"
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Configure for release
+      run: python3 waf configure --disable-vgui --win-style-install --build-type=release --prefix="${{runner.temp}}/${{env.artifactName}}" --sdl2="${{runner.temp}}/SDL2"
+    - name: Clean
+      run: python3 waf clean
+    - name: Build
+      run: python3 waf build
+    - name: Install
+      run: python3 waf install --strip-to-file
+    - name: Create Zip
+      run: Compress-Archive -LiteralPath "${{runner.temp}}\${{env.artifactName}}" -DestinationPath "${{env.artifactName}}.zip"
+    - name: Archive build artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: afterburner-windows-32bit
+        # For some stupid reason, the $GITHUB_SHA variable is not expanded in this path string.
+        # Instead, we use a wildcard for the .zip file
+        path: "${{runner.temp}}/*.zip"
