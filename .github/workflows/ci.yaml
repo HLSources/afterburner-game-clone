@@ -67,6 +67,7 @@ jobs:
     - name: Download SDL2
       run: |
         pushd ${{runner.temp}}
+        md SDL2 -ea 0
         python -c "import wget; wget.download('${{env.sdl2url}}', 'SDL2/SDL2.zip')"
         popd
         ls "${{runner.temp}}\SDL2"
