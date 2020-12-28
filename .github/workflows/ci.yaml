@@ -70,11 +70,13 @@ jobs:
         md SDL2 -ea 0
         python -c "import wget; wget.download('${{env.sdl2url}}', 'SDL2/SDL2.zip')"
         popd
+    - name: Extract SDL2
+      run: Expand-Archive -LiteralPath "${{runner.temp}}\SDL2\SDL2.zip" -DestinationPath "${{runner.temp}}\SDL2"
     - uses: actions/checkout@v2
       with:
         submodules: recursive
     - name: Configure for release
-      run: python waf configure --disable-vgui --win-style-install --build-type=release --prefix="${{runner.temp}}/${{env.artifactName}}" --sdl2="${{runner.temp}}/SDL2"
+      run: python waf configure --disable-vgui --win-style-install --build-type=release --prefix="${{runner.temp}}\${{env.artifactName}}" --sdl2="${{runner.temp}}\SDL2\SDL2-2.0.14"
     - name: Clean
       run: python waf clean
     - name: Build
