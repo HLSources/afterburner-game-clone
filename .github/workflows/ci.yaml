@@ -21,11 +21,12 @@ jobs:
     name: Build on Ubuntu Latest
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
-
+    env:
+      artifactName: afterburner-linux-32bit-$GITHUB_SHA
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     - name: Test
-      run: echo "afterburner-build-$GITHUB_SHA"
+      run: echo ${{env.artifactName}}
     # # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     # - uses: actions/checkout@v2
     #   with:
