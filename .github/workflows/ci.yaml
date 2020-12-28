@@ -61,8 +61,5 @@ jobs:
     env:
       artifactName: afterburner-windows-32bit-$GITHUB_SHA
     steps:
-    - uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
     - name: Test to see if Python is available
-      run: python3 --version
+      run: python --version
