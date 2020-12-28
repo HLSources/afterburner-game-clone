@@ -64,10 +64,9 @@ jobs:
     steps:
       - name: Install 7Zip
         run: |
-          $Installer7Zip = $env:TEMP + "\7z1900-x64.msi";
-          Invoke-WebRequest "https://www.7-zip.org/a/7z1900-x64.msi" -OutFile $Installer7Zip;
-          msiexec /i $Installer7Zip /qb;
-          Remove-Item $Installer7Zip;
+          Invoke-WebRequest "https://www.7-zip.org/a/7z1900-x64.msi" -OutFile "${{runner.temp}}\7z1900-x64.msi";
+          msiexec /i "${{runner.temp}}\7z1900-x64.msi" /qb;
+          Remove-Item "${{runner.temp}}\7z1900-x64.msi";
       - name: Install Python wget
         run: python -m pip install wget
       - name: Download SDL2
@@ -90,7 +89,7 @@ jobs:
       - name: Install
         run: python waf install --strip-to-file
       - name: Create Zip
-        run: C:\Program Files\7-Zip\7z.exe a -tzip "${{runner.temp}}\${{env.artifactName}}.zip" "${{runner.temp}}\${{env.artifactName}}\\" "-xr!*.pdb" "-xr!*.lib"
+        run: 7z.exe a -tzip "${{runner.temp}}\${{env.artifactName}}.zip" "${{runner.temp}}\${{env.artifactName}}\\" "-xr!*.pdb" "-xr!*.lib"
       - name: Archive build artifacts
         uses: actions/upload-artifact@v2
         with:
