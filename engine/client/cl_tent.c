@@ -1598,11 +1598,7 @@ void GAME_EXPORT R_Explosion( vec3_t pos, int model, float scale, float framerat
 
 	if( !FBitSet( flags, TE_EXPLFLAG_NOSOUND ))
 	{
-<<<<<<< HEAD
-		hSound = S_RegisterSound( va( "%s", cl_explode_sounds[COM_RandomLong( 0, ARRAYSIZE( cl_explode_sounds ) - 1 )] ));
-=======
-		hSound = S_RegisterSound( cl_explode_sounds[COM_RandomLong( 0, 2 )] );
->>>>>>> upstream/master
+		hSound = S_RegisterSound( cl_explode_sounds[COM_RandomLong( 0, ARRAYSIZE( cl_explode_sounds ) - 1 )] );
 		S_StartSound( pos, 0, CHAN_STATIC, hSound, VOL_NORM, 0.3f, PITCH_NORM, 0 );
 	}
 }
