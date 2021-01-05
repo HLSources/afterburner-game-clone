@@ -1,6 +1,8 @@
 Afterburner
 ===========
 
+![CI](https://github.com/x6herbius/afterburner-game/workflows/CI/badge.svg)
+
 *(Working title)*
 
 Open-source reboot of [James Bond 007: Nightfire](https://en.wikipedia.org/wiki/James_Bond_007:_Nightfire). The primary purpose of this mod is to recreate and improve the experience of the PC version of Nightfire, and to provide in the process an open-source codebase that will allow for extension and refinement. The Xash3D (GoldSrc) engine was chosen because its codebase is fully available, it's smaller and simpler than Source, it's closer to the genuine Nightfire engine, and it doesn't come with the expectation that games will be photorealistic (I don't have the time or the energy as a single hobbyist to be working on some sort of HD photorealistic remake).
