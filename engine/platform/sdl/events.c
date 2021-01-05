@@ -356,6 +356,48 @@ static void SDLash_ActiveEvent( int gain )
 	}
 }
 
+#if SDL_VERSION_ATLEAST( 2, 0, 0 )
+static size_t num_open_game_controllers = 0;
+
+static void SDLash_GameController_Add( int index )
+{
+	extern convar_t *joy_enable; // private to input system
+	SDL_GameController *controller;
+	if( !joy_enable->value )
+		return;
+	controller = SDL_GameControllerOpen( index );
+	if( !controller )
+	{
+		Con_Reportf( "Failed to open SDL GameController %d: %s\n", index, SDL_GetError( ) );
+		SDL_ClearError( );
+		return;
+	}
+#if SDL_VERSION_ATLEAST( 2, 0, 6 )
+	Con_Reportf( "Added controller: %s (%i:%i:%i)\n",
+		SDL_GameControllerName( controller ),
+		SDL_GameControllerGetVendor( controller ),
+		SDL_GameControllerGetProduct( controller ),
+		SDL_GameControllerGetProductVersion( controller ));
+#endif // SDL_VERSION_ATLEAST( 2, 0, 6 )
+
+	++num_open_game_controllers;
+	if( num_open_game_controllers == 1 )
+		Joy_AddEvent( );
+}
+
+
+static void SDLash_GameController_Remove( SDL_JoystickID joystick_id )
+{
+	Con_Reportf( "Removed controller %i\n", joystick_id );
+
+	// `Joy_RemoveEvent` sets `joy_found` to `0`.
+	// We only want to do this when all the game controllers have been removed.
+	--num_open_game_controllers;
+	if( num_open_game_controllers == 0 )
+		Joy_RemoveEvent( );
+}
+#endif
+
 /*
 =============
 SDLash_EventFilter
@@ -390,20 +432,24 @@ static void SDLash_EventFilter( SDL_Event *event )
 
 	/* Joystick events */
 	case SDL_JOYAXISMOTION:
-		Joy_AxisMotionEvent( event->jaxis.axis, event->jaxis.value );
+		if ( SDL_GameControllerFromInstanceID( event->jaxis.which ) == NULL )
+			Joy_AxisMotionEvent( event->jaxis.axis, event->jaxis.value );
 		break;
 
 	case SDL_JOYBALLMOTION:
-		Joy_BallMotionEvent( event->jball.ball, event->jball.xrel, event->jball.yrel );
+		if ( SDL_GameControllerFromInstanceID( event->jball.which ) == NULL )
+			Joy_BallMotionEvent( event->jball.ball, event->jball.xrel, event->jball.yrel );
 		break;
 
 	case SDL_JOYHATMOTION:
-		Joy_HatMotionEvent( event->jhat.hat, event->jhat.value );
+		if ( SDL_GameControllerFromInstanceID( event->jhat.which ) == NULL )
+			Joy_HatMotionEvent( event->jhat.hat, event->jhat.value );
 		break;
 
 	case SDL_JOYBUTTONDOWN:
 	case SDL_JOYBUTTONUP:
-		Joy_ButtonEvent( event->jbutton.button, event->jbutton.state );
+		if ( SDL_GameControllerFromInstanceID( event->jbutton.which ) == NULL )
+			Joy_ButtonEvent( event->jbutton.button, event->jbutton.state );
 		break;
 
 	case SDL_QUIT:
@@ -514,16 +560,16 @@ static void SDLash_EventFilter( SDL_Event *event )
 
 		// TODO: Use joyinput funcs, for future multiple gamepads support
 		if( Joy_IsActive() )
-			Key_Event( sdlControllerButtonToEngine[event->cbutton.button], event->cbutton.state );
+			Key_Event( sdlControllerButtonToEngine[event->cbutton.button + 1], event->cbutton.state );
 		break;
 	}
 
 	case SDL_CONTROLLERDEVICEADDED:
-		Joy_AddEvent( );
+		SDLash_GameController_Add( event->cdevice.which );
 		break;
 
 	case SDL_CONTROLLERDEVICEREMOVED:
-		Joy_RemoveEvent( );
+		SDLash_GameController_Remove( event->cdevice.which );
 		break;
 
 	case SDL_WINDOWEVENT:

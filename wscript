@@ -283,10 +283,15 @@ def configure(conf):
 		#'-Werror=duplicated-branches', # BEWARE: buggy (also breaks stb_image.h)
 		'-Werror=bool-compare',
 		'-Werror=bool-operation',
-		'-Werror=uninitialized',
-		'-Winit-self',
+		'-Werror=cast-align',
+		'-Werror=cast-align=strict', # =strict is for GCC >=8
+		'-Werror=packed',
+		'-Werror=packed-not-aligned',
+		'-Werror=uninitialized', # older GCC versions have -Wmaybe-uninitialized enabled by this switch, which is not accurate
+                                   # so just warn, not error
+		'-Werror=init-self',
 		'-Werror=implicit-fallthrough=2', # clang incompatible without "=2"
-#		'-Wdouble-promotion', # disable warning flood, causes super irritating warnings with variadic functions
+		#'-Wdouble-promotion', # disable warning flood, causes super irritating warnings with variadic functions
 		#'-Wstrict-aliasing', # Certain C code casts pointers around and causes these warnings
 	]
 

@@ -293,7 +293,7 @@ typedef struct enginefuncs_s
 
 	int (*pfnGetHitboxHitGroup)(const edict_t* edict, uint32_t hitboxIndex);
 } enginefuncs_t;
-// ONLY ADD NEW FUNCTIONS TO THE END OF THIS STRUCT.
+// ONLY ADD NEW FUNCTIONS TO THE END OF THIS STRUCT.  INTERFACE VERSION IS FROZEN AT 138
 
 // Passed to pfnKeyValue
 typedef struct KeyValueData_s
@@ -503,6 +503,8 @@ typedef struct
 	// For now, this will do as a hacky solution.
 	const char* (*pfnGetRandomWaterTransitionSound)(void);
 } DLL_FUNCTIONS;
+
+extern DLL_FUNCTIONS		gEntityInterface;
 
 // Current version.
 #define NEW_DLL_FUNCTIONS_VERSION	1

@@ -41,12 +41,17 @@ void GAME_EXPORT GL_FreeImage( const char *name )
 		 ref.dllFuncs.GL_FreeTexture( texnum );
 }
 
-void GL_RenderFrame( const ref_viewpass_t *rvp )
+void R_UpdateRefState( void )
 {
 	refState.time      = cl.time;
 	refState.oldtime   = cl.oldtime;
 	refState.realtime  = host.realtime;
 	refState.frametime = host.frametime;
+}
+
+void GL_RenderFrame( const ref_viewpass_t *rvp )
+{
+	R_UpdateRefState();
 
 	VectorCopy( rvp->vieworigin, refState.vieworg );
 	VectorCopy( rvp->viewangles, refState.viewangles );
@@ -504,7 +509,7 @@ void R_Shutdown( void )
 
 static void R_GetRendererName( char *dest, size_t size, const char *opt )
 {
-	if( !Q_strstr( opt, va( ".%s", OS_LIB_EXT )))
+	if( !Q_strstr( opt, "." OS_LIB_EXT ))
 	{
 		const char *format;
 
@@ -665,17 +670,20 @@ qboolean R_Init( void )
 
 	if( !(success = R_LoadRenderer( refopt )))
 	{
-		// check if we are tried to load default accelearated renderer already
-		// and if not, load it first
-		if( Q_strcmp( refopt, DEFAULT_ACCELERATED_RENDERER ) )
-		{
-			success = R_LoadRenderer( refopt );
-		}
+		int i;
 
-		// software renderer is the last chance...
-		if( !success )
+		// cycle through renderers that we collected in CollectRendererNames
+		for( i = 0; i < ref.numRenderers; i++ )
 		{
-			success = R_LoadRenderer( DEFAULT_SOFTWARE_RENDERER );
+			// skip renderer that was requested but failed to load
+			if( Q_strcmp( refopt, ref.shortNames[i] ))
+				continue;
+
+			success = R_LoadRenderer( ref.shortNames[i] );
+
+			// yay, found working one
+			if( success )
+				break;
 		}
 	}
 

@@ -396,7 +396,7 @@ delta_info_t *Delta_FindStructByEncoder( const char *encoderName )
 {
 	int	i;
 
-	if( !encoderName || !encoderName[0] )
+	if( !COM_CheckString( encoderName ) )
 		return NULL;
 
 	for( i = 0; i < NUM_FIELDS( dt_info ); i++ )
@@ -1755,9 +1755,15 @@ void MSG_WriteDeltaEntity( entity_state_t *from, entity_state_t *to, sizebuf_t *
 
 	DEBUG_SOURCE_SET(SetDebugSourceFromEntityState, from);
 
-	if( !to && from )
+	if( to == NULL )
 	{
-		int	fRemoveType = 1;
+		int	fRemoveType;
+
+		if( from == NULL )
+		{
+			DEBUG_SOURCE_CLEAR();
+			return;
+		}
 
 		// a NULL to is a delta remove message
 		MSG_WriteUBitLong( msg, from->number, MAX_ENTITY_BITS );
@@ -1770,88 +1776,92 @@ void MSG_WriteDeltaEntity( entity_state_t *from, entity_state_t *to, sizebuf_t *
 		{
 			fRemoveType = 2;
 		}
+		else
+		{
+			fRemoveType = 1;
+		}
 
 		MSG_WriteUBitLong( msg, fRemoveType, 2 );
+		DEBUG_SOURCE_CLEAR();
+		return;
+	}
+
+	startBit = msg->iCurBit;
+
+	if( to->number < 0 || to->number >= GI->max_edicts )
+	{
+		Host_Error( "MSG_WriteDeltaEntity: Bad entity number: %i\n", to->number );
+	}
+
+	MSG_WriteUBitLong( msg, to->number, MAX_ENTITY_BITS );
+	MSG_WriteUBitLong( msg, 0, 2 ); // alive
+
+	if( baseline != 0 )
+	{
+		MSG_WriteOneBit( msg, 1 );
+		MSG_WriteSBitLong( msg, baseline, 7 );
 	}
 	else
 	{
-		startBit = msg->iCurBit;
+		MSG_WriteOneBit( msg, 0 );
+	}
 
-		if( to->number < 0 || to->number >= GI->max_edicts )
+	if( force || ( to->entityType != from->entityType ))
+	{
+		MSG_WriteOneBit( msg, 1 );
+		MSG_WriteUBitLong( msg, to->entityType, 2 );
+		numChanges++;
+	}
+	else
+	{
+		MSG_WriteOneBit( msg, 0 );
+	}
+
+	if( FBitSet( to->entityType, ENTITY_BEAM ))
+	{
+		dt = Delta_FindStruct( "custom_entity_state_t" );
+	}
+	else if( delta_type == DELTA_PLAYER )
+	{
+		dt = Delta_FindStruct( "entity_state_player_t" );
+	}
+	else
+	{
+		dt = Delta_FindStruct( "entity_state_t" );
+	}
+
+	Assert( dt && dt->bInitialized );
+
+	pField = dt->pFields;
+	Assert( pField != NULL );
+
+	if( delta_type == DELTA_STATIC )
+	{
+		// static entities won't to be custom encoded
+		for( i = 0; i < dt->numFields; i++ )
 		{
-			Host_Error( "MSG_WriteDeltaEntity: Bad entity number: %i\n", to->number );
+			dt->pFields[i].bInactive = false;
 		}
+	}
+	else
+	{
+		// activate fields and call custom encode func
+		Delta_CustomEncode( dt, from, to );
+	}
 
-		MSG_WriteUBitLong( msg, to->number, MAX_ENTITY_BITS );
-		MSG_WriteUBitLong( msg, 0, 2 ); // alive
-
-		if( baseline != 0 )
+	// process fields
+	for( i = 0; i < dt->numFields; i++, pField++ )
+	{
+		if( Delta_WriteField( msg, pField, from, to, timebase ))
 		{
-			MSG_WriteOneBit( msg, 1 );
-			MSG_WriteSBitLong( msg, baseline, 7 );
-		}
-		else
-		{
-			MSG_WriteOneBit( msg, 0 );
-		}
-
-		if( force || ( to->entityType != from->entityType ))
-		{
-			MSG_WriteOneBit( msg, 1 );
-			MSG_WriteUBitLong( msg, to->entityType, 2 );
 			numChanges++;
 		}
-		else
-		{
-			MSG_WriteOneBit( msg, 0 );
-		}
+	}
 
-		if( FBitSet( to->entityType, ENTITY_BEAM ))
-		{
-			dt = Delta_FindStruct( "custom_entity_state_t" );
-		}
-		else if( delta_type == DELTA_PLAYER )
-		{
-			dt = Delta_FindStruct( "entity_state_player_t" );
-		}
-		else
-		{
-			dt = Delta_FindStruct( "entity_state_t" );
-		}
-
-		Assert( dt && dt->bInitialized );
-
-		pField = dt->pFields;
-		Assert( pField != NULL );
-
-		if( delta_type == DELTA_STATIC )
-		{
-			// static entities won't to be custom encoded
-			for( i = 0; i < dt->numFields; i++ )
-			{
-				dt->pFields[i].bInactive = false;
-			}
-		}
-		else
-		{
-			// activate fields and call custom encode func
-			Delta_CustomEncode( dt, from, to );
-		}
-
-		// process fields
-		for( i = 0; i < dt->numFields; i++, pField++ )
-		{
-			if( Delta_WriteField( msg, pField, from, to, timebase ))
-			{
-				numChanges++;
-			}
-		}
-
-		// if we have no changes - kill the message
-		if( !numChanges && !force )
-		{
-			MSG_SeekToBit( msg, startBit, SEEK_SET );
-		}
+	// if we have no changes - kill the message
+	if( !numChanges && !force )
+	{
+		MSG_SeekToBit( msg, startBit, SEEK_SET );
 	}
 
 	DEBUG_SOURCE_CLEAR();

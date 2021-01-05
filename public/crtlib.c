@@ -194,14 +194,14 @@ int Q_atoi( const char *str )
 		str++;
 
 	if( !str ) return 0;
-	
+
 	if( *str == '-' )
 	{
 		sign = -1;
 		str++;
 	}
 	else sign = 1;
-		
+
 	// check for hex
 	if( str[0] == '0' && ( str[1] == 'x' || str[1] == 'X' ))
 	{
@@ -215,11 +215,11 @@ int Q_atoi( const char *str )
 			else return val * sign;
 		}
 	}
-	
+
 	// check for character
 	if( str[0] == '\'' )
 		return sign * str[1];
-	
+
 	// assume decimal
 	while( 1 )
 	{
@@ -243,14 +243,14 @@ float Q_atof( const char *str )
 		str++;
 
 	if( !str ) return 0.0f;
-	
+
 	if( *str == '-' )
 	{
 		sign = -1;
 		str++;
 	}
 	else sign = 1;
-		
+
 	// check for hex
 	if( str[0] == '0' && ( str[1] == 'x' || str[1] == 'X' ))
 	{
@@ -264,10 +264,10 @@ float Q_atof( const char *str )
 			else return val * sign;
 		}
 	}
-	
+
 	// check for character
 	if( str[0] == '\'' ) return sign * str[1];
-	
+
 	// assume decimal
 	decimal = -1;
 	total = 0;
@@ -295,7 +295,7 @@ float Q_atof( const char *str )
 		val /= 10;
 		total--;
 	}
-	
+
 	return val * sign;
 }
 
@@ -369,7 +369,7 @@ int Q_strnicmp( const char *s1, const char *s2, int n )
 		c2 = *s2++;
 
 		if( !n-- ) return 0; // strings are equal until end point
-		
+
 		if( c1 != c2 )
 		{
 			if( c1 >= 'a' && c1 <= 'z' ) c1 -= ('a' - 'A');
@@ -395,7 +395,7 @@ int Q_strncmp( const char *s1, const char *s2, int n )
 	else if( s2 == NULL )
 	{
 		return 1;
-	}	
+	}
 
 	do {
 		c1 = *s1++;
@@ -406,7 +406,7 @@ int Q_strncmp( const char *s1, const char *s2, int n )
 		if( c1 != c2 ) return c1 < c2 ? -1 : 1;
 
 	} while( c1 );
-	
+
 	// strings are equal
 	return 0;
 }
@@ -601,6 +601,22 @@ int Q_sprintf( char *buffer, const char *format, ... )
 	va_end( args );
 
 	return result;
+}
+
+char *Q_strpbrk(const char *s, const char *accept)
+{
+	for( ; *s; s++ )
+	{
+		const char *k;
+
+		for( k = accept; *k; k++ )
+		{
+			if( *s == *k )
+				return (char*)s;
+		}
+	}
+
+	return NULL;
 }
 
 uint Q_hashkey( const char *string, uint hashSize, qboolean caseinsensitive )
@@ -918,6 +934,33 @@ void COM_PathSlashFix( char *path )
 		Q_strcpy( &path[len], "/" );
 }
 
+/*
+============
+COM_Hex2Char
+============
+*/
+char COM_Hex2Char( uint8_t hex )
+{
+	if( hex >= 0x0 && hex <= 0x9 )
+		hex += '0';
+	else if( hex >= 0xA && hex <= 0xF )
+		hex += '7';
+
+	return (char)hex;
+}
+
+/*
+============
+COM_Hex2String
+============
+*/
+void COM_Hex2String( uint8_t hex, char *str )
+{
+	*str++ = COM_Hex2Char( hex >> 4 );
+	*str++ = COM_Hex2Char( hex & 0x0F );
+	*str = '\0';
+}
+
 int matchpattern( const char *in, const char *pattern, qboolean caseinsensitive )
 {
 	return matchpattern_with_separator( in, pattern, caseinsensitive, "/\\:", false );
@@ -983,3 +1026,4 @@ int matchpattern_with_separator( const char *in, const char *pattern, qboolean c
 		return 0; // reached end of pattern but not end of input
 	return 1; // success
 }
+
