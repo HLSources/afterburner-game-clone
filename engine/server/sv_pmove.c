@@ -1091,7 +1091,11 @@ void SV_RunCmd( sv_client_t *cl, usercmd_t *ucmd, int random_seed )
 	PM_CheckMovingGround( clent, frametime );
 
 	VectorCopy( clent->v.v_angle, svgame.pmove->oldangles ); // save oldangles
-	if( !clent->v.fixangle ) VectorCopy( ucmd->viewangles, clent->v.v_angle );
+
+	// There used to be code here that set the player's view angles from the ucmd.
+	// This was dumb as it stopped the PMove code from being able to see what the
+	// last frame's angles were, so it has been removed. Player angles should always
+	// be set from the PMove code.
 
 	VectorClear( clent->v.clbasevelocity );
 

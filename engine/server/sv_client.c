@@ -2329,11 +2329,11 @@ static void SV_ParseClientMove( sv_client_t *cl, sizebuf_t *msg )
 		}
 		net_drop = 0;
 	}
-	else
-	{
-		if( !player->v.fixangle )
-			VectorCopy( cmds[0].viewangles, player->v.v_angle );
-	}
+
+	// There used to be code here that set the player's view angles from cmds[0]
+	// in an "else" clause. This was dumb as it stopped the PMove code from being
+	// able to see what the last frame's angles were, so it has been removed.
+	// Player angles should always be set from the PMove code.
 
 	SV_EstablishTimeBase( cl, cmds, net_drop, numbackup, numcmds );
 
