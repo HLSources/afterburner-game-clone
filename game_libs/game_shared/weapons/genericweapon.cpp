@@ -2,6 +2,8 @@
 #include "studio_utils_shared.h"
 #include "weaponslots.h"
 #include "gamerules.h"
+#include "gameplay/inaccuracymodifiers.h"
+#include "weaponinfo.h"
 
 #ifdef CLIENT_DLL
 #include "cl_dll.h"
@@ -9,15 +11,7 @@
 #endif
 
 CGenericWeapon::CGenericWeapon()
-	: CBasePlayerWeapon(),
-	  m_pPrimaryAttackMode(nullptr),
-	  m_pSecondaryAttackMode(nullptr),
-	  m_iViewModelIndex(0),
-	  m_iViewModelBody(0),
-	  m_iWeaponSlot(-1),
-	  m_iWeaponSlotPosition(-1),
-	  m_bPrimaryAttackHeldDown(false),
-	  m_bSecondaryAttackHeldDown(false)
+	: CBasePlayerWeapon()
 {
 }
 
@@ -288,6 +282,17 @@ void CGenericWeapon::Reload()
 // TODO: Refactor this!
 void CGenericWeapon::ItemPostFrame()
 {
+	if ( IsActiveItem() )
+	{
+		m_iInaccuracy = CalculateInaccuracy();
+	}
+	else
+	{
+		// Predicted weapons still have ItemPostFrame() called.
+		// Make sure old inaccuracy values aren't retained.
+		m_iInaccuracy = 0.0f;
+	}
+
 	WeaponTick();
 
 	if( ( m_fInReload ) && ( m_pPlayer->m_flNextAttack <= UTIL_WeaponTimeBase() ) )
@@ -378,6 +383,28 @@ void CGenericWeapon::ItemPostFrame()
 	{
 		WeaponIdle();
 	}
+}
+
+bool CGenericWeapon::ReadPredictionData(const weapon_data_t* from)
+{
+	if ( !CBasePlayerWeapon::ReadPredictionData(from) )
+	{
+		return false;
+	}
+
+	m_iInaccuracy = from->m_iInaccuracy;
+	return true;
+}
+
+bool CGenericWeapon::WritePredictionData(weapon_data_t* to)
+{
+	if ( !CBasePlayerWeapon::WritePredictionData(to) )
+	{
+		return false;
+	}
+
+	to->m_iInaccuracy = m_iInaccuracy;
+	return true;
 }
 
 void CGenericWeapon::SetFireOnEmptyState(const WeaponAtts::WABaseAttack* attackMode)
@@ -665,6 +692,17 @@ bool CGenericWeapon::CanReload() const
 	}
 
 	return true;
+}
+
+byte CGenericWeapon::GetInaccuracy() const
+{
+	return m_iInaccuracy;
+}
+
+byte CGenericWeapon::CalculateInaccuracy() const
+{
+	// TODO: This is only for testing.
+	return static_cast<byte>(InaccuracyModifiers::GetSpeedBasedInaccuracy(m_pPlayer, 100.0f) * 255.0f);
 }
 
 const char* CGenericWeapon::PickupSound() const

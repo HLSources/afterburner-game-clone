@@ -32,6 +32,8 @@ public:
 	virtual void WeaponIdle() override;
 	virtual int iItemSlot() override;
 	virtual void ItemPostFrame() override;
+	virtual bool ReadPredictionData(const weapon_data_t* from) override;
+	virtual bool WritePredictionData(weapon_data_t* to) override;
 
 	virtual const WeaponAtts::WACollection& WeaponAttributes() const = 0;
 
@@ -90,6 +92,8 @@ protected:
 	bool DecrementAmmo(const WeaponAtts::WABaseAttack* attackMode, int decrement);
 	bool CanReload() const;
 
+	byte GetInaccuracy() const;
+
 	// Return the value to set m_fInSpecialReload to next.
 	virtual int HandleSpecialReload(int currentState);
 
@@ -130,8 +134,8 @@ protected:
 #endif
 	}
 
-	const WeaponAtts::WABaseAttack* m_pPrimaryAttackMode;
-	const WeaponAtts::WABaseAttack* m_pSecondaryAttackMode;
+	const WeaponAtts::WABaseAttack* m_pPrimaryAttackMode = nullptr;
+	const WeaponAtts::WABaseAttack* m_pSecondaryAttackMode = nullptr;
 	CUtlVector<int> m_AttackModeEvents;
 
 private:
@@ -149,14 +153,16 @@ private:
 	void IdleProcess_PlayIdleAnimation();
 
 	void FindWeaponSlotInfo();
+	byte CalculateInaccuracy() const;
 
-	int m_iViewModelIndex;
-	int m_iViewModelBody;
+	int m_iViewModelIndex = 0;
+	int m_iViewModelBody = 0;
 	CUtlVector<float> m_ViewAnimDurations;
-	int m_iWeaponSlot;
-	int m_iWeaponSlotPosition;
-	bool m_bPrimaryAttackHeldDown;
-	bool m_bSecondaryAttackHeldDown;
+	int m_iWeaponSlot = -1;
+	int m_iWeaponSlotPosition = -1;
+	bool m_bPrimaryAttackHeldDown = false;
+	bool m_bSecondaryAttackHeldDown = false;
+	byte m_iInaccuracy = 0;
 };
 
 class CGenericAmmo : public CBasePlayerAmmo

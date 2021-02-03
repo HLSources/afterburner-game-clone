@@ -146,6 +146,11 @@ void CBaseEntity::Killed( entvars_t *pevAttacker, int iGib )
 	pev->effects |= EF_NODRAW;
 }
 
+bool CBasePlayerWeapon::IsActiveItem() const
+{
+	return m_pPlayer->m_pActiveItem == this;
+}
+
 BOOL CBasePlayerWeapon::CanAttack( float attack_time, float curtime, BOOL isPredicted )
 {
 #if defined( CLIENT_WEAPONS )
