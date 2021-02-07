@@ -35,6 +35,16 @@ namespace CustomGeometry
 		m_Colour = col;
 	}
 
+	float CGeometryItem::GetScale() const
+	{
+		return m_Scale;
+	}
+
+	void CGeometryItem::SetScale(float scale)
+	{
+		m_Scale = scale;
+	}
+
 	const CUtlVector<Vector>& CGeometryItem::GetPoints() const
 	{
 		return m_Points;

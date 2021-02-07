@@ -100,7 +100,8 @@ SOURCES = \
 	"cl_dll/util.cpp",
 	"cl_dll/view.cpp",
 	"cl_dll/scoreboard.cpp",
-	"cl_dll/MOTD.cpp"
+	"cl_dll/MOTD.cpp",
+	"cl_dll/hud_crosshair.cpp"
 ]
 
 WIN32LIBS = \

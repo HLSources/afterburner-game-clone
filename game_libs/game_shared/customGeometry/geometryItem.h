@@ -19,6 +19,9 @@ namespace CustomGeometry
 		uint32_t GetColour() const;
 		void SetColour(uint32_t col);
 
+		float GetScale() const;
+		void SetScale(float scale);
+
 		// These add points only.
 		bool AddPoint(const Vector& p0);
 
@@ -47,6 +50,7 @@ namespace CustomGeometry
 		uint32_t m_Colour = 0xFFFFFFFF;
 		CUtlVector<Vector> m_Points;
 		CUtlVector<uint8_t> m_Indices;
+		float m_Scale = 1.0f;
 	};
 
 	typedef std::shared_ptr<CGeometryItem> GeometryItemPtr_t;
