@@ -37,6 +37,8 @@ public:
 
 	virtual const WeaponAtts::WACollection& WeaponAttributes() const = 0;
 
+	byte GetInaccuracy() const;
+
 #ifndef CLIENT_DLL
 	// Don't know if this is the best place to put these?
 	// Currently refactoring weapon attributes and didn't like putting
@@ -91,8 +93,6 @@ protected:
 	bool HasAmmo(const WeaponAtts::WABaseAttack* attackMode, int minCount = 1, bool useClip = true) const;
 	bool DecrementAmmo(const WeaponAtts::WABaseAttack* attackMode, int decrement);
 	bool CanReload() const;
-
-	byte GetInaccuracy() const;
 
 	// Return the value to set m_fInSpecialReload to next.
 	virtual int HandleSpecialReload(int currentState);
@@ -154,6 +154,14 @@ private:
 
 	void FindWeaponSlotInfo();
 	byte CalculateInaccuracy() const;
+
+	void PerformReload();
+	bool ReloadUsableWeaponIfEmpty();
+	void UpdateValuesPostFrame();
+	bool ShouldSecondaryAttackThisFrame() const;
+	bool ShouldPrimaryAttackThisFrame() const;
+	void HandleNoButtonsDown_Server();
+	void HandleNoButtonsDown_Client();
 
 	int m_iViewModelIndex = 0;
 	int m_iViewModelBody = 0;

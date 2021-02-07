@@ -279,7 +279,6 @@ void CGenericWeapon::Reload()
 	}
 }
 
-// TODO: Refactor this!
 void CGenericWeapon::ItemPostFrame()
 {
 	if ( IsActiveItem() )
@@ -297,20 +296,7 @@ void CGenericWeapon::ItemPostFrame()
 
 	if( ( m_fInReload ) && ( m_pPlayer->m_flNextAttack <= UTIL_WeaponTimeBase() ) )
 	{
-		// TODO: Ammo needs to be sync'd to client for this to work.
-#ifndef CLIENT_DLL
-		// complete the reload.
-		int j = Q_min( iMaxClip() - m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);
-
-		// Add them to the clip
-		m_iClip += j;
-		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= j;
-#else
-		// No idea why this is so arbitrary, but Half Life had it in...
-		m_iClip += 10;
-#endif
-
-		m_fInReload = FALSE;
+		PerformReload();
 	}
 
 	if( !(m_pPlayer->pev->button & IN_ATTACK ) )
@@ -324,20 +310,13 @@ void CGenericWeapon::ItemPostFrame()
 		m_bSecondaryAttackHeldDown = false;
 	}
 
-	const bool priAttackIsContinuous = m_pPrimaryAttackMode && m_pPrimaryAttackMode->IsContinuous;
-	const bool secAttackIsContinuous = m_pSecondaryAttackMode && m_pSecondaryAttackMode->IsContinuous;
-
-	if( (m_pPlayer->pev->button & IN_ATTACK2) &&
-		CanAttack(m_flNextSecondaryAttack, gpGlobals->time, UseDecrement()) &&
-		(secAttackIsContinuous || !m_bSecondaryAttackHeldDown) )
+	if( ShouldSecondaryAttackThisFrame() )
 	{
 		SetFireOnEmptyState(m_pSecondaryAttackMode);
 		SecondaryAttack();
 		m_bSecondaryAttackHeldDown = true;
 	}
-	else if( (m_pPlayer->pev->button & IN_ATTACK) &&
-			 CanAttack(m_flNextPrimaryAttack, gpGlobals->time, UseDecrement()) &&
-			 (priAttackIsContinuous || !m_bPrimaryAttackHeldDown) )
+	else if( ShouldPrimaryAttackThisFrame() )
 	{
 		SetFireOnEmptyState(m_pPrimaryAttackMode);
 		PrimaryAttack();
@@ -353,36 +332,108 @@ void CGenericWeapon::ItemPostFrame()
 		// no fire buttons down
 		m_fFireOnEmpty = FALSE;
 
-#ifndef CLIENT_DLL
-		if( !IsUseable() && m_flNextPrimaryAttack < ( UseDecrement() ? 0.0 : gpGlobals->time ) )
+		HandleNoButtonsDown_Server();
+		HandleNoButtonsDown_Client();
+	}
+	else
+	{
+		// catch all
+		if( ShouldWeaponIdle() )
 		{
-			// weapon isn't useable, switch.
-			if( !( iFlags() & ITEM_FLAG_NOAUTOSWITCHEMPTY ) && g_pGameRules->GetNextBestWeapon( m_pPlayer, this ) )
-			{
-				m_flNextPrimaryAttack = ( UseDecrement() ? 0.0 : gpGlobals->time ) + 0.3;
-				return;
-			}
+			WeaponIdle();
 		}
-		else
-#endif
-		{
-			// weapon is useable. Reload if empty and weapon has waited as long as it has to after firing
-			if( m_iClip == 0 && !(iFlags() & ITEM_FLAG_NOAUTORELOAD ) && m_flNextPrimaryAttack < ( UseDecrement() ? 0.0 : gpGlobals->time ) )
-			{
-				Reload();
-				return;
-			}
-		}
+	}
 
-		WeaponIdle();
+	UpdateValuesPostFrame();
+}
+
+void CGenericWeapon::PerformReload()
+{
+	// TODO: Ammo needs to be sync'd to client for this to work.
+#ifndef CLIENT_DLL
+	// complete the reload.
+	int j = Q_min( iMaxClip() - m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);
+
+	// Add them to the clip
+	m_iClip += j;
+	m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= j;
+#else
+	// No idea why this is so arbitrary, but Half Life had it in...
+	m_iClip += 10;
+#endif
+
+	m_fInReload = FALSE;
+}
+
+bool CGenericWeapon::ReloadUsableWeaponIfEmpty()
+{
+	// weapon is useable. Reload if empty and weapon has waited as long as it has to after firing
+	if( m_iClip == 0 && !(iFlags() & ITEM_FLAG_NOAUTORELOAD ) && m_flNextPrimaryAttack < ( UseDecrement() ? 0.0 : gpGlobals->time ) )
+	{
+		Reload();
+		return true;
+	}
+
+	return false;
+}
+
+void CGenericWeapon::UpdateValuesPostFrame()
+{
+	if ( IsActiveItem() )
+	{
+		m_pPlayer->m_iWeaponInaccuracy = m_iInaccuracy;
+	}
+}
+
+bool CGenericWeapon::ShouldSecondaryAttackThisFrame() const
+{
+	const bool buttonDown = m_pPlayer->pev->button & IN_ATTACK2;
+	const bool canAttack = CanAttack(m_flNextSecondaryAttack, gpGlobals->time, UseDecrement());
+	const bool secAttackIsContinuous = m_pSecondaryAttackMode && m_pSecondaryAttackMode->IsContinuous;
+
+	return buttonDown && canAttack && (secAttackIsContinuous || !m_bSecondaryAttackHeldDown);
+}
+
+bool CGenericWeapon::ShouldPrimaryAttackThisFrame() const
+{
+	const bool buttonDown = m_pPlayer->pev->button & IN_ATTACK;
+	const bool canAttack = CanAttack(m_flNextPrimaryAttack, gpGlobals->time, UseDecrement());
+	const bool priAttackIsContinuous = m_pPrimaryAttackMode && m_pPrimaryAttackMode->IsContinuous;
+
+	return buttonDown && canAttack && (priAttackIsContinuous || !m_bPrimaryAttackHeldDown);
+}
+
+void CGenericWeapon::HandleNoButtonsDown_Server()
+{
+#ifndef CLIENT_DLL
+	if( !IsUseable() && m_flNextPrimaryAttack < ( UseDecrement() ? 0.0 : gpGlobals->time ) )
+	{
+		// weapon isn't useable, switch.
+		if( !( iFlags() & ITEM_FLAG_NOAUTOSWITCHEMPTY ) && g_pGameRules->GetNextBestWeapon( m_pPlayer, this ) )
+		{
+			m_flNextPrimaryAttack = ( UseDecrement() ? 0.0 : gpGlobals->time ) + 0.3;
+			return;
+		}
+	}
+	else if ( ReloadUsableWeaponIfEmpty() )
+	{
 		return;
 	}
 
-	// catch all
-	if( ShouldWeaponIdle() )
+	WeaponIdle();
+#endif
+}
+
+void CGenericWeapon::HandleNoButtonsDown_Client()
+{
+#ifdef CLIENT_DLL
+	if ( ReloadUsableWeaponIfEmpty() )
 	{
-		WeaponIdle();
+		return;
 	}
+
+	WeaponIdle();
+#endif
 }
 
 bool CGenericWeapon::ReadPredictionData(const weapon_data_t* from)

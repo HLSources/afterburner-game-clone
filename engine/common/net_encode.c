@@ -223,6 +223,7 @@ static const delta_field_t cd_fields[] =
 { CLDT_DEF( fov )		},
 { CLDT_DEF( weaponanim )	},
 { CLDT_DEF( weaponScreenOverlay )	},
+{ CLDT_DEF( weaponInaccuracy )	},
 { CLDT_DEF( m_iId )		},
 { CLDT_DEF( m_flNextAttack )	},
 { CLDT_DEF( tfstate )	},

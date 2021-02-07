@@ -46,6 +46,7 @@
 #include "screenOverlays/messageWriter.h"
 #include "com_model.h"
 #include "resources/SoundResources.h"
+#include "weapons/genericweapon.h"
 
 // #define DUCKFIX
 
@@ -3665,7 +3666,10 @@ void CBasePlayer::ItemPostFrame()
 	ImpulseCommands();
 
 	if( !m_pActiveItem )
+	{
+		m_iWeaponInaccuracy = 0;
 		return;
+	}
 
 	m_pActiveItem->ItemPostFrame();
 }

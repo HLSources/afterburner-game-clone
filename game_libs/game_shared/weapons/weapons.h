@@ -333,7 +333,7 @@ public:
 	virtual BOOL ShouldWeaponIdle( void ) {return FALSE; };
 	virtual void Holster( int skiplocal = 0 );
 
-	inline BOOL UseDecrement( void )
+	inline BOOL UseDecrement( void ) const
 	{
 #if defined( CLIENT_WEAPONS )
 		return TRUE;

@@ -146,6 +146,7 @@ typedef struct clientdata_s
 	float		fov;
 	int		weaponanim;
 	int		weaponScreenOverlay;
+	byte	weaponInaccuracy;
 
 	int		m_iId;
 	float		m_flNextAttack;
