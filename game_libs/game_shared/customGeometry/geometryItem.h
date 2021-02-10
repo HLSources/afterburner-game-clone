@@ -11,6 +11,7 @@ namespace CustomGeometry
 	{
 	public:
 		void Clear();
+		void ClearGeometry();
 		bool IsEmpty() const;
 
 		DrawType GetDrawType() const;
@@ -42,6 +43,12 @@ namespace CustomGeometry
 
 		const CUtlVector<Vector>& GetPoints() const;
 		const CUtlVector<uint8_t>& GetIndices() const;
+
+		Vector& GetPoint(uint8_t index);
+		const Vector& GetPoint(uint8_t index) const;
+
+		uint8_t& GetIndex(uint8_t i);
+		const uint8_t& GetIndex(uint8_t i) const;
 
 	private:
 		uint8_t CurrentBaseIndex() const;

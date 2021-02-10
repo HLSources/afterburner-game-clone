@@ -2,7 +2,7 @@
 
 #include "hud.h"
 #include "customGeometry/geometryItemPtr.h"
-#include "ui/core/uiVec2.h"
+#include "ui/crosshair/crosshairparameters.h"
 
 class CHudCrosshair : public CHudBase
 {
@@ -15,7 +15,15 @@ public:
 	int Draw(float flTime);
 
 private:
-	UIVec2 m_ScreenDim;
-	UIVec2 m_ScreenHalfDim;
+	void UpdateParameters();
+	void InitialiseGeometry();
+	void UpdateGeometry();
+
 	CustomGeometry::GeometryItemPtr_t m_CrosshairGeometry;
+
+	CCrosshairParameters m_Params;
+
+	// TODO: Later these should be factored out into crosshair variants
+	float m_InnerRadius = 0.0f;
+	float m_OuterRadius = 0.0f;
 };
