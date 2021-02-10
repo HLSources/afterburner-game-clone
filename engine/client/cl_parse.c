@@ -1146,6 +1146,7 @@ void CL_ParseClientData( sizebuf_t *msg )
 	cl.local.pushmsec = frame->clientdata.pushmsec;
 	cl.local.weapons = frame->clientdata.weapons;
 	cl.local.health = frame->clientdata.health;
+	cl.local.weaponInaccuracy = frame->clientdata.weaponInaccuracy;
 }
 
 /*

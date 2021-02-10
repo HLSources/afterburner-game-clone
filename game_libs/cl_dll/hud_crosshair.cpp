@@ -33,7 +33,6 @@ int CHudCrosshair::VidInit()
 
 	m_CrosshairGeometry->SetColour(0xFF0000FF);
 	m_CrosshairGeometry->SetDrawType(CustomGeometry::DrawType::Triangles);
-	m_CrosshairGeometry->SetScale(1.0f);
 
 	return 1;
 }
@@ -49,6 +48,7 @@ int CHudCrosshair::Draw(float flTime)
 		return 1;
 	}
 
+	m_CrosshairGeometry->SetColour((gHUD.m_iWeaponInaccuracy << 24) | 0x000000FF);
 	CustomGeometry::RenderAdHocGeometry(m_CrosshairGeometry);
 
 	return 1;

@@ -1237,6 +1237,7 @@ void CL_UpdateClientData( void )
 	VectorCopy( clgame.entities[cl.viewentity].origin, cdat.origin );
 	cdat.iWeaponBits = cl.local.weapons;
 	cdat.fov = cl.local.scr_fov;
+	cdat.weaponInaccuracy = cl.local.weaponInaccuracy;
 
 	if( clgame.dllFuncs.pfnUpdateClientData( &cdat, cl.time ))
 	{

@@ -661,6 +661,7 @@ public:
 	int	m_iWeaponBits;
 	int	m_fPlayerDead;
 	int m_iIntermission;
+	byte m_iWeaponInaccuracy = 0;
 
 	// sprite indexes
 	int m_HUD_number_0;

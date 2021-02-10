@@ -143,6 +143,7 @@ typedef struct
 	int		weapons;
 	float		maxspeed;
 	float		scr_fov;
+	byte 	weaponInaccuracy;
 
 	// weapon predict stuff
 	int		weaponsequence;
