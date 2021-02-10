@@ -23,6 +23,10 @@ namespace CustomGeometry
 		m_Items.AddToTail(item);
 	}
 
+	void CBaseGeometryCollection::VidInit()
+	{
+	}
+
 	void CBaseGeometryCollection::Clear()
 	{
 		m_Items.Purge();

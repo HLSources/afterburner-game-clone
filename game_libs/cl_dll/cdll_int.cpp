@@ -242,10 +242,13 @@ so the HUD can reinitialize itself.
 
 int DLLEXPORT HUD_VidInit( void )
 {
+	gHUD.VidInit();
+
 	ScreenOverlays::CScreenOverlayContainer& container = ScreenOverlays::CScreenOverlayContainer::StaticInstance();
 	container.VidInit();
 
-	gHUD.VidInit();
+	CustomGeometry::VidInit();
+
 #ifdef USE_VGUI_FOR_GOLDSOURCE_SUPPORT
 	vgui::Panel* root=(vgui::Panel*)gEngfuncs.VGui_GetPanel();
 	if (root) {

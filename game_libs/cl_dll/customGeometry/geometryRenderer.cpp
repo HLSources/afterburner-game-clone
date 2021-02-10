@@ -11,20 +11,35 @@ namespace
 	{
 		return fabs(f) < 0.0001f;
 	}
+
+	static inline void DefaultTextureCoOrdinate()
+	{
+		gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
+	}
 }
 
 namespace CustomGeometry
 {
 	CGeometryRenderer::CGeometryRenderer()
 	{
+	}
+
+	void CGeometryRenderer::VidInit()
+	{
 		m_ColourSprite = SPR_Load("sprites/white.spr");
 	}
 
 	void CGeometryRenderer::Render(const CGeometryItem& item)
 	{
+		if ( m_ColourSprite == 0 )
+		{
+			gEngfuncs.Con_Printf("CGeometryRenderer: Colour sprite not initialised!\n");
+			return;
+		}
+
 		m_Scale = item.GetScale();
 
-		if ( fabs(m_Scale) < 0.001f )
+		if ( FloatIsZero(m_Scale) )
 		{
 			return;
 		}
@@ -116,18 +131,18 @@ namespace CustomGeometry
 
 			if ( scaled )
 			{
-				gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
+				DefaultTextureCoOrdinate();
 				gEngfuncs.pTriAPI->Vertex3fv(points[pointIndex0] * m_Scale);
 
-				gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
+				DefaultTextureCoOrdinate();
 				gEngfuncs.pTriAPI->Vertex3fv(points[pointIndex1] * m_Scale);
 			}
 			else
 			{
-				gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
+				DefaultTextureCoOrdinate();
 				gEngfuncs.pTriAPI->Vertex3fv(points[pointIndex0]);
 
-				gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
+				DefaultTextureCoOrdinate();
 				gEngfuncs.pTriAPI->Vertex3fv(points[pointIndex1]);
 			}
 		}
@@ -176,24 +191,24 @@ namespace CustomGeometry
 
 			if ( scaled )
 			{
-				gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
+				DefaultTextureCoOrdinate();
 				gEngfuncs.pTriAPI->Vertex3fv(points[pointIndex0] * m_Scale);
 
-				gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
+				DefaultTextureCoOrdinate();
 				gEngfuncs.pTriAPI->Vertex3fv(points[pointIndex1] * m_Scale);
 
-				gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
+				DefaultTextureCoOrdinate();
 				gEngfuncs.pTriAPI->Vertex3fv(points[pointIndex2] * m_Scale);
 			}
 			else
 			{
-				gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
+				DefaultTextureCoOrdinate();
 				gEngfuncs.pTriAPI->Vertex3fv(points[pointIndex0]);
 
-				gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
+				DefaultTextureCoOrdinate();
 				gEngfuncs.pTriAPI->Vertex3fv(points[pointIndex1]);
 
-				gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
+				DefaultTextureCoOrdinate();
 				gEngfuncs.pTriAPI->Vertex3fv(points[pointIndex2]);
 			}
 		}
@@ -226,12 +241,12 @@ namespace CustomGeometry
 
 			if ( scaled )
 			{
-				gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
+				DefaultTextureCoOrdinate();
 				gEngfuncs.pTriAPI->Vertex3fv(points[pointIndex] * m_Scale);
 			}
 			else
 			{
-				gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
+				DefaultTextureCoOrdinate();
 				gEngfuncs.pTriAPI->Vertex3fv(points[pointIndex]);
 			}
 		}

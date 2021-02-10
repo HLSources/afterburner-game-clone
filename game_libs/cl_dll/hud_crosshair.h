@@ -1,7 +1,7 @@
 #pragma once
 
 #include "hud.h"
-#include "customGeometry/geometryItem.h"
+#include "customGeometry/geometryItemPtr.h"
 #include "ui/core/uiVec2.h"
 
 class CHudCrosshair : public CHudBase

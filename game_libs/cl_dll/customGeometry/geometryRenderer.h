@@ -10,6 +10,7 @@ namespace CustomGeometry
 	public:
 		CGeometryRenderer();
 
+		void VidInit();
 		void Render(const CGeometryItem& item);
 
 	private:

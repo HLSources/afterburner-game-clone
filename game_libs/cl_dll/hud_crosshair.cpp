@@ -4,6 +4,7 @@
 int CHudCrosshair::Init()
 {
 	m_CrosshairGeometry = CustomGeometry::GeometryItemPtr_t(new CustomGeometry::CGeometryItem());
+	m_iFlags |= HUD_ACTIVE;
 
 	gHUD.AddHudElem(this);
 	return 1;
@@ -30,7 +31,7 @@ int CHudCrosshair::VidInit()
 		Vector(m_ScreenHalfDim.x - 10, m_ScreenHalfDim.y - 20, 0)
 	);
 
-	m_CrosshairGeometry->SetColour(0x00FF0000);
+	m_CrosshairGeometry->SetColour(0xFF0000FF);
 	m_CrosshairGeometry->SetDrawType(CustomGeometry::DrawType::Triangles);
 	m_CrosshairGeometry->SetScale(1.0f);
 

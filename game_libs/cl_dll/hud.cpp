@@ -28,6 +28,7 @@
 
 #include "demo.h"
 #include "demo_api.h"
+#include "hud_crosshair.h"
 
 cvar_t *hud_textmode;
 float g_hud_text_color[3];
@@ -232,10 +233,18 @@ void CHud::Init( void )
 	m_StatusIcons.Init();
 	m_MOTD.Init();
 	m_Scoreboard.Init();
+	m_Crosshair->Init();
 
 	m_Menu.Init();
 
 	MsgFunc_ResetHUD( 0, 0, NULL );
+}
+
+CHud::CHud()
+	: m_iSpriteCount(0),
+	m_pHudList(NULL),
+	m_Crosshair(std::make_unique<CHudCrosshair>())
+{
 }
 
 // CHud destructor
@@ -413,6 +422,7 @@ void CHud::VidInit( void )
 	m_StatusIcons.VidInit();
 	m_Scoreboard.VidInit();
 	m_MOTD.VidInit();
+	m_Crosshair->VidInit();
 }
 
 int CHud::MsgFunc_Logo( const char *pszName,  int iSize, void *pbuf )

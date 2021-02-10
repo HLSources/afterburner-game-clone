@@ -1,9 +1,9 @@
 #pragma once
 
-#include <memory>
 #include "standard_includes.h"
 #include "utlvector.h"
 #include "customGeometry/sharedDefs.h"
+#include "customGeometry/geometryItemPtr.h"
 
 namespace CustomGeometry
 {
@@ -52,6 +52,4 @@ namespace CustomGeometry
 		CUtlVector<uint8_t> m_Indices;
 		float m_Scale = 1.0f;
 	};
-
-	typedef std::shared_ptr<CGeometryItem> GeometryItemPtr_t;
 }
