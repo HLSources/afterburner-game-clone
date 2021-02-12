@@ -92,7 +92,8 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	priAttack->FunctionsUnderwater = true;
 	priAttack->IsContinuous = false;
 	priAttack->UsesAmmoPool = WAAmmoBasedAttack::AmmoPool::Primary;
-	priAttack->SetUniformSpread(0.05f);
+	priAttack->Accuracy.MinSpread = Vector2D(0.05f, 0.05f); // TODO
+	priAttack->Accuracy.MaxSpread = Vector2D(0.05f, 0.05f); // TODO
 	priAttack->AttackRate = FRINESI_FIRE_RATE_AUTO;
 	priAttack->BaseDamagePerShot = &skilldata_t::plrDmgFrinesiAuto;
 	priAttack->BulletsPerShot = 6;
@@ -121,7 +122,8 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	secAttack->EventScript = "events/weapon_frinesi/fire02.sc";
 	secAttack->AttackRate = FRINESI_FIRE_RATE_PUMP;
 	secAttack->BaseDamagePerShot = &skilldata_t::plrDmgFrinesiPump;
-	secAttack->SetUniformSpread(0.1f);
+	secAttack->Accuracy.MinSpread = Vector2D(0.1f, 0.1f); // TODO
+	secAttack->Accuracy.MaxSpread = Vector2D(0.1f, 0.1f); // TODO
 	secAttack->ViewPunchY = -10.0f;
 
 	secAttack->ViewModelAnimList_Attack.Clear();

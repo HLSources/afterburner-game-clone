@@ -84,7 +84,8 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	priAttack->FunctionsUnderwater = true;
 	priAttack->IsContinuous = false;
 	priAttack->UsesAmmoPool = WAAmmoBasedAttack::AmmoPool::Primary;
-	priAttack->SetUniformSpread(1.0f);
+	priAttack->Accuracy.MinSpread = Vector2D(1.0f, 1.0f); // TODO
+	priAttack->Accuracy.MaxSpread = Vector2D(1.0f, 1.0f); // TODO
 	priAttack->AttackRate = GRENADELAUNCHER_FIRE_RATE;
 	priAttack->Volume = LOUD_GUN_VOLUME;
 	priAttack->MuzzleFlashBrightness = BRIGHT_GUN_FLASH;

@@ -3,6 +3,7 @@
 #include "weaponatts_hitscanattack.h"
 #include "skill.h"
 #include "eventConstructor/eventConstructor.h"
+#include "gameplay/inaccuracymodifiers.h"
 
 #ifndef CLIENT_DLL
 #include "weaponregistry.h"
@@ -99,6 +100,7 @@ bool CGenericHitscanWeapon::InvokeWithAttackMode(const CGenericWeapon::WeaponAtt
 			<< EventIndex(m_AttackModeEvents[hitscanAttack->Signature()->Index])
 			<< IntParam1(m_pPlayer->random_seed)
 			<< BoolParam1(m_iClip == 0)
+			<< FloatParam1(GetInstantaneousSpreadInterpolant())
 			;
 
 		event.Send();
@@ -128,6 +130,8 @@ Vector CGenericHitscanWeapon::FireBulletsPlayer(const WeaponAtts::WAHitscanAttac
 	TraceResult tr;
 	Vector vecRight = gpGlobals->v_right;
 	Vector vecUp = gpGlobals->v_up;
+	float spreadInterp = GetInstantaneousSpreadInterpolant();
+	Vector2D spread = InaccuracyModifiers::GetInterpolatedSpread(hitscanAttack.Accuracy.MinSpread, hitscanAttack.Accuracy.MaxSpread, spreadInterp);
 	float x = 0.0f;
 	float y = 0.0f;
 
@@ -149,10 +153,7 @@ Vector CGenericHitscanWeapon::FireBulletsPlayer(const WeaponAtts::WAHitscanAttac
 
 		GetSharedCircularGaussianSpread(shot, shared_rand, x, y);
 
-		Vector vecDir = vecDirShooting +
-						(x * hitscanAttack.SpreadX * vecRight) +
-						(y * hitscanAttack.SpreadY * vecUp);
-
+		Vector vecDir = vecDirShooting + (x * spread.x * vecRight) + (y * spread.y * vecUp);
 		Vector vecEnd = vecSrc + (vecDir * DEFAULT_BULLET_TRACE_DISTANCE);
 		UTIL_TraceLine(vecSrc, vecEnd, dont_ignore_monsters, ENT(pev), &tr);
 
@@ -175,7 +176,7 @@ Vector CGenericHitscanWeapon::FireBulletsPlayer(const WeaponAtts::WAHitscanAttac
 	Debug_FinaliseHitscanEvent();
 	ApplyMultiDamage(pev, pevAttacker);
 
-	return Vector(x * hitscanAttack.SpreadX, y * hitscanAttack.SpreadY, 0.0);
+	return Vector(x * spread.x, y * spread.y, 0.0);
 #endif
 }
 
@@ -228,11 +229,13 @@ void CGenericHitscanWeapon::Debug_DeleteHitscanEvent()
 #ifdef CLIENT_DLL
 Vector CGenericHitscanWeapon::FireBulletsPlayer_Client(const WeaponAtts::WAHitscanAttack& hitscanAttack)
 {
+	float spreadInterp = GetInstantaneousSpreadInterpolant();
+	Vector2D spread = InaccuracyModifiers::GetInterpolatedSpread(hitscanAttack.Accuracy.MinSpread, hitscanAttack.Accuracy.MaxSpread, spreadInterp);
 	float x = 0.0f;
 	float y = 0.0f;
 
 	// Just return the last vector we would have generated.
 	GetSharedCircularGaussianSpread(hitscanAttack.BulletsPerShot - 1, m_pPlayer->random_seed, x, y);
-	return Vector(x * hitscanAttack.SpreadX, y * hitscanAttack.SpreadY, 0.0);
+	return Vector(x * spread.x, y * spread.y, 0.0);
 }
 #endif

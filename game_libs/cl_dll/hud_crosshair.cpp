@@ -25,6 +25,7 @@ int CHudCrosshair::Init()
 {
 	m_CrosshairGeometry = CustomGeometry::GeometryItemPtr_t(new CustomGeometry::CGeometryItem());
 	m_iFlags |= HUD_ACTIVE;
+	m_CrosshairCvar = gEngfuncs.pfnGetCvarPointer("crosshair");
 
 	gHUD.AddHudElem(this);
 	return 1;
@@ -51,7 +52,7 @@ void CHudCrosshair::Reset()
 
 int CHudCrosshair::Draw(float flTime)
 {
-	if ( gHUD.m_iHideHUDDisplay & (HIDEHUD_WEAPONS | HIDEHUD_ALL) )
+	if ( gHUD.m_iHideHUDDisplay & (HIDEHUD_WEAPONS | HIDEHUD_ALL) || !m_CrosshairCvar || m_CrosshairCvar->value != 2 )
 	{
 		return 1;
 	}

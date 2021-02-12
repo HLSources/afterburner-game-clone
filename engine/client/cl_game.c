@@ -900,8 +900,10 @@ void CL_DrawCrosshair( void )
 	int	x, y, width, height;
 	float xscale, yscale;
 
-	if( !clgame.ds.pCrosshair || !cl_crosshair->value )
+	if( !clgame.ds.pCrosshair || cl_crosshair->value != 1 )
+	{
 		return;
+	}
 
 	// any camera on or client is died
 	if( cl.local.health <= 0 || cl.viewentity != ( cl.playernum + 1 ))

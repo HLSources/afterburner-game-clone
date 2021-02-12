@@ -38,6 +38,7 @@ public:
 	virtual const WeaponAtts::WACollection& WeaponAttributes() const = 0;
 
 	byte GetInaccuracy() const;
+	float GetInstantaneousSpreadInterpolant() const;
 
 #ifndef CLIENT_DLL
 	// Don't know if this is the best place to put these?
@@ -154,6 +155,7 @@ private:
 
 	void FindWeaponSlotInfo();
 	byte CalculateInaccuracy() const;
+	float CalcluateInstantaneousSpreadInterpolant() const;
 
 	void PerformReload();
 	bool ReloadUsableWeaponIfEmpty();
@@ -171,6 +173,7 @@ private:
 	bool m_bPrimaryAttackHeldDown = false;
 	bool m_bSecondaryAttackHeldDown = false;
 	byte m_iInaccuracy = 0;
+	float m_flSpreadInterpolant = 0.0f;
 };
 
 class CGenericAmmo : public CBasePlayerAmmo

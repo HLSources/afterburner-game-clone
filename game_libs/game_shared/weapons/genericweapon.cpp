@@ -281,16 +281,8 @@ void CGenericWeapon::Reload()
 
 void CGenericWeapon::ItemPostFrame()
 {
-	if ( IsActiveItem() )
-	{
-		m_iInaccuracy = CalculateInaccuracy();
-	}
-	else
-	{
-		// Predicted weapons still have ItemPostFrame() called.
-		// Make sure old inaccuracy values aren't retained.
-		m_iInaccuracy = 0.0f;
-	}
+	m_flSpreadInterpolant = CalcluateInstantaneousSpreadInterpolant();
+	m_iInaccuracy = CalculateInaccuracy();
 
 	WeaponTick();
 
@@ -750,10 +742,60 @@ byte CGenericWeapon::GetInaccuracy() const
 	return m_iInaccuracy;
 }
 
+float CGenericWeapon::GetInstantaneousSpreadInterpolant() const
+{
+	return m_flSpreadInterpolant;
+}
+
 byte CGenericWeapon::CalculateInaccuracy() const
 {
-	// TODO: This is only for testing.
-	return static_cast<byte>(InaccuracyModifiers::GetSpeedBasedInaccuracy(m_pPlayer, 100.0f) * 255.0f);
+	// For now, just use the instantaneous value. We may want to smooth this out later.
+	float inaccuracy = CalcluateInstantaneousSpreadInterpolant();
+
+	if ( inaccuracy < 0.0f )
+	{
+		inaccuracy = 0.0f;
+	}
+	else if ( inaccuracy > 1.0f )
+	{
+		inaccuracy = 1.0f;
+	}
+
+	return static_cast<byte>(inaccuracy * 255.0f);
+}
+
+float CGenericWeapon::CalcluateInstantaneousSpreadInterpolant() const
+{
+	if ( !IsActiveItem() )
+	{
+		// Predicted weapons still have ItemPostFrame() called.
+		// Make sure old inaccuracy values aren't retained.
+		return 0.0f;
+	}
+
+	// For now, base this off the primary attack mode only.
+	const WeaponAtts::WAAmmoBasedAttack* ammoAttack = dynamic_cast<const WeaponAtts::WAAmmoBasedAttack*>(m_pPrimaryAttackMode);
+
+	if ( !ammoAttack )
+	{
+		return 0.0f;
+	}
+
+	const WeaponAtts::AccuracyParameters& accuracy = ammoAttack->Accuracy;
+	float interpolant = accuracy.BaseSpreadInterpolant;
+
+	if ( m_pPlayer )
+	{
+		if ( m_pPlayer->pev->button & IN_DUCK )
+		{
+			interpolant *= accuracy.CrouchSpreadMultiplier;
+		}
+
+		const float playerSpeedFactor = InaccuracyModifiers::GetSpeedBasedInaccuracy(m_pPlayer, m_pPlayer->pev->maxspeed);
+		interpolant *= accuracy.RunSpreadModifier * playerSpeedFactor;
+	}
+
+	return interpolant;
 }
 
 const char* CGenericWeapon::PickupSound() const

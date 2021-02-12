@@ -76,7 +76,8 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	priAttack->FunctionsUnderwater = true;
 	priAttack->IsContinuous = false;
 	priAttack->UsesAmmoPool = WAAmmoBasedAttack::AmmoPool::Primary;
-	priAttack->SetUniformSpread(0.0f);
+	priAttack->Accuracy.MinSpread = Vector2D(0.0f, 0.0f); // TODO
+	priAttack->Accuracy.MaxSpread = Vector2D(0.0f, 0.0f); // TODO
 	priAttack->AttackRate = RAPTOR_FIRE_RATE;
 	priAttack->BaseDamagePerShot = &skilldata_t::plrDmgRaptor;
 	priAttack->AutoAim = AUTOAIM_10DEGREES;

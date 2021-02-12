@@ -19,6 +19,7 @@ private:
 	void InitialiseGeometry();
 	void UpdateGeometry();
 
+	cvar_t* m_CrosshairCvar = nullptr;
 	CustomGeometry::GeometryItemPtr_t m_CrosshairGeometry;
 
 	CCrosshairParameters m_Params;
