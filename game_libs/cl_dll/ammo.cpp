@@ -1160,6 +1160,11 @@ int CHudAmmo::DrawWList( float flTime )
 	return 1;
 }
 
+WEAPON* CHudAmmo::GetCurrentWeapon() const
+{
+	return m_pWeapon;
+}
+
 /* =================================
 	GetSpriteList
 

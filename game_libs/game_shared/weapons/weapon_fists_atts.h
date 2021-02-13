@@ -44,6 +44,9 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 
 	obj.Prediction.SetUpPrediction<CWeaponFists>();
 
+	WACrosshair& crosshair = obj.Crosshair;
+	crosshair.HasCrosshair = false;
+
 	obj.SkillRecords.AddToTail(WASkillRecord("sk_plr_dmg_fists", &skilldata_t::plrDmgFists));
 	obj.SkillRecords.AddToTail(WASkillRecord("sk_plr_dmg_fists_alt", &skilldata_t::plrDmgFistsAlt));
 

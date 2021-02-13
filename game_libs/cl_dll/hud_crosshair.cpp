@@ -1,5 +1,8 @@
 #include "hud_crosshair.h"
 #include "customGeometry/geometryStatics.h"
+#include "weapons/weaponregistry.h"
+#include "weaponattributes/weaponatts_collection.h"
+#include "util/extramath.h"
 
 namespace
 {
@@ -57,21 +60,55 @@ int CHudCrosshair::Draw(float flTime)
 		return 1;
 	}
 
-	UpdateParameters();
-	UpdateGeometry();
+	if ( !UpdateParameters() )
+	{
+		return 1;
+	}
 
+	UpdateGeometry();
 	CustomGeometry::RenderAdHocGeometry(m_CrosshairGeometry);
+
 	return 1;
 }
 
-void CHudCrosshair::UpdateParameters()
+bool CHudCrosshair::UpdateParameters()
 {
+	WEAPON* weapon = gHUD.m_Ammo.GetCurrentWeapon();
+
+	if ( !weapon || weapon->iId < 1 )
+	{
+		return false;
+	}
+
+	m_CurrentWeaponID = static_cast<WeaponId_e>(weapon->iId);
+
+	CWeaponRegistry& registry = CWeaponRegistry::StaticInstance();
+	const WeaponAtts::WACollection* atts = registry.Get(m_CurrentWeaponID);
+
+	if ( !atts )
+	{
+		return false;
+	}
+
+	m_CrosshairAtts = &atts->Crosshair;
+
+	if ( !m_CrosshairAtts->HasCrosshair )
+	{
+		return false;
+	}
+
 	m_Params.SetWeaponInaccuracy(static_cast<float>(gHUD.m_iWeaponInaccuracy) / 255.0f);
 
-	// TODO: We need to use attributes from the active weapon here.
-	// For debugging purposes, use these for now.
-	m_InnerRadius = 0.05f + (0.1f * m_Params.WeaponInaccuracy());
-	m_OuterRadius = 0.1f + m_InnerRadius;
+	// At inaccuracy 0, inner radius is 0.
+	// At inaccuracy 1, inner radius is m_CrosshairAtts->Scale.
+	m_InnerRadius = ExtraMath::RemapClamped(m_Params.WeaponInaccuracy(), 0, 1, 0, m_CrosshairAtts->Scale);
+
+	// At inaccuracy 0, bar length is m_CrosshairAtts->BarScaleMin.
+	// At inaccuracy 1, bar length is m_CrosshairAtts->BarScaleMax.
+	const float barLength = ExtraMath::RemapClamped(m_Params.WeaponInaccuracy(), 0, 1, m_CrosshairAtts->BarScaleMin, m_CrosshairAtts->BarScaleMax);
+	m_OuterRadius = m_InnerRadius + barLength;
+
+	return true;
 }
 
 void CHudCrosshair::InitialiseGeometry()

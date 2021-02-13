@@ -101,6 +101,7 @@ public:
 	void Think( void );
 	void Reset( void );
 	int DrawWList( float flTime );
+	WEAPON* GetCurrentWeapon() const;
 	int MsgFunc_CurWeapon( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_WeaponList( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_AmmoX( const char *pszName, int iSize, void *pbuf );

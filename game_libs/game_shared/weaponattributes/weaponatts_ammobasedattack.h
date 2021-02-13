@@ -13,7 +13,7 @@ namespace WeaponAtts
 		Vector2D MaxSpread;
 
 		// Amount of spread when the player is standing still.
-		// This shoudl be in the range [0 1], where 0 is min
+		// This should be in the range [0 1], where 0 is min
 		// spread and 1 is max spread.
 		float BaseSpreadInterpolant = 0.0f;
 
