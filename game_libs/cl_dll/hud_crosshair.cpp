@@ -99,9 +99,9 @@ bool CHudCrosshair::UpdateParameters()
 
 	m_Params.SetWeaponInaccuracy(static_cast<float>(gHUD.m_iWeaponInaccuracy) / 255.0f);
 
-	// At inaccuracy 0, inner radius is 0.
-	// At inaccuracy 1, inner radius is m_CrosshairAtts->Scale.
-	m_InnerRadius = ExtraMath::RemapClamped(m_Params.WeaponInaccuracy(), 0, 1, 0, m_CrosshairAtts->Scale);
+	// At inaccuracy 0, inner radius is m_CrosshairAtts->RadiusMin.
+	// At inaccuracy 1, inner radius is m_CrosshairAtts->RadiusMax.
+	m_InnerRadius = ExtraMath::RemapClamped(m_Params.WeaponInaccuracy(), 0, 1, m_CrosshairAtts->RadiusMin, m_CrosshairAtts->RadiusMax);
 
 	// At inaccuracy 0, bar length is m_CrosshairAtts->BarScaleMin.
 	// At inaccuracy 1, bar length is m_CrosshairAtts->BarScaleMax.

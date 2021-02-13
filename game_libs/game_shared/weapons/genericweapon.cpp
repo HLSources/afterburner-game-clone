@@ -4,6 +4,8 @@
 #include "gamerules.h"
 #include "gameplay/inaccuracymodifiers.h"
 #include "weaponinfo.h"
+#include "util/extramath.h"
+#include "util/cvarFuncs.h"
 
 #ifdef CLIENT_DLL
 #include "cl_dll.h"
@@ -750,26 +752,33 @@ float CGenericWeapon::GetInstantaneousSpreadInterpolant() const
 byte CGenericWeapon::CalculateInaccuracy() const
 {
 	// For now, just use the instantaneous value. We may want to smooth this out later.
-	float inaccuracy = CalcluateInstantaneousSpreadInterpolant();
-
-	if ( inaccuracy < 0.0f )
-	{
-		inaccuracy = 0.0f;
-	}
-	else if ( inaccuracy > 1.0f )
-	{
-		inaccuracy = 1.0f;
-	}
-
-	return static_cast<byte>(inaccuracy * 255.0f);
+	return static_cast<byte>(ExtraMath::Clamp(0.0f, m_flSpreadInterpolant, 1.0f) * 255.0f);
 }
 
 float CGenericWeapon::CalcluateInstantaneousSpreadInterpolant() const
 {
-	if ( !IsActiveItem() )
+	static cvar_t* cvarMaxSpeed = nullptr;
+	static cvar_t* cvarMaxFallSpeed = nullptr;
+
+	if ( !m_pPlayer || !IsActiveItem() )
 	{
 		// Predicted weapons still have ItemPostFrame() called.
 		// Make sure old inaccuracy values aren't retained.
+		return 0.0f;
+	}
+
+	if ( !cvarMaxSpeed )
+	{
+		cvarMaxSpeed = GetCvarByName("sv_weapon_inaccuracy_maxspeed");
+	}
+
+	if ( !cvarMaxFallSpeed )
+	{
+		cvarMaxFallSpeed = GetCvarByName("sv_weapon_inaccuracy_maxfallspeed");
+	}
+
+	if ( !cvarMaxSpeed || !cvarMaxFallSpeed )
+	{
 		return 0.0f;
 	}
 
@@ -782,20 +791,28 @@ float CGenericWeapon::CalcluateInstantaneousSpreadInterpolant() const
 	}
 
 	const WeaponAtts::AccuracyParameters& accuracy = ammoAttack->Accuracy;
-	float interpolant = accuracy.BaseSpreadInterpolant;
 
-	if ( m_pPlayer )
+	if ( (accuracy.MaxSpread - accuracy.MinSpread).Length() < 0.001f )
 	{
-		if ( m_pPlayer->pev->button & IN_DUCK )
-		{
-			interpolant *= accuracy.CrouchSpreadMultiplier;
-		}
-
-		const float playerSpeedFactor = InaccuracyModifiers::GetSpeedBasedInaccuracy(m_pPlayer, m_pPlayer->pev->maxspeed);
-		interpolant *= accuracy.RunSpreadModifier * playerSpeedFactor;
+		// No spread difference, don't bother.
+		return 0.0f;
 	}
 
-	return interpolant;
+	const float maxPlayerSpeed = cvarMaxSpeed->value;
+	float spreadValue = ExtraMath::RemapClamped(m_pPlayer->pev->velocity.Length2D(), 0.0f, maxPlayerSpeed, accuracy.RestValue, accuracy.RunValue);
+
+	if ( m_pPlayer->pev->button & IN_DUCK )
+	{
+		spreadValue += accuracy.CrouchShift;
+	}
+
+	const float zSpeed = fabs(m_pPlayer->pev->velocity.z);
+	const float maxZSpeed = cvarMaxFallSpeed->value;
+	const float shiftFromZSpeed = ExtraMath::RemapClamped(zSpeed, 0.0f, maxZSpeed, 0, accuracy.FallShift);
+
+	spreadValue += shiftFromZSpeed;
+
+	return ExtraMath::Clamp(0.0f, spreadValue, 1.0f);
 }
 
 const char* CGenericWeapon::PickupSound() const

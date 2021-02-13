@@ -74,7 +74,7 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	obj.Prediction.SetUpPrediction<CWeaponP99>();
 
 	WACrosshair& crosshair = obj.Crosshair;
-	crosshair.Scale = 1.0f;
+	// TODO
 
 	obj.SkillRecords.AddToTail(WASkillRecord("sk_plr_dmg_p99", &skilldata_t::plrDmgP99));
 
@@ -88,9 +88,6 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	priAttack->UsesAmmoPool = WAAmmoBasedAttack::AmmoPool::Primary;
 	priAttack->Accuracy.MinSpread = Vector2D(0.03f, 0.03f); // TODO
 	priAttack->Accuracy.MaxSpread = Vector2D(0.06f, 0.06f); // TODO
-	priAttack->Accuracy.BaseSpreadInterpolant = 0.1f; // TODO
-	priAttack->Accuracy.CrouchSpreadMultiplier = 0.5f; // TODO
-	priAttack->Accuracy.RunSpreadModifier = 2.0f; // TODO
 	priAttack->AttackRate = P99_FIRE_RATE;
 	priAttack->BaseDamagePerShot = &skilldata_t::plrDmgP99;
 	priAttack->AutoAim = AUTOAIM_10DEGREES;

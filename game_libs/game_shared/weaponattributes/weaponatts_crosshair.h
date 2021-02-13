@@ -8,15 +8,16 @@ namespace WeaponAtts
 	{
 		bool HasCrosshair = true;
 
-		// A scale of 1 means that maximum inaccuracy correlates with
-		// the crosshair bars being pushed out right to the edge of
-		// the shorted screen dimension.
-		float Scale = 0.2f;
+		// The radius is how far away from the centre of the screen each
+		// crosshair bar is. A value of 1 means the bar is the length
+		// of the shortest screen dimension.
+		float RadiusMin = 0.0f;
+		float RadiusMax = 0.5f;
 
 		// These scales specify how long the crosshair bars are at minimum
 		// and maximum inaccuracy. A value of 1 means the bar is the length
 		// of the shortest screen dimension.
 		float BarScaleMin = 0.1f;
-		float BarScaleMax = 0.1f;
+		float BarScaleMax = 0.05f;
 	};
 }
