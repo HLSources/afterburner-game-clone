@@ -32,7 +32,7 @@ namespace WeaponAtts
 		// the range [0 1].
 
 		// Shift applied when the player is crouching.
-		float CrouchShift = -0.1f;
+		float CrouchShift = -0.08f;
 
 		// Shift applied when the player is moving on Z at sv_weapon_inaccuracy_maxfallspeed
 		// units per second. If the player is moving slower than this, the

@@ -2,7 +2,7 @@
 
 #include "hud.h"
 #include "customGeometry/geometryItemPtr.h"
-#include "ui/crosshair/crosshairparameters.h"
+#include "ui/crosshair/crosshairParameters.h"
 #include "weapons/weaponids.h"
 #include "weaponattributes/weaponatts_crosshair.h"
 
@@ -26,10 +26,5 @@ private:
 
 	cvar_t* m_CrosshairCvar = nullptr;
 	CustomGeometry::GeometryItemPtr_t m_CrosshairGeometry;
-
 	CCrosshairParameters m_Params;
-
-	// TODO: Later these should be factored out into crosshair variants
-	float m_InnerRadius = 0.0f;
-	float m_OuterRadius = 0.0f;
 };

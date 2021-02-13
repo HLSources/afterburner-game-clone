@@ -99,14 +99,15 @@ bool CHudCrosshair::UpdateParameters()
 
 	m_Params.SetWeaponInaccuracy(static_cast<float>(gHUD.m_iWeaponInaccuracy) / 255.0f);
 
-	// At inaccuracy 0, inner radius is m_CrosshairAtts->RadiusMin.
-	// At inaccuracy 1, inner radius is m_CrosshairAtts->RadiusMax.
-	m_InnerRadius = ExtraMath::RemapClamped(m_Params.WeaponInaccuracy(), 0, 1, m_CrosshairAtts->RadiusMin, m_CrosshairAtts->RadiusMax);
+	// At inaccuracy 0, radius is m_CrosshairAtts->RadiusMin.
+	// At inaccuracy 1, radius is m_CrosshairAtts->RadiusMax.
+	const float radius = ExtraMath::RemapClamped(m_Params.WeaponInaccuracy(), 0, 1, m_CrosshairAtts->RadiusMin, m_CrosshairAtts->RadiusMax);
+	m_Params.SetRadius(radius);
 
 	// At inaccuracy 0, bar length is m_CrosshairAtts->BarScaleMin.
 	// At inaccuracy 1, bar length is m_CrosshairAtts->BarScaleMax.
 	const float barLength = ExtraMath::RemapClamped(m_Params.WeaponInaccuracy(), 0, 1, m_CrosshairAtts->BarScaleMin, m_CrosshairAtts->BarScaleMax);
-	m_OuterRadius = m_InnerRadius + barLength;
+	m_Params.SetBarLength(barLength);
 
 	return true;
 }
@@ -171,8 +172,8 @@ void CHudCrosshair::UpdateGeometry()
 	}
 
 	const UIVec2 screenCentre = m_Params.HalfScreenDimensions();
-	const int innerDisp = m_Params.DisplacementFromScreenCentre(m_InnerRadius);
-	const int outerDisp = m_Params.DisplacementFromScreenCentre(m_OuterRadius);
+	const int innerDisp = m_Params.DisplacementFromScreenCentre(m_Params.Radius());
+	const int outerDisp = m_Params.DisplacementFromScreenCentre(m_Params.Radius() + m_Params.BarLength());
 
 	for ( uint8_t bar = 0; bar < 4; ++bar )
 	{
