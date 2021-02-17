@@ -29,6 +29,8 @@
 
 #include "ammohistory.h"
 #include "miniutl.h"
+#include "weapons/weaponregistry.h"
+#include "weaponattributes/weaponatts_collection.h"
 
 WEAPON *gpActiveSel;	// NULL means off, 1 means just the menu bar, otherwise
 						// this points to the active weapon menu item
@@ -107,15 +109,33 @@ void WeaponsResource::LoadWeaponSprites( WEAPON *pWeapon )
 
 	client_sprite_t *p;
 
-	p = GetSpriteList( pList, "crosshair", iRes, i );
-	if( p )
+	const WeaponAtts::WACollection* atts = CWeaponRegistry::StaticInstance().GetByName(pWeapon->szName);
+
+	if ( atts )
 	{
-		sprintf( sz, "sprites/%s.spr", p->szSprite );
-		pWeapon->hCrosshair = SPR_Load( sz );
-		pWeapon->rcCrosshair = p->rc;
+		// This is a Nightfire weapon - set the default crosshair.
+		// Once all the Half Life weapons are gone, we can remove the check
+		// and just do this for all weapons.
+		pWeapon->hCrosshair = SPR_Load("sprites/nfcrosshair.spr");
+		pWeapon->rcCrosshair.top = 0;
+		pWeapon->rcCrosshair.left = 0;
+		pWeapon->rcCrosshair.bottom = 0;
+		pWeapon->rcCrosshair.right = 0;
 	}
 	else
-		pWeapon->hCrosshair = 0;
+	{
+		p = GetSpriteList( pList, "crosshair", iRes, i );
+		if( p )
+		{
+			sprintf( sz, "sprites/%s.spr", p->szSprite );
+			pWeapon->hCrosshair = SPR_Load( sz );
+			pWeapon->rcCrosshair = p->rc;
+		}
+		else
+		{
+			pWeapon->hCrosshair = 0;
+		}
+	}
 
 	p = GetSpriteList( pList, "autoaim", iRes, i );
 	if( p )
