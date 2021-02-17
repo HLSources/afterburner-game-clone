@@ -10,7 +10,7 @@ namespace CustomGeometry
 	class CGeometryItem
 	{
 	public:
-		void Clear();
+		void Reset();
 		void ClearGeometry();
 		bool IsEmpty() const;
 

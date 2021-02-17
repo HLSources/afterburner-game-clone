@@ -1,6 +1,9 @@
 #include "ui/crosshair/crosshairParameters.h"
 #include "miniutl.h"
 #include "util/extramath.h"
+#include "weapons/weaponregistry.h"
+#include "weaponattributes/weaponatts_collection.h"
+#include "weaponattributes/weaponatts_ammobasedattack.h"
 
 CCrosshairParameters::CCrosshairParameters()
 {
@@ -14,6 +17,7 @@ void CCrosshairParameters::Reset()
 	m_WeaponInaccuracy = 0.0f;
 	m_Radius = 0.0f;
 	m_BarLength = 0.1f;
+	m_WeaponID = WeaponId_e::WeaponNone;
 }
 
 const UIVec2& CCrosshairParameters::ScreenDimensions() const
@@ -56,6 +60,16 @@ void CCrosshairParameters::SetBarLength(float length)
 	m_BarLength = length;
 }
 
+WeaponId_e CCrosshairParameters::WeaponID() const
+{
+	return m_WeaponID;
+}
+
+void CCrosshairParameters::SetWeaponID(WeaponId_e id)
+{
+	m_WeaponID = id;
+}
+
 UIVec2 CCrosshairParameters::HalfScreenDimensions() const
 {
 	return m_ScreenDimensions / 2;
@@ -67,4 +81,28 @@ int CCrosshairParameters::DisplacementFromScreenCentre(float fraction) const
 	const int smallerDim = Min(centre.x, centre.y);
 
 	return static_cast<int>(static_cast<float>(smallerDim) * fraction);
+}
+
+const WeaponAtts::AccuracyParameters* CCrosshairParameters::WeaponAccuracyParamsForAttack(size_t index) const
+{
+	CWeaponRegistry& registry = CWeaponRegistry::StaticInstance();
+	const WeaponAtts::WACollection* atts = registry.Get(m_WeaponID);
+
+	if ( !atts || index >= atts->AttackModes.Count() )
+	{
+		return nullptr;
+	}
+
+	std::shared_ptr<WeaponAtts::WABaseAttack> baseAttackMode = atts->AttackModes[index];
+
+	if ( !baseAttackMode )
+	{
+		return nullptr;
+	}
+
+	std::shared_ptr<WeaponAtts::WAAmmoBasedAttack> ammoBasedAttack = std::dynamic_pointer_cast<WeaponAtts::WAAmmoBasedAttack>(baseAttackMode);
+
+	// I know this is technically returning a raw pointer from shared pointer contents,
+	// but the shared object's lifetime is static so it's OK.
+	return ammoBasedAttack ? &ammoBasedAttack->Accuracy : nullptr;
 }

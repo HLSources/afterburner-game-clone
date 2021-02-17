@@ -2,7 +2,7 @@
 
 namespace CustomGeometry
 {
-	void CGeometryItem::Clear()
+	void CGeometryItem::Reset()
 	{
 		ClearGeometry();
 

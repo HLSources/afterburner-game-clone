@@ -17,6 +17,7 @@ namespace
 	};
 
 	static constexpr size_t BAR_HALF_WIDTH = 1;
+	static constexpr const char CL_DEBUG_WEAPON_SPREAD[] = "cl_debug_weapon_spread";
 
 	inline constexpr uint8_t PointOffset(CrosshairBar bar)
 	{
@@ -28,7 +29,15 @@ int CHudCrosshair::Init()
 {
 	m_CrosshairGeometry = CustomGeometry::GeometryItemPtr_t(new CustomGeometry::CGeometryItem());
 	m_iFlags |= HUD_ACTIVE;
+
+	m_CheatsCvar = gEngfuncs.pfnGetCvarPointer("sv_cheats");
 	m_CrosshairCvar = gEngfuncs.pfnGetCvarPointer("crosshair");
+	m_DebugSpreadCvar = gEngfuncs.pfnGetCvarPointer(CL_DEBUG_WEAPON_SPREAD);
+
+	if ( !m_DebugSpreadCvar )
+	{
+		m_DebugSpreadCvar = gEngfuncs.pfnRegisterVariable(CL_DEBUG_WEAPON_SPREAD, "0", FCVAR_CLIENTDLL);
+	}
 
 	gHUD.AddHudElem(this);
 	return 1;
@@ -68,6 +77,14 @@ int CHudCrosshair::Draw(float flTime)
 	UpdateGeometry();
 	CustomGeometry::RenderAdHocGeometry(m_CrosshairGeometry);
 
+	if ( m_CheatsCvar &&
+		 m_CheatsCvar->value &&
+		 m_DebugSpreadCvar &&
+		 static_cast<int>(m_DebugSpreadCvar->value) > 0 )
+	{
+		m_SpreadVisualiser.Draw(m_Params, static_cast<size_t>(m_DebugSpreadCvar->value) - 1);
+	}
+
 	return 1;
 }
 
@@ -80,10 +97,10 @@ bool CHudCrosshair::UpdateParameters()
 		return false;
 	}
 
-	m_CurrentWeaponID = static_cast<WeaponId_e>(weapon->iId);
+	m_Params.SetWeaponID(static_cast<WeaponId_e>(weapon->iId));
 
 	CWeaponRegistry& registry = CWeaponRegistry::StaticInstance();
-	const WeaponAtts::WACollection* atts = registry.Get(m_CurrentWeaponID);
+	const WeaponAtts::WACollection* atts = registry.Get(m_Params.WeaponID());
 
 	if ( !atts )
 	{
