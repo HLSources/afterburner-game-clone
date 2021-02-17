@@ -17,11 +17,34 @@ namespace
 	};
 
 	static constexpr size_t BAR_HALF_WIDTH = 1;
+
 	static constexpr const char CL_DEBUG_WEAPON_SPREAD[] = "cl_debug_weapon_spread";
+	static constexpr const char CL_CROSSHAIR_OVR_ENABLED[] = "cl_crosshair_ovr_enabled";
+	static constexpr const char CL_CROSSHAIR_OVR_RAD_MIN[] = "cl_crosshair_ovr_rad_min";
+	static constexpr const char CL_CROSSHAIR_OVR_RAD_MAX[] = "cl_crosshair_ovr_rad_max";
+	static constexpr const char CL_CROSSHAIR_OVR_BAR_MIN[] = "cl_crosshair_ovr_bar_min";
+	static constexpr const char CL_CROSSHAIR_OVR_BAR_MAX[] = "cl_crosshair_ovr_bar_max";
 
 	inline constexpr uint8_t PointOffset(CrosshairBar bar)
 	{
 		return 4 * bar;
+	}
+
+	inline bool CvarIsSet(cvar_t* cvar)
+	{
+		return cvar && cvar->value != 0.0f;
+	}
+
+	inline cvar_t* GetOrCreateClientCvar(const char* name, const char* defaultValue = "0")
+	{
+		cvar_t* cvar = gEngfuncs.pfnGetCvarPointer(name);
+
+		if ( !cvar )
+		{
+			cvar = gEngfuncs.pfnRegisterVariable(name, defaultValue, FCVAR_CLIENTDLL);
+		}
+
+		return cvar;
 	}
 }
 
@@ -32,12 +55,13 @@ int CHudCrosshair::Init()
 
 	m_CheatsCvar = gEngfuncs.pfnGetCvarPointer("sv_cheats");
 	m_CrosshairCvar = gEngfuncs.pfnGetCvarPointer("crosshair");
-	m_DebugSpreadCvar = gEngfuncs.pfnGetCvarPointer(CL_DEBUG_WEAPON_SPREAD);
 
-	if ( !m_DebugSpreadCvar )
-	{
-		m_DebugSpreadCvar = gEngfuncs.pfnRegisterVariable(CL_DEBUG_WEAPON_SPREAD, "0", FCVAR_CLIENTDLL);
-	}
+	m_DebugSpreadCvar = GetOrCreateClientCvar(CL_DEBUG_WEAPON_SPREAD);
+	m_OverrideCrosshairAttsCvar = GetOrCreateClientCvar(CL_CROSSHAIR_OVR_ENABLED);
+	m_OverrideCrosshairRadiusMinCvar = GetOrCreateClientCvar(CL_CROSSHAIR_OVR_RAD_MIN, "0");
+	m_OverrideCrosshairRadiusMaxCvar = GetOrCreateClientCvar(CL_CROSSHAIR_OVR_RAD_MAX, "0.5");
+	m_OverrideCrosshairBarLengthMinCvar = GetOrCreateClientCvar(CL_CROSSHAIR_OVR_BAR_MIN, "0.1");
+	m_OverrideCrosshairBarLengthMaxCvar = GetOrCreateClientCvar(CL_CROSSHAIR_OVR_BAR_MAX, "0.05");
 
 	gHUD.AddHudElem(this);
 	return 1;
@@ -77,10 +101,7 @@ int CHudCrosshair::Draw(float flTime)
 	UpdateGeometry();
 	CustomGeometry::RenderAdHocGeometry(m_CrosshairGeometry);
 
-	if ( m_CheatsCvar &&
-		 m_CheatsCvar->value &&
-		 m_DebugSpreadCvar &&
-		 static_cast<int>(m_DebugSpreadCvar->value) > 0 )
+	if ( CvarIsSet(m_CheatsCvar) && m_DebugSpreadCvar && static_cast<int>(m_DebugSpreadCvar->value) > 0 )
 	{
 		m_SpreadVisualiser.Draw(m_Params, static_cast<size_t>(m_DebugSpreadCvar->value) - 1);
 	}
@@ -118,15 +139,39 @@ bool CHudCrosshair::UpdateParameters()
 
 	// At inaccuracy 0, radius is m_CrosshairAtts->RadiusMin.
 	// At inaccuracy 1, radius is m_CrosshairAtts->RadiusMax.
-	const float radius = ExtraMath::RemapClamped(m_Params.WeaponInaccuracy(), 0, 1, m_CrosshairAtts->RadiusMin, m_CrosshairAtts->RadiusMax);
-	m_Params.SetRadius(radius);
+	m_Params.SetRadius(m_Params.MapInaccuracyToValue(m_CrosshairAtts->RadiusMin, m_CrosshairAtts->RadiusMax));
 
 	// At inaccuracy 0, bar length is m_CrosshairAtts->BarScaleMin.
 	// At inaccuracy 1, bar length is m_CrosshairAtts->BarScaleMax.
-	const float barLength = ExtraMath::RemapClamped(m_Params.WeaponInaccuracy(), 0, 1, m_CrosshairAtts->BarScaleMin, m_CrosshairAtts->BarScaleMax);
-	m_Params.SetBarLength(barLength);
+	m_Params.SetBarLength(m_Params.MapInaccuracyToValue(m_CrosshairAtts->BarScaleMin, m_CrosshairAtts->BarScaleMax));
+
+	UpdateParametersFromDebugCvars();
 
 	return true;
+}
+
+void CHudCrosshair::UpdateParametersFromDebugCvars()
+{
+	if ( !CvarIsSet(m_CheatsCvar) || !CvarIsSet(m_OverrideCrosshairAttsCvar) )
+	{
+		return;
+	}
+
+	if ( m_OverrideCrosshairRadiusMinCvar && m_OverrideCrosshairRadiusMaxCvar )
+	{
+		const float radiusMin = m_OverrideCrosshairRadiusMinCvar->value;
+		const float radiusMax = m_OverrideCrosshairRadiusMaxCvar->value;
+
+		m_Params.SetRadius(m_Params.MapInaccuracyToValue(radiusMin, radiusMax));
+	}
+
+	if ( m_OverrideCrosshairBarLengthMinCvar && m_OverrideCrosshairBarLengthMaxCvar )
+	{
+		const float barMin = m_OverrideCrosshairBarLengthMinCvar->value;
+		const float barMax = m_OverrideCrosshairBarLengthMaxCvar->value;
+
+		m_Params.SetBarLength(m_Params.MapInaccuracyToValue(barMin, barMax));
+	}
 }
 
 void CHudCrosshair::InitialiseGeometry()

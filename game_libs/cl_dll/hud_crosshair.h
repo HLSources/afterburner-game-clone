@@ -19,12 +19,18 @@ public:
 
 private:
 	bool UpdateParameters();
+	void UpdateParametersFromDebugCvars();
 	void InitialiseGeometry();
 	void UpdateGeometry();
 
 	cvar_t* m_CheatsCvar = nullptr;
 	cvar_t* m_CrosshairCvar = nullptr;
 	cvar_t* m_DebugSpreadCvar = nullptr;
+	cvar_t* m_OverrideCrosshairAttsCvar = nullptr;
+	cvar_t* m_OverrideCrosshairRadiusMinCvar = nullptr;
+	cvar_t* m_OverrideCrosshairRadiusMaxCvar = nullptr;
+	cvar_t* m_OverrideCrosshairBarLengthMinCvar = nullptr;
+	cvar_t* m_OverrideCrosshairBarLengthMaxCvar = nullptr;
 
 	const WeaponAtts::WACrosshair* m_CrosshairAtts = nullptr;
 

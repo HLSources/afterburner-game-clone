@@ -83,6 +83,11 @@ int CCrosshairParameters::DisplacementFromScreenCentre(float fraction) const
 	return static_cast<int>(static_cast<float>(smallerDim) * fraction);
 }
 
+float CCrosshairParameters::MapInaccuracyToValue(float min, float max) const
+{
+	return ExtraMath::RemapClamped(m_WeaponInaccuracy, 0, 1, min, max);
+}
+
 const WeaponAtts::AccuracyParameters* CCrosshairParameters::WeaponAccuracyParamsForAttack(size_t index) const
 {
 	CWeaponRegistry& registry = CWeaponRegistry::StaticInstance();

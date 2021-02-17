@@ -74,7 +74,10 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	obj.Prediction.SetUpPrediction<CWeaponP99>();
 
 	WACrosshair& crosshair = obj.Crosshair;
-	// TODO
+	crosshair.BarScaleMin = 0.04f;
+	crosshair.BarScaleMax = 0.03f;
+	crosshair.RadiusMin = 0.01f;
+	crosshair.RadiusMax = 0.1f;
 
 	obj.SkillRecords.AddToTail(WASkillRecord("sk_plr_dmg_p99", &skilldata_t::plrDmgP99));
 
