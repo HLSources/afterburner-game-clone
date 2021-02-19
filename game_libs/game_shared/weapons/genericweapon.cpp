@@ -799,7 +799,7 @@ float CGenericWeapon::CalcluateInstantaneousSpreadInterpolant() const
 	}
 
 	const float maxPlayerSpeed = cvarMaxSpeed->value;
-	float spreadValue = ExtraMath::RemapClamped(m_pPlayer->pev->velocity.Length2D(), 0.0f, maxPlayerSpeed, accuracy.RestValue, accuracy.RunValue);
+	float spreadValue = ExtraMath::RemapLinear(m_pPlayer->pev->velocity.Length2D(), 0.0f, maxPlayerSpeed, accuracy.RestValue, accuracy.RunValue);
 
 	if ( m_pPlayer->pev->button & IN_DUCK )
 	{
@@ -808,7 +808,7 @@ float CGenericWeapon::CalcluateInstantaneousSpreadInterpolant() const
 
 	const float zSpeed = fabs(m_pPlayer->pev->velocity.z);
 	const float maxZSpeed = cvarMaxFallSpeed->value;
-	const float shiftFromZSpeed = ExtraMath::RemapClamped(zSpeed, 0.0f, maxZSpeed, 0, accuracy.FallShift);
+	const float shiftFromZSpeed = ExtraMath::RemapSqrt(zSpeed, 0.0f, maxZSpeed, 0, accuracy.FallShift);
 
 	spreadValue += shiftFromZSpeed;
 

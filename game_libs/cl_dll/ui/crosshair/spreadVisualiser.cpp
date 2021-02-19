@@ -55,7 +55,7 @@ void CSpreadVisualiser::ConstructGeometry(const CCrosshairParameters& params)
 	m_Geometry->AddLine(Vector(m_ScaleMinX, m_ScaleYOffset - halfScaleHeight, 0), Vector(m_ScaleMinX, m_ScaleYOffset + halfScaleHeight, 0));
 	m_Geometry->AddLine(Vector(m_ScaleMaxX, m_ScaleYOffset - halfScaleHeight, 0), Vector(m_ScaleMaxX, m_ScaleYOffset + halfScaleHeight, 0));
 
-	const float inaccuracyX = ExtraMath::RemapClamped(params.WeaponInaccuracy(), 0, 1, m_ScaleMinX, m_ScaleMaxX);
+	const float inaccuracyX = ExtraMath::RemapLinear(params.WeaponInaccuracy(), 0, 1, m_ScaleMinX, m_ScaleMaxX);
 
 	// Arrow marker for current inaccuracy.
 	// This will be updated properly later.
@@ -66,7 +66,7 @@ void CSpreadVisualiser::ConstructGeometry(const CCrosshairParameters& params)
 
 void CSpreadVisualiser::UpdateInaccuracyMarker(const CCrosshairParameters& params)
 {
-	const float inaccuracyX = ExtraMath::RemapClamped(params.WeaponInaccuracy(), 0, 1, m_ScaleMinX, m_ScaleMaxX);
+	const float inaccuracyX = ExtraMath::RemapLinear(params.WeaponInaccuracy(), 0, 1, m_ScaleMinX, m_ScaleMaxX);
 	const float halfMarkerWidth = static_cast<float>(MARKER_WIDTH) / 2.0f;
 
 	uint8_t index = m_InaccuracyMarkerBegin;
@@ -97,11 +97,11 @@ void CSpreadVisualiser::UpdateDynamicBars(const CCrosshairParameters& params, si
 	const float halfHeight = (2.0f * static_cast<float>(SCALE_HEIGHT)) / 6.0f;
 
 	// Line representing rest inaccuracy.
-	const float restX = ExtraMath::RemapClamped(accuracyParams->RestValue, 0, 1, m_ScaleMinX, m_ScaleMaxX);
+	const float restX = ExtraMath::RemapLinear(accuracyParams->RestValue, 0, 1, m_ScaleMinX, m_ScaleMaxX);
 	m_DynamicBars->AddLine(Vector(restX, m_ScaleYOffset - halfHeight, 0), Vector(restX, m_ScaleYOffset + halfHeight, 0));
 
 	// Line representing run inaccuracy.
-	const float runX = ExtraMath::RemapClamped(accuracyParams->RunValue, 0, 1, m_ScaleMinX, m_ScaleMaxX);
+	const float runX = ExtraMath::RemapLinear(accuracyParams->RunValue, 0, 1, m_ScaleMinX, m_ScaleMaxX);
 	m_DynamicBars->AddLine(Vector(runX, m_ScaleYOffset - halfHeight, 0), Vector(runX, m_ScaleYOffset + halfHeight, 0));
 }
 

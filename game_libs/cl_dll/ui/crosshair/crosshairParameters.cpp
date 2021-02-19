@@ -85,7 +85,7 @@ int CCrosshairParameters::DisplacementFromScreenCentre(float fraction) const
 
 float CCrosshairParameters::MapInaccuracyToValue(float min, float max) const
 {
-	return ExtraMath::RemapClamped(m_WeaponInaccuracy, 0, 1, min, max);
+	return ExtraMath::RemapLinear(m_WeaponInaccuracy, 0, 1, min, max);
 }
 
 const WeaponAtts::AccuracyParameters* CCrosshairParameters::WeaponAccuracyParamsForAttack(size_t index) const
