@@ -59,13 +59,5 @@ namespace WeaponAtts
 		ShellType ShellModelType = ShellType::Default;
 		bool AutoReload = true;
 		bool SpecialReload = false;
-
-		virtual void Validate() const override
-		{
-			WABaseAttack::Validate();
-
-			ASSERTSZ_Q(Accuracy.MinSpread.x >= 0.0f && Accuracy.MinSpread.y >= 0.0f, "Spread cannot be negative.");
-			ASSERTSZ_Q(Accuracy.MaxSpread.x >= 0.0f && Accuracy.MaxSpread.y >= 0.0f, "Spread cannot be negative.");
-		}
 	};
 }

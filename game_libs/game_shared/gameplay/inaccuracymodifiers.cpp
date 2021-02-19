@@ -5,20 +5,9 @@
 
 namespace InaccuracyModifiers
 {
-	float GetSpeedBasedInaccuracy(CBasePlayer* player, float maxAllowedSpeed)
-	{
-		if ( !player )
-		{
-			return 0.0f;
-		}
-
-		float playerXYSpeed = player->pev->velocity.Length2D();
-
-		return ExtraMath::RemapClamped(playerXYSpeed, 0.0f, maxAllowedSpeed, 0.0f, 1.0f);
-	}
-
 	Vector2D GetInterpolatedSpread(const Vector2D& min, const Vector2D& max, float interpolant)
 	{
-		return min + (interpolant * (max - min));
+		const Vector2D spread = min + (interpolant * (max - min));
+		return Vector2D(Max(spread.x, 0.0f), Max(spread.y, 0.0f));
 	}
 }
