@@ -10,6 +10,11 @@ namespace WeaponAtts
 	struct AccuracyParameters
 	{
 		// Minimum allowed spread for this weapon.
+		// This can be negative, if the point of zero
+		// spread should be at an inaccuracy value
+		// higher than 0.0. When interpolating between
+		// min and max spread, the gun's actual spread
+		// is clamped to a minimum of zero.
 		Vector2D MinSpread;
 
 		// Maximum allowed spread for this weapon.

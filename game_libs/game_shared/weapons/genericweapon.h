@@ -34,11 +34,13 @@ public:
 	virtual void ItemPostFrame() override;
 	virtual bool ReadPredictionData(const weapon_data_t* from) override;
 	virtual bool WritePredictionData(weapon_data_t* to) override;
+	virtual int UpdateClientData(CBasePlayer* pPlayer) override;
 
 	virtual const WeaponAtts::WACollection& WeaponAttributes() const = 0;
 
 	byte GetInaccuracy() const;
 	float GetInstantaneousSpreadInterpolant() const;
+	byte GetPrimaryAttackMode() const;
 
 #ifndef CLIENT_DLL
 	// Don't know if this is the best place to put these?
@@ -69,7 +71,7 @@ protected:
 
 		if ( index >= atts.AttackModes.Count() )
 		{
-			return NULL;
+			return nullptr;
 		}
 
 		const T* attackMode = dynamic_cast<const T*>(atts.AttackModes[index].get());
@@ -174,6 +176,7 @@ private:
 	bool m_bSecondaryAttackHeldDown = false;
 	byte m_iInaccuracy = 0;
 	float m_flSpreadInterpolant = 0.0f;
+	byte m_iLastPriAttackMode = 0;
 };
 
 class CGenericAmmo : public CBasePlayerAmmo

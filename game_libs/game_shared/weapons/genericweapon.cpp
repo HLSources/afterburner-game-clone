@@ -12,6 +12,13 @@
 #include "cl_entity.h"
 #endif
 
+#ifndef CLIENT_DLL
+// Just randomly externing things like this is disgusting,
+// but it's consistent with how the rest of the HL code
+// is written. Fix this later.
+extern int gmsgCurWeaponPriAttackMode;
+#endif
+
 CGenericWeapon::CGenericWeapon()
 	: CBasePlayerWeapon()
 {
@@ -452,6 +459,36 @@ bool CGenericWeapon::WritePredictionData(weapon_data_t* to)
 	return true;
 }
 
+int CGenericWeapon::UpdateClientData(CBasePlayer* pPlayer)
+{
+	CBasePlayerWeapon::UpdateClientData(pPlayer);
+
+#ifndef CLIENT_DLL
+	if ( !IsActiveItem() )
+	{
+		return 1;
+	}
+
+	byte currentAttackMode = GetPrimaryAttackMode();
+
+	if ( pPlayer->m_pActiveItem == pPlayer->m_pClientActiveItem && currentAttackMode == m_iLastPriAttackMode )
+	{
+		// Same weapon as last frame and no mode change, no need to update.
+		return 1;
+	}
+
+	// Update the HUD with the new mode.
+	MESSAGE_BEGIN(MSG_ONE, gmsgCurWeaponPriAttackMode, nullptr, pPlayer->pev);
+		WRITE_BYTE(m_iId);
+		WRITE_BYTE(currentAttackMode);
+	MESSAGE_END();
+
+	m_iLastPriAttackMode = currentAttackMode;
+#endif
+
+	return 1;
+}
+
 void CGenericWeapon::SetFireOnEmptyState(const WeaponAtts::WABaseAttack* attackMode)
 {
 	if ( !attackMode )
@@ -747,6 +784,28 @@ byte CGenericWeapon::GetInaccuracy() const
 float CGenericWeapon::GetInstantaneousSpreadInterpolant() const
 {
 	return m_flSpreadInterpolant;
+}
+
+byte CGenericWeapon::GetPrimaryAttackMode() const
+{
+	if ( !m_pPrimaryAttackMode )
+	{
+		return 0;
+	}
+
+	const WeaponAtts::WACollection& atts = WeaponAttributes();
+	const size_t attackModeCount = atts.AttackModes.Count();
+
+	for ( size_t index = 0; index < attackModeCount; ++index )
+	{
+		if ( m_pPrimaryAttackMode == atts.AttackModes[index].get() )
+		{
+			// This cast is fine, since we should never exceed MAX_ATTACK_MODES.
+			return static_cast<byte>(index);
+		}
+	}
+
+	return 0;
 }
 
 byte CGenericWeapon::CalculateInaccuracy() const

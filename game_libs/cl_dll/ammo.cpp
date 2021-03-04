@@ -255,6 +255,7 @@ int giBucketHeight, giBucketWidth, giABHeight, giABWidth; // Ammo Bar width and 
 HSPRITE ghsprBuckets;					// Sprite for top row of weapons menu
 
 DECLARE_MESSAGE( m_Ammo, CurWeapon )	// Current weapon and clip
+DECLARE_MESSAGE( m_Ammo, CurWeaponPriAttackMode )
 DECLARE_MESSAGE( m_Ammo, WeaponList )	// new weapon type
 DECLARE_MESSAGE( m_Ammo, AmmoX )		// update known ammo type's count
 DECLARE_MESSAGE( m_Ammo, AmmoPickup )	// flashes an ammo pickup record
@@ -287,6 +288,7 @@ int CHudAmmo::Init( void )
 	gHUD.AddHudElem( this );
 
 	HOOK_MESSAGE( CurWeapon );
+	HOOK_MESSAGE( CurWeaponPriAttackMode );
 	HOOK_MESSAGE( WeaponList );
 	HOOK_MESSAGE( AmmoPickup );
 	HOOK_MESSAGE( WeapPickup );
@@ -659,6 +661,23 @@ int CHudAmmo::MsgFunc_CurWeapon( const char *pszName, int iSize, void *pbuf )
 
 	m_fFade = 200.0f; //!!!
 	m_iFlags |= HUD_ACTIVE;
+
+	return 1;
+}
+
+int CHudAmmo::MsgFunc_CurWeaponPriAttackMode( const char *pszName, int iSize, void *pbuf )
+{
+	BEGIN_READ( pbuf, iSize );
+
+	int id = READ_CHAR();
+	int mode = READ_BYTE();
+
+	WEAPON* weapon = gWR.GetWeapon(id);
+
+	if ( weapon )
+	{
+		weapon->iPriAttackMode = mode;
+	}
 
 	return 1;
 }
