@@ -3,6 +3,7 @@
 #include "weapons/weaponregistry.h"
 #include "weaponattributes/weaponatts_collection.h"
 #include "util/extramath.h"
+#include "weaponattributes/weaponatts_ammobasedattack.h"
 
 namespace
 {
@@ -123,27 +124,35 @@ bool CHudCrosshair::UpdateParameters()
 	CWeaponRegistry& registry = CWeaponRegistry::StaticInstance();
 	const WeaponAtts::WACollection* atts = registry.Get(m_Params.WeaponID());
 
-	if ( !atts )
+	if ( !atts || weapon->iPriAttackMode >= atts->AttackModes.Count() )
 	{
 		return false;
 	}
 
-	m_CrosshairAtts = &atts->Crosshair;
+	const WeaponAtts::WABaseAttack* baseAttack = atts->AttackModes[weapon->iPriAttackMode].get();
+	const WeaponAtts::WAAmmoBasedAttack* ammoAttack = dynamic_cast<const WeaponAtts::WAAmmoBasedAttack*>(baseAttack);
 
-	if ( !m_CrosshairAtts->HasCrosshair )
+	if ( !ammoAttack )
+	{
+		return false;
+	}
+
+	const WeaponAtts::CrosshairParameters* m_CrosshairParams = &ammoAttack->Crosshair;
+
+	if ( !m_CrosshairParams->HasCrosshair )
 	{
 		return false;
 	}
 
 	m_Params.SetWeaponInaccuracy(static_cast<float>(gHUD.m_iWeaponInaccuracy) / 255.0f);
 
-	// At inaccuracy 0, radius is m_CrosshairAtts->RadiusMin.
-	// At inaccuracy 1, radius is m_CrosshairAtts->RadiusMax.
-	m_Params.SetRadius(m_Params.MapInaccuracyToValue(m_CrosshairAtts->RadiusMin, m_CrosshairAtts->RadiusMax));
+	// At inaccuracy 0, radius is m_CrosshairParams->RadiusMin.
+	// At inaccuracy 1, radius is m_CrosshairParams->RadiusMax.
+	m_Params.SetRadius(m_Params.MapInaccuracyToValue(m_CrosshairParams->RadiusMin, m_CrosshairParams->RadiusMax));
 
-	// At inaccuracy 0, bar length is m_CrosshairAtts->BarScaleMin.
-	// At inaccuracy 1, bar length is m_CrosshairAtts->BarScaleMax.
-	m_Params.SetBarLength(m_Params.MapInaccuracyToValue(m_CrosshairAtts->BarScaleMin, m_CrosshairAtts->BarScaleMax));
+	// At inaccuracy 0, bar length is m_CrosshairParams->BarScaleMin.
+	// At inaccuracy 1, bar length is m_CrosshairParams->BarScaleMax.
+	m_Params.SetBarLength(m_Params.MapInaccuracyToValue(m_CrosshairParams->BarScaleMin, m_CrosshairParams->BarScaleMax));
 
 	UpdateParametersFromDebugCvars();
 

@@ -73,12 +73,6 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 
 	obj.Prediction.SetUpPrediction<CWeaponP99>();
 
-	WACrosshair& crosshair = obj.Crosshair;
-	crosshair.BarScaleMin = 0.04f;
-	crosshair.BarScaleMax = 0.03f;
-	crosshair.RadiusMin = 0.01f;
-	crosshair.RadiusMax = 0.1f;
-
 	obj.SkillRecords.AddToTail(WASkillRecord("sk_plr_dmg_p99", &skilldata_t::plrDmgP99));
 
 	// Unsilenced
@@ -108,6 +102,12 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	priAttack->AttackSounds.MinPitch = 98;
 	priAttack->AttackSounds.MaxPitch = 104;
 	priAttack->AttackSounds.SoundNames << "weapons/weapon_p99/p99_fire1.wav";
+
+	CrosshairParameters& crosshair = priAttack->Crosshair;
+	crosshair.BarScaleMin = 0.04f;
+	crosshair.BarScaleMax = 0.03f;
+	crosshair.RadiusMin = 0.01f;
+	crosshair.RadiusMax = 0.1f;
 
 	// Silenced
 	WAHitscanAttack* secAttack = new WAHitscanAttack();

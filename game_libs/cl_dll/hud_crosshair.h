@@ -4,7 +4,7 @@
 #include "customGeometry/geometryItemPtr.h"
 #include "ui/crosshair/crosshairParameters.h"
 #include "weapons/weaponids.h"
-#include "weaponattributes/weaponatts_crosshair.h"
+#include "weaponattributes/weaponatts_ammobasedattack.h"
 #include "ui/crosshair/spreadVisualiser.h"
 
 class CHudCrosshair : public CHudBase
@@ -31,8 +31,6 @@ private:
 	cvar_t* m_OverrideCrosshairRadiusMaxCvar = nullptr;
 	cvar_t* m_OverrideCrosshairBarLengthMinCvar = nullptr;
 	cvar_t* m_OverrideCrosshairBarLengthMaxCvar = nullptr;
-
-	const WeaponAtts::WACrosshair* m_CrosshairAtts = nullptr;
 
 	CustomGeometry::GeometryItemPtr_t m_CrosshairGeometry;
 	CCrosshairParameters m_Params;

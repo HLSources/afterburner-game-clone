@@ -534,6 +534,14 @@ int CHud::MsgFunc_SetFOV( const char *pszName,  int iSize, void *pbuf )
 	BEGIN_READ( pbuf, iSize );
 
 	int newfov = READ_BYTE();
+
+	// Welcome to the fresh hell that is Half Life headers
+	// redefining macros everywhere. If you get a crash here,
+	// this means that the macro below has been overridden by
+	// the one in enginecallback.h and the wrong engine API
+	// is being called. This is probably due to enginecallback.h
+	// being included accidentally in some header that this
+	// file uses.
 	int def_fov = CVAR_GET_FLOAT( "default_fov" );
 
 	g_lastFOV = newfov;
