@@ -19,6 +19,16 @@
 extern int gmsgCurWeaponPriAttackMode;
 #endif
 
+static inline byte InaccuracyFloatToByte(float inaccuracy)
+{
+	return static_cast<byte>(inaccuracy * 255.0f);
+}
+
+static inline float InaccuracyByteToFloat(byte inaccuracy)
+{
+	return static_cast<float>(inaccuracy) / 255.0f;
+}
+
 CGenericWeapon::CGenericWeapon()
 	: CBasePlayerWeapon()
 {
@@ -198,12 +208,18 @@ BOOL CGenericWeapon::Deploy()
 
 void CGenericWeapon::PrimaryAttack()
 {
-	InvokeAttack(WeaponAttackType::Primary);
+	if ( InvokeAttack(WeaponAttackType::Primary) )
+	{
+		m_bPrimaryAttackThisFrame = true;
+	}
 }
 
 void CGenericWeapon::SecondaryAttack()
 {
-	InvokeAttack(WeaponAttackType::Secondary);
+	if ( InvokeAttack(WeaponAttackType::Secondary) )
+	{
+		m_bSecondaryAttackThisFrame = true;
+	}
 }
 
 bool CGenericWeapon::InvokeAttack(WeaponAttackType type)
@@ -290,11 +306,10 @@ void CGenericWeapon::Reload()
 
 void CGenericWeapon::ItemPostFrame()
 {
-	m_iLastInaccuracy = m_iInaccuracy;
-	m_flSpreadInterpolant = CalcluateInstantaneousSpreadInterpolant();
-	m_iInstantaneousInaccuracy = CalculateInstantaneousInaccuracy();
-	m_iInaccuracy = CalculateSmoothedInaccuracy();
+	m_bPrimaryAttackThisFrame = false;
+	m_bSecondaryAttackThisFrame = false;
 
+	RunInaccuracyCalculationsBeforeFiring();
 	WeaponTick();
 
 	if( ( m_fInReload ) && ( m_pPlayer->m_flNextAttack <= UTIL_WeaponTimeBase() ) )
@@ -382,9 +397,11 @@ bool CGenericWeapon::ReloadUsableWeaponIfEmpty()
 
 void CGenericWeapon::UpdateValuesPostFrame()
 {
+	RunInaccuracyCalculationsAfterFiring();
+
 	if ( IsActiveItem() )
 	{
-		m_pPlayer->m_iWeaponInaccuracy = m_iInaccuracy;
+		m_pPlayer->m_iWeaponInaccuracy = InaccuracyFloatToByte(m_iInaccuracy);
 	}
 }
 
@@ -446,8 +463,8 @@ bool CGenericWeapon::ReadPredictionData(const weapon_data_t* from)
 		return false;
 	}
 
-	m_iInaccuracy = from->m_iInaccuracy;
-	m_iLastInaccuracy = from->m_iLastInaccuracy;
+	m_iInaccuracy = InaccuracyByteToFloat(from->m_iInaccuracy);
+	m_iLastInaccuracy = InaccuracyByteToFloat(from->m_iLastInaccuracy);
 	return true;
 }
 
@@ -458,8 +475,8 @@ bool CGenericWeapon::WritePredictionData(weapon_data_t* to)
 		return false;
 	}
 
-	to->m_iInaccuracy = m_iInaccuracy;
-	to->m_iLastInaccuracy = m_iLastInaccuracy;
+	to->m_iInaccuracy = InaccuracyFloatToByte(m_iInaccuracy);
+	to->m_iLastInaccuracy = InaccuracyFloatToByte(m_iLastInaccuracy);
 	return true;
 }
 
@@ -780,14 +797,9 @@ bool CGenericWeapon::CanReload() const
 	return true;
 }
 
-byte CGenericWeapon::GetInaccuracy() const
+float CGenericWeapon::GetInaccuracy() const
 {
 	return m_iInaccuracy;
-}
-
-float CGenericWeapon::GetInstantaneousSpreadInterpolant() const
-{
-	return m_flSpreadInterpolant;
 }
 
 byte CGenericWeapon::GetPrimaryAttackMode() const
@@ -812,27 +824,12 @@ byte CGenericWeapon::GetPrimaryAttackMode() const
 	return 0;
 }
 
-byte CGenericWeapon::CalculateInstantaneousInaccuracy() const
+void CGenericWeapon::RunInaccuracyCalculationsBeforeFiring()
 {
-	// For now, just use the instantaneous value. We may want to smooth this out later.
-	return static_cast<byte>(ExtraMath::Clamp(0.0f, m_flSpreadInterpolant, 1.0f) * 255.0f);
-}
+	m_iLastInaccuracy = m_iInaccuracy;
 
-byte CGenericWeapon::CalculateSmoothedInaccuracy() const
-{
-	const WeaponAtts::WAAmmoBasedAttack* ammoAttack = dynamic_cast<const WeaponAtts::WAAmmoBasedAttack*>(m_pPrimaryAttackMode);
-
-	if ( !ammoAttack )
-	{
-		return m_iInstantaneousInaccuracy;
-	}
-
-	const float current = static_cast<float>(m_iInstantaneousInaccuracy);
-	const float last = static_cast<float>(m_iLastInaccuracy);
-	const float difference = current - last;
-	const float smoothed = last + (ammoAttack->Accuracy.FollowCoefficient * difference);
-
-	return static_cast<byte>(ExtraMath::Clamp(0.0f, roundf(smoothed), 255.0f));
+	m_iInstantaneousInaccuracy = CalcluateInstantaneousSpreadInterpolant();
+	m_iInaccuracy = CalculateSmoothedInaccuracy();
 }
 
 float CGenericWeapon::CalcluateInstantaneousSpreadInterpolant() const
@@ -862,37 +859,82 @@ float CGenericWeapon::CalcluateInstantaneousSpreadInterpolant() const
 		return 0.0f;
 	}
 
-	// For now, base this off the primary attack mode only.
-	const WeaponAtts::WAAmmoBasedAttack* ammoAttack = dynamic_cast<const WeaponAtts::WAAmmoBasedAttack*>(m_pPrimaryAttackMode);
+	const WeaponAtts::AccuracyParameters* accuracy = GetWeaponAccuracyParams();
 
-	if ( !ammoAttack )
+	if ( !accuracy )
 	{
 		return 0.0f;
 	}
 
-	const WeaponAtts::AccuracyParameters& accuracy = ammoAttack->Accuracy;
-
-	if ( (accuracy.MaxSpread - accuracy.MinSpread).Length() < 0.001f )
+	if ( (accuracy->MaxSpread - accuracy->MinSpread).Length() < 0.001f )
 	{
 		// No spread difference, don't bother.
 		return 0.0f;
 	}
 
 	const float maxPlayerSpeed = cvarMaxSpeed->value;
-	float spreadValue = ExtraMath::RemapLinear(m_pPlayer->pev->velocity.Length2D(), 0.0f, maxPlayerSpeed, accuracy.RestValue, accuracy.RunValue);
+	float spreadValue = ExtraMath::RemapLinear(m_pPlayer->pev->velocity.Length2D(), 0.0f, maxPlayerSpeed, accuracy->RestValue, accuracy->RunValue);
 
 	if ( m_pPlayer->pev->button & IN_DUCK )
 	{
-		spreadValue += accuracy.CrouchShift;
+		spreadValue += accuracy->CrouchShift;
 	}
 
 	const float zSpeed = fabs(m_pPlayer->pev->velocity.z);
 	const float maxZSpeed = cvarMaxFallSpeed->value;
-	const float shiftFromZSpeed = ExtraMath::RemapSqrt(zSpeed, 0.0f, maxZSpeed, 0, accuracy.FallShift);
+	const float shiftFromZSpeed = ExtraMath::RemapSqrt(zSpeed, 0.0f, maxZSpeed, 0, accuracy->FallShift);
 
 	spreadValue += shiftFromZSpeed;
 
 	return ExtraMath::Clamp(0.0f, spreadValue, 1.0f);
+}
+
+float CGenericWeapon::CalculateSmoothedInaccuracy() const
+{
+	const WeaponAtts::WAAmmoBasedAttack* ammoAttack = dynamic_cast<const WeaponAtts::WAAmmoBasedAttack*>(m_pPrimaryAttackMode);
+
+	if ( !ammoAttack )
+	{
+		return m_iInstantaneousInaccuracy;
+	}
+
+	const float current = static_cast<float>(m_iInstantaneousInaccuracy);
+	const float last = static_cast<float>(m_iLastInaccuracy);
+	const float difference = current - last;
+	const float smoothed = last + (ammoAttack->Accuracy.FollowCoefficient * difference);
+
+	return ExtraMath::Clamp(0.0f, smoothed, 1.0f);
+}
+
+void CGenericWeapon::RunInaccuracyCalculationsAfterFiring()
+{
+	if ( !m_bPrimaryAttackThisFrame )
+	{
+		return;
+	}
+
+	const WeaponAtts::AccuracyParameters* accuracy = GetWeaponAccuracyParams();
+
+	if ( !accuracy )
+	{
+		return;
+	}
+
+	const float maxInaccuracy = m_iInstantaneousInaccuracy + accuracy->FireImpulseCeiling;
+
+	m_iInaccuracy += accuracy->FireImpulse;
+
+	if ( m_iInaccuracy > maxInaccuracy )
+	{
+		m_iInaccuracy = maxInaccuracy;
+	}
+}
+
+const WeaponAtts::AccuracyParameters* CGenericWeapon::GetWeaponAccuracyParams() const
+{
+	// For now, base this off the primary attack mode only.
+	const WeaponAtts::WAAmmoBasedAttack* ammoAttack = dynamic_cast<const WeaponAtts::WAAmmoBasedAttack*>(m_pPrimaryAttackMode);
+	return ammoAttack ? &ammoAttack->Accuracy : nullptr;
 }
 
 const char* CGenericWeapon::PickupSound() const

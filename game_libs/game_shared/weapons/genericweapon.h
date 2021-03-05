@@ -38,8 +38,7 @@ public:
 
 	virtual const WeaponAtts::WACollection& WeaponAttributes() const = 0;
 
-	byte GetInaccuracy() const;
-	float GetInstantaneousSpreadInterpolant() const;
+	float GetInaccuracy() const;
 	byte GetPrimaryAttackMode() const;
 
 #ifndef CLIENT_DLL
@@ -156,9 +155,12 @@ private:
 	void IdleProcess_PlayIdleAnimation();
 
 	void FindWeaponSlotInfo();
-	byte CalculateInstantaneousInaccuracy() const;
-	byte CalculateSmoothedInaccuracy() const;
+
+	void RunInaccuracyCalculationsBeforeFiring();
+	void RunInaccuracyCalculationsAfterFiring();
+	const WeaponAtts::AccuracyParameters* GetWeaponAccuracyParams() const;
 	float CalcluateInstantaneousSpreadInterpolant() const;
+	float CalculateSmoothedInaccuracy() const;
 
 	void PerformReload();
 	bool ReloadUsableWeaponIfEmpty();
@@ -174,11 +176,12 @@ private:
 	int m_iWeaponSlot = -1;
 	int m_iWeaponSlotPosition = -1;
 	bool m_bPrimaryAttackHeldDown = false;
+	bool m_bPrimaryAttackThisFrame = false;
 	bool m_bSecondaryAttackHeldDown = false;
-	byte m_iInaccuracy = 0;
-	byte m_iInstantaneousInaccuracy = 0;
-	byte m_iLastInaccuracy = 0;
-	float m_flSpreadInterpolant = 0.0f;
+	bool m_bSecondaryAttackThisFrame = false;
+	float m_iInaccuracy = 0.0f;
+	float m_iInstantaneousInaccuracy = 0.0f;
+	float m_iLastInaccuracy = 0.0f;
 	byte m_iLastPriAttackMode = 0;
 };
 

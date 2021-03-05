@@ -9,15 +9,17 @@ namespace WeaponAtts
 {
 	struct AccuracyParameters
 	{
-		// Minimum allowed spread for this weapon.
-		// This can be negative, if the point of zero
-		// spread should be at an inaccuracy value
-		// higher than 0.0. When interpolating between
+		// Minimum allowed spread for this weapon, when
+		// the weapon's inaccuracy value is 0.
+		// This spread can be negative, if the point of
+		// zero spread should be at an inaccuracy value
+		// higher than zero. When interpolating between
 		// min and max spread, the gun's actual spread
 		// is clamped to a minimum of zero.
 		Vector2D MinSpread;
 
-		// Maximum allowed spread for this weapon.
+		// Maximum allowed spread for this weapon, when
+		// the weapon's inaccuracy value is 1.
 		Vector2D MaxSpread;
 
 		// The following values should be specified in the range [0 1].
@@ -44,10 +46,23 @@ namespace WeaponAtts
 		// actual shift that is applied is interpolated based on the Z speed.
 		float FallShift = 0.2f;
 
-		// Value between 0 and 1 that determines how instantaneous inaccuracy changes
-		// are. 1 means that no smoothing is applied, and the closer to 0 the value
-		// is, the more smoothing is applied.
+		// All attributes above affect the base, instantaneous level of inaccuracy for the
+		// current frame. A smoothed inaccuracy level is then calculated based on the
+		// difference between the current and previous frames. The follow coefficient
+		// specifies how much smoothing is applied. A value of 1 means no smoothing (the
+		// instantaneous inaccuracy is used verbatim), and values closer to 0 cause more
+		// smoothing (ie. the smoothed value tends towards the instantaneous value more
+		// slowly). A value of 0 means the inaccuracy value will never actually change.
 		float FollowCoefficient = 0.5f;
+
+		// After the base level of inaccuracy is calculated, this impulse is added on the
+		// frame when a weapon is fired. The inaccuracy recedes towards the base level
+		// again on subsequent frames, according to the strength of the follow coefficient.
+		float FireImpulse = 0.1f;
+
+		// The maximum deviation from the frame's instantaneous inaccuracy level that fire
+		// impulses are allowed to cause.
+		float FireImpulseCeiling = 0.3f;
 	};
 
 	struct CrosshairParameters
