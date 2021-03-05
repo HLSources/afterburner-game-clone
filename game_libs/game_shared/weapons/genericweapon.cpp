@@ -290,8 +290,10 @@ void CGenericWeapon::Reload()
 
 void CGenericWeapon::ItemPostFrame()
 {
+	m_iLastInaccuracy = m_iInaccuracy;
 	m_flSpreadInterpolant = CalcluateInstantaneousSpreadInterpolant();
-	m_iInaccuracy = CalculateInaccuracy();
+	m_iInstantaneousInaccuracy = CalculateInstantaneousInaccuracy();
+	m_iInaccuracy = CalculateSmoothedInaccuracy();
 
 	WeaponTick();
 
@@ -808,10 +810,27 @@ byte CGenericWeapon::GetPrimaryAttackMode() const
 	return 0;
 }
 
-byte CGenericWeapon::CalculateInaccuracy() const
+byte CGenericWeapon::CalculateInstantaneousInaccuracy() const
 {
 	// For now, just use the instantaneous value. We may want to smooth this out later.
 	return static_cast<byte>(ExtraMath::Clamp(0.0f, m_flSpreadInterpolant, 1.0f) * 255.0f);
+}
+
+byte CGenericWeapon::CalculateSmoothedInaccuracy() const
+{
+	const WeaponAtts::WAAmmoBasedAttack* ammoAttack = dynamic_cast<const WeaponAtts::WAAmmoBasedAttack*>(m_pPrimaryAttackMode);
+
+	if ( !ammoAttack )
+	{
+		return m_iInstantaneousInaccuracy;
+	}
+
+	const float current = static_cast<float>(m_iInstantaneousInaccuracy);
+	const float last = static_cast<float>(m_iLastInaccuracy);
+	const float difference = current - last;
+	const float smoothed = last + (ammoAttack->Accuracy.FollowCoefficient * difference);
+
+	return static_cast<byte>(ExtraMath::Clamp(0.0f, roundf(smoothed), 255.0f));
 }
 
 float CGenericWeapon::CalcluateInstantaneousSpreadInterpolant() const

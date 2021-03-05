@@ -156,7 +156,8 @@ private:
 	void IdleProcess_PlayIdleAnimation();
 
 	void FindWeaponSlotInfo();
-	byte CalculateInaccuracy() const;
+	byte CalculateInstantaneousInaccuracy() const;
+	byte CalculateSmoothedInaccuracy() const;
 	float CalcluateInstantaneousSpreadInterpolant() const;
 
 	void PerformReload();
@@ -175,6 +176,8 @@ private:
 	bool m_bPrimaryAttackHeldDown = false;
 	bool m_bSecondaryAttackHeldDown = false;
 	byte m_iInaccuracy = 0;
+	byte m_iInstantaneousInaccuracy = 0;
+	byte m_iLastInaccuracy = 0;
 	float m_flSpreadInterpolant = 0.0f;
 	byte m_iLastPriAttackMode = 0;
 };

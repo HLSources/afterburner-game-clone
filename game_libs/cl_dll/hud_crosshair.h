@@ -4,7 +4,6 @@
 #include "customGeometry/geometryItemPtr.h"
 #include "ui/crosshair/crosshairParameters.h"
 #include "weapons/weaponids.h"
-#include "weaponattributes/weaponatts_ammobasedattack.h"
 #include "ui/crosshair/spreadVisualiser.h"
 
 class CHudCrosshair : public CHudBase

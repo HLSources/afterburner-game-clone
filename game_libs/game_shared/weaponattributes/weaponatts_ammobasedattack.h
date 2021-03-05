@@ -43,6 +43,11 @@ namespace WeaponAtts
 		// units per second. If the player is moving slower than this, the
 		// actual shift that is applied is interpolated based on the Z speed.
 		float FallShift = 0.2f;
+
+		// Value between 0 and 1 that determines how instantaneous inaccuracy changes
+		// are. 1 means that no smoothing is applied, and the closer to 0 the value
+		// is, the more smoothing is applied.
+		float FollowCoefficient = 0.5f;
 	};
 
 	struct CrosshairParameters
@@ -82,5 +87,10 @@ namespace WeaponAtts
 		ShellType ShellModelType = ShellType::Default;
 		bool AutoReload = true;
 		bool SpecialReload = false;
+
+		virtual void Validate() const override
+		{
+			ASSERTSZ_Q(Accuracy.FollowCoefficient >= 0.0f && Accuracy.FollowCoefficient <= 1.0f, "Follow coefficient must be between 0 and 1.");
+		}
 	};
 }
