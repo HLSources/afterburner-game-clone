@@ -447,6 +447,7 @@ bool CGenericWeapon::ReadPredictionData(const weapon_data_t* from)
 	}
 
 	m_iInaccuracy = from->m_iInaccuracy;
+	m_iLastInaccuracy = from->m_iLastInaccuracy;
 	return true;
 }
 
@@ -458,6 +459,7 @@ bool CGenericWeapon::WritePredictionData(weapon_data_t* to)
 	}
 
 	to->m_iInaccuracy = m_iInaccuracy;
+	to->m_iLastInaccuracy = m_iLastInaccuracy;
 	return true;
 }
 
