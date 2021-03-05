@@ -19,16 +19,6 @@
 extern int gmsgCurWeaponPriAttackMode;
 #endif
 
-static inline byte InaccuracyFloatToByte(float inaccuracy)
-{
-	return static_cast<byte>(inaccuracy * 255.0f);
-}
-
-static inline float InaccuracyByteToFloat(byte inaccuracy)
-{
-	return static_cast<float>(inaccuracy) / 255.0f;
-}
-
 CGenericWeapon::CGenericWeapon()
 	: CBasePlayerWeapon()
 {
@@ -401,7 +391,7 @@ void CGenericWeapon::UpdateValuesPostFrame()
 
 	if ( IsActiveItem() )
 	{
-		m_pPlayer->m_iWeaponInaccuracy = InaccuracyFloatToByte(m_iInaccuracy);
+		m_pPlayer->m_iWeaponInaccuracy = m_iInaccuracy;
 	}
 }
 
@@ -463,8 +453,8 @@ bool CGenericWeapon::ReadPredictionData(const weapon_data_t* from)
 		return false;
 	}
 
-	m_iInaccuracy = InaccuracyByteToFloat(from->m_iInaccuracy);
-	m_iLastInaccuracy = InaccuracyByteToFloat(from->m_iLastInaccuracy);
+	m_iInaccuracy = from->m_iInaccuracy;
+	m_iLastInaccuracy = from->m_iLastInaccuracy;
 	return true;
 }
 
@@ -475,8 +465,8 @@ bool CGenericWeapon::WritePredictionData(weapon_data_t* to)
 		return false;
 	}
 
-	to->m_iInaccuracy = InaccuracyFloatToByte(m_iInaccuracy);
-	to->m_iLastInaccuracy = InaccuracyFloatToByte(m_iLastInaccuracy);
+	to->m_iInaccuracy = m_iInaccuracy;
+	to->m_iLastInaccuracy = m_iLastInaccuracy;
 	return true;
 }
 
