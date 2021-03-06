@@ -33,10 +33,7 @@ private:
 	void PlayPumpSound();
 	bool FlagReloadInterrupt();
 
-	float m_flReloadStartDuration;
-	float m_flReloadDuration;
-	float m_flPumpDuration;
-	float m_flNextPumpTime;
+	float m_flNextPumpSoundTime;
 	float m_flNextReloadSoundTime;
 };
 

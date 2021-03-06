@@ -31,6 +31,18 @@ static constexpr float FRINESI_FIRE_RATE_PUMP = 1.0f;
 static constexpr float FRINESI_FIRE_RATE_AUTO = 4.0f;
 
 static constexpr uint8_t FRINESI_PELLETS_PER_SHOT = 6;
+static constexpr const char* FRINESI_COCK_SOUND = "weapons/weapon_frinesi/frinesi_cock.wav";
+
+// These used to be based on the lengths of the animations, but are
+// now hard-coded so that gameplay doesn't change if the player
+// changes the length of their viewmodel animations.
+static constexpr float FRINESI_RELOAD_START_DELAY = 0.33f;
+static constexpr float FRINESI_SHELL_RELOAD_DELAY = 0.55f;
+static constexpr float FRINESI_PUMP_DELAY = 0.875f;
+
+static constexpr float FRINESI_RELOAD_SOUND_OFFSET = 0.1f;
+static constexpr float FRINESI_PUMP_SOUND_OFFSET_WHEN_RELOADING = 0.08f;
+static constexpr float FRINESI_PUMP_SOUND_OFFSET_AFTER_FIRING = 0.45f;
 
 static constexpr CAmmoDef Ammo_Frinesi =
 {

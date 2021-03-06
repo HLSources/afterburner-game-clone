@@ -72,6 +72,19 @@ static void SetDebugSourceFromEvent(event_args_t* event)
 	}
 }
 
+static void SetDebugSourceFromWeapon(int index)
+{
+	if ( index >= 0 )
+	{
+		char source[64];
+		Q_snprintf(encodingSourceName, sizeof(encodingSourceName), "Weapon: %d", index);
+	}
+	else
+	{
+		ClearDebugSource();
+	}
+}
+
 static void SetDebugSource(const char* string)
 {
 	Q_strncpy(encodingSourceName, string, sizeof(encodingSourceName));
@@ -1396,6 +1409,8 @@ void MSG_WriteDeltaUsercmd( sizebuf_t *msg, usercmd_t *from, usercmd_t *to )
 	delta_info_t	*dt;
 	int		i;
 
+	DEBUG_SOURCE_SET(SetDebugSource, "Usercmd");
+
 	dt = Delta_FindStruct( "usercmd_t" );
 	Assert( dt && dt->bInitialized );
 
@@ -1677,6 +1692,8 @@ void MSG_WriteWeaponData( sizebuf_t *msg, weapon_data_t *from, weapon_data_t *to
 	delta_info_t	*dt;
 	int		i, startBit;
 	int		numChanges = 0;
+
+	DEBUG_SOURCE_SET(SetDebugSourceFromWeapon, index);
 
 	dt = Delta_FindStruct( "weapon_data_t" );
 	Assert( dt && dt->bInitialized );
