@@ -116,15 +116,15 @@ void CSpreadVisualiser::DrawInfoText(const CCrosshairParameters& params, size_t 
 	const float runInaccuracy = accuracyParams ? accuracyParams->RunValue : 0.0f;
 	const float crouchShift = accuracyParams ? accuracyParams->CrouchShift : 0.0f;
 	const float fallShift = accuracyParams ? accuracyParams->FallShift : 0.0f;
-	const Vector2D minSpread = accuracyParams ? accuracyParams->MinSpread : Vector2D();
-	const Vector2D maxSpread = accuracyParams ? accuracyParams->MaxSpread : Vector2D();
+	const Vector2D minSpread = accuracyParams ? accuracyParams->RestSpread : Vector2D();
+	const Vector2D maxSpread = accuracyParams ? accuracyParams->RunSpread : Vector2D();
 
 	CUtlString text;
 
 	text.AppendFormat("Weapon: %s (ID %u)\n", weaponName, params.WeaponID());
 	text.AppendFormat("Current inaccuracy: %f\n", params.WeaponInaccuracy());
 	text.AppendFormat("Attributes for attack mode %u:\n", attackMode);
-	text.AppendFormat("  Spread: (%f, %f) - (%f, %f)\n", minSpread.x, minSpread.y, maxSpread.x, maxSpread.y);
+	text.AppendFormat("  Spread: Rest (%f, %f), Run (%f, %f)\n", minSpread.x, minSpread.y, maxSpread.x, maxSpread.y);
 	text.AppendFormat("  Rest-run range: %f - %f\n", restInaccuracy, runInaccuracy);
 	text.AppendFormat("  Crouch shift: %f\n", crouchShift);
 	text.AppendFormat("  Fall shift: %f\n", fallShift);

@@ -9,34 +9,25 @@ namespace WeaponAtts
 {
 	struct AccuracyParameters
 	{
-		// Minimum allowed spread for this weapon, when
-		// the weapon's inaccuracy value is 0.
-		// This spread can be negative, if the point of
-		// zero spread should be at an inaccuracy value
-		// higher than zero. When interpolating between
-		// min and max spread, the gun's actual spread
-		// is clamped to a minimum of zero.
-		Vector2D MinSpread;
+		// Weapon inaccuracy calculations take a number of parameters. The inaccuracy
+		// of a weapon depends on the speed at which the player is moving, as well as
+		// whether the weapon has been fired recently. The inaccuracy value is always
+		// hard clamped within the range [0 1].
+		// To begin, we define two points in the [0 1] range: the inaccuracy value
+		// at rest, and the inaccuracy value when the player is running at full speed.
 
-		// Maximum allowed spread for this weapon, when
-		// the weapon's inaccuracy value is 1.
-		Vector2D MaxSpread;
-
-		// The following values should be specified in the range [0 1].
-		// A value of 0 corresponds to the min spread, and a value of 1
-		// corresponds to the max spread.
-
-		// Value representing spread when the player is standing still.
+		// Weapon's inaccuracy, in range [0 1], when the player is standing still.
 		float RestValue = 0.1f;
 
-		// Value representing spread when the player is running at
+		// Weapon's inaccuracy, in range [0 1], when the player is running at
 		// sv_weapon_inaccuracy_maxspeed units per second.
-		float RunValue = 0.8f;
+		float RunValue = 0.5f;
 
-		// Once the speed-based spread value in range [RestValue RunValue]
-		// is calculated, one or more of these shifts are added based on
-		// the state of the player. The resulting value will be clamped to
-		// the range [0 1].
+		// The first step of calculating the weapon inaccuracy checks the player's
+		// XY speed, and determines an inaccuracy value linearly interpolated between
+		// these two values. After this, one or more shifts are added based on
+		// other states that the player might be in. The resulting value will be
+		// clamped to the range [0 1].
 
 		// Shift applied when the player is crouching.
 		float CrouchShift = -0.08f;
@@ -46,8 +37,8 @@ namespace WeaponAtts
 		// actual shift that is applied is interpolated based on the Z speed.
 		float FallShift = 0.2f;
 
-		// All attributes above affect the base, instantaneous level of inaccuracy for the
-		// current frame. A smoothed inaccuracy level is then calculated based on the
+		// This creates a base, instantaneous level of inaccuracy for the weapon on this
+		// particular frame. A smoothed inaccuracy level is then calculated based on the
 		// difference between the current and previous frames. The follow coefficient
 		// specifies how much smoothing is applied. A value of 1 means no smoothing (the
 		// instantaneous inaccuracy is used verbatim), and values closer to 0 cause more
@@ -55,14 +46,35 @@ namespace WeaponAtts
 		// slowly). A value of 0 means the inaccuracy value will never actually change.
 		float FollowCoefficient = 0.5f;
 
-		// After the base level of inaccuracy is calculated, this impulse is added on the
-		// frame when a weapon is fired. The inaccuracy recedes towards the base level
-		// again on subsequent frames, according to the strength of the follow coefficient.
+		// Next, if the weapon has been fired on the current frame, an inaccuracy penalty
+		// is applied to the smoothed value. FireImpulse specifies how large this penalty is.
+		// The inaccuracy value will remain clamped to a maximum of 1.
 		float FireImpulse = 0.1f;
 
-		// The maximum deviation from the frame's instantaneous inaccuracy level that fire
-		// impulses are allowed to cause.
+		// The fire impulse is only allowed to deviate a certain amount from the instantaneous
+		// inaccuracy value. FireImpulseCeiling specifies this max deviation.
 		float FireImpulseCeiling = 0.3f;
+
+		// Finally, the inaccuracy value is used to calculate the weapon's spread when fired.
+		// The two points that define the spread scale are specified below, and use RestValue
+		// and RunValue as reference points. Note that other factors (eg. crouching, falling,
+		// firing) may mean that the actual weapon spread is larger or smaller than these
+		// values. The resulting spread is clamped to a minimum of zero.
+
+		// Weapon spread when the inaccuracy is equal to RestValue.
+		Vector2D RestSpread;
+
+		// Weapon spread when the inaccuracy is equal to RunValue.
+		Vector2D RunSpread;
+
+		inline void Validate() const
+		{
+			ASSERTSZ_Q(RestValue >= 0.0f && RestValue <= 1.0f, "Rest value must be in range [0 1].");
+			ASSERTSZ_Q(RunValue >= 0.0f && RunValue <= 1.0f, "Run value must be in range [0 1].");
+			ASSERTSZ_Q(FollowCoefficient >= 0.0f && FollowCoefficient <= 1.0f, "Follow coefficient must be in range [0 1].");
+			ASSERTSZ_Q(RestSpread.x >= 0.0f && RestSpread.y >= 0.0f, "Rest spread cannot be negative.");
+			ASSERTSZ_Q(RunSpread.x >= 0.0f && RunSpread.y >= 0.0f, "Run spread cannot be negative.");
+		}
 	};
 
 	struct CrosshairParameters
@@ -105,7 +117,7 @@ namespace WeaponAtts
 
 		virtual void Validate() const override
 		{
-			ASSERTSZ_Q(Accuracy.FollowCoefficient >= 0.0f && Accuracy.FollowCoefficient <= 1.0f, "Follow coefficient must be between 0 and 1.");
+			Accuracy.Validate();
 		}
 	};
 }

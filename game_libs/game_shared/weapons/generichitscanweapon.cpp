@@ -130,8 +130,7 @@ Vector CGenericHitscanWeapon::FireBulletsPlayer(const WeaponAtts::WAHitscanAttac
 	TraceResult tr;
 	Vector vecRight = gpGlobals->v_right;
 	Vector vecUp = gpGlobals->v_up;
-	float spreadInterp = GetInaccuracy();
-	Vector2D spread = InaccuracyModifiers::GetInterpolatedSpread(hitscanAttack.Accuracy.MinSpread, hitscanAttack.Accuracy.MaxSpread, spreadInterp);
+	const Vector2D spread = InaccuracyModifiers::GetInterpolatedSpread(hitscanAttack.Accuracy, GetInaccuracy());
 	float x = 0.0f;
 	float y = 0.0f;
 
@@ -229,8 +228,7 @@ void CGenericHitscanWeapon::Debug_DeleteHitscanEvent()
 #ifdef CLIENT_DLL
 Vector CGenericHitscanWeapon::FireBulletsPlayer_Client(const WeaponAtts::WAHitscanAttack& hitscanAttack)
 {
-	float spreadInterp = GetInaccuracy();
-	Vector2D spread = InaccuracyModifiers::GetInterpolatedSpread(hitscanAttack.Accuracy.MinSpread, hitscanAttack.Accuracy.MaxSpread, spreadInterp);
+	const Vector2D spread = InaccuracyModifiers::GetInterpolatedSpread(hitscanAttack.Accuracy, GetInaccuracy());
 	float x = 0.0f;
 	float y = 0.0f;
 

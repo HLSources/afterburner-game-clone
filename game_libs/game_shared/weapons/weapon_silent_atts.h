@@ -59,8 +59,8 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	priAttack->FunctionsUnderwater = true;
 	priAttack->IsContinuous = false;
 	priAttack->UsesAmmoPool = WAAmmoBasedAttack::AmmoPool::None;
-	priAttack->Accuracy.MinSpread = Vector2D(0.0f, 0.0f);
-	priAttack->Accuracy.MaxSpread = Vector2D(0.0f, 0.0f);
+	priAttack->Accuracy.RestSpread = Vector2D(0.0f, 0.0f);
+	priAttack->Accuracy.RunSpread = Vector2D(0.0f, 0.0f);
 	priAttack->AttackRate = SILENTWEAPON_FIRE_RATE;
 	priAttack->AutoAim = AUTOAIM_10DEGREES;
 	priAttack->Volume = QUIET_GUN_VOLUME;

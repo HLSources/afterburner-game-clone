@@ -856,7 +856,7 @@ float CGenericWeapon::CalcluateInstantaneousSpreadInterpolant() const
 		return 0.0f;
 	}
 
-	if ( (accuracy->MaxSpread - accuracy->MinSpread).Length() < 0.001f )
+	if ( (accuracy->RunSpread - accuracy->RestSpread).Length() < 0.001f )
 	{
 		// No spread difference, don't bother.
 		return 0.0f;

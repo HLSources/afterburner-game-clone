@@ -4,7 +4,12 @@
 
 class CBasePlayer;
 
+namespace WeaponAtts
+{
+	struct AccuracyParameters;
+}
+
 namespace InaccuracyModifiers
 {
-	Vector2D GetInterpolatedSpread(const Vector2D& min, const Vector2D& max, float interpolant);
+	Vector2D GetInterpolatedSpread(const WeaponAtts::AccuracyParameters& params, float inaccuracy);
 }
