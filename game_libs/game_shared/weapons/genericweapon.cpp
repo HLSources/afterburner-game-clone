@@ -787,6 +787,13 @@ bool CGenericWeapon::CanReload() const
 	return true;
 }
 
+int CGenericWeapon::GetEventIDForAttackMode(const WeaponAtts::WABaseAttack* attack) const
+{
+	return (attack && attack->Signature()->Index < m_AttackModeEvents.Count())
+			? m_AttackModeEvents[attack->Signature()->Index]
+			: -1;
+}
+
 float CGenericWeapon::GetInaccuracy() const
 {
 	return m_iInaccuracy;

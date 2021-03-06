@@ -88,8 +88,9 @@ bool CGenericHitscanWeapon::InvokeWithAttackMode(const CGenericWeapon::WeaponAtt
 	}
 
 	Vector vecDir = FireBulletsPlayer(*hitscanAttack, vecSrc, vecAiming);
+	const int eventID = GetEventIDForAttackMode(hitscanAttack);
 
-	if ( m_AttackModeEvents[hitscanAttack->Signature()->Index] )
+	if ( eventID >= 0 )
 	{
 		using namespace EventConstructor;
 		CEventConstructor event;
@@ -97,7 +98,7 @@ bool CGenericHitscanWeapon::InvokeWithAttackMode(const CGenericWeapon::WeaponAtt
 		event
 			<< Flags(DefaultEventFlags())
 			<< Invoker(m_pPlayer->edict())
-			<< EventIndex(m_AttackModeEvents[hitscanAttack->Signature()->Index])
+			<< EventIndex(eventID)
 			<< IntParam1(m_pPlayer->random_seed)
 			<< BoolParam1(m_iClip == 0)
 			<< FloatParam1(GetInaccuracy())

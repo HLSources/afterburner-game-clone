@@ -95,6 +95,7 @@ protected:
 	bool HasAmmo(const WeaponAtts::WABaseAttack* attackMode, int minCount = 1, bool useClip = true) const;
 	bool DecrementAmmo(const WeaponAtts::WABaseAttack* attackMode, int decrement);
 	bool CanReload() const;
+	int GetEventIDForAttackMode(const WeaponAtts::WABaseAttack* attack) const;
 
 	// Return the value to set m_fInSpecialReload to next.
 	virtual int HandleSpecialReload(int currentState);
@@ -138,7 +139,6 @@ protected:
 
 	const WeaponAtts::WABaseAttack* m_pPrimaryAttackMode = nullptr;
 	const WeaponAtts::WABaseAttack* m_pSecondaryAttackMode = nullptr;
-	CUtlVector<int> m_AttackModeEvents;
 
 private:
 	// TODO: Should these be delegated somewhere else, a la aggregate programming model?
@@ -170,9 +170,11 @@ private:
 	void HandleNoButtonsDown_Server();
 	void HandleNoButtonsDown_Client();
 
+	CUtlVector<int> m_AttackModeEvents;
+	CUtlVector<float> m_ViewAnimDurations;
+
 	int m_iViewModelIndex = 0;
 	int m_iViewModelBody = 0;
-	CUtlVector<float> m_ViewAnimDurations;
 	int m_iWeaponSlot = -1;
 	int m_iWeaponSlotPosition = -1;
 	bool m_bPrimaryAttackHeldDown = false;
