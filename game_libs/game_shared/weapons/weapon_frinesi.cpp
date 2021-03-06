@@ -46,8 +46,8 @@ CWeaponFrinesi::CWeaponFrinesi()
 	  m_flNextPumpTime(0.0f),
 	  m_flNextReloadSoundTime(0.0f)
 {
-	m_pPrimaryAttackMode = GetAttackModeFromAttributes<WeaponAtts::WAHitscanAttack>(ATTACKMODE_AUTO);
-	m_pSecondaryAttackMode = GetAttackModeFromAttributes<WeaponAtts::WAHitscanAttack>(ATTACKMODE_PUMP);
+	SetPrimaryAttackModeFromAttributes(ATTACKMODE_AUTO);
+	SetSecondaryAttackModeFromAttributes(ATTACKMODE_PUMP);
 }
 
 void CWeaponFrinesi::Precache()
@@ -68,7 +68,7 @@ void CWeaponFrinesi::PrimaryAttack()
 		return;
 	}
 
-	InvokeWithAttackMode(WeaponAttackType::Primary, m_pPrimaryAttackMode);
+	InvokeWithAttackMode(WeaponAttackType::Primary, GetPrimaryAttackMode());
 }
 
 void CWeaponFrinesi::SecondaryAttack()
@@ -78,7 +78,7 @@ void CWeaponFrinesi::SecondaryAttack()
 		return;
 	}
 
-	if ( InvokeWithAttackMode(WeaponAttackType::Secondary, m_pSecondaryAttackMode) )
+	if ( InvokeWithAttackMode(WeaponAttackType::Secondary, GetSecondaryAttackMode()) )
 	{
 		m_flNextPumpTime = gpGlobals->time + FRINESI_PUMP_DELAY;
 	}

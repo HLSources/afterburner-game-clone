@@ -19,9 +19,11 @@ CGenericHitscanWeapon::~CGenericHitscanWeapon()
 
 void CGenericHitscanWeapon::WeaponIdle()
 {
-	if ( m_pPrimaryAttackMode && m_pPrimaryAttackMode->Classify() == WeaponAtts::WABaseAttack::Classification::Hitscan )
+	const WeaponAtts::WAHitscanAttack* primaryAttack = GetPrimaryAttackMode<const WeaponAtts::WAHitscanAttack>();
+
+	if ( primaryAttack )
 	{
-		m_pPlayer->GetAutoaimVector(static_cast<const WeaponAtts::WAHitscanAttack*>(m_pPrimaryAttackMode)->AutoAim);
+		m_pPlayer->GetAutoaimVector(primaryAttack->AutoAim);
 	}
 
 	CGenericWeapon::WeaponIdle();

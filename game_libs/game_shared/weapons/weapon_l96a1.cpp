@@ -13,7 +13,7 @@ CWeaponL96A1::CWeaponL96A1() :
 	CGenericHitscanWeapon(),
 	m_iZoomLevel(0)
 {
-	m_pPrimaryAttackMode = GetAttackModeFromAttributes<WeaponAtts::WAHitscanAttack>(ATTACKMODE_NORMAL);
+	SetPrimaryAttackModeFromAttributes(ATTACKMODE_NORMAL);
 }
 
 const WeaponAtts::WACollection& CWeaponL96A1::WeaponAttributes() const

@@ -39,7 +39,7 @@ public:
 	virtual const WeaponAtts::WACollection& WeaponAttributes() const = 0;
 
 	float GetInaccuracy() const;
-	byte GetPrimaryAttackMode() const;
+	byte GetPrimaryAttackModeIndex() const;
 
 #ifndef CLIENT_DLL
 	// Don't know if this is the best place to put these?
@@ -63,7 +63,7 @@ protected:
 	};
 
 	template<typename T>
-	const T* GetAttackModeFromAttributes(uint32_t index)
+	const T* GetAttackModeFromAttributes(uint32_t index) const
 	{
 		const WeaponAtts::WACollection& atts = WeaponAttributes();
 		ASSERT(index < atts.AttackModes.Count());
@@ -77,6 +77,21 @@ protected:
 		ASSERT(attackMode);
 
 		return attackMode;
+	}
+
+	// Specialisation for base class, which does not need a dynamic_cast.
+	template<>
+	const WeaponAtts::WABaseAttack* GetAttackModeFromAttributes<WeaponAtts::WABaseAttack>(uint32_t index) const
+	{
+		const WeaponAtts::WACollection& atts = WeaponAttributes();
+		ASSERT(index < atts.AttackModes.Count());
+
+		if ( index >= atts.AttackModes.Count() )
+		{
+			return nullptr;
+		}
+
+		return atts.AttackModes[index].get();
 	}
 
 	virtual const char* PickupSound() const override;
@@ -95,7 +110,39 @@ protected:
 	bool HasAmmo(const WeaponAtts::WABaseAttack* attackMode, int minCount = 1, bool useClip = true) const;
 	bool DecrementAmmo(const WeaponAtts::WABaseAttack* attackMode, int decrement);
 	bool CanReload() const;
+
 	int GetEventIDForAttackMode(const WeaponAtts::WABaseAttack* attack) const;
+
+	template<typename T = WeaponAtts::WABaseAttack>
+	inline const T* GetPrimaryAttackMode() const
+	{
+		return dynamic_cast<const T*>(m_pPrimaryAttackMode);
+	}
+
+	template<typename T = WeaponAtts::WABaseAttack>
+	inline const T* GetSecondaryAttackMode() const
+	{
+		return dynamic_cast<const T*>(m_pSecondaryAttackMode);
+	}
+
+	void SetPrimaryAttackMode(const WeaponAtts::WABaseAttack* mode);
+	void SetSecondaryAttackMode(const WeaponAtts::WABaseAttack* mode);
+
+	// T can be used to validate the type of attack expected to be set,
+	// but can be omitted if this is not required.
+	template<typename T = WeaponAtts::WABaseAttack>
+	inline void SetPrimaryAttackModeFromAttributes(uint32_t modeIndex)
+	{
+		SetPrimaryAttackMode(GetAttackModeFromAttributes<T>(modeIndex));
+	}
+
+	// T can be used to validate the type of attack expected to be set,
+	// but can be omitted if this is not required.
+	template<typename T = WeaponAtts::WABaseAttack>
+	inline void SetSecondaryAttackModeFromAttributes(uint32_t modeIndex)
+	{
+		SetSecondaryAttackMode(GetAttackModeFromAttributes<T>(modeIndex));
+	}
 
 	// Return the value to set m_fInSpecialReload to next.
 	virtual int HandleSpecialReload(int currentState);
@@ -137,9 +184,6 @@ protected:
 #endif
 	}
 
-	const WeaponAtts::WABaseAttack* m_pPrimaryAttackMode = nullptr;
-	const WeaponAtts::WABaseAttack* m_pSecondaryAttackMode = nullptr;
-
 private:
 	// TODO: Should these be delegated somewhere else, a la aggregate programming model?
 	void PrecacheCore(const WeaponAtts::WACore& core);
@@ -172,6 +216,9 @@ private:
 
 	CUtlVector<int> m_AttackModeEvents;
 	CUtlVector<float> m_ViewAnimDurations;
+
+	const WeaponAtts::WABaseAttack* m_pPrimaryAttackMode = nullptr;
+	const WeaponAtts::WABaseAttack* m_pSecondaryAttackMode = nullptr;
 
 	int m_iViewModelIndex = 0;
 	int m_iViewModelBody = 0;

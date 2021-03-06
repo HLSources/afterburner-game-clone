@@ -480,7 +480,7 @@ int CGenericWeapon::UpdateClientData(CBasePlayer* pPlayer)
 		return 1;
 	}
 
-	byte currentAttackMode = GetPrimaryAttackMode();
+	byte currentAttackMode = GetPrimaryAttackModeIndex();
 
 	if ( pPlayer->m_pActiveItem == pPlayer->m_pClientActiveItem && currentAttackMode == m_iLastPriAttackMode )
 	{
@@ -794,12 +794,22 @@ int CGenericWeapon::GetEventIDForAttackMode(const WeaponAtts::WABaseAttack* atta
 			: -1;
 }
 
+void CGenericWeapon::SetPrimaryAttackMode(const WeaponAtts::WABaseAttack* mode)
+{
+	m_pPrimaryAttackMode = mode;
+}
+
+void CGenericWeapon::SetSecondaryAttackMode(const WeaponAtts::WABaseAttack* mode)
+{
+	m_pSecondaryAttackMode = mode;
+}
+
 float CGenericWeapon::GetInaccuracy() const
 {
 	return m_iInaccuracy;
 }
 
-byte CGenericWeapon::GetPrimaryAttackMode() const
+byte CGenericWeapon::GetPrimaryAttackModeIndex() const
 {
 	if ( !m_pPrimaryAttackMode )
 	{
