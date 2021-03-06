@@ -119,10 +119,22 @@ protected:
 		return dynamic_cast<const T*>(m_pPrimaryAttackMode);
 	}
 
+	template<>
+	inline const WeaponAtts::WABaseAttack* GetPrimaryAttackMode() const
+	{
+		return m_pPrimaryAttackMode;
+	}
+
 	template<typename T = WeaponAtts::WABaseAttack>
 	inline const T* GetSecondaryAttackMode() const
 	{
 		return dynamic_cast<const T*>(m_pSecondaryAttackMode);
+	}
+
+	template<>
+	inline const WeaponAtts::WABaseAttack* GetSecondaryAttackMode() const
+	{
+		return m_pSecondaryAttackMode;
 	}
 
 	void SetPrimaryAttackMode(const WeaponAtts::WABaseAttack* mode);
