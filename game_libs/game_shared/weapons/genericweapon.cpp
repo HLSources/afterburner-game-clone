@@ -454,7 +454,6 @@ bool CGenericWeapon::ReadPredictionData(const weapon_data_t* from)
 	}
 
 	m_iInaccuracy = from->m_iInaccuracy;
-	m_iLastInaccuracy = from->m_iLastInaccuracy;
 	return true;
 }
 
@@ -466,7 +465,6 @@ bool CGenericWeapon::WritePredictionData(weapon_data_t* to)
 	}
 
 	to->m_iInaccuracy = m_iInaccuracy;
-	to->m_iLastInaccuracy = m_iLastInaccuracy;
 	return true;
 }
 
@@ -905,8 +903,8 @@ float CGenericWeapon::CalculateSmoothedInaccuracy() const
 		return m_iInstantaneousInaccuracy;
 	}
 
-	const float current = static_cast<float>(m_iInstantaneousInaccuracy);
-	const float last = static_cast<float>(m_iLastInaccuracy);
+	const float current = m_iInstantaneousInaccuracy;
+	const float last = m_iLastInaccuracy;
 	const float difference = current - last;
 	const float smoothed = last + (ammoAttack->Accuracy.FollowCoefficient * difference);
 
