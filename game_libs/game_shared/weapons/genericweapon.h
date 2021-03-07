@@ -5,6 +5,7 @@
 #include "utlvector.h"
 #include "weaponatts_collection.h"
 #include "weaponatts_ammobasedattack.h"
+#include "gameplay/weaponInaccuracyCalculator.h"
 
 class CBaseBot;
 class CBaseBotFightStyle;
@@ -211,12 +212,7 @@ private:
 	void IdleProcess_PlayIdleAnimation();
 
 	void FindWeaponSlotInfo();
-
-	void RunInaccuracyCalculationsBeforeFiring();
-	void RunInaccuracyCalculationsAfterFiring();
 	const WeaponAtts::AccuracyParameters* GetWeaponAccuracyParams() const;
-	float CalcluateInstantaneousSpreadInterpolant() const;
-	float CalculateSmoothedInaccuracy() const;
 
 	void PerformReload();
 	bool ReloadUsableWeaponIfEmpty();
@@ -228,6 +224,7 @@ private:
 
 	CUtlVector<int> m_AttackModeEvents;
 	CUtlVector<float> m_ViewAnimDurations;
+	CWeaponInaccuracyCalculator m_InaccuracyCalculator;
 
 	const WeaponAtts::WABaseAttack* m_pPrimaryAttackMode = nullptr;
 	const WeaponAtts::WABaseAttack* m_pSecondaryAttackMode = nullptr;
@@ -240,9 +237,6 @@ private:
 	bool m_bPrimaryAttackThisFrame = false;
 	bool m_bSecondaryAttackHeldDown = false;
 	bool m_bSecondaryAttackThisFrame = false;
-	float m_iInaccuracy = 0.0f;
-	float m_iInstantaneousInaccuracy = 0.0f;
-	float m_iLastInaccuracy = 0.0f;
 	byte m_iLastPriAttackMode = 0;
 };
 

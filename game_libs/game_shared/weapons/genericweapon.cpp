@@ -47,6 +47,7 @@ void CGenericWeapon::Spawn()
 	}
 
 	m_iDefaultAmmo = WeaponAttributes().Ammo.PrimaryAmmoOnFirstPickup;
+	m_InaccuracyCalculator.Clear();
 
 	if ( !(pev->spawnflags & SF_DontDrop) )
 	{
@@ -299,7 +300,10 @@ void CGenericWeapon::ItemPostFrame()
 	m_bPrimaryAttackThisFrame = false;
 	m_bSecondaryAttackThisFrame = false;
 
-	RunInaccuracyCalculationsBeforeFiring();
+	m_InaccuracyCalculator.SetAccuracyParams(GetWeaponAccuracyParams());
+	m_InaccuracyCalculator.SetPlayer(m_pPlayer);
+	m_InaccuracyCalculator.CalculateInaccuracy();
+
 	WeaponTick();
 
 	if( ( m_fInReload ) && ( m_pPlayer->m_flNextAttack <= UTIL_WeaponTimeBase() ) )
@@ -387,11 +391,12 @@ bool CGenericWeapon::ReloadUsableWeaponIfEmpty()
 
 void CGenericWeapon::UpdateValuesPostFrame()
 {
-	RunInaccuracyCalculationsAfterFiring();
+	m_InaccuracyCalculator.SetFiredThisFrame(m_bPrimaryAttackThisFrame);
+	m_InaccuracyCalculator.AddInaccuracyPenaltyFromFiring();
 
 	if ( IsActiveItem() )
 	{
-		m_pPlayer->m_iWeaponInaccuracy = m_iInaccuracy;
+		m_pPlayer->m_iWeaponInaccuracy = m_InaccuracyCalculator.SmoothedInaccuracy();
 	}
 }
 
@@ -453,7 +458,7 @@ bool CGenericWeapon::ReadPredictionData(const weapon_data_t* from)
 		return false;
 	}
 
-	m_iInaccuracy = from->m_iInaccuracy;
+	m_InaccuracyCalculator.ReadFromPredictionData(*from);
 	return true;
 }
 
@@ -464,7 +469,7 @@ bool CGenericWeapon::WritePredictionData(weapon_data_t* to)
 		return false;
 	}
 
-	to->m_iInaccuracy = m_iInaccuracy;
+	m_InaccuracyCalculator.WriteToPredictionData(*to);
 	return true;
 }
 
@@ -804,7 +809,8 @@ void CGenericWeapon::SetSecondaryAttackMode(const WeaponAtts::WABaseAttack* mode
 
 float CGenericWeapon::GetInaccuracy() const
 {
-	return m_iInaccuracy;
+	// return m_iInaccuracy;
+	return m_InaccuracyCalculator.SmoothedInaccuracy();
 }
 
 byte CGenericWeapon::GetPrimaryAttackModeIndex() const
@@ -827,112 +833,6 @@ byte CGenericWeapon::GetPrimaryAttackModeIndex() const
 	}
 
 	return 0;
-}
-
-void CGenericWeapon::RunInaccuracyCalculationsBeforeFiring()
-{
-	m_iLastInaccuracy = m_iInaccuracy;
-
-	m_iInstantaneousInaccuracy = CalcluateInstantaneousSpreadInterpolant();
-	m_iInaccuracy = CalculateSmoothedInaccuracy();
-}
-
-float CGenericWeapon::CalcluateInstantaneousSpreadInterpolant() const
-{
-	static cvar_t* cvarMaxSpeed = nullptr;
-	static cvar_t* cvarMaxFallSpeed = nullptr;
-
-	if ( !m_pPlayer || !IsActiveItem() )
-	{
-		// Predicted weapons still have ItemPostFrame() called.
-		// Make sure old inaccuracy values aren't retained.
-		return 0.0f;
-	}
-
-	if ( !cvarMaxSpeed )
-	{
-		cvarMaxSpeed = GetCvarByName("sv_weapon_inaccuracy_maxspeed");
-	}
-
-	if ( !cvarMaxFallSpeed )
-	{
-		cvarMaxFallSpeed = GetCvarByName("sv_weapon_inaccuracy_maxfallspeed");
-	}
-
-	if ( !cvarMaxSpeed || !cvarMaxFallSpeed )
-	{
-		return 0.0f;
-	}
-
-	const WeaponAtts::AccuracyParameters* accuracy = GetWeaponAccuracyParams();
-
-	if ( !accuracy )
-	{
-		return 0.0f;
-	}
-
-	if ( (accuracy->RunSpread - accuracy->RestSpread).Length() < 0.001f )
-	{
-		// No spread difference, don't bother.
-		return 0.0f;
-	}
-
-	const float maxPlayerSpeed = cvarMaxSpeed->value;
-	float spreadValue = ExtraMath::RemapLinear(m_pPlayer->pev->velocity.Length2D(), 0.0f, maxPlayerSpeed, accuracy->RestValue, accuracy->RunValue);
-
-	if ( m_pPlayer->pev->button & IN_DUCK )
-	{
-		spreadValue += accuracy->CrouchShift;
-	}
-
-	const float zSpeed = fabs(m_pPlayer->pev->velocity.z);
-	const float maxZSpeed = cvarMaxFallSpeed->value;
-	const float shiftFromZSpeed = ExtraMath::RemapSqrt(zSpeed, 0.0f, maxZSpeed, 0, accuracy->FallShift);
-
-	spreadValue += shiftFromZSpeed;
-
-	return ExtraMath::Clamp(0.0f, spreadValue, 1.0f);
-}
-
-float CGenericWeapon::CalculateSmoothedInaccuracy() const
-{
-	const WeaponAtts::WAAmmoBasedAttack* ammoAttack = dynamic_cast<const WeaponAtts::WAAmmoBasedAttack*>(m_pPrimaryAttackMode);
-
-	if ( !ammoAttack )
-	{
-		return m_iInstantaneousInaccuracy;
-	}
-
-	const float current = m_iInstantaneousInaccuracy;
-	const float last = m_iLastInaccuracy;
-	const float difference = current - last;
-	const float smoothed = last + (ammoAttack->Accuracy.FollowCoefficient * difference);
-
-	return ExtraMath::Clamp(0.0f, smoothed, 1.0f);
-}
-
-void CGenericWeapon::RunInaccuracyCalculationsAfterFiring()
-{
-	if ( !m_bPrimaryAttackThisFrame )
-	{
-		return;
-	}
-
-	const WeaponAtts::AccuracyParameters* accuracy = GetWeaponAccuracyParams();
-
-	if ( !accuracy )
-	{
-		return;
-	}
-
-	const float maxInaccuracy = m_iInstantaneousInaccuracy + accuracy->FireImpulseCeiling;
-
-	m_iInaccuracy += accuracy->FireImpulse;
-
-	if ( m_iInaccuracy > maxInaccuracy )
-	{
-		m_iInaccuracy = maxInaccuracy;
-	}
 }
 
 const WeaponAtts::AccuracyParameters* CGenericWeapon::GetWeaponAccuracyParams() const
