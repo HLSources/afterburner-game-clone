@@ -5,7 +5,6 @@ namespace WeaponAtts
 	struct AccuracyParameters;
 }
 
-typedef struct weapon_data_s weapon_data_t;
 typedef struct cvar_s cvar_t;
 
 class CBasePlayer;
@@ -22,11 +21,9 @@ public:
 	void CalculateInaccuracy();
 	void AddInaccuracyPenaltyFromFiring();
 
-	void ReadFromPredictionData(const weapon_data_t& from);
-	void WriteToPredictionData(weapon_data_t& to);
-
 	float InstantaneousInaccuracy() const;
 	float SmoothedInaccuracy() const;
+	void SetLastSmoothedInaccuracy(float inaccuracy);
 
 	const Accuracy* AccuracyParams() const;
 	void SetAccuracyParams(const Accuracy* params);

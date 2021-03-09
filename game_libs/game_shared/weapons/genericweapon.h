@@ -50,6 +50,9 @@ public:
 	// make bot weapon profiles local to bot code?
 	virtual float Bot_CalcDesireToUse(CBaseBot& bot, CBaseEntity& enemy, float distanceToEnemy) const = 0;
 	virtual void Bot_SetFightStyle(CBaseBotFightStyle& fightStyle) const = 0;
+	virtual int Save(CSave &save) override;
+	virtual int Restore(CRestore &restore) override;
+	static TYPEDESCRIPTION m_SaveData[];
 #endif
 
 	static constexpr float DEFAULT_BULLET_TRACE_DISTANCE = 8192;
@@ -237,6 +240,7 @@ private:
 	bool m_bPrimaryAttackThisFrame = false;
 	bool m_bSecondaryAttackHeldDown = false;
 	bool m_bSecondaryAttackThisFrame = false;
+	float m_flInaccuracy = 0.0f;
 	byte m_iLastPriAttackMode = 0;
 };
 

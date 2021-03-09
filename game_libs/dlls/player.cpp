@@ -2638,8 +2638,6 @@ pt_end:
 		if( m_flAmmoStartCharge < -0.001 )
 			m_flAmmoStartCharge = -0.001;
 	}
-#else
-	return;
 #endif
 }
 

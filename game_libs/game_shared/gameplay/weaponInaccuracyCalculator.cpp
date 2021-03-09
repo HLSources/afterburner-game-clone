@@ -24,6 +24,11 @@ float CWeaponInaccuracyCalculator::SmoothedInaccuracy() const
 	return m_SmoothedInaccuracy;
 }
 
+void CWeaponInaccuracyCalculator::SetLastSmoothedInaccuracy(float inaccuracy)
+{
+	m_LastSmoothedInaccuracy = inaccuracy;
+}
+
 const CWeaponInaccuracyCalculator::Accuracy* CWeaponInaccuracyCalculator::AccuracyParams() const
 {
 	return m_AccuracyParams;
@@ -66,7 +71,6 @@ void CWeaponInaccuracyCalculator::Clear()
 
 void CWeaponInaccuracyCalculator::CalculateInaccuracy()
 {
-	m_LastSmoothedInaccuracy = m_SmoothedInaccuracy;
 	CalculateInstantaneousInaccuracy();
 	CalculateSmoothedInaccuracy();
 }
@@ -143,14 +147,4 @@ void CWeaponInaccuracyCalculator::CalculateSmoothedInaccuracy()
 	const float smoothed = m_LastSmoothedInaccuracy + (m_AccuracyParams->FollowCoefficient * difference);
 
 	m_SmoothedInaccuracy = ExtraMath::Clamp(0.0f, smoothed, 1.0f);
-}
-
-void CWeaponInaccuracyCalculator::ReadFromPredictionData(const weapon_data_t& from)
-{
-	m_SmoothedInaccuracy = from.m_iInaccuracy;
-}
-
-void CWeaponInaccuracyCalculator::WriteToPredictionData(weapon_data_t& to)
-{
-	to.m_iInaccuracy = m_SmoothedInaccuracy;
 }

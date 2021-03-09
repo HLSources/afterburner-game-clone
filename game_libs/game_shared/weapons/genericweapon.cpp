@@ -47,7 +47,9 @@ void CGenericWeapon::Spawn()
 	}
 
 	m_iDefaultAmmo = WeaponAttributes().Ammo.PrimaryAmmoOnFirstPickup;
+
 	m_InaccuracyCalculator.Clear();
+	m_flInaccuracy = 0.0f;
 
 	if ( !(pev->spawnflags & SF_DontDrop) )
 	{
@@ -300,6 +302,7 @@ void CGenericWeapon::ItemPostFrame()
 	m_bPrimaryAttackThisFrame = false;
 	m_bSecondaryAttackThisFrame = false;
 
+	m_InaccuracyCalculator.SetLastSmoothedInaccuracy(m_flInaccuracy);
 	m_InaccuracyCalculator.SetAccuracyParams(GetWeaponAccuracyParams());
 	m_InaccuracyCalculator.SetPlayer(m_pPlayer);
 	m_InaccuracyCalculator.CalculateInaccuracy();
@@ -393,10 +396,11 @@ void CGenericWeapon::UpdateValuesPostFrame()
 {
 	m_InaccuracyCalculator.SetFiredThisFrame(m_bPrimaryAttackThisFrame);
 	m_InaccuracyCalculator.AddInaccuracyPenaltyFromFiring();
+	m_flInaccuracy = m_InaccuracyCalculator.SmoothedInaccuracy();
 
 	if ( IsActiveItem() )
 	{
-		m_pPlayer->m_iWeaponInaccuracy = m_InaccuracyCalculator.SmoothedInaccuracy();
+		m_pPlayer->m_iWeaponInaccuracy = m_flInaccuracy;
 	}
 }
 
@@ -458,7 +462,7 @@ bool CGenericWeapon::ReadPredictionData(const weapon_data_t* from)
 		return false;
 	}
 
-	m_InaccuracyCalculator.ReadFromPredictionData(*from);
+	m_flInaccuracy = from->m_iInaccuracy;
 	return true;
 }
 
@@ -469,7 +473,7 @@ bool CGenericWeapon::WritePredictionData(weapon_data_t* to)
 		return false;
 	}
 
-	m_InaccuracyCalculator.WriteToPredictionData(*to);
+	to->m_iInaccuracy = m_flInaccuracy;
 	return true;
 }
 
@@ -809,8 +813,7 @@ void CGenericWeapon::SetSecondaryAttackMode(const WeaponAtts::WABaseAttack* mode
 
 float CGenericWeapon::GetInaccuracy() const
 {
-	// return m_iInaccuracy;
-	return m_InaccuracyCalculator.SmoothedInaccuracy();
+	return m_flInaccuracy;
 }
 
 byte CGenericWeapon::GetPrimaryAttackModeIndex() const
@@ -898,3 +901,16 @@ void CGenericWeapon::GetSharedCircularGaussianSpread(uint32_t shotIndex, int sha
 	y = UTIL_SharedRandomFloat( shared_rand + (shotIndex * NUM_COMPONENTS) + 2, -0.5, 0.5 ) +
 		UTIL_SharedRandomFloat( shared_rand + (shotIndex * NUM_COMPONENTS) + 3, -0.5, 0.5 );
 }
+
+#ifndef CLIENT_DLL
+TYPEDESCRIPTION	CGenericWeapon::m_SaveData[] =
+{
+#if defined(CLIENT_WEAPONS)
+	DEFINE_FIELD(CGenericWeapon, m_flInaccuracy, FIELD_FLOAT),
+#else	// CLIENT_WEAPONS
+	DEFINE_FIELD(CGenericWeapon, m_flInaccuracy, FIELD_TIME)
+#endif	// CLIENT_WEAPONS
+};
+
+IMPLEMENT_SAVERESTORE(CGenericWeapon, CBasePlayerWeapon)
+#endif
