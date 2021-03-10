@@ -6,12 +6,28 @@
 #include "util/cvarFuncs.h"
 #include "weaponattributes/weaponatts_ammobasedattack.h"
 
+bool CWeaponInaccuracyCalculator::m_StandardCvarsLoaded = false;
+bool CWeaponInaccuracyCalculator::m_DebuggingCvarsLoaded = false;
+cvar_t* CWeaponInaccuracyCalculator::m_CvarMaxSpeed = nullptr;
+cvar_t* CWeaponInaccuracyCalculator::m_CvarMaxFallSpeed = nullptr;
+cvar_t* CWeaponInaccuracyCalculator::m_CvarCheats = nullptr;
+cvar_t* CWeaponInaccuracyCalculator::m_CvarEnableDebugging = nullptr;
+cvar_t* CWeaponInaccuracyCalculator::m_CvarDebugRestValue = nullptr;
+cvar_t* CWeaponInaccuracyCalculator::m_CvarDebugRestSpread = nullptr;
+cvar_t* CWeaponInaccuracyCalculator::m_CvarDebugRunValue = nullptr;
+cvar_t* CWeaponInaccuracyCalculator::m_CvarDebugRunSpread = nullptr;
+cvar_t* CWeaponInaccuracyCalculator::m_CvarDebugCrouchShift = nullptr;
+cvar_t* CWeaponInaccuracyCalculator::m_CvarDebugFallShift = nullptr;
+cvar_t* CWeaponInaccuracyCalculator::m_CvarDebugFollowCoefficient = nullptr;
+cvar_t* CWeaponInaccuracyCalculator::m_CvarDebugFireImpulse = nullptr;
+cvar_t* CWeaponInaccuracyCalculator::m_CvarDebugFireImpulseCeiling = nullptr;
+cvar_t* CWeaponInaccuracyCalculator::m_CvarDebugFireImpulseHoldTime = nullptr;
+WeaponAtts::AccuracyParameters CWeaponInaccuracyCalculator::m_StaticDebugParams;
+
 CWeaponInaccuracyCalculator::CWeaponInaccuracyCalculator()
 {
 	Clear();
-
-	m_CvarMaxSpeed = GetCvarByName("sv_weapon_inaccuracy_maxspeed");
-	m_CvarMaxFallSpeed = GetCvarByName("sv_weapon_inaccuracy_maxfallspeed");
+	InitCvars();
 }
 
 float CWeaponInaccuracyCalculator::InstantaneousInaccuracy() const
@@ -66,7 +82,7 @@ void CWeaponInaccuracyCalculator::SetLastFireTimeIsDecremented(bool decremented)
 
 bool CWeaponInaccuracyCalculator::IsValid() const
 {
-	return m_Player && m_AccuracyParams && m_CvarMaxSpeed && m_CvarMaxFallSpeed;
+	return m_Player && m_StandardCvarsLoaded;
 }
 
 void CWeaponInaccuracyCalculator::Clear()
@@ -83,8 +99,9 @@ void CWeaponInaccuracyCalculator::Clear()
 
 void CWeaponInaccuracyCalculator::CalculateInaccuracy()
 {
-	CalculateInstantaneousInaccuracy();
-	CalculateSmoothedInaccuracy();
+	const WeaponAtts::AccuracyParameters* params = GetInternalParameters();
+	CalculateInstantaneousInaccuracy(params);
+	CalculateSmoothedInaccuracy(params);
 }
 
 void CWeaponInaccuracyCalculator::AddInaccuracyPenaltyFromFiring()
@@ -101,9 +118,16 @@ void CWeaponInaccuracyCalculator::AddInaccuracyPenaltyFromFiring()
 		return;
 	}
 
-	m_SmoothedInaccuracy += m_AccuracyParams->FireImpulse;
+	const WeaponAtts::AccuracyParameters* params = GetInternalParameters();
 
-	const float maxInaccuracy = m_InstantaneousInaccuracy + m_AccuracyParams->FireImpulseCeiling;
+	if ( !params )
+	{
+		return;
+	}
+
+	m_SmoothedInaccuracy += params->FireImpulse;
+
+	const float maxInaccuracy = m_InstantaneousInaccuracy + params->FireImpulseCeiling;
 
 	if ( m_SmoothedInaccuracy > maxInaccuracy )
 	{
@@ -111,16 +135,16 @@ void CWeaponInaccuracyCalculator::AddInaccuracyPenaltyFromFiring()
 	}
 }
 
-void CWeaponInaccuracyCalculator::CalculateInstantaneousInaccuracy()
+void CWeaponInaccuracyCalculator::CalculateInstantaneousInaccuracy(const WeaponAtts::AccuracyParameters* params)
 {
 	m_InstantaneousInaccuracy = 0.0f;
 
-	if ( !IsValid() )
+	if ( !IsValid() || !params )
 	{
 		return;
 	}
 
-	if ( (m_AccuracyParams->RunSpread - m_AccuracyParams->RestSpread).Length() < 0.001f )
+	if ( (params->RunSpread - params->RestSpread).Length() < 0.001f )
 	{
 		// No spread difference, don't bother.
 		return;
@@ -130,27 +154,27 @@ void CWeaponInaccuracyCalculator::CalculateInstantaneousInaccuracy()
 	float spreadValue = ExtraMath::RemapLinear(m_Player->pev->velocity.Length2D(),
 											   0.0f,
 											   maxPlayerSpeed,
-											   m_AccuracyParams->RestValue,
-											   m_AccuracyParams->RunValue);
+											   params->RestValue,
+											   params->RunValue);
 
 	if ( m_Player->pev->button & IN_DUCK )
 	{
-		spreadValue += m_AccuracyParams->CrouchShift;
+		spreadValue += params->CrouchShift;
 	}
 
 	const float zSpeed = fabs(m_Player->pev->velocity.z);
 	const float maxZSpeed = m_CvarMaxFallSpeed->value;
-	const float shiftFromZSpeed = ExtraMath::RemapSqrt(zSpeed, 0.0f, maxZSpeed, 0, m_AccuracyParams->FallShift);
+	const float shiftFromZSpeed = ExtraMath::RemapSqrt(zSpeed, 0.0f, maxZSpeed, 0, params->FallShift);
 
 	spreadValue += shiftFromZSpeed;
 	m_InstantaneousInaccuracy = ExtraMath::Clamp(0.0f, spreadValue, 1.0f);
 }
 
-void CWeaponInaccuracyCalculator::CalculateSmoothedInaccuracy()
+void CWeaponInaccuracyCalculator::CalculateSmoothedInaccuracy(const WeaponAtts::AccuracyParameters* params)
 {
 	m_SmoothedInaccuracy = m_InstantaneousInaccuracy;
 
-	if ( !IsValid() )
+	if ( !IsValid() || !params )
 	{
 		return;
 	}
@@ -159,15 +183,15 @@ void CWeaponInaccuracyCalculator::CalculateSmoothedInaccuracy()
 	float smoothed = m_LastSmoothedInaccuracy;
 
 	// Move towards the new inaccuracy only if it's greater than the last, or the hold time has passed.
-	if ( difference > 0.0f || !LastFireTimeIsInHoldRegion() )
+	if ( difference > 0.0f || !LastFireTimeIsInHoldRegion(params->FireImpulseHoldTime) )
 	{
-		smoothed += m_AccuracyParams->FollowCoefficient * difference;
+		smoothed += params->FollowCoefficient * difference;
 	}
 
 	m_SmoothedInaccuracy = ExtraMath::Clamp(0.0f, smoothed, 1.0f);
 }
 
-bool CWeaponInaccuracyCalculator::LastFireTimeIsInHoldRegion() const
+bool CWeaponInaccuracyCalculator::LastFireTimeIsInHoldRegion(float holdTime) const
 {
 	if ( !IsValid() )
 	{
@@ -175,5 +199,87 @@ bool CWeaponInaccuracyCalculator::LastFireTimeIsInHoldRegion() const
 	}
 
 	const float baseTime = m_LastFireTimeIsDecremented ? 0.0f : gpGlobals->time;
-	return (baseTime - m_LastFireTime) <= m_AccuracyParams->FireImpulseHoldTime;
+	return (baseTime - m_LastFireTime) <= holdTime;
+}
+
+const WeaponAtts::AccuracyParameters* CWeaponInaccuracyCalculator::GetInternalParameters() const
+{
+	const WeaponAtts::AccuracyParameters* params = m_AccuracyParams;
+
+	if ( m_CvarCheats->value && m_CvarEnableDebugging->value && m_DebuggingCvarsLoaded )
+	{
+		const bool gotValues = GetValuesFromDebugCvars(m_StaticDebugParams);
+		params = gotValues ? &m_StaticDebugParams : nullptr;
+	}
+
+	return params;
+}
+
+void CWeaponInaccuracyCalculator::InitCvars()
+{
+	if ( m_StandardCvarsLoaded && m_DebuggingCvarsLoaded )
+	{
+		return;
+	}
+
+	m_StandardCvarsLoaded = false;
+	m_DebuggingCvarsLoaded = false;
+
+	m_CvarMaxSpeed = GetCvarByName("sv_weapon_inaccuracy_maxspeed");
+	m_CvarMaxFallSpeed = GetCvarByName("sv_weapon_inaccuracy_maxfallspeed");
+	m_CvarCheats = GetCvarByName("sv_cheats");
+
+	m_CvarEnableDebugging = GetCvarByName("sv_weapon_debug_inac_enabled");
+	m_CvarDebugRestValue = GetCvarByName("sv_weapon_debug_inac_restvalue");
+	m_CvarDebugRestSpread = GetCvarByName("sv_weapon_debug_inac_restspread");
+	m_CvarDebugRunValue = GetCvarByName("sv_weapon_debug_inac_runvalue");
+	m_CvarDebugRunSpread = GetCvarByName("sv_weapon_debug_inac_runvalue");
+	m_CvarDebugCrouchShift = GetCvarByName("sv_weapon_debug_inac_crouchshift");
+	m_CvarDebugFallShift = GetCvarByName("sv_weapon_debug_inac_fallshift");
+	m_CvarDebugFollowCoefficient = GetCvarByName("sv_weapon_debug_inac_followcoeff");
+	m_CvarDebugFireImpulse = GetCvarByName("sv_weapon_debug_inac_fireimpulse");
+	m_CvarDebugFireImpulseCeiling = GetCvarByName("sv_weapon_debug_inac_fireimpulseceil");
+	m_CvarDebugFireImpulseHoldTime = GetCvarByName("sv_weapon_debug_inac_fireimpulsehold");
+
+	m_StandardCvarsLoaded =
+		m_CvarMaxSpeed &&
+		m_CvarMaxFallSpeed &&
+		m_CvarCheats;
+
+	m_DebuggingCvarsLoaded =
+		m_CvarCheats &&
+		m_CvarEnableDebugging &&
+		m_CvarDebugRestValue &&
+		m_CvarDebugRestSpread &&
+		m_CvarDebugRunValue &&
+		m_CvarDebugRunSpread &&
+		m_CvarDebugCrouchShift &&
+		m_CvarDebugFallShift &&
+		m_CvarDebugFollowCoefficient &&
+		m_CvarDebugFireImpulse &&
+		m_CvarDebugFireImpulseCeiling &&
+		m_CvarDebugFireImpulseHoldTime;
+}
+
+bool CWeaponInaccuracyCalculator::GetValuesFromDebugCvars(WeaponAtts::AccuracyParameters& params)
+{
+	InitCvars();
+
+	if ( !m_DebuggingCvarsLoaded )
+	{
+		return false;
+	}
+
+	params.RestValue = m_CvarDebugRestValue->value;
+	params.RestSpread = Vector2D(m_CvarDebugRestSpread->value, m_CvarDebugRestSpread->value);
+	params.RunValue = m_CvarDebugRunValue->value;
+	params.RunSpread = Vector2D(m_CvarDebugRunSpread->value, m_CvarDebugRunSpread->value);
+	params.CrouchShift = m_CvarDebugCrouchShift->value;
+	params.FallShift = m_CvarDebugFallShift->value;
+	params.FollowCoefficient = m_CvarDebugFollowCoefficient->value;
+	params.FireImpulse = m_CvarDebugFireImpulse->value;
+	params.FireImpulseCeiling = m_CvarDebugFireImpulseCeiling->value;
+	params.FireImpulseHoldTime = m_CvarDebugFireImpulseHoldTime->value;
+
+	return true;
 }
