@@ -55,6 +55,8 @@ namespace WeaponAtts
 		// inaccuracy value. FireImpulseCeiling specifies this max deviation.
 		float FireImpulseCeiling = 0.3f;
 
+		float FireImpulseHoldTime = 0.05f;
+
 		// Finally, the inaccuracy value is used to calculate the weapon's spread when fired.
 		// The two points that define the spread scale are specified below, and use RestValue
 		// and RunValue as reference points. Note that other factors (eg. crouching, falling,

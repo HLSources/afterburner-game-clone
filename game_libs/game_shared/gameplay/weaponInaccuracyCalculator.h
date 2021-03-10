@@ -32,6 +32,7 @@ public:
 	void SetPlayer(CBasePlayer* player);
 
 	void SetFiredThisFrame(bool fired);
+	void SetLastFireTime(float time);
 
 private:
 	void CalculateInstantaneousInaccuracy();
@@ -43,6 +44,7 @@ private:
 	float m_SmoothedInaccuracy;
 	float m_LastSmoothedInaccuracy;
 	bool m_FiredThisFrame;
+	float m_LastFireTime;
 	const WeaponAtts::AccuracyParameters* m_AccuracyParams;
 	CBasePlayer* m_Player;
 

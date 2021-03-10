@@ -395,6 +395,7 @@ bool CGenericWeapon::ReloadUsableWeaponIfEmpty()
 void CGenericWeapon::UpdateValuesPostFrame()
 {
 	m_InaccuracyCalculator.SetFiredThisFrame(m_bPrimaryAttackThisFrame);
+	m_InaccuracyCalculator.SetLastFireTime(m_flLastPrimaryAttack);
 	m_InaccuracyCalculator.AddInaccuracyPenaltyFromFiring();
 	m_flInaccuracy = m_InaccuracyCalculator.SmoothedInaccuracy();
 

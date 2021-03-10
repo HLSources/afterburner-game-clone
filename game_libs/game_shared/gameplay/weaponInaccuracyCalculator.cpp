@@ -54,6 +54,11 @@ void CWeaponInaccuracyCalculator::SetFiredThisFrame(bool fired)
 	m_FiredThisFrame = fired;
 }
 
+void CWeaponInaccuracyCalculator::SetLastFireTime(float time)
+{
+	m_LastFireTime = time;
+}
+
 bool CWeaponInaccuracyCalculator::IsValid() const
 {
 	return m_Player && m_AccuracyParams && m_CvarMaxSpeed && m_CvarMaxFallSpeed;
@@ -65,6 +70,7 @@ void CWeaponInaccuracyCalculator::Clear()
 	m_SmoothedInaccuracy = 0.0f;
 	m_LastSmoothedInaccuracy = 0.0f;
 	m_FiredThisFrame = false;
+	m_LastFireTime = 0.0f;
 	m_AccuracyParams = nullptr;
 	m_Player = nullptr;
 }
@@ -144,7 +150,12 @@ void CWeaponInaccuracyCalculator::CalculateSmoothedInaccuracy()
 	}
 
 	const float difference = m_InstantaneousInaccuracy - m_LastSmoothedInaccuracy;
-	const float smoothed = m_LastSmoothedInaccuracy + (m_AccuracyParams->FollowCoefficient * difference);
+	float smoothed = m_LastSmoothedInaccuracy;
+
+	if ( m_LastFireTime < -m_AccuracyParams->FireImpulseHoldTime )
+	{
+		smoothed += m_AccuracyParams->FollowCoefficient * difference;
+	}
 
 	m_SmoothedInaccuracy = ExtraMath::Clamp(0.0f, smoothed, 1.0f);
 }
