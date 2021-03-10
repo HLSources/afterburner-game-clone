@@ -400,7 +400,7 @@ void CGenericWeapon::UpdateValuesPostFrame()
 
 	if ( IsActiveItem() )
 	{
-		m_pPlayer->m_iWeaponInaccuracy = m_flInaccuracy;
+		m_pPlayer->m_flWeaponInaccuracy = m_flInaccuracy;
 	}
 }
 

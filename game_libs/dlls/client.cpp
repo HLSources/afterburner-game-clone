@@ -1722,7 +1722,7 @@ void UpdateClientData( const struct edict_s *ent, int sendweapons, struct client
 	cd->fov			= pev->fov;
 	cd->weaponanim		= pev->weaponanim;
 	cd->weaponScreenOverlay = pl->m_iWeaponScreenOverlay;
-	cd->weaponInaccuracy = pl->m_iWeaponInaccuracy;
+	cd->weaponInaccuracy = pl->m_flWeaponInaccuracy;
 
 	cd->pushmsec		= pev->pushmsec;
 

@@ -144,7 +144,7 @@ bool CHudCrosshair::UpdateParameters()
 		return false;
 	}
 
-	m_Params.SetWeaponInaccuracy(gHUD.m_iWeaponInaccuracy);
+	m_Params.SetWeaponInaccuracy(gHUD.m_flWeaponInaccuracy);
 
 	// At inaccuracy 0, radius is m_CrosshairParams->RadiusMin.
 	// At inaccuracy 1, radius is m_CrosshairParams->RadiusMax.

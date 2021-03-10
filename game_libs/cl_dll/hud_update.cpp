@@ -36,7 +36,7 @@ int CHud::UpdateClientData( client_data_t *cdata, float time )
 
 	m_iKeyBits = CL_ButtonBits( 0 );
 	m_iWeaponBits = cdata->iWeaponBits;
-	m_iWeaponInaccuracy = cdata->weaponInaccuracy;
+	m_flWeaponInaccuracy = cdata->weaponInaccuracy;
 
 	in_fov = cdata->fov;
 

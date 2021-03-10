@@ -3685,7 +3685,7 @@ void CBasePlayer::ItemPostFrame()
 
 	if( !m_pActiveItem )
 	{
-		m_iWeaponInaccuracy = 0;
+		m_flWeaponInaccuracy = 0;
 		return;
 	}
 
