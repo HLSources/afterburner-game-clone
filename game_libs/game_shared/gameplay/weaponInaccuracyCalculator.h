@@ -33,10 +33,12 @@ public:
 
 	void SetFiredThisFrame(bool fired);
 	void SetLastFireTime(float time);
+	void SetLastFireTimeIsDecremented(bool decremented);
 
 private:
 	void CalculateInstantaneousInaccuracy();
 	void CalculateSmoothedInaccuracy();
+	bool LastFireTimeIsInHoldRegion() const;
 
 	// These variables don't have defaults set here, because they
 	// are set to their defaults in Clear() instead.
@@ -45,6 +47,7 @@ private:
 	float m_LastSmoothedInaccuracy;
 	bool m_FiredThisFrame;
 	float m_LastFireTime;
+	bool m_LastFireTimeIsDecremented;
 	const WeaponAtts::AccuracyParameters* m_AccuracyParams;
 	CBasePlayer* m_Player;
 

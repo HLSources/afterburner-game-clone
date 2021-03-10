@@ -55,6 +55,8 @@ namespace WeaponAtts
 		// inaccuracy value. FireImpulseCeiling specifies this max deviation.
 		float FireImpulseCeiling = 0.3f;
 
+		// Once the fire impulse has been applied, the value is held at this point for a certain
+		// amount of time before receding. The hold time is specified here, in seconds.
 		float FireImpulseHoldTime = 0.05f;
 
 		// Finally, the inaccuracy value is used to calculate the weapon's spread when fired.

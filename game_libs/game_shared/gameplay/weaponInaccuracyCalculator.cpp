@@ -59,6 +59,11 @@ void CWeaponInaccuracyCalculator::SetLastFireTime(float time)
 	m_LastFireTime = time;
 }
 
+void CWeaponInaccuracyCalculator::SetLastFireTimeIsDecremented(bool decremented)
+{
+	m_LastFireTimeIsDecremented = decremented;
+}
+
 bool CWeaponInaccuracyCalculator::IsValid() const
 {
 	return m_Player && m_AccuracyParams && m_CvarMaxSpeed && m_CvarMaxFallSpeed;
@@ -71,6 +76,7 @@ void CWeaponInaccuracyCalculator::Clear()
 	m_LastSmoothedInaccuracy = 0.0f;
 	m_FiredThisFrame = false;
 	m_LastFireTime = 0.0f;
+	m_LastFireTimeIsDecremented = false;
 	m_AccuracyParams = nullptr;
 	m_Player = nullptr;
 }
@@ -152,10 +158,22 @@ void CWeaponInaccuracyCalculator::CalculateSmoothedInaccuracy()
 	const float difference = m_InstantaneousInaccuracy - m_LastSmoothedInaccuracy;
 	float smoothed = m_LastSmoothedInaccuracy;
 
-	if ( m_LastFireTime < -m_AccuracyParams->FireImpulseHoldTime )
+	// Move towards the new inaccuracy only if it's greater than the last, or the hold time has passed.
+	if ( difference > 0.0f || !LastFireTimeIsInHoldRegion() )
 	{
 		smoothed += m_AccuracyParams->FollowCoefficient * difference;
 	}
 
 	m_SmoothedInaccuracy = ExtraMath::Clamp(0.0f, smoothed, 1.0f);
+}
+
+bool CWeaponInaccuracyCalculator::LastFireTimeIsInHoldRegion() const
+{
+	if ( !IsValid() )
+	{
+		return false;
+	}
+
+	const float baseTime = m_LastFireTimeIsDecremented ? 0.0f : gpGlobals->time;
+	return (baseTime - m_LastFireTime) <= m_AccuracyParams->FireImpulseHoldTime;
 }
