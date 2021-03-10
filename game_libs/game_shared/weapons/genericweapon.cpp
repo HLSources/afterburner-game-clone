@@ -689,11 +689,13 @@ void CGenericWeapon::DelayFiring(float secs, bool allowIfEarlier, WeaponAttackTy
 	if ( type == WeaponAttackType::None || type == WeaponAttackType::Primary )
 	{
 		SetNextPrimaryAttack(secs, allowIfEarlier);
+		m_flLastPrimaryAttack = UTIL_WeaponTimeBase();
 	}
 
 	if ( type == WeaponAttackType::None || type == WeaponAttackType::Secondary )
 	{
 		SetNextSecondaryAttack(secs, allowIfEarlier);
+		m_flLastSecondaryAttack = UTIL_WeaponTimeBase();
 	}
 }
 

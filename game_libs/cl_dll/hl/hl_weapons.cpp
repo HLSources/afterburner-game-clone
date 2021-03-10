@@ -818,6 +818,8 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		pCurrent->m_flNextPrimaryAttack	= pfrom->m_flNextPrimaryAttack;
 		pCurrent->m_flNextSecondaryAttack = pfrom->m_flNextSecondaryAttack;
 		pCurrent->m_flTimeWeaponIdle = pfrom->m_flTimeWeaponIdle;
+		pCurrent->m_flLastPrimaryAttack = pfrom->m_flLastPrimaryAttack;
+		pCurrent->m_flLastSecondaryAttack = pfrom->m_flLastSecondaryAttack;
 
 		pCurrent->ReadPredictionData(pfrom);
 
@@ -968,6 +970,8 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		pto->m_flNextPrimaryAttack = pCurrent->m_flNextPrimaryAttack;
 		pto->m_flNextSecondaryAttack = pCurrent->m_flNextSecondaryAttack;
 		pto->m_flTimeWeaponIdle = pCurrent->m_flTimeWeaponIdle;
+		pto->m_flLastPrimaryAttack = pCurrent->m_flLastPrimaryAttack;
+		pto->m_flLastSecondaryAttack = pCurrent->m_flLastSecondaryAttack;
 
 		pCurrent->WritePredictionData(pto);
 
@@ -977,6 +981,8 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		pto->m_flNextPrimaryAttack -= cmd->msec / 1000.0;
 		pto->m_flNextSecondaryAttack -= cmd->msec / 1000.0;
 		pto->m_flTimeWeaponIdle -= cmd->msec / 1000.0;
+		pto->m_flLastPrimaryAttack -= cmd->msec / 1000.0;
+		pto->m_flLastSecondaryAttack -= cmd->msec / 1000.0;
 		pto->fuser1 -= cmd->msec / 1000.0;
 
 		to->client.vuser3[2] = pCurrent->m_iSecondaryAmmoType;
@@ -1002,6 +1008,16 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		if( pto->m_flTimeWeaponIdle < -0.001 )
 		{
 			pto->m_flTimeWeaponIdle = -0.001;
+		}
+
+		if ( pto->m_flLastPrimaryAttack < -10.0f )
+		{
+			pto->m_flLastPrimaryAttack = -10.0f;
+		}
+
+		if ( pto->m_flLastSecondaryAttack < -10.0f )
+		{
+			pto->m_flLastSecondaryAttack = -10.0f;
 		}
 
 		if( pto->m_flNextReload < -0.001 )

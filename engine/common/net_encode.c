@@ -187,6 +187,8 @@ static const delta_field_t wd_fields[] =
 { WPDT_DEF( m_flNextPrimaryAttack )	},
 { WPDT_DEF( m_flNextSecondaryAttack )	},
 { WPDT_DEF( m_flTimeWeaponIdle )	},
+{ WPDT_DEF( m_flLastPrimaryAttack )	},
+{ WPDT_DEF( m_flLastSecondaryAttack )	},
 { WPDT_DEF( m_fInReload )		},
 { WPDT_DEF( m_fInSpecialReload )	},
 { WPDT_DEF( m_flNextReload )		},

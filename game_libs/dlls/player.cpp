@@ -2602,6 +2602,8 @@ pt_end:
 				{
 					gun->m_flNextPrimaryAttack = Q_max( gun->m_flNextPrimaryAttack - gpGlobals->frametime, -1.0 );
 					gun->m_flNextSecondaryAttack = Q_max( gun->m_flNextSecondaryAttack - gpGlobals->frametime, -0.001 );
+					gun->m_flLastPrimaryAttack = Q_max( gun->m_flLastPrimaryAttack - gpGlobals->frametime, -10.0f );
+					gun->m_flLastSecondaryAttack = Q_max( gun->m_flLastSecondaryAttack - gpGlobals->frametime, -10.0f );
 
 					if( gun->m_flTimeWeaponIdle != 1000 )
 					{
