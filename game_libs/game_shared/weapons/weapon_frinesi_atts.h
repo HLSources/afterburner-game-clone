@@ -104,8 +104,6 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	priAttack->FunctionsUnderwater = true;
 	priAttack->IsContinuous = false;
 	priAttack->UsesAmmoPool = WAAmmoBasedAttack::AmmoPool::Primary;
-	priAttack->Accuracy.RestSpread = Vector2D(0.05f, 0.05f); // TODO
-	priAttack->Accuracy.RunSpread = Vector2D(0.05f, 0.05f); // TODO
 	priAttack->AttackRate = FRINESI_FIRE_RATE_AUTO;
 	priAttack->BaseDamagePerShot = &skilldata_t::plrDmgFrinesiAuto;
 	priAttack->BulletsPerShot = 6;
@@ -116,6 +114,24 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	priAttack->ShellModelName = "models/shotgunshell.mdl";
 	priAttack->ShellModelType = ShellType::Shotgun;
 	priAttack->SpecialReload = true;
+
+	AccuracyParameters& accuracy = priAttack->Accuracy;
+	accuracy.RestValue = 0.1;
+	accuracy.RestSpread = Vector2D(0.08f, 0.08f);
+	accuracy.RunValue = 0.5;
+	accuracy.RunSpread = Vector2D(0.18f, 0.18f);
+	accuracy.CrouchShift = -0.08f;
+	accuracy.FallShift = 0.2f;
+	accuracy.FollowCoefficient = 0.05f;
+	accuracy.FireImpulse = 0.2f;
+	accuracy.FireImpulseCeiling = 0.6f;
+	accuracy.FireImpulseHoldTime = 0.1f;
+
+	CrosshairParameters& crosshair = priAttack->Crosshair;
+	crosshair.RadiusMin = 0.05f;
+	crosshair.RadiusMax = 0.3f;
+	crosshair.BarScaleMin = 0.04f;
+	crosshair.BarScaleMax = 0.03f;
 
 	priAttack->ViewModelAnimList_Attack << FRINESI_SHOOT;
 
@@ -134,9 +150,10 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	secAttack->EventScript = "events/weapon_frinesi/fire02.sc";
 	secAttack->AttackRate = FRINESI_FIRE_RATE_PUMP;
 	secAttack->BaseDamagePerShot = &skilldata_t::plrDmgFrinesiPump;
-	secAttack->Accuracy.RestSpread = Vector2D(0.1f, 0.1f); // TODO
-	secAttack->Accuracy.RunSpread = Vector2D(0.1f, 0.1f); // TODO
 	secAttack->ViewPunchY = -10.0f;
+
+	secAttack->Accuracy.RestSpread = Vector2D(0.1f, 0.1f);
+	secAttack->Accuracy.RunSpread = Vector2D(0.2f, 0.2f);
 
 	secAttack->ViewModelAnimList_Attack.Clear();
 	secAttack->ViewModelAnimList_Attack << FRINESI_SHOOT_BIG;

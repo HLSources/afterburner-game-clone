@@ -47,27 +47,21 @@ void CWeaponFrinesi::Precache()
 	PRECACHE_SOUND(FRINESI_COCK_SOUND);
 }
 
-void CWeaponFrinesi::PrimaryAttack()
+bool CWeaponFrinesi::InvokeWithAttackMode(const CGenericWeapon::WeaponAttackType type, const WeaponAtts::WABaseAttack* attackMode)
 {
 	if ( FlagReloadInterrupt() )
 	{
-		return;
+		return false;
 	}
 
-	InvokeWithAttackMode(WeaponAttackType::Primary, GetPrimaryAttackMode());
-}
+	const bool invokeResult = CGenericHitscanWeapon::InvokeWithAttackMode(type, attackMode);
 
-void CWeaponFrinesi::SecondaryAttack()
-{
-	if ( FlagReloadInterrupt() )
-	{
-		return;
-	}
-
-	if ( InvokeWithAttackMode(WeaponAttackType::Secondary, GetSecondaryAttackMode()) )
+	if ( invokeResult && type == WeaponAttackType::Secondary )
 	{
 		m_flNextPumpSoundTime = gpGlobals->time + FRINESI_PUMP_SOUND_OFFSET_AFTER_FIRING;
 	}
+
+	return invokeResult;
 }
 
 void CWeaponFrinesi::Holster(int skipLocal)
