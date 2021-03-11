@@ -92,13 +92,15 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	priAttack->ShellModelName = "models/shell.mdl";
 
 	AccuracyParameters& accuracy = priAttack->Accuracy;
+	accuracy.RestValue = 0.1f;
 	accuracy.RestSpread = Vector2D(0.01f, 0.01f);
-	accuracy.RunSpread = Vector2D(0.06f, 0.06f);
 	accuracy.RunValue = 0.5f;
+	accuracy.RunSpread = Vector2D(0.06f, 0.06f);
+	accuracy.CrouchShift = -0.08f;
+	accuracy.FallShift = 0.4f;
 	accuracy.FollowCoefficient = 0.3f;
 	accuracy.FireImpulse = 0.3f;
 	accuracy.FireImpulseCeiling = 0.5f;
-	accuracy.FallShift = 0.4f;
 
 	priAttack->ViewModelAnimList_Attack << P99_SHOOT;
 	priAttack->ViewModelAnimList_AttackEmpty << P99_SHOOT_EMPTY;
