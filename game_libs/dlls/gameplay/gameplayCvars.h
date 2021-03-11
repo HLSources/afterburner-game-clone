@@ -4,5 +4,5 @@
 
 namespace GameplayCvars
 {
-	void RegisterCvars();
+	void Init();
 }

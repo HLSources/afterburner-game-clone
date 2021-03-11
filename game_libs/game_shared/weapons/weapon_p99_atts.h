@@ -111,8 +111,8 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	priAttack->AttackSounds.SoundNames << "weapons/weapon_p99/p99_fire1.wav";
 
 	CrosshairParameters& crosshair = priAttack->Crosshair;
-	crosshair.BarScaleMin = 0.04f;
-	crosshair.BarScaleMax = 0.03f;
+	crosshair.BarScaleMin = 0.02f;
+	crosshair.BarScaleMax = 0.04f;
 	crosshair.RadiusMin = 0.01f;
 	crosshair.RadiusMax = 0.1f;
 

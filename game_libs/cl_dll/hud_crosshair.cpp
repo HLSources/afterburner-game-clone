@@ -24,23 +24,6 @@ namespace
 	{
 		return 4 * bar;
 	}
-
-	inline bool CvarIsSet(cvar_t* cvar)
-	{
-		return cvar && cvar->value != 0.0f;
-	}
-
-	inline cvar_t* GetOrCreateClientCvar(const char* name, const char* defaultValue = "0")
-	{
-		cvar_t* cvar = gEngfuncs.pfnGetCvarPointer(name);
-
-		if ( !cvar )
-		{
-			cvar = gEngfuncs.pfnRegisterVariable(name, defaultValue, FCVAR_CLIENTDLL);
-		}
-
-		return cvar;
-	}
 }
 
 int CHudCrosshair::Init()
@@ -155,7 +138,7 @@ void CHudCrosshair::UpdateParametersFromDebugCvars()
 	}
 
 	m_Params.SetRadius(m_Params.MapInaccuracyToValue(CrosshairCvars::RadiusMin(), CrosshairCvars::RadiusMax()));
-	m_Params.SetBarLength(m_Params.MapInaccuracyToValue(CrosshairCvars::BarLengthMin(), CrosshairCvars::BarLengthMin()));
+	m_Params.SetBarLength(m_Params.MapInaccuracyToValue(CrosshairCvars::BarLengthMin(), CrosshairCvars::BarLengthMax()));
 }
 
 void CHudCrosshair::InitialiseGeometry()

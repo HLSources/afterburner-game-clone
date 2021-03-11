@@ -883,7 +883,7 @@ void GameDLLInit( void )
 
 // END REGISTER CVARS FOR SKILL LEVEL STUFF
 
-	GameplayCvars::RegisterCvars();
+	GameplayCvars::Init();
 	Bot_RegisterCVars();
 	BotCommands::Initialise();
 	CustomGeometry::InitialiseCommands();
