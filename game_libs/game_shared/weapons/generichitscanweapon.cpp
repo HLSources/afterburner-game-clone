@@ -133,9 +133,17 @@ Vector CGenericHitscanWeapon::FireBulletsPlayer(const WeaponAtts::WAHitscanAttac
 	TraceResult tr;
 	Vector vecRight = gpGlobals->v_right;
 	Vector vecUp = gpGlobals->v_up;
-	const Vector2D spread = InaccuracyModifiers::GetInterpolatedSpread(hitscanAttack.Accuracy, GetInaccuracy());
 	float x = 0.0f;
 	float y = 0.0f;
+
+	WeaponAtts::AccuracyParameters accuracyParams(hitscanAttack.Accuracy);
+
+	if ( InaccuracyModifiers::IsInaccuracyDebuggingEnabled() )
+	{
+		InaccuracyModifiers::GetInaccuracyValuesFromDebugCvars(accuracyParams);
+	}
+
+	const Vector2D spread = InaccuracyModifiers::GetInterpolatedSpread(accuracyParams, GetInaccuracy());
 
 	entvars_t* const pevAttacker = m_pPlayer->pev;
 	const int shared_rand = m_pPlayer->random_seed;
@@ -231,9 +239,17 @@ void CGenericHitscanWeapon::Debug_DeleteHitscanEvent()
 #ifdef CLIENT_DLL
 Vector CGenericHitscanWeapon::FireBulletsPlayer_Client(const WeaponAtts::WAHitscanAttack& hitscanAttack)
 {
-	const Vector2D spread = InaccuracyModifiers::GetInterpolatedSpread(hitscanAttack.Accuracy, GetInaccuracy());
 	float x = 0.0f;
 	float y = 0.0f;
+
+	WeaponAtts::AccuracyParameters accuracyParams(hitscanAttack.Accuracy);
+
+	if ( InaccuracyModifiers::IsInaccuracyDebuggingEnabled() )
+	{
+		InaccuracyModifiers::GetInaccuracyValuesFromDebugCvars(accuracyParams);
+	}
+
+	const Vector2D spread = InaccuracyModifiers::GetInterpolatedSpread(accuracyParams, GetInaccuracy());
 
 	// Just return the last vector we would have generated.
 	GetSharedCircularGaussianSpread(hitscanAttack.BulletsPerShot - 1, m_pPlayer->random_seed, x, y);

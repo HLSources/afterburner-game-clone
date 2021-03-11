@@ -9,6 +9,7 @@
 #include "cl_util.h"
 #include "weapons/weaponregistry.h"
 #include "weaponattributes/weaponatts_collection.h"
+#include "gameplay/inaccuracymodifiers.h"
 
 namespace
 {
@@ -111,23 +112,38 @@ void CSpreadVisualiser::DrawInfoText(const CCrosshairParameters& params, size_t 
 	const WeaponAtts::WACollection* atts = registry.Get(params.WeaponID());
 	const char* weaponName = atts ? atts->Core.Classname : "UNKNOWN";
 
-	const WeaponAtts::AccuracyParameters* accuracyParams = params.WeaponAccuracyParamsForAttack(attackMode);
-	const float restInaccuracy = accuracyParams ? accuracyParams->RestValue : 0.0f;
-	const float runInaccuracy = accuracyParams ? accuracyParams->RunValue : 0.0f;
-	const float crouchShift = accuracyParams ? accuracyParams->CrouchShift : 0.0f;
-	const float fallShift = accuracyParams ? accuracyParams->FallShift : 0.0f;
-	const Vector2D minSpread = accuracyParams ? accuracyParams->RestSpread : Vector2D();
-	const Vector2D maxSpread = accuracyParams ? accuracyParams->RunSpread : Vector2D();
+	WeaponAtts::AccuracyParameters accuracyParams;
+	const bool usingDebugParams = InaccuracyModifiers::IsInaccuracyDebuggingEnabled();
+
+	if ( usingDebugParams )
+	{
+		InaccuracyModifiers::GetInaccuracyValuesFromDebugCvars(accuracyParams);
+	}
+	else
+	{
+		const WeaponAtts::AccuracyParameters* accuracyParamsFromWeapon = params.WeaponAccuracyParamsForAttack(attackMode);
+
+		if ( accuracyParamsFromWeapon )
+		{
+			accuracyParams = *accuracyParamsFromWeapon;
+		}
+	}
 
 	CUtlString text;
 
 	text.AppendFormat("Weapon: %s (ID %u)\n", weaponName, params.WeaponID());
 	text.AppendFormat("Current inaccuracy: %f\n", params.WeaponInaccuracy());
-	text.AppendFormat("Attributes for attack mode %u:\n", attackMode);
-	text.AppendFormat("  Spread: Rest (%f, %f), Run (%f, %f)\n", minSpread.x, minSpread.y, maxSpread.x, maxSpread.y);
-	text.AppendFormat("  Rest-run range: %f - %f\n", restInaccuracy, runInaccuracy);
-	text.AppendFormat("  Crouch shift: %f\n", crouchShift);
-	text.AppendFormat("  Fall shift: %f\n", fallShift);
+	text.AppendFormat("Attributes for attack mode %u (source: %s):\n", attackMode, usingDebugParams ? "debug" : "weapon");
+
+	text.AppendFormat("  Spread: Rest (%f, %f), Run (%f, %f)\n",
+		accuracyParams.RestSpread.x,
+		accuracyParams.RestSpread.y,
+		accuracyParams.RunSpread.x,
+		accuracyParams.RunSpread.y);
+
+	text.AppendFormat("  Rest-run range: %f - %f\n", accuracyParams.RestValue, accuracyParams.RunValue);
+	text.AppendFormat("  Crouch shift: %f\n", accuracyParams.CrouchShift);
+	text.AppendFormat("  Fall shift: %f\n", accuracyParams.FallShift);
 
 	DrawConsoleString(m_ScaleMinX, m_ScaleYOffset + SCALE_HEIGHT + 2, text.Get());
 }

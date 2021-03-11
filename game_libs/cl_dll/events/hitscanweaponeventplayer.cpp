@@ -62,13 +62,20 @@ void HitscanWeaponEventPlayer::CreateBulletTracers()
 {
 	const uint32_t numShots = m_pHitscanAttack->BulletsPerShot;
 
+	WeaponAtts::AccuracyParameters accuracyParams(m_pHitscanAttack->Accuracy);
+
+	if ( InaccuracyModifiers::IsInaccuracyDebuggingEnabled() )
+	{
+		InaccuracyModifiers::GetInaccuracyValuesFromDebugCvars(accuracyParams);
+	}
+
 	HitscanWeaponDebugging::Clear();
 	Debug_BeginBatch();
 
 	for ( uint32_t shot = 0; shot < numShots; ++shot )
 	{
 		vec3_t shotDir;
-		const Vector2D spread = InaccuracyModifiers::GetInterpolatedSpread(m_pHitscanAttack->Accuracy, m_flSpreadInterp);
+		const Vector2D spread = InaccuracyModifiers::GetInterpolatedSpread(accuracyParams, m_flSpreadInterp);
 		float spreadX = 0.0f;
 		float spreadY = 0.0f;
 

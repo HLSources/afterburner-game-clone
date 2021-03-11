@@ -3,6 +3,63 @@
 #include "miniutl.h"
 #include "util/extramath.h"
 #include "weaponattributes/weaponatts_ammobasedattack.h"
+#include "util/cvarFuncs.h"
+
+namespace
+{
+	cvar_t* CvarCheats = nullptr;
+	cvar_t* CvarEnableDebugging = nullptr;
+	cvar_t* CvarDebugRestValue = nullptr;
+	cvar_t* CvarDebugRestSpread = nullptr;
+	cvar_t* CvarDebugRunValue = nullptr;
+	cvar_t* CvarDebugRunSpread = nullptr;
+	cvar_t* CvarDebugCrouchShift = nullptr;
+	cvar_t* CvarDebugFallShift = nullptr;
+	cvar_t* CvarDebugFollowCoefficient = nullptr;
+	cvar_t* CvarDebugFireImpulse = nullptr;
+	cvar_t* CvarDebugFireImpulseCeiling = nullptr;
+	cvar_t* CvarDebugFireImpulseHoldTime = nullptr;
+
+	bool CvarInitWasRun = false;
+	bool CvarsLoaded = false;
+
+	void InitCvars()
+	{
+		if ( CvarInitWasRun )
+		{
+			return;
+		}
+
+		CvarCheats = GetCvarByName("sv_cheats");
+		CvarEnableDebugging = GetCvarByName("sv_weapon_debug_inac_enabled");
+		CvarDebugRestValue = GetCvarByName("sv_weapon_debug_inac_restvalue");
+		CvarDebugRestSpread = GetCvarByName("sv_weapon_debug_inac_restspread");
+		CvarDebugRunValue = GetCvarByName("sv_weapon_debug_inac_runvalue");
+		CvarDebugRunSpread = GetCvarByName("sv_weapon_debug_inac_runspread");
+		CvarDebugCrouchShift = GetCvarByName("sv_weapon_debug_inac_crouchshift");
+		CvarDebugFallShift = GetCvarByName("sv_weapon_debug_inac_fallshift");
+		CvarDebugFollowCoefficient = GetCvarByName("sv_weapon_debug_inac_followcoeff");
+		CvarDebugFireImpulse = GetCvarByName("sv_weapon_debug_inac_fireimpulse");
+		CvarDebugFireImpulseCeiling = GetCvarByName("sv_weapon_debug_inac_fireimpulseceil");
+		CvarDebugFireImpulseHoldTime = GetCvarByName("sv_weapon_debug_inac_fireimpulsehold");
+
+		CvarsLoaded =
+			CvarCheats &&
+			CvarEnableDebugging &&
+			CvarDebugRestValue &&
+			CvarDebugRestSpread &&
+			CvarDebugRunValue &&
+			CvarDebugRunSpread &&
+			CvarDebugCrouchShift &&
+			CvarDebugFallShift &&
+			CvarDebugFollowCoefficient &&
+			CvarDebugFireImpulse &&
+			CvarDebugFireImpulseCeiling &&
+			CvarDebugFireImpulseHoldTime;
+
+		CvarInitWasRun = true;
+	}
+}
 
 namespace InaccuracyModifiers
 {
@@ -19,5 +76,34 @@ namespace InaccuracyModifiers
 
 		// Return this, but make sure components are not less than zero.
 		return Vector2D(Max(spread.x, 0.0f), Max(spread.y, 0.0f));
+	}
+
+	bool IsInaccuracyDebuggingEnabled()
+	{
+		InitCvars();
+		return CvarsLoaded && CvarCheats->value != 0.0f && CvarEnableDebugging->value != 0.0f;
+	}
+
+	bool GetInaccuracyValuesFromDebugCvars(WeaponAtts::AccuracyParameters& params)
+	{
+		InitCvars();
+
+		if ( !CvarsLoaded )
+		{
+			return false;
+		}
+
+		params.RestValue = CvarDebugRestValue->value;
+		params.RestSpread = Vector2D(CvarDebugRestSpread->value, CvarDebugRestSpread->value);
+		params.RunValue = CvarDebugRunValue->value;
+		params.RunSpread = Vector2D(CvarDebugRunSpread->value, CvarDebugRunSpread->value);
+		params.CrouchShift = CvarDebugCrouchShift->value;
+		params.FallShift = CvarDebugFallShift->value;
+		params.FollowCoefficient = CvarDebugFollowCoefficient->value;
+		params.FireImpulse = CvarDebugFireImpulse->value;
+		params.FireImpulseCeiling = CvarDebugFireImpulseCeiling->value;
+		params.FireImpulseHoldTime = CvarDebugFireImpulseHoldTime->value;
+
+		return true;
 	}
 }
