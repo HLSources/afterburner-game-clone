@@ -7,6 +7,7 @@
 namespace WeaponAtts
 {
 	struct AccuracyParameters;
+	struct CrosshairParameters;
 }
 
 class CCrosshairParameters
@@ -35,6 +36,7 @@ public:
 	float MapInaccuracyToValue(float min, float max) const;
 
 	const WeaponAtts::AccuracyParameters* WeaponAccuracyParamsForAttack(size_t index) const;
+	const WeaponAtts::CrosshairParameters* CrosshairParamsForAttack(size_t index) const;
 
 private:
 	UIVec2 m_ScreenDimensions;

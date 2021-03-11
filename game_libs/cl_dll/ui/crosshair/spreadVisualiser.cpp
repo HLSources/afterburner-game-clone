@@ -10,6 +10,7 @@
 #include "weapons/weaponregistry.h"
 #include "weaponattributes/weaponatts_collection.h"
 #include "gameplay/inaccuracymodifiers.h"
+#include "gameplay/crosshairCvars.h"
 
 namespace
 {
@@ -129,6 +130,27 @@ void CSpreadVisualiser::DrawInfoText(const CCrosshairParameters& params, size_t 
 		}
 	}
 
+	WeaponAtts::CrosshairParameters crosshairParams;
+	const bool crosshairOverridden = CrosshairCvars::CrosshairOverrideEnabled();
+
+	if ( crosshairOverridden )
+	{
+		// TODO: Make this a function in CrosshairCvars to fill out the struct?
+		crosshairParams.RadiusMin = CrosshairCvars::RadiusMin();
+		crosshairParams.RadiusMax = CrosshairCvars::RadiusMax();
+		crosshairParams.BarScaleMin = CrosshairCvars::BarLengthMin();
+		crosshairParams.BarScaleMax = CrosshairCvars::BarLengthMax();
+	}
+	else
+	{
+		const WeaponAtts::CrosshairParameters* crosshairParamsFromWeapon = params.CrosshairParamsForAttack(attackMode);
+
+		if ( crosshairParamsFromWeapon )
+		{
+			crosshairParams = *crosshairParamsFromWeapon;
+		}
+	}
+
 	CUtlString text;
 
 	text.AppendFormat("Weapon: %s (ID %u)\n", weaponName, params.WeaponID());
@@ -144,6 +166,9 @@ void CSpreadVisualiser::DrawInfoText(const CCrosshairParameters& params, size_t 
 	text.AppendFormat("  Rest-run range: %f - %f\n", accuracyParams.RestValue, accuracyParams.RunValue);
 	text.AppendFormat("  Crouch shift: %f\n", accuracyParams.CrouchShift);
 	text.AppendFormat("  Fall shift: %f\n", accuracyParams.FallShift);
+	text.AppendFormat("Attributes for crosshair (source: %s):\n", crosshairOverridden ? "debug" : "weapon");
+	text.AppendFormat("  Radius range: %f - %f\n", crosshairParams.RadiusMin, crosshairParams.RadiusMax);
+	text.AppendFormat("  Bar scale range: %f - %f\n", crosshairParams.BarScaleMin, crosshairParams.BarScaleMax);
 
 	DrawConsoleString(m_ScaleMinX, m_ScaleYOffset + SCALE_HEIGHT + 2, text.Get());
 }

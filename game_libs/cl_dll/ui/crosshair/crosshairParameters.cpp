@@ -111,3 +111,27 @@ const WeaponAtts::AccuracyParameters* CCrosshairParameters::WeaponAccuracyParams
 	// but the shared object's lifetime is static so it's OK.
 	return ammoBasedAttack ? &ammoBasedAttack->Accuracy : nullptr;
 }
+
+const WeaponAtts::CrosshairParameters* CCrosshairParameters::CrosshairParamsForAttack(size_t index) const
+{
+	CWeaponRegistry& registry = CWeaponRegistry::StaticInstance();
+	const WeaponAtts::WACollection* atts = registry.Get(m_WeaponID);
+
+	if ( !atts || index >= atts->AttackModes.Count() )
+	{
+		return nullptr;
+	}
+
+	std::shared_ptr<WeaponAtts::WABaseAttack> baseAttackMode = atts->AttackModes[index];
+
+	if ( !baseAttackMode )
+	{
+		return nullptr;
+	}
+
+	std::shared_ptr<WeaponAtts::WAAmmoBasedAttack> ammoBasedAttack = std::dynamic_pointer_cast<WeaponAtts::WAAmmoBasedAttack>(baseAttackMode);
+
+	// I know this is technically returning a raw pointer from shared pointer contents,
+	// but the shared object's lifetime is static so it's OK.
+	return ammoBasedAttack ? &ammoBasedAttack->Crosshair : nullptr;
+}
