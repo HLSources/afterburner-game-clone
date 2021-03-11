@@ -32,6 +32,8 @@ private:
 	void PlayPumpSound();
 	bool FlagReloadInterrupt();
 
+	const WeaponAtts::WABaseAttack* m_pAutoAttackMode = nullptr;
+	const WeaponAtts::WABaseAttack* m_pPumpAttackMode = nullptr;
 	float m_flNextPumpSoundTime;
 	float m_flNextReloadSoundTime;
 };

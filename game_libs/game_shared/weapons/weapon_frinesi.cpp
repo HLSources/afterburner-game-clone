@@ -37,8 +37,11 @@ CWeaponFrinesi::CWeaponFrinesi()
 	  m_flNextPumpSoundTime(0.0f),
 	  m_flNextReloadSoundTime(0.0f)
 {
-	SetPrimaryAttackModeFromAttributes(ATTACKMODE_AUTO);
-	SetSecondaryAttackModeFromAttributes(ATTACKMODE_PUMP);
+	m_pAutoAttackMode = GetAttackModeFromAttributes<WeaponAtts::WAHitscanAttack>(ATTACKMODE_AUTO);
+	m_pPumpAttackMode = GetAttackModeFromAttributes<WeaponAtts::WAHitscanAttack>(ATTACKMODE_PUMP);
+
+	SetPrimaryAttackMode(m_pAutoAttackMode);
+	SetSecondaryAttackMode(m_pPumpAttackMode);
 }
 
 void CWeaponFrinesi::Precache()
@@ -54,7 +57,13 @@ bool CWeaponFrinesi::InvokeWithAttackMode(const CGenericWeapon::WeaponAttackType
 		return false;
 	}
 
-	const bool invokeResult = CGenericHitscanWeapon::InvokeWithAttackMode(type, attackMode);
+	// We set the primary attack mode based on the type.
+	// This allows us to continue to use weapon inaccuracy properly,
+	// as this only acts on the primary attack.
+	const WeaponAtts::WABaseAttack* overrideMode = type == WeaponAttackType::Secondary ? m_pPumpAttackMode : m_pAutoAttackMode;
+	SetPrimaryAttackMode(overrideMode);
+
+	const bool invokeResult = CGenericHitscanWeapon::InvokeWithAttackMode(WeaponAttackType::Primary, overrideMode);
 
 	if ( invokeResult && type == WeaponAttackType::Secondary )
 	{
