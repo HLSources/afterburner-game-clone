@@ -45,6 +45,7 @@ extern "C"
 #include "ui/screenOverlays/DebugCommands.h"
 #include "resources/SoundResources.h"
 #include "gameresources/GameResources.h"
+#include "gameplay/crosshairCvars.h"
 
 cl_enginefunc_t gEngfuncs;
 CHud gHUD;
@@ -291,6 +292,7 @@ void DLLEXPORT HUD_Init( void )
 	EventCommands::Initialise();
 	ScreenOverlays::InitialiseDebugCommands();
 	CGameResources::StaticInstance().Initialise();
+	CrosshairCvars::Init();
 
 	InitInput();
 

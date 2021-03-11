@@ -46,6 +46,7 @@ SOURCES = \
 	"cl_dll/ui/**/*.cpp",
 	"cl_dll/messages/**/*.cpp",
 	"cl_dll/sound/**/*.cpp",
+	"cl_dll/gameplay/**/*.cpp",
 
 	# TODO: Change the folder structure one day so that we can use globs and not have to do this.
 	# Currently we don't want to include absolutely everything...

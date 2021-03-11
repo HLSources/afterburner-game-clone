@@ -24,12 +24,6 @@ private:
 
 	cvar_t* m_CheatsCvar = nullptr;
 	cvar_t* m_CrosshairCvar = nullptr;
-	cvar_t* m_DebugSpreadCvar = nullptr;
-	cvar_t* m_OverrideCrosshairAttsCvar = nullptr;
-	cvar_t* m_OverrideCrosshairRadiusMinCvar = nullptr;
-	cvar_t* m_OverrideCrosshairRadiusMaxCvar = nullptr;
-	cvar_t* m_OverrideCrosshairBarLengthMinCvar = nullptr;
-	cvar_t* m_OverrideCrosshairBarLengthMaxCvar = nullptr;
 
 	CustomGeometry::GeometryItemPtr_t m_CrosshairGeometry;
 	CCrosshairParameters m_Params;
