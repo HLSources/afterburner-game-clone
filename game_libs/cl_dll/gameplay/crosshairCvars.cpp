@@ -102,6 +102,14 @@ namespace CrosshairCvars
 							 currentWeapon->iId);
 	}
 
+	static inline void AddValue(CUtlString& str, const cvar_t* cvar)
+	{
+		if ( cvar )
+		{
+			str.AppendFormat("  %s = %f\n", cvar->name, cvar->value);
+		}
+	}
+
 	static void DumpCvars(void)
 	{
 		if ( !CvarsLoaded )
@@ -119,10 +127,11 @@ namespace CrosshairCvars
 
 		output.AppendFormat("Crosshair values:\n");
 		output.AppendFormat("  cl_crosshair_ovr_enabled = %s\n", CvarOverrideCrosshairAtts->value ? "true" : "false");
-		output.AppendFormat("  cl_crosshair_ovr_rad_min = %f\n", CvarOverrideCrosshairRadiusMin->value);
-		output.AppendFormat("  cl_crosshair_ovr_rad_max = %f\n", CvarOverrideCrosshairRadiusMax->value);
-		output.AppendFormat("  cl_crosshair_ovr_bar_min = %f\n", CvarOverrideCrosshairBarLengthMin->value);
-		output.AppendFormat("  cl_crosshair_ovr_bar_max = %f\n", CvarOverrideCrosshairBarLengthMax->value);
+
+		AddValue(output, CvarOverrideCrosshairRadiusMin);
+		AddValue(output, CvarOverrideCrosshairRadiusMax);
+		AddValue(output, CvarOverrideCrosshairBarLengthMin);
+		AddValue(output, CvarOverrideCrosshairBarLengthMax);
 
 		gEngfuncs.Con_Printf(output.Get());
 	}

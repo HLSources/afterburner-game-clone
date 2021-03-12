@@ -1,6 +1,10 @@
 #include "gameplay/gameplayCvars.h"
 #include "standard_includes.h"
 #include "utlstring.h"
+#include "mp_utils.h"
+#include "weapons/weaponregistry.h"
+#include "weapons/genericweapon.h"
+#include "weaponattributes/weaponatts_ammobasedattack.h"
 
 namespace GameplayCvars
 {
@@ -25,6 +29,11 @@ namespace GameplayCvars
 
 #undef DEFINE_CVAR
 
+	static inline void AddValue(CUtlString& str, const cvar_t& cvar)
+	{
+		str.AppendFormat("  %s = %f\n", cvar.name, cvar.value);
+	}
+
 	static void DumpValues(void)
 	{
 		if ( CVAR_GET_FLOAT("sv_cheats") == 0.0f )
@@ -36,19 +45,86 @@ namespace GameplayCvars
 		CUtlString output;
 
 		output.AppendFormat("Weapon inaccuracy values:\n");
-		output.AppendFormat("  sv_weapon_debug_inac_enabled = %s\n", sv_weapon_debug_inac_enabled.value ? "true" : "false");
-		output.AppendFormat("  sv_weapon_debug_inac_restvalue = %f\n", sv_weapon_debug_inac_restvalue.value);
-		output.AppendFormat("  sv_weapon_debug_inac_restspread = %f\n", sv_weapon_debug_inac_restspread.value);
-		output.AppendFormat("  sv_weapon_debug_inac_runvalue = %f\n", sv_weapon_debug_inac_runvalue.value);
-		output.AppendFormat("  sv_weapon_debug_inac_runspread = %f\n", sv_weapon_debug_inac_runspread.value);
-		output.AppendFormat("  sv_weapon_debug_inac_crouchshift = %f\n", sv_weapon_debug_inac_crouchshift.value);
-		output.AppendFormat("  sv_weapon_debug_inac_fallshift = %f\n", sv_weapon_debug_inac_fallshift.value);
-		output.AppendFormat("  sv_weapon_debug_inac_followcoeff = %f\n", sv_weapon_debug_inac_followcoeff.value);
-		output.AppendFormat("  sv_weapon_debug_inac_fireimpulse = %f\n", sv_weapon_debug_inac_fireimpulse.value);
-		output.AppendFormat("  sv_weapon_debug_inac_fireimpulseceil = %f\n", sv_weapon_debug_inac_fireimpulseceil.value);
-		output.AppendFormat("  sv_weapon_debug_inac_fireimpulsehold = %f\n", sv_weapon_debug_inac_fireimpulsehold.value);
+		output.AppendFormat("  %s = %s\n", sv_weapon_debug_inac_enabled.name, sv_weapon_debug_inac_enabled.value ? "true" : "false");
+
+		AddValue(output, sv_weapon_debug_inac_restvalue);
+		AddValue(output, sv_weapon_debug_inac_restspread);
+		AddValue(output, sv_weapon_debug_inac_runvalue);
+		AddValue(output, sv_weapon_debug_inac_runspread);
+		AddValue(output, sv_weapon_debug_inac_crouchshift);
+		AddValue(output, sv_weapon_debug_inac_fallshift);
+		AddValue(output, sv_weapon_debug_inac_followcoeff);
+		AddValue(output, sv_weapon_debug_inac_fireimpulse);
+		AddValue(output, sv_weapon_debug_inac_fireimpulseceil);
+		AddValue(output, sv_weapon_debug_inac_fireimpulsehold);
 
 		ALERT(at_console, "%s", output.Get());
+	}
+
+	static void PopulateCvars(const WeaponAtts::AccuracyParameters& params)
+	{
+		g_engfuncs.pfnCVarSetFloat(sv_weapon_debug_inac_restvalue.name, params.RestValue);
+		g_engfuncs.pfnCVarSetFloat(sv_weapon_debug_inac_restspread.name, params.RestSpread.x);
+		g_engfuncs.pfnCVarSetFloat(sv_weapon_debug_inac_runvalue.name, params.RunValue);
+		g_engfuncs.pfnCVarSetFloat(sv_weapon_debug_inac_runspread.name, params.RunSpread.x);
+		g_engfuncs.pfnCVarSetFloat(sv_weapon_debug_inac_crouchshift.name, params.CrouchShift);
+		g_engfuncs.pfnCVarSetFloat(sv_weapon_debug_inac_fallshift.name, params.FallShift);
+		g_engfuncs.pfnCVarSetFloat(sv_weapon_debug_inac_followcoeff.name, params.FollowCoefficient);
+		g_engfuncs.pfnCVarSetFloat(sv_weapon_debug_inac_fireimpulse.name, params.FireImpulse);
+		g_engfuncs.pfnCVarSetFloat(sv_weapon_debug_inac_fireimpulseceil.name, params.FireImpulseCeiling);
+		g_engfuncs.pfnCVarSetFloat(sv_weapon_debug_inac_fireimpulsehold.name, params.FireImpulseHoldTime);
+	}
+
+	static void PopulateCvarsFromPlayerWeapon(void)
+	{
+		if ( CVAR_GET_FLOAT("sv_cheats") == 0.0f )
+		{
+			ALERT(at_console, "This command requires sv_cheats to be 1.\n");
+			return;
+		}
+
+		if ( g_engfuncs.pfnCmd_Argc() != 2 )
+		{
+			ALERT(at_console, "Usage: sv_weapon_debug_inac_populate <#playerId|playerName>\n");
+			return;
+		}
+
+		const char* arg = g_engfuncs.pfnCmd_Argv(1);
+		CBasePlayer* player = MPUtils::CBasePlayerFromStringLookup(arg);
+
+		if ( !player )
+		{
+			ALERT(at_console, "Could not find player '%s'.\n", arg);
+			return;
+		}
+
+		CGenericWeapon* weapon = dynamic_cast<CGenericWeapon*>(player->m_pActiveItem);
+
+		if ( !weapon )
+		{
+			ALERT(at_console, "Player does not have an active weapon.\n");
+			return;
+		}
+
+		const WeaponAtts::WACollection& atts = weapon->WeaponAttributes();
+		byte attackMode = weapon->GetPrimaryAttackModeIndex();
+
+		if ( attackMode >= atts.AttackModes.Count() )
+		{
+			ALERT(at_console, "Player's active weapon %s (%d) has invalid attack mode index.\n", atts.Core.Classname, atts.Core.Id);
+			return;
+		}
+
+		const WeaponAtts::WAAmmoBasedAttack* attack = dynamic_cast<const WeaponAtts::WAAmmoBasedAttack*>(atts.AttackModes[attackMode].get());
+
+		if ( !attack )
+		{
+			ALERT(at_console, "Player's active weapon %s (%d) has unsupported attack mode.\n", atts.Core.Classname, atts.Core.Id);
+			return;
+		}
+
+		PopulateCvars(attack->Accuracy);
+		ALERT(at_console, "Cvars populated from player's active weapon %s (%d).\n", atts.Core.Classname, atts.Core.Id);
 	}
 
 	void Init()
@@ -69,5 +145,6 @@ namespace GameplayCvars
 		CVAR_REGISTER(&sv_weapon_debug_inac_fireimpulsehold);
 
 		g_engfuncs.pfnAddServerCommand("sv_weapon_debug_inac_dump", &DumpValues);
+		g_engfuncs.pfnAddServerCommand("sv_weapon_debug_inac_populate", &PopulateCvarsFromPlayerWeapon);
 	}
 }
