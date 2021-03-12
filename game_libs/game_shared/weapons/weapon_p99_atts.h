@@ -98,7 +98,8 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	accuracy.RunSpread = Vector2D(0.06f, 0.06f);
 	accuracy.CrouchShift = -0.08f;
 	accuracy.FallShift = 0.4f;
-	accuracy.FollowCoefficient = 0.3f;
+	accuracy.AttackCoefficient = 0.3f;
+	accuracy.DecayCoefficient = 0.3f;
 	accuracy.FireImpulse = 0.3f;
 	accuracy.FireImpulseCeiling = 0.5f;
 

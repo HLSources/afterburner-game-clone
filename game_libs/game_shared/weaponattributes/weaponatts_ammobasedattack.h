@@ -39,12 +39,16 @@ namespace WeaponAtts
 
 		// This creates a base, instantaneous level of inaccuracy for the weapon on this
 		// particular frame. A smoothed inaccuracy level is then calculated based on the
-		// difference between the current and previous frames. The follow coefficient
-		// specifies how much smoothing is applied. A value of 1 means no smoothing (the
-		// instantaneous inaccuracy is used verbatim), and values closer to 0 cause more
-		// smoothing (ie. the smoothed value tends towards the instantaneous value more
-		// slowly). A value of 0 means the inaccuracy value will never actually change.
-		float FollowCoefficient = 0.5f;
+		// difference between the current and previous frames. The attack coefficient
+		// specifies how much smoothing is applied when the inaccuracy value is increasing.
+		// A value of 1 means no smoothing (the instantaneous inaccuracy is used verbatim),
+		// and values closer to 0 cause more smoothing (ie. the smoothed value tends towards
+		// the instantaneous value more slowly). A value of 0 means the inaccuracy value
+		// will never actually change.
+		float AttackCoefficient = 0.5f;
+
+		// This coefficient is used in the same way, but when the inaccuracy value is decreasing.
+		float DecayCoefficient = 0.5f;
 
 		// Next, if the weapon has been fired on the current frame, an inaccuracy penalty
 		// is applied to the smoothed value. FireImpulse specifies how large this penalty is.
@@ -75,7 +79,8 @@ namespace WeaponAtts
 		{
 			ASSERTSZ_Q(RestValue >= 0.0f && RestValue <= 1.0f, "Rest value must be in range [0 1].");
 			ASSERTSZ_Q(RunValue >= 0.0f && RunValue <= 1.0f, "Run value must be in range [0 1].");
-			ASSERTSZ_Q(FollowCoefficient >= 0.0f && FollowCoefficient <= 1.0f, "Follow coefficient must be in range [0 1].");
+			ASSERTSZ_Q(AttackCoefficient >= 0.0f && AttackCoefficient <= 1.0f, "Attack coefficient must be in range [0 1].");
+			ASSERTSZ_Q(DecayCoefficient >= 0.0f && DecayCoefficient <= 1.0f, "Decay coefficient must be in range [0 1].");
 			ASSERTSZ_Q(RestSpread.x >= 0.0f && RestSpread.y >= 0.0f, "Rest spread cannot be negative.");
 			ASSERTSZ_Q(RunSpread.x >= 0.0f && RunSpread.y >= 0.0f, "Run spread cannot be negative.");
 		}

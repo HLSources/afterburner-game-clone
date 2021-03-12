@@ -22,7 +22,8 @@ namespace GameplayCvars
 	DEFINE_CVAR(sv_weapon_debug_inac_runspread, 0);
 	DEFINE_CVAR(sv_weapon_debug_inac_crouchshift, -0.08);
 	DEFINE_CVAR(sv_weapon_debug_inac_fallshift, 0.2);
-	DEFINE_CVAR(sv_weapon_debug_inac_followcoeff, 0.5);
+	DEFINE_CVAR(sv_weapon_debug_inac_attackcoeff, 0.5);
+	DEFINE_CVAR(sv_weapon_debug_inac_decaycoeff, 0.5);
 	DEFINE_CVAR(sv_weapon_debug_inac_fireimpulse, 0.1);
 	DEFINE_CVAR(sv_weapon_debug_inac_fireimpulseceil, 0.3);
 	DEFINE_CVAR(sv_weapon_debug_inac_fireimpulsehold, 0.05);
@@ -53,7 +54,8 @@ namespace GameplayCvars
 		AddValue(output, sv_weapon_debug_inac_runspread);
 		AddValue(output, sv_weapon_debug_inac_crouchshift);
 		AddValue(output, sv_weapon_debug_inac_fallshift);
-		AddValue(output, sv_weapon_debug_inac_followcoeff);
+		AddValue(output, sv_weapon_debug_inac_attackcoeff);
+		AddValue(output, sv_weapon_debug_inac_decaycoeff);
 		AddValue(output, sv_weapon_debug_inac_fireimpulse);
 		AddValue(output, sv_weapon_debug_inac_fireimpulseceil);
 		AddValue(output, sv_weapon_debug_inac_fireimpulsehold);
@@ -69,7 +71,8 @@ namespace GameplayCvars
 		g_engfuncs.pfnCVarSetFloat(sv_weapon_debug_inac_runspread.name, params.RunSpread.x);
 		g_engfuncs.pfnCVarSetFloat(sv_weapon_debug_inac_crouchshift.name, params.CrouchShift);
 		g_engfuncs.pfnCVarSetFloat(sv_weapon_debug_inac_fallshift.name, params.FallShift);
-		g_engfuncs.pfnCVarSetFloat(sv_weapon_debug_inac_followcoeff.name, params.FollowCoefficient);
+		g_engfuncs.pfnCVarSetFloat(sv_weapon_debug_inac_attackcoeff.name, params.AttackCoefficient);
+		g_engfuncs.pfnCVarSetFloat(sv_weapon_debug_inac_decaycoeff.name, params.DecayCoefficient);
 		g_engfuncs.pfnCVarSetFloat(sv_weapon_debug_inac_fireimpulse.name, params.FireImpulse);
 		g_engfuncs.pfnCVarSetFloat(sv_weapon_debug_inac_fireimpulseceil.name, params.FireImpulseCeiling);
 		g_engfuncs.pfnCVarSetFloat(sv_weapon_debug_inac_fireimpulsehold.name, params.FireImpulseHoldTime);
@@ -139,7 +142,8 @@ namespace GameplayCvars
 		CVAR_REGISTER(&sv_weapon_debug_inac_runspread);
 		CVAR_REGISTER(&sv_weapon_debug_inac_crouchshift);
 		CVAR_REGISTER(&sv_weapon_debug_inac_fallshift);
-		CVAR_REGISTER(&sv_weapon_debug_inac_followcoeff);
+		CVAR_REGISTER(&sv_weapon_debug_inac_attackcoeff);
+		CVAR_REGISTER(&sv_weapon_debug_inac_decaycoeff);
 		CVAR_REGISTER(&sv_weapon_debug_inac_fireimpulse);
 		CVAR_REGISTER(&sv_weapon_debug_inac_fireimpulseceil);
 		CVAR_REGISTER(&sv_weapon_debug_inac_fireimpulsehold);

@@ -170,10 +170,13 @@ void CWeaponInaccuracyCalculator::CalculateSmoothedInaccuracy(const WeaponAtts::
 	const float difference = m_InstantaneousInaccuracy - m_LastSmoothedInaccuracy;
 	float smoothed = m_LastSmoothedInaccuracy;
 
-	// Move towards the new inaccuracy only if it's greater than the last, or the hold time has passed.
-	if ( difference > 0.0f || !LastFireTimeIsInHoldRegion(params->FireImpulseHoldTime) )
+	if ( difference > 0.0f )
 	{
-		smoothed += params->FollowCoefficient * difference;
+		smoothed += params->AttackCoefficient * difference;
+	}
+	else if ( !LastFireTimeIsInHoldRegion(params->FireImpulseHoldTime) )
+	{
+		smoothed += params->DecayCoefficient * difference;
 	}
 
 	m_SmoothedInaccuracy = ExtraMath::Clamp(0.0f, smoothed, 1.0f);

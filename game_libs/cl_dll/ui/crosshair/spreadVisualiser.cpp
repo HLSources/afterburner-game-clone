@@ -166,7 +166,8 @@ void CSpreadVisualiser::DrawInfoText(const CCrosshairParameters& params, size_t 
 	text.AppendFormat("  Rest-run range: %f - %f\n", accuracyParams.RestValue, accuracyParams.RunValue);
 	text.AppendFormat("  Crouch shift: %f\n", accuracyParams.CrouchShift);
 	text.AppendFormat("  Fall shift: %f\n", accuracyParams.FallShift);
-	text.AppendFormat("  Follow coefficient: %f\n", accuracyParams.FollowCoefficient);
+	text.AppendFormat("  Attack coefficient: %f\n", accuracyParams.AttackCoefficient);
+	text.AppendFormat("  Decay coefficient: %f\n", accuracyParams.DecayCoefficient);
 	text.AppendFormat("  Fire impulse: %f\n", accuracyParams.FireImpulse);
 	text.AppendFormat("  Fire impulse ceiling: %f\n", accuracyParams.FireImpulseCeiling);
 	text.AppendFormat("  Fire impulse hold time: %f\n", accuracyParams.FireImpulseHoldTime);

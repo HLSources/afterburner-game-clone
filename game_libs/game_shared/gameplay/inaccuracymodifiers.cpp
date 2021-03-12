@@ -15,7 +15,8 @@ namespace
 	cvar_t* CvarDebugRunSpread = nullptr;
 	cvar_t* CvarDebugCrouchShift = nullptr;
 	cvar_t* CvarDebugFallShift = nullptr;
-	cvar_t* CvarDebugFollowCoefficient = nullptr;
+	cvar_t* CvarDebugAttackCoefficient = nullptr;
+	cvar_t* CvarDebugDecayCoefficient = nullptr;
 	cvar_t* CvarDebugFireImpulse = nullptr;
 	cvar_t* CvarDebugFireImpulseCeiling = nullptr;
 	cvar_t* CvarDebugFireImpulseHoldTime = nullptr;
@@ -38,7 +39,8 @@ namespace
 		CvarDebugRunSpread = GetCvarByName("sv_weapon_debug_inac_runspread");
 		CvarDebugCrouchShift = GetCvarByName("sv_weapon_debug_inac_crouchshift");
 		CvarDebugFallShift = GetCvarByName("sv_weapon_debug_inac_fallshift");
-		CvarDebugFollowCoefficient = GetCvarByName("sv_weapon_debug_inac_followcoeff");
+		CvarDebugAttackCoefficient = GetCvarByName("sv_weapon_debug_inac_attackcoeff");
+		CvarDebugDecayCoefficient = GetCvarByName("sv_weapon_debug_inac_decaycoeff");
 		CvarDebugFireImpulse = GetCvarByName("sv_weapon_debug_inac_fireimpulse");
 		CvarDebugFireImpulseCeiling = GetCvarByName("sv_weapon_debug_inac_fireimpulseceil");
 		CvarDebugFireImpulseHoldTime = GetCvarByName("sv_weapon_debug_inac_fireimpulsehold");
@@ -52,7 +54,8 @@ namespace
 			CvarDebugRunSpread &&
 			CvarDebugCrouchShift &&
 			CvarDebugFallShift &&
-			CvarDebugFollowCoefficient &&
+			CvarDebugAttackCoefficient &&
+			CvarDebugDecayCoefficient &&
 			CvarDebugFireImpulse &&
 			CvarDebugFireImpulseCeiling &&
 			CvarDebugFireImpulseHoldTime;
@@ -99,7 +102,8 @@ namespace InaccuracyModifiers
 		params.RunSpread = Vector2D(CvarDebugRunSpread->value, CvarDebugRunSpread->value);
 		params.CrouchShift = CvarDebugCrouchShift->value;
 		params.FallShift = CvarDebugFallShift->value;
-		params.FollowCoefficient = CvarDebugFollowCoefficient->value;
+		params.AttackCoefficient = CvarDebugAttackCoefficient->value;
+		params.AttackCoefficient = CvarDebugDecayCoefficient->value;
 		params.FireImpulse = CvarDebugFireImpulse->value;
 		params.FireImpulseCeiling = CvarDebugFireImpulseCeiling->value;
 		params.FireImpulseHoldTime = CvarDebugFireImpulseHoldTime->value;
