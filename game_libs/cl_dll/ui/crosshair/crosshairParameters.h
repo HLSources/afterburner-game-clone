@@ -33,7 +33,6 @@ public:
 
 	UIVec2 HalfScreenDimensions() const;
 	int DisplacementFromScreenCentre(float fraction) const;
-	float MapInaccuracyToValue(float min, float max) const;
 
 	const WeaponAtts::AccuracyParameters* WeaponAccuracyParamsForAttack(size_t index) const;
 	const WeaponAtts::CrosshairParameters* CrosshairParamsForAttack(size_t index) const;

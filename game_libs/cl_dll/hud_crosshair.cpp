@@ -91,17 +91,7 @@ bool CHudCrosshair::UpdateParameters()
 	}
 
 	m_Params.SetWeaponID(static_cast<WeaponId_e>(weapon->iId));
-
-	CWeaponRegistry& registry = CWeaponRegistry::StaticInstance();
-	const WeaponAtts::WACollection* atts = registry.Get(m_Params.WeaponID());
-
-	if ( !atts || weapon->iPriAttackMode >= atts->AttackModes.Count() )
-	{
-		return false;
-	}
-
-	const WeaponAtts::WABaseAttack* baseAttack = atts->AttackModes[weapon->iPriAttackMode].get();
-	const WeaponAtts::WAAmmoBasedAttack* ammoAttack = dynamic_cast<const WeaponAtts::WAAmmoBasedAttack*>(baseAttack);
+	const WeaponAtts::WAAmmoBasedAttack* ammoAttack = GetAttackMode(*weapon);
 
 	if ( !ammoAttack )
 	{
@@ -117,13 +107,21 @@ bool CHudCrosshair::UpdateParameters()
 
 	m_Params.SetWeaponInaccuracy(gHUD.m_flWeaponInaccuracy);
 
-	// At inaccuracy 0, radius is m_CrosshairParams->RadiusMin.
-	// At inaccuracy 1, radius is m_CrosshairParams->RadiusMax.
-	m_Params.SetRadius(m_Params.MapInaccuracyToValue(m_CrosshairParams->RadiusMin, m_CrosshairParams->RadiusMax));
+	float radius = ExtraMath::RemapLinear(m_Params.WeaponInaccuracy(),
+										  ammoAttack->Accuracy.RestValue,
+										  ammoAttack->Accuracy.RunValue,
+										  m_CrosshairParams->RadiusMin,
+										  m_CrosshairParams->RadiusMax,
+										  false);
+	m_Params.SetRadius(radius);
 
-	// At inaccuracy 0, bar length is m_CrosshairParams->BarScaleMin.
-	// At inaccuracy 1, bar length is m_CrosshairParams->BarScaleMax.
-	m_Params.SetBarLength(m_Params.MapInaccuracyToValue(m_CrosshairParams->BarScaleMin, m_CrosshairParams->BarScaleMax));
+	float barLength = ExtraMath::RemapLinear(m_Params.WeaponInaccuracy(),
+											 ammoAttack->Accuracy.RestValue,
+											 ammoAttack->Accuracy.RunValue,
+											 m_CrosshairParams->BarScaleMin,
+											 m_CrosshairParams->BarScaleMin,
+											 false);
+	m_Params.SetBarLength(barLength);
 
 	UpdateParametersFromDebugCvars();
 
@@ -137,8 +135,37 @@ void CHudCrosshair::UpdateParametersFromDebugCvars()
 		return;
 	}
 
-	m_Params.SetRadius(m_Params.MapInaccuracyToValue(CrosshairCvars::RadiusMin(), CrosshairCvars::RadiusMax()));
-	m_Params.SetBarLength(m_Params.MapInaccuracyToValue(CrosshairCvars::BarLengthMin(), CrosshairCvars::BarLengthMax()));
+	WEAPON* weapon = gHUD.m_Ammo.GetCurrentWeapon();
+
+	if ( !weapon || weapon->iId < 1 )
+	{
+		return;
+	}
+
+	const WeaponAtts::WAAmmoBasedAttack* ammoAttack = GetAttackMode(*weapon);
+
+	if ( !ammoAttack )
+	{
+		return;
+	}
+
+	float radius = ExtraMath::RemapLinear(m_Params.WeaponInaccuracy(),
+										  ammoAttack->Accuracy.RestValue,
+										  ammoAttack->Accuracy.RunValue,
+										  CrosshairCvars::RadiusMin(),
+										  CrosshairCvars::RadiusMax(),
+										  false);
+
+	m_Params.SetRadius(radius);
+
+	float barLength = ExtraMath::RemapLinear(m_Params.WeaponInaccuracy(),
+											 ammoAttack->Accuracy.RestValue,
+											 ammoAttack->Accuracy.RunValue,
+											 CrosshairCvars::BarLengthMin(),
+											 CrosshairCvars::BarLengthMax(),
+											 false);
+
+	m_Params.SetBarLength(barLength);
 }
 
 void CHudCrosshair::InitialiseGeometry()
@@ -247,4 +274,18 @@ void CHudCrosshair::UpdateGeometry()
 			}
 		}
 	}
+}
+
+const WeaponAtts::WAAmmoBasedAttack* CHudCrosshair::GetAttackMode(const WEAPON& weapon) const
+{
+	CWeaponRegistry& registry = CWeaponRegistry::StaticInstance();
+	const WeaponAtts::WACollection* atts = registry.Get(m_Params.WeaponID());
+
+	if ( !atts || weapon.iPriAttackMode >= atts->AttackModes.Count() )
+	{
+		return false;
+	}
+
+	const WeaponAtts::WABaseAttack* baseAttack = atts->AttackModes[weapon.iPriAttackMode].get();
+	return dynamic_cast<const WeaponAtts::WAAmmoBasedAttack*>(baseAttack);
 }
