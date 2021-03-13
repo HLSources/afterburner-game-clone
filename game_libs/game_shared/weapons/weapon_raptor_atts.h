@@ -76,8 +76,6 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	priAttack->FunctionsUnderwater = true;
 	priAttack->IsContinuous = false;
 	priAttack->UsesAmmoPool = WAAmmoBasedAttack::AmmoPool::Primary;
-	priAttack->Accuracy.RestSpread = Vector2D(0.0f, 0.0f); // TODO
-	priAttack->Accuracy.RunSpread = Vector2D(0.0f, 0.0f); // TODO
 	priAttack->AttackRate = RAPTOR_FIRE_RATE;
 	priAttack->BaseDamagePerShot = &skilldata_t::plrDmgRaptor;
 	priAttack->AutoAim = AUTOAIM_10DEGREES;
@@ -85,6 +83,20 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	priAttack->MuzzleFlashBrightness = BRIGHT_GUN_FLASH;
 	priAttack->ViewPunchY = -3.0f;
 	priAttack->ShellModelName = "models/shell.mdl";
+
+	AccuracyParameters& accuracy = priAttack->Accuracy;
+	accuracy.RestValue = 0.1f;
+	accuracy.RestSpread = Vector2D(0.01f, 0.01f);
+	accuracy.RunValue = 0.5f;
+	accuracy.RunSpread = Vector2D(0.05f, 0.05f);
+	accuracy.CrouchShift = -0.08f;
+	accuracy.AirShift = 0.2f;
+	accuracy.FallShift = 0.1f;
+	accuracy.AttackCoefficient = 0.3f;
+	accuracy.DecayCoefficient = 0.3f;
+	accuracy.FireImpulse = 0.1f;
+	accuracy.FireImpulseCeiling = 0.3f;
+	accuracy.FireImpulseHoldTime = 0.05f;
 
 	priAttack->ViewModelAnimList_Attack << RAPTOR_SHOOT;
 	priAttack->ViewModelAnimList_AttackEmpty << RAPTOR_SHOOT_LAST;
@@ -94,4 +106,10 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	priAttack->AttackSounds.MinPitch = 95;
 	priAttack->AttackSounds.MaxPitch = 100;
 	priAttack->AttackSounds.SoundNames << "weapons/weapon_raptor/raptor_fire1.wav";
+
+	CrosshairParameters& crosshair = priAttack->Crosshair;
+	crosshair.BarScaleMin = 0.03f;
+	crosshair.BarScaleMax = 0.03f;
+	crosshair.RadiusMin = 0.015f;
+	crosshair.RadiusMax = 0.05f;
 });

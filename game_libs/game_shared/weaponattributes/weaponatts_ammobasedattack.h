@@ -52,10 +52,10 @@ namespace WeaponAtts
 		// and values closer to 0 cause more smoothing (ie. the smoothed value tends towards
 		// the instantaneous value more slowly). A value of 0 means the inaccuracy value
 		// will never actually change.
-		float AttackCoefficient = 0.5f;
+		float AttackCoefficient = 0.3f;
 
 		// This coefficient is used in the same way, but when the inaccuracy value is decreasing.
-		float DecayCoefficient = 0.5f;
+		float DecayCoefficient = 0.3f;
 
 		// Next, if the weapon has been fired on the current frame, an inaccuracy penalty
 		// is applied to the smoothed value. FireImpulse specifies how large this penalty is.

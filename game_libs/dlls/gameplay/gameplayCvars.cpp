@@ -55,6 +55,7 @@ namespace GameplayCvars
 		AddValue(output, sv_weapon_debug_inac_runvalue);
 		AddValue(output, sv_weapon_debug_inac_runspread);
 		AddValue(output, sv_weapon_debug_inac_crouchshift);
+		AddValue(output, sv_weapon_debug_inac_airshift);
 		AddValue(output, sv_weapon_debug_inac_fallshift);
 		AddValue(output, sv_weapon_debug_inac_attackcoeff);
 		AddValue(output, sv_weapon_debug_inac_decaycoeff);

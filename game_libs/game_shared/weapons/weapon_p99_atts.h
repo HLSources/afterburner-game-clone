@@ -97,11 +97,13 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	accuracy.RunValue = 0.5f;
 	accuracy.RunSpread = Vector2D(0.06f, 0.06f);
 	accuracy.CrouchShift = -0.08f;
+	accuracy.AirShift = 0.2f;
 	accuracy.FallShift = 0.1f;
 	accuracy.AttackCoefficient = 0.3f;
 	accuracy.DecayCoefficient = 0.3f;
 	accuracy.FireImpulse = 0.3f;
 	accuracy.FireImpulseCeiling = 0.5f;
+	accuracy.FireImpulseHoldTime = 0.05f;
 
 	priAttack->ViewModelAnimList_Attack << P99_SHOOT;
 	priAttack->ViewModelAnimList_AttackEmpty << P99_SHOOT_EMPTY;
