@@ -72,7 +72,7 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	WAHitscanAttack* priAttack = new WAHitscanAttack();
 	obj.AttackModes.AddToTail(std::shared_ptr<WABaseAttack>(priAttack));
 
-	priAttack->EventScript = "events/weapon_raptor/fire01.sc";
+	priAttack->EventScript = "events/weapon_raptor/fire.sc";
 	priAttack->FunctionsUnderwater = true;
 	priAttack->IsContinuous = false;
 	priAttack->UsesAmmoPool = WAAmmoBasedAttack::AmmoPool::Primary;
@@ -88,7 +88,7 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	accuracy.RestValue = 0.1f;
 	accuracy.RestSpread = Vector2D(0.01f, 0.01f);
 	accuracy.RunValue = 0.5f;
-	accuracy.RunSpread = Vector2D(0.05f, 0.05f);
+	accuracy.RunSpread = Vector2D(0.07f, 0.07f);
 	accuracy.CrouchShift = -0.08f;
 	accuracy.AirShift = 0.2f;
 	accuracy.FallShift = 0.1f;

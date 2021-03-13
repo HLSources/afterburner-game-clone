@@ -80,7 +80,7 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	WAProjectileAttack* priAttack = new WAProjectileAttack();
 	obj.AttackModes.AddToTail(std::shared_ptr<WABaseAttack>(priAttack));
 
-	priAttack->EventScript = "events/weapon_grenadelauncher/fire01.sc";
+	priAttack->EventScript = "events/weapon_grenadelauncher/fire_impact.sc";
 	priAttack->FunctionsUnderwater = true;
 	priAttack->IsContinuous = false;
 	priAttack->UsesAmmoPool = WAAmmoBasedAttack::AmmoPool::Primary;
@@ -111,5 +111,5 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 
 	// Base off primary attack
 	*secAttack = *priAttack;
-	secAttack->EventScript = "events/weapon_grenadelauncher/fire02.sc";
+	secAttack->EventScript = "events/weapon_grenadelauncher/fire_timed.sc";
 });

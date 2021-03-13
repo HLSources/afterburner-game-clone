@@ -100,7 +100,7 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	WAHitscanAttack* priAttack = new WAHitscanAttack();
 	obj.AttackModes.AddToTail(std::shared_ptr<WABaseAttack>(priAttack));
 
-	priAttack->EventScript = "events/weapon_frinesi/fire01.sc";
+	priAttack->EventScript = "events/weapon_frinesi/fire_auto.sc";
 	priAttack->FunctionsUnderwater = true;
 	priAttack->IsContinuous = false;
 	priAttack->UsesAmmoPool = WAAmmoBasedAttack::AmmoPool::Primary;
@@ -149,7 +149,7 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 
 	// Base off primary attack.
 	*secAttack = *priAttack;
-	secAttack->EventScript = "events/weapon_frinesi/fire02.sc";
+	secAttack->EventScript = "events/weapon_frinesi/fire_pump.sc";
 	secAttack->AttackRate = FRINESI_FIRE_RATE_PUMP;
 	secAttack->BaseDamagePerShot = &skilldata_t::plrDmgFrinesiPump;
 	secAttack->ViewPunchY = -10.0f;

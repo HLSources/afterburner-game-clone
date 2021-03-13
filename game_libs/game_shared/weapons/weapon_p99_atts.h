@@ -79,7 +79,7 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	WAHitscanAttack* priAttack = new WAHitscanAttack();
 	obj.AttackModes.AddToTail(std::shared_ptr<WABaseAttack>(priAttack));
 
-	priAttack->EventScript = "events/weapon_p99/fire01.sc";
+	priAttack->EventScript = "events/weapon_p99/fire_unsilenced.sc";
 	priAttack->FunctionsUnderwater = true;
 	priAttack->IsContinuous = false;
 	priAttack->UsesAmmoPool = WAAmmoBasedAttack::AmmoPool::Primary;
@@ -127,7 +127,7 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 
 	// Base off primary attack.
 	*secAttack = *priAttack;
-	secAttack->EventScript = "events/weapon_p99/fire02.sc";
+	secAttack->EventScript = "events/weapon_p99/fire_silenced.sc";
 	secAttack->Volume = QUIET_GUN_VOLUME;
 	secAttack->MuzzleFlashBrightness = DIM_GUN_FLASH;
 
