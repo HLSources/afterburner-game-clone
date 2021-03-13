@@ -97,7 +97,7 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	accuracy.RunValue = 0.5f;
 	accuracy.RunSpread = Vector2D(0.06f, 0.06f);
 	accuracy.CrouchShift = -0.08f;
-	accuracy.FallShift = 0.4f;
+	accuracy.FallShift = 0.1f;
 	accuracy.AttackCoefficient = 0.3f;
 	accuracy.DecayCoefficient = 0.3f;
 	accuracy.FireImpulse = 0.3f;
@@ -114,10 +114,10 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	priAttack->AttackSounds.SoundNames << "weapons/weapon_p99/p99_fire1.wav";
 
 	CrosshairParameters& crosshair = priAttack->Crosshair;
-	crosshair.BarScaleMin = 0.02f;
-	crosshair.BarScaleMax = 0.04f;
-	crosshair.RadiusMin = 0.01f;
-	crosshair.RadiusMax = 0.1f;
+	crosshair.BarScaleMin = 0.03f;
+	crosshair.BarScaleMax = 0.03f;
+	crosshair.RadiusMin = 0.022f;
+	crosshair.RadiusMax = 0.08f;
 
 	// Silenced
 	WAHitscanAttack* secAttack = new WAHitscanAttack();

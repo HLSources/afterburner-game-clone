@@ -165,6 +165,7 @@ void CSpreadVisualiser::DrawInfoText(const CCrosshairParameters& params, size_t 
 
 	text.AppendFormat("  Rest-run range: %f - %f\n", accuracyParams.RestValue, accuracyParams.RunValue);
 	text.AppendFormat("  Crouch shift: %f\n", accuracyParams.CrouchShift);
+	text.AppendFormat("  Air shift: %f\n", accuracyParams.AirShift);
 	text.AppendFormat("  Fall shift: %f\n", accuracyParams.FallShift);
 	text.AppendFormat("  Attack coefficient: %f\n", accuracyParams.AttackCoefficient);
 	text.AppendFormat("  Decay coefficient: %f\n", accuracyParams.DecayCoefficient);

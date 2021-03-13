@@ -22,7 +22,8 @@ namespace GameplayCvars
 	DEFINE_CVAR(sv_weapon_debug_inac_runvalue, 0.5);
 	DEFINE_CVAR(sv_weapon_debug_inac_runspread, 0);
 	DEFINE_CVAR(sv_weapon_debug_inac_crouchshift, -0.08);
-	DEFINE_CVAR(sv_weapon_debug_inac_fallshift, 0.2);
+	DEFINE_CVAR(sv_weapon_debug_inac_airshift, 0.2);
+	DEFINE_CVAR(sv_weapon_debug_inac_fallshift, 0.05);
 	DEFINE_CVAR(sv_weapon_debug_inac_attackcoeff, 0.5);
 	DEFINE_CVAR(sv_weapon_debug_inac_decaycoeff, 0.5);
 	DEFINE_CVAR(sv_weapon_debug_inac_fireimpulse, 0.1);
@@ -71,6 +72,7 @@ namespace GameplayCvars
 		g_engfuncs.pfnCVarSetFloat(sv_weapon_debug_inac_runvalue.name, params.RunValue);
 		g_engfuncs.pfnCVarSetFloat(sv_weapon_debug_inac_runspread.name, params.RunSpread.x);
 		g_engfuncs.pfnCVarSetFloat(sv_weapon_debug_inac_crouchshift.name, params.CrouchShift);
+		g_engfuncs.pfnCVarSetFloat(sv_weapon_debug_inac_airshift.name, params.AirShift);
 		g_engfuncs.pfnCVarSetFloat(sv_weapon_debug_inac_fallshift.name, params.FallShift);
 		g_engfuncs.pfnCVarSetFloat(sv_weapon_debug_inac_attackcoeff.name, params.AttackCoefficient);
 		g_engfuncs.pfnCVarSetFloat(sv_weapon_debug_inac_decaycoeff.name, params.DecayCoefficient);
@@ -155,6 +157,7 @@ namespace GameplayCvars
 		CVAR_REGISTER(&sv_weapon_debug_inac_runvalue);
 		CVAR_REGISTER(&sv_weapon_debug_inac_runspread);
 		CVAR_REGISTER(&sv_weapon_debug_inac_crouchshift);
+		CVAR_REGISTER(&sv_weapon_debug_inac_airshift);
 		CVAR_REGISTER(&sv_weapon_debug_inac_fallshift);
 		CVAR_REGISTER(&sv_weapon_debug_inac_attackcoeff);
 		CVAR_REGISTER(&sv_weapon_debug_inac_decaycoeff);

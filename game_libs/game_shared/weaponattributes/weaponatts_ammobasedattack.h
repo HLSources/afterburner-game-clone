@@ -36,10 +36,13 @@ namespace WeaponAtts
 		// Shift applied when the player is crouching.
 		float CrouchShift = -0.08f;
 
+		// Shift applied when the player is not touching the ground.
+		float AirShift = 0.2f;
+
 		// Shift applied when the player is moving on Z at sv_weapon_inaccuracy_maxfallspeed
 		// units per second. If the player is moving slower than this, the
 		// actual shift that is applied is interpolated based on the Z speed.
-		float FallShift = 0.2f;
+		float FallShift = 0.1f;
 
 		// This creates a base, instantaneous level of inaccuracy for the weapon on this
 		// particular frame. A smoothed inaccuracy level is then calculated based on the

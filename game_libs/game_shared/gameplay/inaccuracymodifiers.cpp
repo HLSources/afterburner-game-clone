@@ -14,6 +14,7 @@ namespace
 	cvar_t* CvarDebugRunValue = nullptr;
 	cvar_t* CvarDebugRunSpread = nullptr;
 	cvar_t* CvarDebugCrouchShift = nullptr;
+	cvar_t* CvarDebugAirShift = nullptr;
 	cvar_t* CvarDebugFallShift = nullptr;
 	cvar_t* CvarDebugAttackCoefficient = nullptr;
 	cvar_t* CvarDebugDecayCoefficient = nullptr;
@@ -38,6 +39,7 @@ namespace
 		CvarDebugRunValue = GetCvarByName("sv_weapon_debug_inac_runvalue");
 		CvarDebugRunSpread = GetCvarByName("sv_weapon_debug_inac_runspread");
 		CvarDebugCrouchShift = GetCvarByName("sv_weapon_debug_inac_crouchshift");
+		CvarDebugAirShift = GetCvarByName("sv_weapon_debug_inac_airshift");
 		CvarDebugFallShift = GetCvarByName("sv_weapon_debug_inac_fallshift");
 		CvarDebugAttackCoefficient = GetCvarByName("sv_weapon_debug_inac_attackcoeff");
 		CvarDebugDecayCoefficient = GetCvarByName("sv_weapon_debug_inac_decaycoeff");
@@ -53,6 +55,7 @@ namespace
 			CvarDebugRunValue &&
 			CvarDebugRunSpread &&
 			CvarDebugCrouchShift &&
+			CvarDebugAirShift &&
 			CvarDebugFallShift &&
 			CvarDebugAttackCoefficient &&
 			CvarDebugDecayCoefficient &&
@@ -101,6 +104,7 @@ namespace InaccuracyModifiers
 		params.RunValue = CvarDebugRunValue->value;
 		params.RunSpread = Vector2D(CvarDebugRunSpread->value, CvarDebugRunSpread->value);
 		params.CrouchShift = CvarDebugCrouchShift->value;
+		params.AirShift = CvarDebugAirShift->value;
 		params.FallShift = CvarDebugFallShift->value;
 		params.AttackCoefficient = CvarDebugAttackCoefficient->value;
 		params.AttackCoefficient = CvarDebugDecayCoefficient->value;

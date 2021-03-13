@@ -225,7 +225,8 @@ void CHudCrosshair::UpdateGeometry()
 
 	const UIVec2 screenCentre = m_Params.HalfScreenDimensions();
 	const int innerDisp = m_Params.DisplacementFromScreenCentre(m_Params.Radius());
-	const int outerDisp = m_Params.DisplacementFromScreenCentre(m_Params.Radius() + m_Params.BarLength());
+	const float barLength = Max(m_Params.BarLength(), 0.01f);
+	const int outerDisp = m_Params.DisplacementFromScreenCentre(m_Params.Radius() + barLength);
 
 	for ( uint8_t bar = 0; bar < 4; ++bar )
 	{

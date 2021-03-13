@@ -150,6 +150,11 @@ void CWeaponInaccuracyCalculator::CalculateInstantaneousInaccuracy(const WeaponA
 		spreadValue += params->CrouchShift;
 	}
 
+	if ( !(m_Player->pev->flags & FL_ONGROUND) )
+	{
+		spreadValue += params->AirShift;
+	}
+
 	const float zSpeed = fabs(m_Player->pev->velocity.z);
 	const float maxZSpeed = m_CvarMaxFallSpeed->value;
 	const float shiftFromZSpeed = ExtraMath::RemapSqrt(zSpeed, 0.0f, maxZSpeed, 0, params->FallShift);
