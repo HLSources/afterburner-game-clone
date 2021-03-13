@@ -60,6 +60,16 @@ void CCrosshairParameters::SetBarLength(float length)
 	m_BarLength = length;
 }
 
+bool CCrosshairParameters::ShowCrosshair() const
+{
+	return m_ShowCrosshair;
+}
+
+void CCrosshairParameters::SetShowCrosshair(bool show)
+{
+	m_ShowCrosshair = show;
+}
+
 WeaponId_e CCrosshairParameters::WeaponID() const
 {
 	return m_WeaponID;
@@ -68,6 +78,16 @@ WeaponId_e CCrosshairParameters::WeaponID() const
 void CCrosshairParameters::SetWeaponID(WeaponId_e id)
 {
 	m_WeaponID = id;
+}
+
+int CCrosshairParameters::WeaponAttackMode() const
+{
+	return m_AttackMode;
+}
+
+void CCrosshairParameters::SetWeaponAttackMode(int mode)
+{
+	m_AttackMode = mode;
 }
 
 UIVec2 CCrosshairParameters::HalfScreenDimensions() const

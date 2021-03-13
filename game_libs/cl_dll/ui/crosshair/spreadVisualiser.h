@@ -7,13 +7,13 @@
 class CSpreadVisualiser
 {
 public:
-	void Draw(const CCrosshairParameters& params, size_t attackMode);
+	void Draw(const CCrosshairParameters& params);
 
 private:
 	void ConstructGeometry(const CCrosshairParameters& params);
 	void UpdateInaccuracyMarker(const CCrosshairParameters& params);
-	void UpdateDynamicBars(const CCrosshairParameters& params, size_t attackMode);
-	void DrawInfoText(const CCrosshairParameters& params, size_t attackMode);
+	void UpdateDynamicBars(const CCrosshairParameters& params);
+	void DrawInfoText(const CCrosshairParameters& params);
 
 	CustomGeometry::GeometryItemPtr_t m_Geometry;
 	CustomGeometry::GeometryItemPtr_t m_DynamicBars;

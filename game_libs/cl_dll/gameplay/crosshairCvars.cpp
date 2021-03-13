@@ -166,7 +166,7 @@ namespace CrosshairCvars
 		return
 			CvarsLoaded &&
 			CvarCheats->value != 0.0f &&
-			static_cast<int>(CvarDebugSpread->value) > 0;
+			static_cast<int>(CvarDebugSpread->value) != 0;
 	}
 
 	bool CrosshairOverrideEnabled()

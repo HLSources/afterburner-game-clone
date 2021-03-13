@@ -60,7 +60,7 @@ void CHudCrosshair::Reset()
 
 int CHudCrosshair::Draw(float flTime)
 {
-	if ( gHUD.m_iHideHUDDisplay & (HIDEHUD_WEAPONS | HIDEHUD_ALL) || !m_CrosshairCvar || m_CrosshairCvar->value != 2 )
+	if ( gHUD.m_iHideHUDDisplay & (HIDEHUD_WEAPONS | HIDEHUD_ALL) || !m_CrosshairCvar )
 	{
 		return 1;
 	}
@@ -70,13 +70,17 @@ int CHudCrosshair::Draw(float flTime)
 		return 1;
 	}
 
-	UpdateGeometry();
-	CustomGeometry::RenderAdHocGeometry(m_CrosshairGeometry);
+	// Value of 1 is default crosshair sprite,
+	// value of 2 is dynamic crosshair.
+	if ( m_CrosshairCvar->value == 2 && m_Params.ShowCrosshair() )
+	{
+		UpdateGeometry();
+		CustomGeometry::RenderAdHocGeometry(m_CrosshairGeometry);
+	}
 
 	if ( CrosshairCvars::SpreadVisualisationEnabled() )
 	{
-		int mode = CrosshairCvars::AttackModeForSpreadVisualisation();
-		m_SpreadVisualiser.Draw(m_Params, static_cast<size_t>(mode) - 1);
+		m_SpreadVisualiser.Draw(m_Params);
 	}
 
 	return 1;
@@ -101,12 +105,9 @@ bool CHudCrosshair::UpdateParameters()
 
 	const WeaponAtts::CrosshairParameters* m_CrosshairParams = &ammoAttack->Crosshair;
 
-	if ( !m_CrosshairParams->HasCrosshair )
-	{
-		return false;
-	}
-
+	m_Params.SetShowCrosshair(m_CrosshairParams->HasCrosshair);
 	m_Params.SetWeaponInaccuracy(gHUD.m_flWeaponInaccuracy);
+	m_Params.SetWeaponAttackMode(weapon->iPriAttackMode);
 
 	float radius = ExtraMath::RemapLinear(m_Params.WeaponInaccuracy(),
 										  ammoAttack->Accuracy.RestValue,
@@ -136,11 +137,27 @@ void CHudCrosshair::UpdateParametersFromDebugCvars()
 		return;
 	}
 
+	// Make sure we always show the crosshair if the override cvars are in use.
+	m_Params.SetShowCrosshair(true);
+
 	WEAPON* weapon = gHUD.m_Ammo.GetCurrentWeapon();
 
 	if ( !weapon || weapon->iId < 1 )
 	{
 		return;
+	}
+
+	int mode = CrosshairCvars::AttackModeForSpreadVisualisation();
+
+	if ( mode >= 0 )
+	{
+		// Attack mode was manually specified.
+		m_Params.SetWeaponAttackMode(mode);
+	}
+	else
+	{
+		// Take attack mode from current weapon.
+		m_Params.SetWeaponAttackMode(weapon->iPriAttackMode);
 	}
 
 	const WeaponAtts::WAAmmoBasedAttack* ammoAttack = GetAttackMode(*weapon);
