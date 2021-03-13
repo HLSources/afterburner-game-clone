@@ -44,6 +44,7 @@ namespace CustomGeometry
 			}
 
 			CGeometryRenderer renderer;
+			renderer.VidInit();
 			renderer.Render(*item);
 		}
 	}
