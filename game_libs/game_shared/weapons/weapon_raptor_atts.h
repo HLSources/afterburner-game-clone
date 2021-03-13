@@ -88,7 +88,7 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	accuracy.RestValue = 0.1f;
 	accuracy.RestSpread = Vector2D(0.01f, 0.01f);
 	accuracy.RunValue = 0.5f;
-	accuracy.RunSpread = Vector2D(0.07f, 0.07f);
+	accuracy.RunSpread = Vector2D(0.035f, 0.035f);
 	accuracy.CrouchShift = -0.08f;
 	accuracy.AirShift = 0.2f;
 	accuracy.FallShift = 0.1f;
@@ -110,6 +110,6 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	CrosshairParameters& crosshair = priAttack->Crosshair;
 	crosshair.BarScaleMin = 0.03f;
 	crosshair.BarScaleMax = 0.03f;
-	crosshair.RadiusMin = 0.015f;
-	crosshair.RadiusMax = 0.05f;
+	crosshair.RadiusMin = 0.01f;
+	crosshair.RadiusMax = 0.025f;
 });
