@@ -49,6 +49,7 @@ int CHudCrosshair::VidInit()
 	m_Params.SetScreenDimensions(UIVec2(screenInfo.iWidth, screenInfo.iHeight));
 	m_CrosshairGeometry->SetColour(0xFF0000FF);
 	m_CrosshairGeometry->SetDrawType(CustomGeometry::DrawType::Triangles);
+	InitialiseGeometry();
 
 	return 1;
 }
@@ -217,14 +218,9 @@ void CHudCrosshair::InitialiseGeometry()
 
 void CHudCrosshair::UpdateGeometry()
 {
-	if ( !m_CrosshairGeometry )
+	if ( !m_CrosshairGeometry || m_CrosshairGeometry->GetPointCount() != 4 * 4 )
 	{
 		return;
-	}
-
-	if ( m_CrosshairGeometry->GetPointCount() != 4 * 4 )
-	{
-		InitialiseGeometry();
 	}
 
 	const UIVec2 screenCentre = m_Params.HalfScreenDimensions();

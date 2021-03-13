@@ -13,6 +13,10 @@ namespace WeaponAtts
 		// of a weapon depends on the speed at which the player is moving, as well as
 		// whether the weapon has been fired recently. The inaccuracy value is always
 		// hard clamped within the range [0 1].
+
+		// To modify these settings while debugging/testing, see the list of convars
+		// in game_libs/dlls/gameplay/gameplayCvars.cpp
+
 		// To begin, we define two points in the [0 1] range: the inaccuracy value
 		// at rest, and the inaccuracy value when the player is running at full speed.
 
@@ -89,6 +93,9 @@ namespace WeaponAtts
 	struct CrosshairParameters
 	{
 		bool HasCrosshair = true;
+
+		// To modify these settings while debugging/testing, see the list of convars
+		// in game_libs/cl_dll/gameplay/crosshairCvars.cpp
 
 		// The radius is how far away from the centre of the screen each
 		// crosshair bar is. A value of 1 means the length of the shortest

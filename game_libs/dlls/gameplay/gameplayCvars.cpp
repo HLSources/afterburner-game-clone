@@ -5,6 +5,7 @@
 #include "weapons/weaponregistry.h"
 #include "weapons/genericweapon.h"
 #include "weaponattributes/weaponatts_ammobasedattack.h"
+#include "gameplay/gameplaySystems.h"
 
 namespace GameplayCvars
 {
@@ -86,18 +87,31 @@ namespace GameplayCvars
 			return;
 		}
 
-		if ( g_engfuncs.pfnCmd_Argc() != 2 )
+		const bool isSingleplayer = !GameplaySystems::IsMultiplayer();
+		const int argc = g_engfuncs.pfnCmd_Argc();
+
+		if ( (isSingleplayer && argc != 1 && argc != 2) || (!isSingleplayer && argc != 2) )
 		{
 			ALERT(at_console, "Usage: sv_weapon_debug_inac_populate <#playerId|playerName>\n");
+			ALERT(at_console, "If in single player, the player name can be omitted.\n");
 			return;
 		}
 
-		const char* arg = g_engfuncs.pfnCmd_Argv(1);
-		CBasePlayer* player = MPUtils::CBasePlayerFromStringLookup(arg);
+		CBasePlayer* player = nullptr;
+
+		if ( isSingleplayer && argc < 2 )
+		{
+			// Single player and no player name specified, so infer local player to use.
+			player = MPUtils::CBasePlayerFromIndex(1);
+		}
+		else
+		{
+			player = MPUtils::CBasePlayerFromStringLookup(g_engfuncs.pfnCmd_Argv(1));
+		}
 
 		if ( !player )
 		{
-			ALERT(at_console, "Could not find player '%s'.\n", arg);
+			ALERT(at_console, "Could not find player specified player.\n");
 			return;
 		}
 
