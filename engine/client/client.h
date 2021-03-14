@@ -656,8 +656,6 @@ extern convar_t	cl_allow_download;
 extern convar_t	cl_allow_upload;
 extern convar_t	cl_download_ingame;
 extern convar_t	*cl_nopred;
-extern convar_t	*cl_showfps;
-extern convar_t	*cl_envshot_size;
 extern convar_t	*cl_timeout;
 extern convar_t	*cl_nodelta;
 extern convar_t	*cl_interp;
@@ -721,6 +719,7 @@ void CL_SaveShot_f( void );
 void CL_LevelShot_f( void );
 void CL_SetSky_f( void );
 void SCR_Viewpos_f( void );
+void CL_WavePlayLen_f( void );
 
 //
 // cl_custom.c
@@ -883,6 +882,7 @@ void SCR_MakeLevelShot( void );
 void SCR_NetSpeeds( void );
 void SCR_RSpeeds( void );
 void SCR_DrawFPS( int height );
+void SCR_DrawPos( void );
 
 //
 // cl_netgraph.c

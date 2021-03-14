@@ -16,9 +16,11 @@ GNU General Public License for more details.
 #include "common.h"
 #include "client.h"
 
-#if XASH_LOW_MEMORY
+#if XASH_LOW_MEMORY == 0
 #define NET_TIMINGS			1024
-#else
+#elif XASH_LOW_MEMORY == 1
+#define NET_TIMINGS			256
+#elif XASH_LOW_MEMORY == 2
 #define NET_TIMINGS			64
 #endif
 #define NET_TIMINGS_MASK		(NET_TIMINGS - 1)
@@ -656,7 +658,7 @@ void SCR_DrawNetGraph( void )
 	if( net_graph->value < 3 )
 	{
 		ref.dllFuncs.GL_SetRenderMode( kRenderTransAdd );
-
+		ref.dllFuncs.GL_Bind( XASH_TEXTURE0, R_GetBuiltinTexture( REF_WHITE_TEXTURE ) );
 		ref.dllFuncs.Begin( TRI_QUADS ); // draw all the fills as a long solid sequence of quads for speedup reasons
 
 		// NOTE: fill colors without texture at this point

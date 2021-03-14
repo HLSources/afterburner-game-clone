@@ -3437,7 +3437,8 @@ void GAME_EXPORT NetAPI_SendRequest( int context, int request, int flags, double
 		char	fullquery[512] = "1\xFF" "0.0.0.0:0\0" "\\gamedir\\";
 
 		// make sure what port is specified
-		if( !nr->resp.remote_address.port ) nr->resp.remote_address.port = MSG_BigShort( PORT_MASTER );
+		if( !nr->resp.remote_address.port )
+			nr->resp.remote_address.port = MSG_BigShort( PORT_MASTER );
 
 		// grab the list from the master server
 		Q_strcpy( &fullquery[22], GI->gamefolder );
@@ -3912,9 +3913,9 @@ static cl_enginefunc_t gEngfuncs =
 	LocalPlayerInfo_ValueForKey,
 	pfnVGUI2DrawCharacter,
 	pfnVGUI2DrawCharacterAdditive,
-	(void*)Sound_GetApproxWavePlayLen,
+	Sound_GetApproxWavePlayLen,
 	GetCareerGameInterface,
-	(void*)Cvar_Set,
+	Cvar_Set,
 	pfnIsCareerMatch,
 	pfnPlaySoundVoiceByName,
 	pfnMP3_InitStream,
@@ -3984,7 +3985,7 @@ qboolean CL_LoadProgs( const char *name )
 
 	// a1ba: we need to check if client.dll has direct dependency on SDL2
 	// and if so, disable relative mouse mode
-#if defined(XASH_WIN32) && !defined(AFTERBURNER_ENGINE)
+#if XASH_WIN32 && !XASH_64BIT
 	if( ( clgame.client_dll_uses_sdl = COM_CheckLibraryDirectDependency( name, OS_LIB_PREFIX "SDL2." OS_LIB_EXT, false ) ) )
 	{
 		Con_Printf( S_NOTE "%s uses SDL2 for mouse input\n", name );
