@@ -220,6 +220,68 @@ def configure(conf):
 
 	cflags, linkflags = conf.get_optimization_flags()
 
+	# Afterburner edits: we want to be more strict with the compiler flags!
+	# To avoid having to fork Waifulib in addition to everything else we've
+	# already had to fork, just edit the cflags and linkflags that get passed back.
+	ab_cflags = []
+	ab_linkflags = []
+
+	if conf.env.COMPILER_CC == 'msvc':
+		ab_cflags += \
+		[
+			"/WX",	# Treat all warnings as errors
+			"/EHsc"	# Specify exception unwind semantics
+		]
+
+		ab_linkflags += \
+		[
+			"/WX"	# Treat all warnings as errors
+		]
+
+		if conf.options.BUILD_TYPE == "debug":
+			ab_cflags += \
+			[
+				"/D_DEBUG",	# Include debugging define
+				"/MTd"		# Use debugging runtime
+			]
+
+			# Because we're using the debug runtime, remove the non-debug one
+			cflags.remove("/MT")
+		else:
+			ab_cflags += \
+			[
+				"/DNDEBUG"	# Include NDEBUG define
+			]
+	else:
+		ab_cflags += \
+		[
+			"-Werror",					# Treat all warnings as errors
+			"-Wno-format-truncation"	# Remove format truncation warnings, there are just too many of them
+		]
+
+		if conf.env.COMPILER_CC == "gcc":
+			ab_cflags += \
+			[
+				"-fdiagnostics-color=always"	# Use helpful diagnostic colours
+			]
+
+		if conf.options.BUILD_TYPE == "debug":
+			ab_cflags += \
+			[
+				"-D_DEBUG"	# Include debugging define
+			]
+		else:
+			ab_cflags += \
+			[
+				"-DNDEBUG"	# Include NDEBUG define
+			]
+
+	conf.msg("Afterburner extra cflags", str(ab_cflags))
+	conf.msg("Afterburner extra linkflags", str(ab_linkflags))
+
+	cflags += ab_cflags
+	linkflags += ab_linkflags
+
 	# And here C++ flags starts to be treated separately
 	cxxflags = list(cflags)
 	if conf.env.COMPILER_CC != 'msvc':
