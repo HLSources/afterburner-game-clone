@@ -1775,7 +1775,7 @@ void CL_CheckForResend( void )
 	// only retry so many times before failure.
 	if( cls.connect_retry >= CL_CONNECTION_RETRIES )
 	{
-		Con_DPrintf( S_ERROR "CL_CheckForResend: couldn't connected\n" );
+		Con_DPrintf( S_ERROR "CL_CheckForResend: couldn't connect\n" );
 		CL_Disconnect();
 		return;
 	}
@@ -1785,7 +1785,7 @@ void CL_CheckForResend( void )
 	if( cls.connect_retry == CL_TEST_RETRIES_NORESPONCE )
 	{
 		// too many fails use default connection method
-		Con_Printf( "hi-speed connection is failed, use default method\n" );
+		Con_Printf( "hi-speed connection failed, using default method\n" );
 		Netchan_OutOfBandPrint( NS_CLIENT, adr, "getchallenge\n" );
 		Cvar_SetValue( "cl_dlmax", FRAGMENT_MIN_SIZE );
 		cls.connect_time = host.realtime;
