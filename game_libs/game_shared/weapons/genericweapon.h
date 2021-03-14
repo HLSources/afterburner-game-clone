@@ -83,21 +83,6 @@ protected:
 		return attackMode;
 	}
 
-	// Specialisation for base class, which does not need a dynamic_cast.
-	template<>
-	const WeaponAtts::WABaseAttack* GetAttackModeFromAttributes<WeaponAtts::WABaseAttack>(uint32_t index) const
-	{
-		const WeaponAtts::WACollection& atts = WeaponAttributes();
-		ASSERT(index < atts.AttackModes.Count());
-
-		if ( index >= atts.AttackModes.Count() )
-		{
-			return nullptr;
-		}
-
-		return atts.AttackModes[index].get();
-	}
-
 	virtual const char* PickupSound() const override;
 
 	// Overridable functions for attack modes:
@@ -123,22 +108,10 @@ protected:
 		return dynamic_cast<const T*>(m_pPrimaryAttackMode);
 	}
 
-	template<>
-	inline const WeaponAtts::WABaseAttack* GetPrimaryAttackMode() const
-	{
-		return m_pPrimaryAttackMode;
-	}
-
 	template<typename T = WeaponAtts::WABaseAttack>
 	inline const T* GetSecondaryAttackMode() const
 	{
 		return dynamic_cast<const T*>(m_pSecondaryAttackMode);
-	}
-
-	template<>
-	inline const WeaponAtts::WABaseAttack* GetSecondaryAttackMode() const
-	{
-		return m_pSecondaryAttackMode;
 	}
 
 	void SetPrimaryAttackMode(const WeaponAtts::WABaseAttack* mode);
@@ -243,6 +216,36 @@ private:
 	float m_flInaccuracy = 0.0f;
 	byte m_iLastPriAttackMode = 0;
 };
+
+// Function specialisations which must be outside the class
+// to be fully standards-compliant:
+
+// Specialisation for base class, which does not need a dynamic_cast.
+template<>
+inline const WeaponAtts::WABaseAttack* CGenericWeapon::GetAttackModeFromAttributes<WeaponAtts::WABaseAttack>(uint32_t index) const
+{
+	const WeaponAtts::WACollection& atts = WeaponAttributes();
+	ASSERT(index < atts.AttackModes.Count());
+
+	if ( index >= atts.AttackModes.Count() )
+	{
+		return nullptr;
+	}
+
+	return atts.AttackModes[index].get();
+}
+
+template<>
+inline const WeaponAtts::WABaseAttack* CGenericWeapon::GetPrimaryAttackMode() const
+{
+	return m_pPrimaryAttackMode;
+}
+
+template<>
+inline const WeaponAtts::WABaseAttack* CGenericWeapon::GetSecondaryAttackMode() const
+{
+	return m_pSecondaryAttackMode;
+}
 
 class CGenericAmmo : public CBasePlayerAmmo
 {

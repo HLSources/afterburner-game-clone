@@ -121,6 +121,8 @@ def options(opt):
 def configure(conf):
 	conf.env.GAMEDIR = "afterburner"
 	conf.env.append_unique("DEFINES", "PLAYER_MODEL_PATH=\"models/player/fallback/fallback.mdl\"")
+	conf.env.append_unique("DEFINES", "DEFAULT_GAME_DIR=\"" + conf.env.GAMEDIR + "\"")
+
 	conf.load('fwgslib reconfigure compiler_optimizations')
 	if conf.options.IGNORE_PROJECTS:
 		conf.env.IGNORE_PROJECTS = conf.options.IGNORE_PROJECTS.split(',')
@@ -256,7 +258,8 @@ def configure(conf):
 		ab_cflags += \
 		[
 			"-Werror",					# Treat all warnings as errors
-			"-Wno-format-truncation"	# Remove format truncation warnings, there are just too many of them
+			"-Wno-format-truncation",	# Remove format truncation warnings, there are just too many of them
+			"-Wno-stringop-overflow"	# Removes warnings regarding unistd read function (no idea what they are or how to fix them)
 		]
 
 		if conf.env.COMPILER_CC == "gcc":

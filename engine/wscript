@@ -186,7 +186,7 @@ def build(bld):
 		features = ['c', 'cxxshlib' if is_cxx_link else 'cshlib']
 
 	bld(source   = source,
-		target   = 'xash',
+		target   = 'xash' if not bld.env.DEDICATED else "bond",
 		features = features,
 		includes = includes,
 		use      = libs,

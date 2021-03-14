@@ -297,7 +297,7 @@ const WeaponAtts::WAAmmoBasedAttack* CHudCrosshair::GetAttackMode(const WEAPON& 
 
 	if ( !atts || weapon.iPriAttackMode >= atts->AttackModes.Count() )
 	{
-		return false;
+		return nullptr;
 	}
 
 	const WeaponAtts::WABaseAttack* baseAttack = atts->AttackModes[weapon.iPriAttackMode].get();

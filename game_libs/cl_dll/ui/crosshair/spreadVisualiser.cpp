@@ -153,7 +153,7 @@ void CSpreadVisualiser::DrawInfoText(const CCrosshairParameters& params)
 
 	CUtlString text;
 
-	text.AppendFormat("Weapon: %s (ID %u)\n", weaponName, params.WeaponID());
+	text.AppendFormat("Weapon: %s (ID %u)\n", weaponName, static_cast<uint32_t>(params.WeaponID()));
 	text.AppendFormat("Current inaccuracy: %f\n", params.WeaponInaccuracy());
 	text.AppendFormat("Attributes for attack mode %u (source: %s):\n", params.WeaponAttackMode(), usingDebugParams ? "debug" : "weapon");
 
