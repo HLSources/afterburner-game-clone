@@ -81,10 +81,10 @@ typedef struct wadtype_s
 struct file_s
 {
 	int		handle;			// file descriptor
+	int		ungetc;			// single stored character from ungetc, cleared to EOF when read
 	fs_offset_t		real_length;		// uncompressed file size (for files opened in "read" mode)
 	fs_offset_t		position;			// current position in the file
 	fs_offset_t		offset;			// offset into the package (0 if external file)
-	int		ungetc;			// single stored character from ungetc, cleared to EOF when read
 	time_t		filetime;			// pak, wad or real filetime
 						// contents buffer
 	fs_offset_t		buff_ind, buff_len;		// buffer current index and length
@@ -100,8 +100,8 @@ struct wfile_s
 {
 	string		filename;
 	int		infotableofs;
-	byte		*mempool;			// W_ReadLump temp buffers
 	int		numlumps;
+	byte		*mempool;			// W_ReadLump temp buffers
 	file_t		*handle;
 	dlumpinfo_t	*lumps;
 	time_t		filetime;
@@ -370,7 +370,7 @@ static void listdirectory( stringlist_t *list, const char *path, qboolean lowerc
 #if XASH_WIN32
 	char pattern[4096];
 	struct _finddata_t	n_file;
-	int		hFile;
+	intptr_t		hFile;
 #else
 	DIR *dir;
 	struct dirent *entry;
@@ -810,6 +810,22 @@ pack_t *FS_LoadPackPAK( const char *packfile, int *error )
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-result"
 #endif
+
+/*
+============
+FS_SortZip
+============
+*/
+static int FS_SortZip( const void *a, const void *b )
+{
+	return Q_stricmp( ( ( zipfile_t* )a )->name, ( ( zipfile_t* )b )->name );
+}
+
+/*
+============
+FS_LoadZip
+============
+*/
 static zip_t *FS_LoadZip( const char *zipfile, int *error )
 {
 	int		  numpackfiles = 0, i;
@@ -968,6 +984,8 @@ static zip_t *FS_LoadZip( const char *zipfile, int *error )
 	zip->filetime = FS_SysFileTime( zipfile );
 	zip->numfiles = numpackfiles;
 	zip->files = info;
+
+	qsort( zip->files, zip->numfiles, sizeof( zipfile_t ), FS_SortZip );
 
 #ifdef XASH_REDUCE_FD
 	// will reopen when needed
@@ -1972,7 +1990,7 @@ static qboolean FS_ParseLiblistGam( const char *filename, const char *gamedir, g
 	char	*afile;
 
 	if( !GameInfo ) return false;
-	afile = (char *)FS_LoadFile( filename, NULL, false );
+	afile = (char *)FS_LoadDirectFile( filename, NULL );
 	if( !afile ) return false;
 
 	FS_InitGameInfo( GameInfo, gamedir );
@@ -2073,6 +2091,8 @@ static qboolean FS_ParseGameInfo( const char *gamedir, gameinfo_t *GameInfo )
 		string	filepath_ro, liblist_ro;
 		fs_offset_t roLibListTime, roGameInfoTime, rwGameInfoTime;
 
+		FS_AllowDirectPaths( true );
+
 		Q_snprintf( filepath_ro, sizeof( filepath_ro ), "%s/%s/gameinfo.txt", host.rodir, gamedir );
 		Q_snprintf( liblist_ro, sizeof( liblist_ro ), "%s/%s/liblist.gam", host.rodir, gamedir );
 
@@ -2100,6 +2120,8 @@ static qboolean FS_ParseGameInfo( const char *gamedir, gameinfo_t *GameInfo )
 				Mem_Free( afile_ro );
 			}
 		}
+
+		FS_AllowDirectPaths( false );
 	}
 
 	// if user change liblist.gam update the gameinfo.txt
@@ -2673,15 +2695,33 @@ static searchpath_t *FS_FindFile( const char *name, int *index, qboolean gamedir
 		}
 		else if( search->zip )
 		{
-			int i;
-			for( i = 0; search->zip->numfiles > i; i++)
+			int     left, right, middle;
+			zip_t  *zip;
+
+			zip = search->zip;
+
+			// look for the file (binary search)
+			left = 0;
+			right = zip->numfiles - 1;
+
+			while( left <= right )
 			{
-				if( !Q_stricmp( search->zip->files[i].name, name ) )
+				int     diff;
+
+				middle = (left + right) / 2;
+				diff = Q_stricmp( zip->files[middle].name, name );
+
+				// Found it
+				if( !diff )
 				{
-					if( index )
-						*index = i;
+					if( index ) *index = middle;
 					return search;
 				}
+
+				// if we're too far in the list
+				if( diff > 0 )
+					right = middle - 1;
+				else left = middle + 1;
 			}
 		}
 		else if (search->texDir)
