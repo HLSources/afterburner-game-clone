@@ -55,10 +55,12 @@ jobs:
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 https://git.io/JvXDl
 
+    # Note that -8 is removed from this call for Afterburner.
+    # TODO: Proper 64-bit support!
     - run: |
        sudo apt update
        sudo apt install build-essential python3 libsdl2-dev libfontconfig-dev libfreetype6-dev
-       python3 ./waf configure -T release -8
+       python3 ./waf configure -T release
        python3 ./waf build
 
     - name: Perform CodeQL Analysis
