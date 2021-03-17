@@ -57,9 +57,9 @@ jobs:
 
     - run: |
        sudo apt update
-       sudo apt install build-essential python libsdl2-dev libfontconfig-dev libfreetype6-dev
-       ./waf configure -T release -8
-       ./waf build
+       sudo apt install build-essential python3 libsdl2-dev libfontconfig-dev libfreetype6-dev
+       python3 ./waf configure -T release -8
+       python3 ./waf build
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
