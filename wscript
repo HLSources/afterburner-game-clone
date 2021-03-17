@@ -3,8 +3,16 @@
 # a1batross, mittorn, 2018
 
 from __future__ import print_function
-from waflib import Logs, Context, Configure
 import sys
+
+if not sys.version_info.major >= 3:
+	print("Python 3 is required, but Python " +
+		  str(sys.version_info.major) + "." +
+		  str(sys.version_info.minor) + " was used.",
+		  file=sys.stderr)
+	sys.exit(1)
+
+from waflib import Logs, Context, Configure
 import os
 
 VERSION = '0.99'
