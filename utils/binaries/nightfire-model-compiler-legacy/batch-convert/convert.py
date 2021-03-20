@@ -14,6 +14,8 @@ MDLCONVERT_PATH = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "mdlconvert.exe
 STUDIOMDL_PATH = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "studiomdl_new.exe"))
 BLACK_BMP_PATH = os.path.abspath(os.path.join(SCRIPT_DIR, "black.bmp"))
 
+Indent = 0
+
 # REMOVE ME
 Processed = False
 
@@ -98,7 +100,7 @@ def fixSmdTextures(smdPath:str):
 		if len(segments) != 2 or segments[1] != "bmp":
 			continue
 
-		textureName = f"{segments[0]}.png"
+		textureName = line
 
 		if textureName not in texturesToCopy:
 			print("Texture referenced:", textureName)
@@ -107,10 +109,11 @@ def fixSmdTextures(smdPath:str):
 			texturesToCopy[textureName] = True
 
 		# Rename each bmp file to an appropriate png, namespaced in an "mdl" folder
-		lines[index] = f"{TEXTURE_DIR_NAME}\\{textureName}"
+		lines[index] = f"{TEXTURE_DIR_NAME}/{textureName}"
 
 	with open(smdPath, "w") as outFile:
-		outFile.write("\n".join(lines))
+		# The final \n is required or studiomdl freaks out
+		outFile.write("\n".join(lines) + "\n")
 
 	# Return all the textures we need to copy.
 	return texturesToCopy
@@ -140,16 +143,31 @@ def createFakeTextures(textures:list, outputDir:str):
 		print("Creating fake texture:", relPath(dest))
 		shutil.copy2(BLACK_BMP_PATH, dest)
 
+def compileQc(qcPath:str):
+	baseName = os.path.basename(qcPath)
+	workingDir = os.path.dirname(qcPath)
+	currentDir = os.curdir
+
+	os.chdir(workingDir)
+
+	args = \
+	[
+		STUDIOMDL_PATH,
+		baseName
+	]
+
+	runCommand(args)
+
+	os.chdir(currentDir)
+
 def processInputFile(filePath):
 	global Processed
-
-	print("Processing file:", relPath(filePath))
 
 	# Make sure the scratch dir exists and is empty.
 	cleanScratchDir()
 
 	# Dump the selected model to the scratch dir.
-	dumpToQc(filePath, SCRATCH_DIR)
+	qcPath = dumpToQc(filePath, SCRATCH_DIR)
 
 	# Fix all texture paths in all SMDs.
 	textures = fixSmdFiles(SCRATCH_DIR)
@@ -157,10 +175,14 @@ def processInputFile(filePath):
 	# Create fake textures somewhere that StudioMDL can see them.
 	createFakeTextures(textures, SCRATCH_TEXTURE_DIR)
 
+	# Compile the QC file.
+	compileQc(qcPath)
+
 	Processed = True
 
 def iterateOverInputFiles(rootDir:str):
 	global Processed
+	global Indent
 
 	filesProcessed = 0
 	totalFiles = 0
@@ -181,12 +203,16 @@ def iterateOverInputFiles(rootDir:str):
 			continue
 
 		try:
+			Indent = 1
+			print("Processing file:", relPath(fullPath))
 			processInputFile(fullPath)
 			filesProcessed += 1
 		except Exception as ex:
 			print(str(ex), file=sys.stderr)
 			print("Skipping file", relPath(fullPath), file=sys.stderr)
+			Processed = True
 		finally:
+			Indent = 0
 			totalFiles += 1
 			if Processed:
 				return (filesProcessed, totalFiles)
