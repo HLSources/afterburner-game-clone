@@ -24,7 +24,6 @@ GNU General Public License for more details.
 #include "client.h"
 #include "server.h"			// LUMP_ error codes
 #include "ref_common.h"
-#include "stb_image.h"
 #include "textureproperties.h"
 
 typedef struct wadlist_s
@@ -2261,8 +2260,6 @@ static qboolean LoadPNGTextureData(const dpngtexturepath_t* in, texture_t** out,
 
 	do
 	{
-		int width = 0;
-		int height = 0;
 		fs_offset_t pngDataSize = 0;
 		int textureNum = 0;
 
@@ -2271,15 +2268,6 @@ static qboolean LoadPNGTextureData(const dpngtexturepath_t* in, texture_t** out,
 		if ( !pngData || pngDataSize < 1 )
 		{
 			Con_Printf(S_ERROR "LoadPngTexture: Map '%s' texture '%s' not found.\n", loadmodel->name, texName);
-			break;
-		}
-
-		// Not sure if this is the best way to do this?
-		// Really these kinds of implementation details should be handled by the FS loader,
-		// but it seems that there's no good way of getting this information right now.
-		if ( !stbi_info_from_memory(pngData, pngDataSize, &width, &height, NULL) )
-		{
-			Con_Printf(S_ERROR "LoadPngTexture: Map '%s' texture '%s' failed to retrieve dimensions.\n", loadmodel->name, texName);
 			break;
 		}
 
@@ -2302,8 +2290,8 @@ static qboolean LoadPNGTextureData(const dpngtexturepath_t* in, texture_t** out,
 		if( !Host_IsDedicated() )
 		{
 			(*out)->gl_texturenum = textureNum;
-			(*out)->width = width;
-			(*out)->height = height;
+			(*out)->width = ref.dllFuncs.RefGetParm(PARM_TEX_SRC_WIDTH, textureNum);
+			(*out)->height = ref.dllFuncs.RefGetParm(PARM_TEX_SRC_HEIGHT, textureNum);
 		}
 #endif // XASH_DEDICATED
 
