@@ -6,6 +6,7 @@ import struct
 import threading
 
 from concurrent.futures.thread import ThreadPoolExecutor
+from PIL import Image
 
 NUM_THREADS = 1
 
@@ -18,7 +19,6 @@ TEXTURE_DIR_NAME = "mdl"
 
 MDLCONVERT_PATH = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "mdlconvert.exe"))
 STUDIOMDL_PATH = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "studiomdl_new.exe"))
-BLACK_BMP_PATH = os.path.abspath(os.path.join(SCRIPT_DIR, "black.bmp"))
 
 MDL_HEADER_FORMAT = "II64sIfffffffffffffffIIIIIIIIIIIIIIIIIIIIIIIIIII"
 MDL_TEXTURE_FORMAT = "64sIIII"
@@ -148,9 +148,23 @@ class FileProcessor:
 			os.makedirs(outputDir, exist_ok=True)
 
 		for texture in textures:
+			textureFileNameOnDisk = TextureLookup[os.path.splitext(texture)[0].lower() + ".png"]
+			textureFileNameOnDisk = os.path.join(INPUT_TEXTURE_DIR, textureFileNameOnDisk)
+
+			# We must create fake textures of the appropriate size, otherwise StudioMDL
+			# seems to get the UVs wrong...
+			width = 0
+			height = 0
+
+			with Image.open(textureFileNameOnDisk) as origImage:
+				width = origImage.width
+				height = origImage.height
+
 			dest = os.path.join(outputDir, texture)
-			self.logMsg("Creating fake texture:", relPath(dest), file="CreateFakeTextures")
-			shutil.copy2(BLACK_BMP_PATH, dest)
+			self.logMsg("Creating fake texture:", relPath(dest), f"({width}x{height})", file="CreateFakeTextures")
+
+			with Image.new("P", (width, height)) as dummyImage:
+				dummyImage.save(dest)
 
 	def compileQc(self, qcPath:str):
 		baseName = os.path.basename(qcPath)
@@ -233,7 +247,7 @@ class FileProcessor:
 
 	def logMsg(self, *args, file=None):
 		if isinstance(file, str):
-			with open(file + ".log", "a+") as outFile:
+			with open(os.path.join(self.fileScratchDir, file + ".log"), "a+") as outFile:
 				print(*args, file=outFile)
 		elif file is not None:
 			print(*args, file=file)
@@ -251,10 +265,6 @@ def validateDirs():
 
 	if not os.path.isfile(STUDIOMDL_PATH):
 		print("StudioMDL compiler", STUDIOMDL_PATH, "does not exist.", file=sys.stderr)
-		sys.exit(1)
-
-	if not os.path.isfile(BLACK_BMP_PATH):
-		print("Black.bmp file", BLACK_BMP_PATH, "does not exist.", file=sys.stderr)
 		sys.exit(1)
 
 	if not os.path.isdir(OUTPUT_DIR):
