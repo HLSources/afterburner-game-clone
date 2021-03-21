@@ -6,6 +6,7 @@ import struct
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(sys.argv[0]))
 INPUT_DIR = os.path.join(SCRIPT_DIR, "v14")
+INPUT_TEXTURE_DIR = os.path.join(INPUT_DIR, "textures")
 OUTPUT_DIR = os.path.join(SCRIPT_DIR, "v10")
 SCRATCH_DIR = os.path.join(SCRIPT_DIR, "scratch")
 TEXTURE_DIR_NAME = "mdl"
@@ -20,7 +21,8 @@ MDL_TEXTURE_FORMAT = "64sIIII"
 MDL_TEXTURE_STRUCT_SIZE = struct.calcsize(MDL_TEXTURE_FORMAT)
 STUDIO_NO_EMBEDDED_TEXTURES = 0x800
 
-Indent = 0
+# Map from all-lowercase texture names to actual names
+TextureLookup = {}
 
 # REMOVE ME
 Processed = False
@@ -47,6 +49,24 @@ def validateDirs():
 
 	if not os.path.isdir(OUTPUT_DIR):
 		os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+def buildTextureLookup(textureDir:str):
+	global TextureLookup
+
+	TextureLookup = {}
+
+	if not os.path.isdir(textureDir):
+		print("Texture directory", textureDir, "was not valid when building texture lookup.", file=sys.stderr)
+		sys.exit(1)
+
+	print("Building texture lookup table")
+
+	for texFile in os.listdir(textureDir):
+		if texFile.lower() in TextureLookup:
+			print("Duplicate texture", texFile, "with different filename case found in textures directory!", file=sys.stderr)
+			sys.exit(1)
+
+		TextureLookup[texFile.lower()] = texFile
 
 def cleanScratchDir():
 	if os.path.isfile(SCRATCH_DIR):
@@ -82,6 +102,8 @@ def dumpToQc(inputFile:str, outputDir:str):
 	return outputPath
 
 def fixSmdTextures(smdPath:str):
+	global TextureLookup
+
 	print("Fixing referenced textures in SMD:", relPath(smdPath))
 
 	texturesToCopy = {}
@@ -107,6 +129,9 @@ def fixSmdTextures(smdPath:str):
 			continue
 
 		textureName = line
+
+		if (segments[0].lower() + ".png") not in TextureLookup:
+			raise RuntimeError(f"{relPath(smdPath)} contains unknown texture {textureName}")
 
 		if textureName not in texturesToCopy:
 			print("Texture referenced:", textureName)
@@ -141,6 +166,8 @@ def fixSmdFiles(dirPath:str):
 	return list(texturesToCopy.keys())
 
 def createFakeTextures(textures:list, outputDir:str):
+	global TextureLookup
+
 	if not os.path.isdir(outputDir):
 		os.makedirs(outputDir, exist_ok=True)
 
@@ -167,6 +194,8 @@ def compileQc(qcPath:str):
 	os.chdir(currentDir)
 
 def patchMdlTexturePaths(mdlPath:str):
+	global TextureLookup
+
 	print("Patching textures in:", relPath(mdlPath))
 
 	mdlData = None
@@ -188,12 +217,18 @@ def patchMdlTexturePaths(mdlPath:str):
 		fileOffset = texturesOffset + (textureIndex * MDL_TEXTURE_STRUCT_SIZE)
 		textureData = struct.unpack_from(MDL_TEXTURE_FORMAT, mdlData, fileOffset)
 
-		# Swap out .bmp for .png
-		textureName = os.path.splitext(textureData[0].decode("utf-8"))[0] + ".png"
+		textureName = textureData[0].decode("utf-8")
+		textureDirName = os.path.dirname(textureName)
+		textureBaseName = os.path.basename(textureName)
+		textureNameNoExt = os.path.splitext(textureBaseName)[0]
 
-		print("Patching texture name:", textureName)
-		textureNameBytes = bytes(textureName, "utf-8")
-		struct.pack_into(MDL_TEXTURE_FORMAT, mdlData, fileOffset, textureNameBytes, *(textureData[1:]))
+		# Get the correctly capitalised name of the file on disk, with .png extension
+		textureFileNameOnDisk = TextureLookup[textureNameNoExt.lower() + ".png"]
+
+		newTextureName = os.path.join(textureDirName, textureFileNameOnDisk).replace(os.path.sep, "/")
+
+		print("Patching", textureName, "->", newTextureName)
+		struct.pack_into(MDL_TEXTURE_FORMAT, mdlData, fileOffset, bytes(newTextureName, "utf-8"), *(textureData[1:]))
 
 	with open(mdlPath, "wb") as outFile:
 		outFile.write(mdlData)
@@ -273,6 +308,8 @@ def iterateOverInputFiles(rootDir:str):
 
 def main():
 	validateDirs()
+	buildTextureLookup(INPUT_TEXTURE_DIR)
+
 	(processed, total) = iterateOverInputFiles(INPUT_DIR)
 
 	print("Finished processing", processed, "of", total, "files from", INPUT_DIR)
