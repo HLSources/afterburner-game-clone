@@ -2,6 +2,7 @@ import sys
 import os
 import subprocess
 import shutil
+import struct
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(sys.argv[0]))
 INPUT_DIR = os.path.join(SCRIPT_DIR, "v14")
@@ -13,6 +14,11 @@ SCRATCH_TEXTURE_DIR = os.path.join(SCRATCH_DIR, TEXTURE_DIR_NAME)
 MDLCONVERT_PATH = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "mdlconvert.exe"))
 STUDIOMDL_PATH = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "studiomdl_new.exe"))
 BLACK_BMP_PATH = os.path.abspath(os.path.join(SCRIPT_DIR, "black.bmp"))
+
+MDL_HEADER_FORMAT = "II64sIfffffffffffffffIIIIIIIIIIIIIIIIIIIIIIIIIII"
+MDL_TEXTURE_FORMAT = "64sIIII"
+MDL_TEXTURE_STRUCT_SIZE = struct.calcsize(MDL_TEXTURE_FORMAT)
+STUDIO_NO_EMBEDDED_TEXTURES = 0x800
 
 Indent = 0
 
@@ -160,7 +166,45 @@ def compileQc(qcPath:str):
 
 	os.chdir(currentDir)
 
-def processInputFile(filePath):
+def patchMdlTexturePaths(mdlPath:str):
+	print("Patching textures in:", relPath(mdlPath))
+
+	mdlData = None
+
+	with open(mdlPath, "rb") as inFile:
+		mdlData = bytearray(inFile.read())
+
+	headerData = struct.unpack_from(MDL_HEADER_FORMAT, mdlData)
+	numTextures = headerData[30]
+	texturesOffset = headerData[31]
+
+	print(relPath(mdlPath), "has", numTextures, "textures beginning at offset", texturesOffset)
+
+	print("Adding NO_EMBEDDED_TEXTURES flag to header")
+	flags = headerData[19] | STUDIO_NO_EMBEDDED_TEXTURES
+	struct.pack_into(MDL_HEADER_FORMAT, mdlData, 0, *(headerData[:19]), flags, *(headerData[20:]))
+
+	for textureIndex in range(0, numTextures):
+		fileOffset = texturesOffset + (textureIndex * MDL_TEXTURE_STRUCT_SIZE)
+		textureData = struct.unpack_from(MDL_TEXTURE_FORMAT, mdlData, fileOffset)
+
+		# Swap out .bmp for .png
+		textureName = os.path.splitext(textureData[0].decode("utf-8"))[0] + ".png"
+
+		print("Patching texture name:", textureName)
+		textureNameBytes = bytes(textureName, "utf-8")
+		struct.pack_into(MDL_TEXTURE_FORMAT, mdlData, fileOffset, textureNameBytes, *(textureData[1:]))
+
+	with open(mdlPath, "wb") as outFile:
+		outFile.write(mdlData)
+
+	print(relPath(mdlPath), "patched.")
+
+def copyPatchedMdl(source:str, dest:str):
+	print("Copying", relPath(source), "to", relPath(dest))
+	shutil.copy2(source, dest)
+
+def processInputFile(filePath:str):
 	global Processed
 
 	# Make sure the scratch dir exists and is empty.
@@ -177,6 +221,14 @@ def processInputFile(filePath):
 
 	# Compile the QC file.
 	compileQc(qcPath)
+
+	# Patch the texture paths so that they point to PNGs.
+	mdlPath = os.path.splitext(qcPath)[0] + ".mdl"
+	mdlName = os.path.basename(mdlPath)
+	patchMdlTexturePaths(mdlPath)
+
+	# Copy the patched model to the target directory.
+	copyPatchedMdl(mdlPath, os.path.join(OUTPUT_DIR, mdlName))
 
 	Processed = True
 
@@ -209,7 +261,7 @@ def iterateOverInputFiles(rootDir:str):
 			filesProcessed += 1
 		except Exception as ex:
 			print(str(ex), file=sys.stderr)
-			print("Skipping file", relPath(fullPath), file=sys.stderr)
+			print("*** An error occurred, skipping file", relPath(fullPath), file=sys.stderr)
 			Processed = True
 		finally:
 			Indent = 0
