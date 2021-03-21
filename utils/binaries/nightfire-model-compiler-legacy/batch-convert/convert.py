@@ -24,9 +24,6 @@ STUDIO_NO_EMBEDDED_TEXTURES = 0x800
 # Map from all-lowercase texture names to actual names
 TextureLookup = {}
 
-# REMOVE ME
-Processed = False
-
 def relPath(path:str):
 	return os.path.relpath(path, SCRIPT_DIR)
 
@@ -217,7 +214,7 @@ def patchMdlTexturePaths(mdlPath:str):
 		fileOffset = texturesOffset + (textureIndex * MDL_TEXTURE_STRUCT_SIZE)
 		textureData = struct.unpack_from(MDL_TEXTURE_FORMAT, mdlData, fileOffset)
 
-		textureName = textureData[0].decode("utf-8")
+		textureName = textureData[0].decode("utf-8").rstrip("\x00")
 		textureDirName = os.path.dirname(textureName)
 		textureBaseName = os.path.basename(textureName)
 		textureNameNoExt = os.path.splitext(textureBaseName)[0]
@@ -225,6 +222,7 @@ def patchMdlTexturePaths(mdlPath:str):
 		# Get the correctly capitalised name of the file on disk, with .png extension
 		textureFileNameOnDisk = TextureLookup[textureNameNoExt.lower() + ".png"]
 
+		# Use forward slashes for MDL texture paths
 		newTextureName = os.path.join(textureDirName, textureFileNameOnDisk).replace(os.path.sep, "/")
 
 		print("Patching", textureName, "->", newTextureName)
@@ -240,8 +238,6 @@ def copyPatchedMdl(source:str, dest:str):
 	shutil.copy2(source, dest)
 
 def processInputFile(filePath:str):
-	global Processed
-
 	# Make sure the scratch dir exists and is empty.
 	cleanScratchDir()
 
@@ -259,29 +255,20 @@ def processInputFile(filePath:str):
 
 	# Patch the texture paths so that they point to PNGs.
 	mdlPath = os.path.splitext(qcPath)[0] + ".mdl"
-	mdlName = os.path.basename(mdlPath)
 	patchMdlTexturePaths(mdlPath)
 
 	# Copy the patched model to the target directory.
-	copyPatchedMdl(mdlPath, os.path.join(OUTPUT_DIR, mdlName))
+	inputMdlRelPath = os.path.relpath(filePath, INPUT_DIR)
+	copyPatchedMdl(mdlPath, os.path.join(OUTPUT_DIR, inputMdlRelPath))
 
-	Processed = True
-
-def iterateOverInputFiles(rootDir:str):
-	global Processed
-	global Indent
-
-	filesProcessed = 0
-	totalFiles = 0
+def getInputFiles(rootDir:str):
+	filesFound = []
 
 	for fileEntry in os.listdir(rootDir):
 		fullPath = os.path.abspath(os.path.join(rootDir, fileEntry))
 
 		if os.path.isdir(fullPath):
-			(nestedProcessed, nestedTotal) = iterateOverInputFiles(fullPath)
-
-			filesProcessed += nestedProcessed
-			totalFiles += nestedTotal
+			filesFound += getInputFiles(fullPath)
 			continue
 
 		fileExt = os.path.splitext(fileEntry)[1].lower()
@@ -289,30 +276,33 @@ def iterateOverInputFiles(rootDir:str):
 		if fileExt != ".mdl":
 			continue
 
-		try:
-			Indent = 1
-			print("Processing file:", relPath(fullPath))
-			processInputFile(fullPath)
-			filesProcessed += 1
-		except Exception as ex:
-			print(str(ex), file=sys.stderr)
-			print("*** An error occurred, skipping file", relPath(fullPath), file=sys.stderr)
-			Processed = True
-		finally:
-			Indent = 0
-			totalFiles += 1
-			if Processed:
-				return (filesProcessed, totalFiles)
+		filesFound.append(fullPath)
 
-	return (filesProcessed, totalFiles)
+	return filesFound
 
 def main():
 	validateDirs()
 	buildTextureLookup(INPUT_TEXTURE_DIR)
 
-	(processed, total) = iterateOverInputFiles(INPUT_DIR)
+	filesToProcess = getInputFiles(INPUT_DIR)
+	print("Found", len(filesToProcess), "input files")
 
-	print("Finished processing", processed, "of", total, "files from", INPUT_DIR)
+	numProcessed = 0
+
+	for filePath in filesToProcess:
+		try:
+			print("Processing file:", relPath(filePath))
+			processInputFile(filePath)
+			numProcessed += 1
+		except Exception as ex:
+			print(str(ex), file=sys.stderr)
+			print("*** An error occurred, skipping file", relPath(filePath), file=sys.stderr)
+		finally:
+			# REMOVE ME
+			if numProcessed >= 3:
+				break
+
+	print("Processed", numProcessed, "of", len(filesToProcess), "files.")
 
 if __name__ == "__main__":
 	main()
