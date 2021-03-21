@@ -258,7 +258,7 @@ static msurface_t* GetSurfaceByPoint(const float* worldPos)
 	return NULL;
 }
 
-msurface_t* CL_GetSurfaceUnderCrosshair(void)
+static msurface_t* CL_GetSurfaceUnderCrosshair(void)
 {
 	vec3_t dir;
 	vec3_t startPos;
@@ -309,7 +309,7 @@ static void PrintAllDumpModelArgs(void)
 	}
 }
 
-void CL_Debug_DumpWorldModel(void)
+static void CL_Debug_DumpWorldModel(void)
 {
 	string fileName;
 	unsigned int flags = 0;
@@ -362,7 +362,7 @@ void CL_Debug_DumpWorldModel(void)
 	DumpModelData(fileName, cl.worldmodel, flags);
 }
 
-void CL_Debug_DumpSurface(void)
+static void CL_Debug_DumpSurface(void)
 {
 	string fileName;
 	int argc = 0;
@@ -459,7 +459,7 @@ static mleaf_t* FindLeafForPointRecursive(mnode_t* node, const float* point)
 	return NULL;
 }
 
-void CL_Debug_DumpLeafBounds(void)
+static void CL_Debug_DumpLeafBounds(void)
 {
 	string fileName;
 	int argc = 0;
@@ -508,7 +508,7 @@ void CL_Debug_DumpLeafBounds(void)
 	DumpLeafBoundsAsWavefrontObj(fileName, cl.worldmodel, leaf, true);
 }
 
-void CL_Debug_SurfaceInfo(void)
+static void CL_Debug_SurfaceInfo(void)
 {
 	int argc = 0;
 	msurface_t* targetSurface = NULL;
@@ -598,7 +598,7 @@ static void FindSurfaceInTreeRecursive(mnode_t* node, uint16_t surfaceIndex)
 	}
 }
 
-void CL_Debug_SearchTreeForFace(void)
+static void CL_Debug_SearchTreeForFace(void)
 {
 	int argc = 0;
 	int surfaceIndex = -1;
@@ -645,7 +645,7 @@ static void PrintLeafInfo(const mleaf_t* leaf)
 	}
 }
 
-void CL_Debug_LeafInfo(void)
+static void CL_Debug_LeafInfo(void)
 {
 	int argc = 0;
 	mleaf_t* leaf = NULL;
@@ -750,7 +750,7 @@ static void PrintLeafPVS(const mleaf_t* leaf)
 	Mem_Free(uncompressed);
 }
 
-void CL_Debug_LeafPVS(void)
+static void CL_Debug_LeafPVS(void)
 {
 	int argc = 0;
 	mleaf_t* leaf = NULL;
@@ -790,6 +790,73 @@ void CL_Debug_LeafPVS(void)
 	}
 
 	PrintLeafPVS(leaf);
+}
+
+static void CL_ModelTextureInfo(void)
+{
+	if ( !Cvar_VariableInteger("sv_cheats") )
+	{
+		Msg("Requires sv_cheats to be 1.\n");
+		return;
+	}
+
+	int argc = Cmd_Argc();
+
+	if ( argc < 2 )
+	{
+		Msg("Usage: debug_modeltextureinfo <name>\n");
+		return;
+	}
+
+	const char* name = Cmd_Argv(1);
+	int index = CL_FindModelIndex(name);
+
+	if ( index < 1 )
+	{
+		Msg("Could not find model %s. Check that the model is loaded first.\n", name);
+		return;
+	}
+
+	model_t* model = CL_ModelHandle(index);
+
+	if ( !model )
+	{
+		Msg("Could not obtain model handle for %s (index %d).\n", name, index);
+		return;
+	}
+
+	studiohdr_t* header = (studiohdr_t*)model->cache.data;
+
+	if ( !header )
+	{
+		Msg("Model %s header was invalid.\n", name);
+		return;
+	}
+
+	mstudiotexture_t* textures = (mstudiotexture_t*)((byte*)header + header->textureindex);
+
+	Msg("Model %s has %u textures:\n", name, header->numtextures);
+
+	for ( uint32_t texIndex = 0; texIndex < header->numtextures; ++texIndex )
+	{
+		mstudiotexture_t* texture = &textures[texIndex];
+
+		Msg("Texture %u:\n", texIndex);
+		Msg("  Name: %s\n", texture->name);
+		Msg("  Width: %d\n", texture->width);
+		Msg("  Height: %d\n", texture->height);
+		Msg("  Flags: 0x%08x\n", texture->flags);
+		Msg("  GL texture handle: %d\n", texture->index);
+		Msg("  GL texture width: %d\n", ref.dllFuncs.RefGetParm(PARM_TEX_WIDTH, texture->index));
+		Msg("  GL texture height: %d\n", ref.dllFuncs.RefGetParm(PARM_TEX_HEIGHT, texture->index));
+		Msg("  GL texture depth: %d\n", ref.dllFuncs.RefGetParm(PARM_TEX_DEPTH, texture->index));
+		Msg("  GL texture src width: %d\n", ref.dllFuncs.RefGetParm(PARM_TEX_SRC_WIDTH, texture->index));
+		Msg("  GL texture src height: %d\n", ref.dllFuncs.RefGetParm(PARM_TEX_SRC_HEIGHT, texture->index));
+		Msg("  GL texture target: %d\n", ref.dllFuncs.RefGetParm(PARM_TEX_TARGET, texture->index));
+		Msg("  GL texture num: %d\n", ref.dllFuncs.RefGetParm(PARM_TEX_TEXNUM, texture->index));
+		Msg("  GL texture flags: 0x%08x\n", ref.dllFuncs.RefGetParm(PARM_TEX_FLAGS, texture->index));
+		Msg("  GL texture mipcount: %d\n", ref.dllFuncs.RefGetParm(PARM_TEX_MIPCOUNT, texture->index));
+	}
 }
 
 char *CL_Userinfo( void )
@@ -3565,6 +3632,7 @@ void CL_InitLocal( void )
 				   "Prints info about the specified leaf to the console. If no leaf index is provided, uses the leaf in which the player is standing.");
 	Cmd_AddCommand("debug_leafpvs", CL_Debug_LeafPVS,
 				   "Prints the PVS of the specified leaf to the console. If no leaf index is provided, uses the leaf in which the player is standing.");
+	Cmd_AddCommand("debug_modeltextureinfo", CL_ModelTextureInfo, "Prints info about the specified model's textures to the console. The model must be loaded.");
 
 }
 
