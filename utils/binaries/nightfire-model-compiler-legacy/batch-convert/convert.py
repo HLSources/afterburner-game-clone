@@ -31,6 +31,198 @@ TextureLookup = {}
 def relPath(path:str):
 	return os.path.relpath(path, SCRIPT_DIR)
 
+class FileProcessor:
+	def __init__(self, filePath):
+		self.filePath = filePath
+
+	def processInputFile(self):
+		inputMdlRelPath = os.path.relpath(self.filePath, INPUT_DIR)
+		inputMdlRelPathNoExt = os.path.splitext(inputMdlRelPath)[0]
+		fileScratchDir = os.path.join(SCRATCH_DIR, inputMdlRelPathNoExt)
+
+		# Dump the selected model to the scratch dir.
+		qcPath = self.dumpToQc(self.filePath, fileScratchDir)
+
+		# Fix all texture paths in all SMDs.
+		textures = self.fixSmdFiles(fileScratchDir)
+
+		# Create fake textures somewhere that StudioMDL can see them.
+		self.createFakeTextures(textures, os.path.join(fileScratchDir, TEXTURE_DIR_NAME))
+
+		# Compile the QC file.
+		self.compileQc(qcPath)
+
+		# Patch the texture paths so that they point to PNGs.
+		mdlPath = os.path.splitext(qcPath)[0] + ".mdl"
+		self.patchMdlTexturePaths(mdlPath)
+
+		# Copy the patched model to the target directory.
+		self.copyPatchedMdl(mdlPath, os.path.join(OUTPUT_DIR, inputMdlRelPath))
+
+	def dumpToQc(self, inputFile:str, outputDir:str):
+		fileName = os.path.splitext(os.path.basename(inputFile))[0]
+		outputPath = os.path.join(outputDir, f"{fileName}.qc")
+
+		args = \
+		[
+			MDLCONVERT_PATH,
+			"-dumpv14tov10",
+			inputFile,
+			outputPath
+		]
+
+		self.runCommand(args)
+		return outputPath
+
+	def fixSmdFiles(self, dirPath:str):
+		texturesToCopy = {}
+
+		for smdFile in os.listdir(dirPath):
+			ext = os.path.splitext(smdFile)[1].lower()
+
+			if ext != ".smd":
+				continue
+
+			texturesFromFile = self.fixSmdTextures(os.path.abspath(os.path.join(dirPath, smdFile)))
+
+			for key in texturesFromFile.keys():
+				texturesToCopy[key] = True
+
+		return list(texturesToCopy.keys())
+
+	def fixSmdTextures(self, smdPath:str):
+		global TextureLookup
+
+		print("Fixing referenced textures in SMD:", relPath(smdPath))
+
+		texturesToCopy = {}
+		lines = []
+		begunTriangles = False
+
+		with open(smdPath, "r") as inFile:
+			lines = [line.rstrip() for line in inFile.readlines()]
+
+		for index in range(0, len(lines)):
+			line = lines[index]
+
+			if line == "triangles":
+				begunTriangles = True
+				continue
+
+			if not begunTriangles:
+				continue
+
+			segments = line.split(".")
+
+			if len(segments) != 2 or segments[1] != "bmp":
+				continue
+
+			textureName = line
+
+			if (segments[0].lower() + ".png") not in TextureLookup:
+				raise RuntimeError(f"{relPath(smdPath)} contains unknown texture {textureName}")
+
+			if textureName not in texturesToCopy:
+				print("Texture referenced:", textureName)
+
+				# Record that we encountered this texture.
+				texturesToCopy[textureName] = True
+
+			# Rename each bmp file to an appropriate png, namespaced in an "mdl" folder
+			lines[index] = f"{TEXTURE_DIR_NAME}/{textureName}"
+
+		with open(smdPath, "w") as outFile:
+			# The final \n is required or studiomdl freaks out
+			outFile.write("\n".join(lines) + "\n")
+
+		# Return all the textures we need to copy.
+		return texturesToCopy
+
+	def createFakeTextures(self, textures:list, outputDir:str):
+		global TextureLookup
+
+		if not os.path.isdir(outputDir):
+			os.makedirs(outputDir, exist_ok=True)
+
+		for texture in textures:
+			dest = os.path.join(outputDir, texture)
+			print("Creating fake texture:", relPath(dest))
+			shutil.copy2(BLACK_BMP_PATH, dest)
+
+	def compileQc(self, qcPath:str):
+		baseName = os.path.basename(qcPath)
+		workingDir = os.path.dirname(qcPath)
+		currentDir = os.curdir
+
+		os.chdir(workingDir)
+
+		args = \
+		[
+			STUDIOMDL_PATH,
+			baseName
+		]
+
+		self.runCommand(args)
+
+		os.chdir(currentDir)
+
+	def patchMdlTexturePaths(self, mdlPath:str):
+		global TextureLookup
+
+		print("Patching textures in:", relPath(mdlPath))
+
+		mdlData = None
+
+		with open(mdlPath, "rb") as inFile:
+			mdlData = bytearray(inFile.read())
+
+		headerData = struct.unpack_from(MDL_HEADER_FORMAT, mdlData)
+		numTextures = headerData[30]
+		texturesOffset = headerData[31]
+
+		print(relPath(mdlPath), "has", numTextures, "textures beginning at offset", texturesOffset)
+
+		print("Adding NO_EMBEDDED_TEXTURES flag to header")
+		flags = headerData[19] | STUDIO_NO_EMBEDDED_TEXTURES
+		struct.pack_into(MDL_HEADER_FORMAT, mdlData, 0, *(headerData[:19]), flags, *(headerData[20:]))
+
+		for textureIndex in range(0, numTextures):
+			fileOffset = texturesOffset + (textureIndex * MDL_TEXTURE_STRUCT_SIZE)
+			textureData = struct.unpack_from(MDL_TEXTURE_FORMAT, mdlData, fileOffset)
+
+			textureName = textureData[0].decode("utf-8").rstrip("\x00")
+			textureDirName = os.path.dirname(textureName)
+			textureBaseName = os.path.basename(textureName)
+			textureNameNoExt = os.path.splitext(textureBaseName)[0]
+
+			# Get the correctly capitalised name of the file on disk, with .png extension
+			textureFileNameOnDisk = TextureLookup[textureNameNoExt.lower() + ".png"]
+
+			# Use forward slashes for MDL texture paths
+			newTextureName = os.path.join(textureDirName, textureFileNameOnDisk).replace(os.path.sep, "/")
+
+			print("Patching", textureName, "->", newTextureName)
+			struct.pack_into(MDL_TEXTURE_FORMAT, mdlData, fileOffset, bytes(newTextureName, "utf-8"), *(textureData[1:]))
+
+		with open(mdlPath, "wb") as outFile:
+			outFile.write(mdlData)
+
+		print(relPath(mdlPath), "patched.")
+
+	def copyPatchedMdl(self, source:str, dest:str):
+		print("Copying", relPath(source), "to", relPath(dest))
+		shutil.copy2(source, dest)
+
+	def runCommand(self, args):
+		print("Running command:", *args)
+
+		result = subprocess.run(args, shell=True)
+
+		if result.returncode != 0:
+			raise RuntimeError(f"Command {' '.join(args)} returned error code {result.returncode}")
+
+		print("Command complete.")
+
 def validateDirs():
 	if not os.path.isdir(INPUT_DIR):
 		print("Input directory", INPUT_DIR, "does not exist.", file=sys.stderr)
@@ -77,194 +269,6 @@ def cleanScratchDir():
 
 	os.makedirs(SCRATCH_DIR, exist_ok=True)
 
-def runCommand(args):
-	print("Running command:", *args)
-
-	result = subprocess.run(args, shell=True)
-
-	if result.returncode != 0:
-		raise RuntimeError(f"Command {' '.join(args)} returned error code {result.returncode}")
-
-	print("Command complete.")
-
-def dumpToQc(inputFile:str, outputDir:str):
-	fileName = os.path.splitext(os.path.basename(inputFile))[0]
-	outputPath = os.path.join(outputDir, f"{fileName}.qc")
-
-	args = \
-	[
-		MDLCONVERT_PATH,
-		"-dumpv14tov10",
-		inputFile,
-		outputPath
-	]
-
-	runCommand(args)
-	return outputPath
-
-def fixSmdTextures(smdPath:str):
-	global TextureLookup
-
-	print("Fixing referenced textures in SMD:", relPath(smdPath))
-
-	texturesToCopy = {}
-	lines = []
-	begunTriangles = False
-
-	with open(smdPath, "r") as inFile:
-		lines = [line.rstrip() for line in inFile.readlines()]
-
-	for index in range(0, len(lines)):
-		line = lines[index]
-
-		if line == "triangles":
-			begunTriangles = True
-			continue
-
-		if not begunTriangles:
-			continue
-
-		segments = line.split(".")
-
-		if len(segments) != 2 or segments[1] != "bmp":
-			continue
-
-		textureName = line
-
-		if (segments[0].lower() + ".png") not in TextureLookup:
-			raise RuntimeError(f"{relPath(smdPath)} contains unknown texture {textureName}")
-
-		if textureName not in texturesToCopy:
-			print("Texture referenced:", textureName)
-
-			# Record that we encountered this texture.
-			texturesToCopy[textureName] = True
-
-		# Rename each bmp file to an appropriate png, namespaced in an "mdl" folder
-		lines[index] = f"{TEXTURE_DIR_NAME}/{textureName}"
-
-	with open(smdPath, "w") as outFile:
-		# The final \n is required or studiomdl freaks out
-		outFile.write("\n".join(lines) + "\n")
-
-	# Return all the textures we need to copy.
-	return texturesToCopy
-
-def fixSmdFiles(dirPath:str):
-	texturesToCopy = {}
-
-	for smdFile in os.listdir(dirPath):
-		ext = os.path.splitext(smdFile)[1].lower()
-
-		if ext != ".smd":
-			continue
-
-		texturesFromFile = fixSmdTextures(os.path.abspath(os.path.join(dirPath, smdFile)))
-
-		for key in texturesFromFile.keys():
-			texturesToCopy[key] = True
-
-	return list(texturesToCopy.keys())
-
-def createFakeTextures(textures:list, outputDir:str):
-	global TextureLookup
-
-	if not os.path.isdir(outputDir):
-		os.makedirs(outputDir, exist_ok=True)
-
-	for texture in textures:
-		dest = os.path.join(outputDir, texture)
-		print("Creating fake texture:", relPath(dest))
-		shutil.copy2(BLACK_BMP_PATH, dest)
-
-def compileQc(qcPath:str):
-	baseName = os.path.basename(qcPath)
-	workingDir = os.path.dirname(qcPath)
-	currentDir = os.curdir
-
-	os.chdir(workingDir)
-
-	args = \
-	[
-		STUDIOMDL_PATH,
-		baseName
-	]
-
-	runCommand(args)
-
-	os.chdir(currentDir)
-
-def patchMdlTexturePaths(mdlPath:str):
-	global TextureLookup
-
-	print("Patching textures in:", relPath(mdlPath))
-
-	mdlData = None
-
-	with open(mdlPath, "rb") as inFile:
-		mdlData = bytearray(inFile.read())
-
-	headerData = struct.unpack_from(MDL_HEADER_FORMAT, mdlData)
-	numTextures = headerData[30]
-	texturesOffset = headerData[31]
-
-	print(relPath(mdlPath), "has", numTextures, "textures beginning at offset", texturesOffset)
-
-	print("Adding NO_EMBEDDED_TEXTURES flag to header")
-	flags = headerData[19] | STUDIO_NO_EMBEDDED_TEXTURES
-	struct.pack_into(MDL_HEADER_FORMAT, mdlData, 0, *(headerData[:19]), flags, *(headerData[20:]))
-
-	for textureIndex in range(0, numTextures):
-		fileOffset = texturesOffset + (textureIndex * MDL_TEXTURE_STRUCT_SIZE)
-		textureData = struct.unpack_from(MDL_TEXTURE_FORMAT, mdlData, fileOffset)
-
-		textureName = textureData[0].decode("utf-8").rstrip("\x00")
-		textureDirName = os.path.dirname(textureName)
-		textureBaseName = os.path.basename(textureName)
-		textureNameNoExt = os.path.splitext(textureBaseName)[0]
-
-		# Get the correctly capitalised name of the file on disk, with .png extension
-		textureFileNameOnDisk = TextureLookup[textureNameNoExt.lower() + ".png"]
-
-		# Use forward slashes for MDL texture paths
-		newTextureName = os.path.join(textureDirName, textureFileNameOnDisk).replace(os.path.sep, "/")
-
-		print("Patching", textureName, "->", newTextureName)
-		struct.pack_into(MDL_TEXTURE_FORMAT, mdlData, fileOffset, bytes(newTextureName, "utf-8"), *(textureData[1:]))
-
-	with open(mdlPath, "wb") as outFile:
-		outFile.write(mdlData)
-
-	print(relPath(mdlPath), "patched.")
-
-def copyPatchedMdl(source:str, dest:str):
-	print("Copying", relPath(source), "to", relPath(dest))
-	shutil.copy2(source, dest)
-
-def processInputFile(filePath:str):
-	inputMdlRelPath = os.path.relpath(filePath, INPUT_DIR)
-	inputMdlRelPathNoExt = os.path.splitext(inputMdlRelPath)[0]
-	fileScratchDir = os.path.join(SCRATCH_DIR, inputMdlRelPathNoExt)
-
-	# Dump the selected model to the scratch dir.
-	qcPath = dumpToQc(filePath, fileScratchDir)
-
-	# Fix all texture paths in all SMDs.
-	textures = fixSmdFiles(fileScratchDir)
-
-	# Create fake textures somewhere that StudioMDL can see them.
-	createFakeTextures(textures, os.path.join(fileScratchDir, TEXTURE_DIR_NAME))
-
-	# Compile the QC file.
-	compileQc(qcPath)
-
-	# Patch the texture paths so that they point to PNGs.
-	mdlPath = os.path.splitext(qcPath)[0] + ".mdl"
-	patchMdlTexturePaths(mdlPath)
-
-	# Copy the patched model to the target directory.
-	copyPatchedMdl(mdlPath, os.path.join(OUTPUT_DIR, inputMdlRelPath))
-
 def threadTask(files:dict, base:int, stride:int):
 	keys = list(files.keys())
 
@@ -274,7 +278,7 @@ def threadTask(files:dict, base:int, stride:int):
 
 		try:
 			print("Processing file:", relPath(filePath))
-			processInputFile(filePath)
+			FileProcessor(filePath).processInputFile()
 			files[filePath] = True
 		except Exception as ex:
 			print(str(ex), file=sys.stderr)
@@ -312,6 +316,8 @@ def main():
 
 	filesMap = {filePath: False for filePath in filesToProcess}
 	threadAttributes = [(filesMap, index, NUM_THREADS) for index in range(0, NUM_THREADS)]
+
+	print("Starting thread pool with", NUM_THREADS, "threads")
 
 	with ThreadPoolExecutor(max_workers=NUM_THREADS) as executor:
 		executor.map(lambda args: threadTask(*args), threadAttributes)
