@@ -34,20 +34,23 @@ def relPath(path:str):
 class FileProcessor:
 	def __init__(self, filePath):
 		self.filePath = filePath
+		self.fileScratchDir = ""
 
 	def processInputFile(self):
 		inputMdlRelPath = os.path.relpath(self.filePath, INPUT_DIR)
 		inputMdlRelPathNoExt = os.path.splitext(inputMdlRelPath)[0]
-		fileScratchDir = os.path.join(SCRATCH_DIR, inputMdlRelPathNoExt)
+
+		self.fileScratchDir = os.path.join(SCRATCH_DIR, inputMdlRelPathNoExt)
+		os.makedirs(self.fileScratchDir, exist_ok=True)
 
 		# Dump the selected model to the scratch dir.
-		qcPath = self.dumpToQc(self.filePath, fileScratchDir)
+		qcPath = self.dumpToQc(self.filePath, self.fileScratchDir)
 
 		# Fix all texture paths in all SMDs.
-		textures = self.fixSmdFiles(fileScratchDir)
+		textures = self.fixSmdFiles(self.fileScratchDir)
 
 		# Create fake textures somewhere that StudioMDL can see them.
-		self.createFakeTextures(textures, os.path.join(fileScratchDir, TEXTURE_DIR_NAME))
+		self.createFakeTextures(textures, os.path.join(self.fileScratchDir, TEXTURE_DIR_NAME))
 
 		# Compile the QC file.
 		self.compileQc(qcPath)
@@ -71,7 +74,7 @@ class FileProcessor:
 			outputPath
 		]
 
-		self.runCommand(args)
+		self.runCommand(args, output="DumpToQC")
 		return outputPath
 
 	def fixSmdFiles(self, dirPath:str):
@@ -93,7 +96,7 @@ class FileProcessor:
 	def fixSmdTextures(self, smdPath:str):
 		global TextureLookup
 
-		print("Fixing referenced textures in SMD:", relPath(smdPath))
+		self.logMsg("Fixing referenced textures in SMD:", relPath(smdPath), file="FixSMDTextures")
 
 		texturesToCopy = {}
 		lines = []
@@ -123,7 +126,7 @@ class FileProcessor:
 				raise RuntimeError(f"{relPath(smdPath)} contains unknown texture {textureName}")
 
 			if textureName not in texturesToCopy:
-				print("Texture referenced:", textureName)
+				self.logMsg("Texture referenced:", textureName, file="FixSMDTextures")
 
 				# Record that we encountered this texture.
 				texturesToCopy[textureName] = True
@@ -146,7 +149,7 @@ class FileProcessor:
 
 		for texture in textures:
 			dest = os.path.join(outputDir, texture)
-			print("Creating fake texture:", relPath(dest))
+			self.logMsg("Creating fake texture:", relPath(dest), file="CreateFakeTextures")
 			shutil.copy2(BLACK_BMP_PATH, dest)
 
 	def compileQc(self, qcPath:str):
@@ -162,14 +165,14 @@ class FileProcessor:
 			baseName
 		]
 
-		self.runCommand(args)
+		self.runCommand(args, output="CompileQC")
 
 		os.chdir(currentDir)
 
 	def patchMdlTexturePaths(self, mdlPath:str):
 		global TextureLookup
 
-		print("Patching textures in:", relPath(mdlPath))
+		self.logMsg("Patching textures in:", relPath(mdlPath), file="PatchMDLTexturePaths")
 
 		mdlData = None
 
@@ -180,9 +183,9 @@ class FileProcessor:
 		numTextures = headerData[30]
 		texturesOffset = headerData[31]
 
-		print(relPath(mdlPath), "has", numTextures, "textures beginning at offset", texturesOffset)
+		self.logMsg(relPath(mdlPath), "has", numTextures, "textures beginning at offset", texturesOffset, file="PatchMDLTexturePaths")
 
-		print("Adding NO_EMBEDDED_TEXTURES flag to header")
+		self.logMsg("Adding NO_EMBEDDED_TEXTURES flag to header", file="PatchMDLTexturePaths")
 		flags = headerData[19] | STUDIO_NO_EMBEDDED_TEXTURES
 		struct.pack_into(MDL_HEADER_FORMAT, mdlData, 0, *(headerData[:19]), flags, *(headerData[20:]))
 
@@ -201,27 +204,41 @@ class FileProcessor:
 			# Use forward slashes for MDL texture paths
 			newTextureName = os.path.join(textureDirName, textureFileNameOnDisk).replace(os.path.sep, "/")
 
-			print("Patching", textureName, "->", newTextureName)
+			self.logMsg("Patching", textureName, "->", newTextureName, file="PatchMDLTexturePaths")
 			struct.pack_into(MDL_TEXTURE_FORMAT, mdlData, fileOffset, bytes(newTextureName, "utf-8"), *(textureData[1:]))
 
 		with open(mdlPath, "wb") as outFile:
 			outFile.write(mdlData)
 
-		print(relPath(mdlPath), "patched.")
+		self.logMsg(relPath(mdlPath), "patched.", file="PatchMDLTexturePaths")
 
 	def copyPatchedMdl(self, source:str, dest:str):
-		print("Copying", relPath(source), "to", relPath(dest))
+		self.logMsg("Copying", relPath(source), "to", relPath(dest), file="CopyPatchedMDL")
 		shutil.copy2(source, dest)
 
-	def runCommand(self, args):
-		print("Running command:", *args)
+	def runCommand(self, args, output=""):
+		self.logMsg("*** Running command:", *args, file=(output if output else None))
 
-		result = subprocess.run(args, shell=True)
+		if output:
+			outFilePath = os.path.join(self.fileScratchDir, output + ".log")
+			with open(outFilePath, "a+") as stdOut:
+				result = subprocess.run(args, shell=True, stdout=stdOut)
+		else:
+			result = subprocess.run(args, shell=True)
 
 		if result.returncode != 0:
 			raise RuntimeError(f"Command {' '.join(args)} returned error code {result.returncode}")
 
-		print("Command complete.")
+		self.logMsg("*** Command complete.", file=(output if output else None))
+
+	def logMsg(self, *args, file=None):
+		if isinstance(file, str):
+			with open(file + ".log", "a+") as outFile:
+				print(*args, file=outFile)
+		elif file is not None:
+			print(*args, file=file)
+		else:
+			print(*args)
 
 def validateDirs():
 	if not os.path.isdir(INPUT_DIR):
@@ -277,7 +294,7 @@ def threadTask(files:dict, base:int, stride:int):
 		files[filePath] = False
 
 		try:
-			print("Processing file:", relPath(filePath))
+			print("Thread", base, "processing file:", relPath(filePath))
 			FileProcessor(filePath).processInputFile()
 			files[filePath] = True
 		except Exception as ex:
@@ -321,6 +338,13 @@ def main():
 
 	with ThreadPoolExecutor(max_workers=NUM_THREADS) as executor:
 		executor.map(lambda args: threadTask(*args), threadAttributes)
+
+	filesProcessed = 0
+	for filePath in filesMap:
+		if filesMap[filePath]:
+			filesProcessed += 1
+
+	print("Processed", filesProcessed, "of", len(filesToProcess), "files.")
 
 if __name__ == "__main__":
 	main()
