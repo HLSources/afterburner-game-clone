@@ -3,6 +3,11 @@ import os
 import subprocess
 import shutil
 import struct
+import threading
+
+from concurrent.futures.thread import ThreadPoolExecutor
+
+NUM_THREADS = 1
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(sys.argv[0]))
 INPUT_DIR = os.path.join(SCRIPT_DIR, "v14")
@@ -260,6 +265,24 @@ def processInputFile(filePath:str):
 	# Copy the patched model to the target directory.
 	copyPatchedMdl(mdlPath, os.path.join(OUTPUT_DIR, inputMdlRelPath))
 
+def threadTask(files:dict, base:int, stride:int):
+	keys = list(files.keys())
+
+	for index in range(base, len(keys), stride):
+		filePath = keys[index]
+		files[filePath] = False
+
+		try:
+			print("Processing file:", relPath(filePath))
+			processInputFile(filePath)
+			files[filePath] = True
+		except Exception as ex:
+			print(str(ex), file=sys.stderr)
+			print("*** An error occurred, skipping file", relPath(filePath), file=sys.stderr)
+		finally:
+			# REMOVE ME
+			break
+
 def getInputFiles(rootDir:str):
 	filesFound = []
 
@@ -287,18 +310,11 @@ def main():
 	filesToProcess = getInputFiles(INPUT_DIR)
 	print("Found", len(filesToProcess), "input files")
 
-	numProcessed = 0
+	filesMap = {filePath: False for filePath in filesToProcess}
+	threadAttributes = [(filesMap, index, NUM_THREADS) for index in range(0, NUM_THREADS)]
 
-	for filePath in filesToProcess:
-		try:
-			print("Processing file:", relPath(filePath))
-			processInputFile(filePath)
-			numProcessed += 1
-		except Exception as ex:
-			print(str(ex), file=sys.stderr)
-			print("*** An error occurred, skipping file", relPath(filePath), file=sys.stderr)
-
-	print("Processed", numProcessed, "of", len(filesToProcess), "files.")
+	with ThreadPoolExecutor(max_workers=NUM_THREADS) as executor:
+		executor.map(lambda args: threadTask(*args), threadAttributes)
 
 if __name__ == "__main__":
 	main()
