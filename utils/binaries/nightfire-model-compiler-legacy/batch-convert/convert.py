@@ -10,7 +10,6 @@ INPUT_TEXTURE_DIR = os.path.join(INPUT_DIR, "textures")
 OUTPUT_DIR = os.path.join(SCRIPT_DIR, "v10")
 SCRATCH_DIR = os.path.join(SCRIPT_DIR, "scratch")
 TEXTURE_DIR_NAME = "mdl"
-SCRATCH_TEXTURE_DIR = os.path.join(SCRATCH_DIR, TEXTURE_DIR_NAME)
 
 MDLCONVERT_PATH = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "mdlconvert.exe"))
 STUDIOMDL_PATH = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "studiomdl_new.exe"))
@@ -238,17 +237,18 @@ def copyPatchedMdl(source:str, dest:str):
 	shutil.copy2(source, dest)
 
 def processInputFile(filePath:str):
-	# Make sure the scratch dir exists and is empty.
-	cleanScratchDir()
+	inputMdlRelPath = os.path.relpath(filePath, INPUT_DIR)
+	inputMdlRelPathNoExt = os.path.splitext(inputMdlRelPath)[0]
+	fileScratchDir = os.path.join(SCRATCH_DIR, inputMdlRelPathNoExt)
 
 	# Dump the selected model to the scratch dir.
-	qcPath = dumpToQc(filePath, SCRATCH_DIR)
+	qcPath = dumpToQc(filePath, fileScratchDir)
 
 	# Fix all texture paths in all SMDs.
-	textures = fixSmdFiles(SCRATCH_DIR)
+	textures = fixSmdFiles(fileScratchDir)
 
 	# Create fake textures somewhere that StudioMDL can see them.
-	createFakeTextures(textures, SCRATCH_TEXTURE_DIR)
+	createFakeTextures(textures, os.path.join(fileScratchDir, TEXTURE_DIR_NAME))
 
 	# Compile the QC file.
 	compileQc(qcPath)
@@ -258,7 +258,6 @@ def processInputFile(filePath:str):
 	patchMdlTexturePaths(mdlPath)
 
 	# Copy the patched model to the target directory.
-	inputMdlRelPath = os.path.relpath(filePath, INPUT_DIR)
 	copyPatchedMdl(mdlPath, os.path.join(OUTPUT_DIR, inputMdlRelPath))
 
 def getInputFiles(rootDir:str):
@@ -283,6 +282,7 @@ def getInputFiles(rootDir:str):
 def main():
 	validateDirs()
 	buildTextureLookup(INPUT_TEXTURE_DIR)
+	cleanScratchDir()
 
 	filesToProcess = getInputFiles(INPUT_DIR)
 	print("Found", len(filesToProcess), "input files")
@@ -297,10 +297,6 @@ def main():
 		except Exception as ex:
 			print(str(ex), file=sys.stderr)
 			print("*** An error occurred, skipping file", relPath(filePath), file=sys.stderr)
-		finally:
-			# REMOVE ME
-			if numProcessed >= 3:
-				break
 
 	print("Processed", numProcessed, "of", len(filesToProcess), "files.")
 
