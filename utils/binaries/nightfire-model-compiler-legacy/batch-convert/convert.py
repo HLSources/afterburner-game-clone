@@ -38,6 +38,7 @@ class FileProcessor:
 		self.filePath = filePath
 		self.fileScratchDir = ""
 		self.referencedTextures = {}
+		self.referenceSmds = []
 
 	def processInputFile(self):
 		inputMdlRelPath = os.path.relpath(self.filePath, INPUT_DIR)
@@ -50,7 +51,7 @@ class FileProcessor:
 		qcPath = self.dumpToQc(self.filePath, self.fileScratchDir)
 
 		# Determine which reference SMDs we have.
-		refSmds = self.findReferenceSmds(qcPath)
+		self.referenceSmds = self.findReferenceSmds(qcPath)
 
 		# Fix all texture paths in all SMDs.
 		self.fixSmdFiles(self.fileScratchDir)
@@ -131,6 +132,9 @@ class FileProcessor:
 
 		self.fixSmdTextures(smdPath, lines)
 
+		if os.path.basename(smdPath) in self.referenceSmds:
+			self.calculateUVBoundsForTextures(smdPath, lines)
+
 		with open(smdPath, "w") as outFile:
 			# The final \n is required or studiomdl freaks out
 			outFile.write("\n".join(lines) + "\n")
@@ -170,6 +174,11 @@ class FileProcessor:
 
 			# Rename each bmp file to an appropriate png, namespaced in an "mdl" folder
 			lines[index] = f"{TEXTURE_DIR_NAME}/{textureName}"
+
+	def calculateUVBoundsForTextures(self, smdPath:str, lines:list):
+		self.logMsg("Checking UV bounds for all textures in", relPath(smdPath), file="CalculateUVBoundsForTextures")
+
+		# TODO
 
 	def createFakeTextures(self, textures:list, outputDir:str):
 		global TextureLookup
