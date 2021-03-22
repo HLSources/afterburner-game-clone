@@ -49,6 +49,9 @@ class FileProcessor:
 		# Dump the selected model to the scratch dir.
 		qcPath = self.dumpToQc(self.filePath, self.fileScratchDir)
 
+		# Determine which reference SMDs we have.
+		refSmds = self.findReferenceSmds(qcPath)
+
 		# Fix all texture paths in all SMDs.
 		self.fixSmdFiles(self.fileScratchDir)
 		textures = list(self.referencedTextures.keys())
@@ -80,6 +83,36 @@ class FileProcessor:
 
 		self.runCommand(args, output="DumpToQC")
 		return outputPath
+
+	def findReferenceSmds(self, qcPath:str):
+		lines = []
+		referencedSmds = []
+		inBodyGroup = False
+
+		self.logMsg("Finding reference SMDs from", relPath(qcPath), file="FindReferenceSmds")
+
+		with open(qcPath, "r") as inFile:
+			lines = [line.strip() for line in inFile.readlines()]
+
+		for line in lines:
+			if line.startswith("$bodygroup"):
+				if inBodyGroup:
+					raise RuntimeError(f"{qcPath} had invalid nested body group.")
+				inBodyGroup = True
+			elif inBodyGroup:
+				if line == "}":
+					inBodyGroup = False
+				else:
+					segments = line.split(maxsplit=1)
+
+					if len(segments) == 2 and segments[0] == "studio":
+						# We assume that anything after the "studio" is the reference SMD
+						smdPath = segments[1].strip('"') + ".smd"
+
+						self.logMsg("Found SMD:", smdPath, file="FindReferenceSmds")
+						referencedSmds.append(smdPath)
+
+		return referencedSmds
 
 	def fixSmdFiles(self, dirPath:str):
 		for smdFile in os.listdir(dirPath):
