@@ -25,7 +25,9 @@ MDL_TEXTURE_FORMAT = "64sIIII"
 MDL_TEXTURE_STRUCT_SIZE = struct.calcsize(MDL_TEXTURE_FORMAT)
 STUDIO_NO_EMBEDDED_TEXTURES = 0x800
 
-# Map from all-lowercase texture names to actual names
+# Map from all-lowercase texture names to actual names.
+# This is needed to properly update texture names in the
+# MDL file, or the engine won't be able to find the textures.
 TextureLookup = {}
 
 def relPath(path:str):
