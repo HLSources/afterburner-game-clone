@@ -68,7 +68,7 @@ class FileProcessor:
 
 		# Patch the texture paths so that they point to PNGs.
 		mdlPath = os.path.splitext(qcPath)[0] + ".mdl"
-		self.patchMdlTexturePaths(mdlPath)
+		self.patchMdl(mdlPath)
 
 		# Copy the patched model to the target directory.
 		self.copyPatchedMdl(mdlPath, os.path.join(OUTPUT_DIR, inputMdlRelPath))
@@ -288,25 +288,38 @@ class FileProcessor:
 
 		os.chdir(currentDir)
 
-	def patchMdlTexturePaths(self, mdlPath:str):
-		global TextureLookup
-
-		self.logMsg("Patching textures in:", relPath(mdlPath), file="PatchMDLTexturePaths")
-
+	def patchMdl(self, mdlPath:str):
 		mdlData = None
 
 		with open(mdlPath, "rb") as inFile:
 			mdlData = bytearray(inFile.read())
 
+		self.logMsg("Patching", relPath(mdlPath), file="PatchMDL")
+
+		self.patchMdlHeader(mdlPath, mdlData)
+		self.patchMdlTexturePaths(mdlPath, mdlData)
+		self.patchMdlTextureUVs(mdlPath, mdlData)
+
+		self.logMsg("Patching complete.", file="PatchMDL")
+
+		with open(mdlPath, "wb") as outFile:
+			outFile.write(mdlData)
+
+	def patchMdlHeader(self, mdlPath:str, mdlData:bytearray):
+		self.logMsg("Adding NO_EMBEDDED_TEXTURES flag to header", file="PatchMDL")
+
+		headerData = struct.unpack_from(MDL_HEADER_FORMAT, mdlData)
+		flags = headerData[19] | STUDIO_NO_EMBEDDED_TEXTURES
+		struct.pack_into(MDL_HEADER_FORMAT, mdlData, 0, *(headerData[:19]), flags, *(headerData[20:]))
+
+	def patchMdlTexturePaths(self, mdlPath:str, mdlData:bytearray):
+		global TextureLookup
+
 		headerData = struct.unpack_from(MDL_HEADER_FORMAT, mdlData)
 		numTextures = headerData[30]
 		texturesOffset = headerData[31]
 
-		self.logMsg(relPath(mdlPath), "has", numTextures, "textures beginning at offset", texturesOffset, file="PatchMDLTexturePaths")
-
-		self.logMsg("Adding NO_EMBEDDED_TEXTURES flag to header", file="PatchMDLTexturePaths")
-		flags = headerData[19] | STUDIO_NO_EMBEDDED_TEXTURES
-		struct.pack_into(MDL_HEADER_FORMAT, mdlData, 0, *(headerData[:19]), flags, *(headerData[20:]))
+		self.logMsg("MDL has", numTextures, "textures beginning at offset", texturesOffset, file="PatchMDL")
 
 		for textureIndex in range(0, numTextures):
 			fileOffset = texturesOffset + (textureIndex * MDL_TEXTURE_STRUCT_SIZE)
@@ -323,13 +336,11 @@ class FileProcessor:
 			# Use forward slashes for MDL texture paths
 			newTextureName = os.path.join(textureDirName, textureFileNameOnDisk).replace(os.path.sep, "/")
 
-			self.logMsg("Patching", textureName, "->", newTextureName, file="PatchMDLTexturePaths")
+			self.logMsg("Patching", textureName, "->", newTextureName, file="PatchMDL")
 			struct.pack_into(MDL_TEXTURE_FORMAT, mdlData, fileOffset, bytes(newTextureName, "utf-8"), *(textureData[1:]))
 
-		with open(mdlPath, "wb") as outFile:
-			outFile.write(mdlData)
-
-		self.logMsg(relPath(mdlPath), "patched.", file="PatchMDLTexturePaths")
+	def patchMdlTextureUVs(self, mdlPath:str, mdlData:bytearray):
+		pass
 
 	def copyPatchedMdl(self, source:str, dest:str):
 		self.logMsg("Copying", relPath(source), "to", relPath(dest), file="CopyPatchedMDL")
