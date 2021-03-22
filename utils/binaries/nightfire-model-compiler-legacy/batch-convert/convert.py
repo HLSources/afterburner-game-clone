@@ -37,6 +37,7 @@ class FileProcessor:
 	def __init__(self, filePath):
 		self.filePath = filePath
 		self.fileScratchDir = ""
+		self.referencedTextures = {}
 
 	def processInputFile(self):
 		inputMdlRelPath = os.path.relpath(self.filePath, INPUT_DIR)
@@ -49,7 +50,8 @@ class FileProcessor:
 		qcPath = self.dumpToQc(self.filePath, self.fileScratchDir)
 
 		# Fix all texture paths in all SMDs.
-		textures = self.fixSmdFiles(self.fileScratchDir)
+		self.fixSmdFiles(self.fileScratchDir)
+		textures = list(self.referencedTextures.keys())
 
 		# Create fake textures somewhere that StudioMDL can see them.
 		self.createFakeTextures(textures, os.path.join(self.fileScratchDir, TEXTURE_DIR_NAME))
@@ -80,32 +82,32 @@ class FileProcessor:
 		return outputPath
 
 	def fixSmdFiles(self, dirPath:str):
-		texturesToCopy = {}
-
 		for smdFile in os.listdir(dirPath):
 			ext = os.path.splitext(smdFile)[1].lower()
 
 			if ext != ".smd":
 				continue
 
-			texturesFromFile = self.fixSmdTextures(os.path.abspath(os.path.join(dirPath, smdFile)))
+			self.processSmdFile(os.path.abspath(os.path.join(dirPath, smdFile)))
 
-			for key in texturesFromFile.keys():
-				texturesToCopy[key] = True
-
-		return list(texturesToCopy.keys())
-
-	def fixSmdTextures(self, smdPath:str):
-		global TextureLookup
-
-		self.logMsg("Fixing referenced textures in SMD:", relPath(smdPath), file="FixSMDTextures")
-
-		texturesToCopy = {}
+	def processSmdFile(self, smdPath:str):
 		lines = []
-		begunTriangles = False
 
 		with open(smdPath, "r") as inFile:
 			lines = [line.rstrip() for line in inFile.readlines()]
+
+		self.fixSmdTextures(smdPath, lines)
+
+		with open(smdPath, "w") as outFile:
+			# The final \n is required or studiomdl freaks out
+			outFile.write("\n".join(lines) + "\n")
+
+	def fixSmdTextures(self, smdPath:str, lines:list):
+		global TextureLookup
+
+		begunTriangles = False
+
+		self.logMsg("Fixing referenced textures for", relPath(smdPath), file="FixSMDTextures")
 
 		for index in range(0, len(lines)):
 			line = lines[index]
@@ -127,21 +129,14 @@ class FileProcessor:
 			if (segments[0].lower() + ".png") not in TextureLookup:
 				raise RuntimeError(f"{relPath(smdPath)} contains unknown texture {textureName}")
 
-			if textureName not in texturesToCopy:
+			if textureName not in self.referencedTextures:
 				self.logMsg("Texture referenced:", textureName, file="FixSMDTextures")
 
 				# Record that we encountered this texture.
-				texturesToCopy[textureName] = True
+				self.referencedTextures[textureName] = True
 
 			# Rename each bmp file to an appropriate png, namespaced in an "mdl" folder
 			lines[index] = f"{TEXTURE_DIR_NAME}/{textureName}"
-
-		with open(smdPath, "w") as outFile:
-			# The final \n is required or studiomdl freaks out
-			outFile.write("\n".join(lines) + "\n")
-
-		# Return all the textures we need to copy.
-		return texturesToCopy
 
 	def createFakeTextures(self, textures:list, outputDir:str):
 		global TextureLookup
