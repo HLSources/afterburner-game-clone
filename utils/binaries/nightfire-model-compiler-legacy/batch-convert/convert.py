@@ -39,6 +39,7 @@ class FileProcessor:
 		self.fileScratchDir = ""
 		self.referencedTextures = {}
 		self.referenceSmds = []
+		self.boundsForTexture = {}
 
 	def processInputFile(self):
 		inputMdlRelPath = os.path.relpath(self.filePath, INPUT_DIR)
@@ -56,6 +57,8 @@ class FileProcessor:
 		# Fix all texture paths in all SMDs.
 		self.fixSmdFiles(self.fileScratchDir)
 		textures = list(self.referencedTextures.keys())
+
+		self.logUVBounds()
 
 		# Create fake textures somewhere that StudioMDL can see them.
 		self.createFakeTextures(textures, os.path.join(self.fileScratchDir, TEXTURE_DIR_NAME))
@@ -98,7 +101,7 @@ class FileProcessor:
 		for line in lines:
 			if line.startswith("$bodygroup"):
 				if inBodyGroup:
-					raise RuntimeError(f"{qcPath} had invalid nested body group.")
+					raise RuntimeError(f"{relPath(qcPath)} had invalid nested body group.")
 				inBodyGroup = True
 			elif inBodyGroup:
 				if line == "}":
@@ -176,9 +179,72 @@ class FileProcessor:
 			lines[index] = f"{TEXTURE_DIR_NAME}/{textureName}"
 
 	def calculateUVBoundsForTextures(self, smdPath:str, lines:list):
+		trianglesLineIndex = -1
+		currentTexture = ""
+
 		self.logMsg("Checking UV bounds for all textures in", relPath(smdPath), file="CalculateUVBoundsForTextures")
 
-		# TODO
+		for index in range(0, len(lines)):
+			line = lines[index]
+
+			if line == "triangles":
+				trianglesLineIndex = index
+				self.logMsg("Triangles begin from line", trianglesLineIndex + 2, file="CalculateUVBoundsForTextures")
+				continue
+
+			if trianglesLineIndex < 0:
+				continue
+
+			if line == "end":
+				break
+
+			# Lines go:
+
+			# texturePath
+			#   vertex 1
+			#   vertex 2
+			#   vertex 3
+			# ... repeat ...
+
+			# We only care about lines with vertices.
+
+			moduloIndex = (index - (trianglesLineIndex + 1)) % 4
+
+			if moduloIndex == 0:
+				currentTexture = line.strip()
+				continue
+
+			segments = line.strip().split()
+
+			# Format is: bone vx vy vz nz ny nz u v
+			if len(segments) != 9:
+				raise RuntimeError(f"{relPath(smdPath)} had invalid vertex definition on line {index + 1}")
+
+			(u, v) = segments[7:9]
+
+			if currentTexture not in self.boundsForTexture:
+				self.boundsForTexture[currentTexture] = (u, v, u, v)
+			else:
+				(minU, minV, maxU, maxV) = self.boundsForTexture[currentTexture]
+
+				if u < minU:
+					minU = u
+
+				if v < minV:
+					minV = v
+
+				if u > maxU:
+					maxU = u
+
+				if v > maxV:
+					maxV = v
+
+				self.boundsForTexture[currentTexture] = (minU, minV, maxU, maxV)
+
+	def logUVBounds(self):
+		for textureName in self.boundsForTexture:
+			(minU, minV, maxU, maxV) = self.boundsForTexture[textureName]
+			self.logMsg(f"UV bounds for texture {textureName}: ({minU}, {minV}) - ({maxU}, {maxV})", file="LogUVBounds")
 
 	def createFakeTextures(self, textures:list, outputDir:str):
 		global TextureLookup
