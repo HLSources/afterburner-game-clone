@@ -4,6 +4,8 @@ import subprocess
 import shutil
 import struct
 import threading
+import inspect
+import math
 
 from concurrent.futures.thread import ThreadPoolExecutor
 from PIL import Image
@@ -23,12 +25,26 @@ STUDIOMDL_PATH = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "studiomdl_new.e
 MDL_HEADER_FORMAT = "II64sIfffffffffffffffIIIIIIIIIIIIIIIIIIIIIIIIIII"
 MDL_TEXTURE_FORMAT = "64sIIII"
 MDL_TEXTURE_STRUCT_SIZE = struct.calcsize(MDL_TEXTURE_FORMAT)
+MDL_BODYPART_FORMAT = "64sIII"
+MDL_BODYPART_STRUCT_SIZE = struct.calcsize(MDL_BODYPART_FORMAT)
+MDL_MODEL_FORMAT = "64sIfIIIIIIIIII"
+MDL_MODEL_STRUCT_SIZE = struct.calcsize(MDL_MODEL_FORMAT)
+MDL_MESH_FORMAT = "IIIII"
+MDL_MESH_STRUCT_SIZE = struct.calcsize(MDL_MESH_FORMAT)
+MDL_SHORT_FORMAT = "h"
+MDL_SHORT_STRUCT_SIZE = struct.calcsize(MDL_SHORT_FORMAT)
+MDL_TRICMD_FORMAT = "hhhh"
+MDL_TRICMD_STRUCT_SIZE = struct.calcsize(MDL_TRICMD_FORMAT)
+
 STUDIO_NO_EMBEDDED_TEXTURES = 0x800
 
 # Map from all-lowercase texture names to actual names.
 # This is needed to properly update texture names in the
 # MDL file, or the engine won't be able to find the textures.
 TextureLookup = {}
+
+# This is indexed by disk name (ie. by the name stored in TextureLookup)
+TextureDims = {}
 
 def relPath(path:str):
 	return os.path.relpath(path, SCRIPT_DIR)
@@ -159,9 +175,9 @@ class FileProcessor:
 			if not begunTriangles:
 				continue
 
-			segments = line.split(".")
+			segments = os.path.splitext(line)
 
-			if len(segments) != 2 or segments[1] != "bmp":
+			if len(segments) != 2 or segments[1] != ".bmp":
 				continue
 
 			textureName = line
@@ -179,6 +195,8 @@ class FileProcessor:
 			lines[index] = f"{TEXTURE_DIR_NAME}/{textureName}"
 
 	def calculateUVBoundsForTextures(self, smdPath:str, lines:list):
+		global TextureLookup
+
 		trianglesLineIndex = -1
 		currentTexture = ""
 
@@ -211,7 +229,9 @@ class FileProcessor:
 			moduloIndex = (index - (trianglesLineIndex + 1)) % 4
 
 			if moduloIndex == 0:
-				currentTexture = line.strip()
+				mdlTexturePath = line.strip()
+				mdlTextureName = os.path.splitext(os.path.basename(mdlTexturePath))[0].lower() + ".png"
+				currentTexture = TextureLookup[mdlTextureName]
 				continue
 
 			segments = line.strip().split()
@@ -220,7 +240,8 @@ class FileProcessor:
 			if len(segments) != 9:
 				raise RuntimeError(f"{relPath(smdPath)} had invalid vertex definition on line {index + 1}")
 
-			(u, v) = segments[7:9]
+			u = max(0.0, min(float(segments[7]), 1.0))
+			v = max(0.0, min(float(segments[8]), 1.0))
 
 			if currentTexture not in self.boundsForTexture:
 				self.boundsForTexture[currentTexture] = (u, v, u, v)
@@ -246,6 +267,13 @@ class FileProcessor:
 			(minU, minV, maxU, maxV) = self.boundsForTexture[textureName]
 			self.logMsg(f"UV bounds for texture {textureName}: ({minU}, {minV}) - ({maxU}, {maxV})", file="LogUVBounds")
 
+			(width, height) = TextureDims[textureName]
+			(u0, v0) = (math.floor(minU * (width - 1)), math.floor(minV * (height - 1)))
+			(u1, v1) = (math.floor(maxU * (width - 1)), math.floor(maxV * (height - 1)))
+			(newWidth, newHeight) = ((u1 - u0) + 1, (v1 - v0) + 1)
+
+			self.logMsg(f"Cropped from {width}x{height} to {newWidth}x{newHeight} ({str((u0, v0))} to {str((u1, v1))})", file="LogUVBounds")
+
 	def createFakeTextures(self, textures:list, outputDir:str):
 		global TextureLookup
 
@@ -254,16 +282,9 @@ class FileProcessor:
 
 		for texture in textures:
 			textureFileNameOnDisk = TextureLookup[os.path.splitext(texture)[0].lower() + ".png"]
-			textureFileNameOnDisk = os.path.join(INPUT_TEXTURE_DIR, textureFileNameOnDisk)
 
-			# We must create fake textures of the appropriate size, otherwise StudioMDL
-			# seems to get the UVs wrong...
-			width = 0
-			height = 0
-
-			with Image.open(textureFileNameOnDisk) as origImage:
-				width = origImage.width
-				height = origImage.height
+			# We must create fake textures of the appropriate size for the UVs to work.
+			(width, height) = TextureDims[textureFileNameOnDisk]
 
 			dest = os.path.join(outputDir, texture)
 			self.logMsg("Creating fake texture:", relPath(dest), f"({width}x{height})", file="CreateFakeTextures")
@@ -340,7 +361,124 @@ class FileProcessor:
 			struct.pack_into(MDL_TEXTURE_FORMAT, mdlData, fileOffset, bytes(newTextureName, "utf-8"), *(textureData[1:]))
 
 	def patchMdlTextureUVs(self, mdlPath:str, mdlData:bytearray):
-		pass
+		meshOffsetsUsed = {}
+
+		headerData = struct.unpack_from(MDL_HEADER_FORMAT, mdlData)
+
+		numBodyParts = headerData[36]
+		bodyPartsLumpOffset = headerData[37]
+		numTextures = headerData[30]
+		texturesLumpOffset = headerData[31]
+		skinsLumpOffset = headerData[35]
+
+		for bodyPartIndex in range(0, numBodyParts):
+			bodyPartOffset = bodyPartsLumpOffset + (bodyPartIndex * MDL_BODYPART_STRUCT_SIZE)
+			bodyPartData = struct.unpack_from(MDL_BODYPART_FORMAT, mdlData, bodyPartOffset)
+
+			numModels = bodyPartData[1]
+			modelsLumpOffset = bodyPartData[3]
+
+			for modelIndex in range(0, numModels):
+				modelOffset = modelsLumpOffset + (modelIndex * MDL_MODEL_STRUCT_SIZE)
+				modelData = struct.unpack_from(MDL_MODEL_FORMAT, mdlData, modelOffset)
+
+				numMeshes = modelData[3]
+				meshesLumpOffset = modelData[4]
+
+				for meshIndex in range(0, numMeshes):
+					meshOffset = meshesLumpOffset + (meshIndex * MDL_MESH_STRUCT_SIZE)
+
+					if meshOffset in meshOffsetsUsed:
+						# Should never happen, but just in case my assumptions are incorrect,
+						# flag up if we try and fix the same mesh twice.
+						raise RuntimeError(f"Attempted to update UVs for mesh {meshOffset} twice in {relPath(mdlPath)}")
+
+					meshOffsetsUsed[meshOffset] = True
+
+					meshData = struct.unpack_from(MDL_MESH_FORMAT, mdlData, meshOffset)
+
+					skinIndex = meshData[2]
+					skinOffset = skinsLumpOffset + (skinIndex * MDL_SHORT_STRUCT_SIZE)
+					triCmdOffset = meshData[1]
+					textureIndex = struct.unpack_from(MDL_SHORT_FORMAT, mdlData, skinOffset)[0]
+
+					if textureIndex >= numTextures:
+						raise RuntimeError(f"{relPath(mdlPath)} mesh {meshIndex} had invalid texture skin index {textureIndex}.")
+
+					mdlTextureOffset = texturesLumpOffset + (textureIndex * MDL_TEXTURE_STRUCT_SIZE)
+					mdlTextureData = struct.unpack_from(MDL_TEXTURE_FORMAT, mdlData, mdlTextureOffset)
+					mdlTextureDim = mdlTextureData[2:4]
+
+					mdlTexturePath = mdlTextureData[0].decode("utf-8").rstrip("\x00")
+					mdlTextureName = os.path.basename(mdlTexturePath)
+
+					diskTextureDim = TextureDims[mdlTextureName]
+
+					if mdlTextureDim == diskTextureDim:
+						# No need to do anything
+						continue
+
+					bounds = self.boundsForTexture[mdlTextureName]
+
+					self.logMsg("Patching UVs for", relPath(mdlPath), "texture", mdlTexturePath,
+								f"from {mdlTextureDim[0]}x{mdlTextureDim[1]} to {diskTextureDim[0]}x{diskTextureDim[1]}",
+								f"with UV bounds {bounds}", file="PatchMDL")
+					self.patchUVs(mdlPath, mdlData, mdlTextureDim, diskTextureDim, bounds, triCmdOffset)
+
+	def patchUVs(self, mdlPath:str, mdlData:str, mdlTextureDim:tuple, diskTextureDim:tuple, textureBounds:tuple, triCmdOffset:int):
+		# Sanity (should never happen):
+		if mdlTextureDim[0] < 1 or mdlTextureDim[1] < 1:
+			raise RuntimeError(f"{relPath(mdlPath)}: MDL texture had invalid dimensions")
+
+		if diskTextureDim[0] < 1 or diskTextureDim[1] < 1:
+			raise RuntimeError(f"{relPath(mdlPath)}: Texture on disk had invalid dimensions")
+
+		numElements = struct.unpack_from(MDL_SHORT_FORMAT, mdlData, triCmdOffset)[0]
+		triCmdOffset += MDL_SHORT_STRUCT_SIZE
+
+		while numElements > 0:
+
+			while numElements > 0:
+				(vert, norm, u, v) = struct.unpack_from(MDL_TRICMD_FORMAT, mdlData, triCmdOffset)
+
+				# Sanity:
+				if u < 0 or u >= mdlTextureDim[0]:
+					raise RuntimeError(f"{relPath(mdlPath)}: Encountered U value outside of valid dimension")
+
+				if v < 0 or v >= mdlTextureDim[1]:
+					raise RuntimeError(f"{relPath(mdlPath)}: Encountered U value outside of valid dimension")
+
+				newU = self.remapCoOrd(u, mdlTextureDim[0], diskTextureDim[0], textureBounds[0], textureBounds[2])
+				newV = self.remapCoOrd(v, mdlTextureDim[1], diskTextureDim[1], textureBounds[1], textureBounds[3])
+
+				struct.pack_into(MDL_TRICMD_FORMAT, mdlData, triCmdOffset, vert, norm, newU, newV)
+
+				triCmdOffset += MDL_TRICMD_STRUCT_SIZE
+				numElements -= 1
+
+			numElements = struct.unpack_from(MDL_SHORT_FORMAT, mdlData, triCmdOffset)[0]
+			triCmdOffset += MDL_SHORT_STRUCT_SIZE
+
+	def remapCoOrd(self, value:int, mdlTexDim:int, diskTexDim:int, uvExtentMin:float, uvExtentMax:float):
+		# Map MDL texture's 0 pixel onto the original texture.
+		mdlTexMinValueForOrig = math.floor(uvExtentMin * float(diskTexDim))
+
+		# Map MDL texture's highest pixel onto the original texture.
+		mdlTexMaxValueForOrig = math.ceil(uvExtentMax * float(diskTexDim))
+
+		# Find out how far into this range the provided value is.
+		interpolant = float(value - mdlTexMinValueForOrig) / float(mdlTexMaxValueForOrig - mdlTexMinValueForOrig)
+
+		# Calculate a new value.
+		newValue = round(interpolant * diskTexDim)
+
+		# TODO: Should this be clamped to diskTexDim - 1? If so, we need to re-evaluate the above lines too.
+		if newValue < 0:
+			newValue = 0
+		elif newValue > diskTexDim:
+			newValue = diskTexDim
+
+		return newValue
 
 	def copyPatchedMdl(self, source:str, dest:str):
 		self.logMsg("Copying", relPath(source), "to", relPath(dest), file="CopyPatchedMDL")
@@ -398,11 +536,17 @@ def buildTextureLookup(textureDir:str):
 	print("Building texture lookup table")
 
 	for texFile in os.listdir(textureDir):
+		if os.path.splitext(texFile)[1].lower() != ".png":
+			continue
+
 		if texFile.lower() in TextureLookup:
 			print("Duplicate texture", texFile, "with different filename case found in textures directory!", file=sys.stderr)
 			sys.exit(1)
 
 		TextureLookup[texFile.lower()] = texFile
+
+		with Image.open(os.path.join(textureDir, texFile)) as img:
+			TextureDims[texFile] = (img.width, img.height)
 
 def cleanScratchDir():
 	if os.path.isfile(SCRATCH_DIR):
@@ -424,7 +568,8 @@ def threadTask(files:dict, base:int, stride:int):
 			FileProcessor(filePath).processInputFile()
 			files[filePath] = True
 		except Exception as ex:
-			print(str(ex), file=sys.stderr)
+			details = inspect.trace()[-1]
+			print(f"*** Exception from {details.filename}:{details.lineno}:", str(ex), file=sys.stderr)
 			print("*** An error occurred, skipping file", relPath(filePath), file=sys.stderr)
 		finally:
 			# REMOVE ME
