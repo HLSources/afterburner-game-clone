@@ -258,7 +258,7 @@ static msurface_t* GetSurfaceByPoint(const float* worldPos)
 	return NULL;
 }
 
-static msurface_t* CL_GetSurfaceUnderCrosshair(void)
+msurface_t* CL_GetSurfaceUnderCrosshair(void)
 {
 	vec3_t dir;
 	vec3_t startPos;
