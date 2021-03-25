@@ -3520,6 +3520,7 @@ void R_DrawViewModel( void )
 static void R_StudioLoadTextureFromDisk(model_t* mod, studiohdr_t* phdr, mstudiotexture_t* ptexture)
 {
 	int32_t flags = 0;
+	int32_t textureIndex = 0;
 
 	if ( FBitSet(ptexture->flags, STUDIO_NF_NORMALMAP) )
 	{
@@ -3540,13 +3541,13 @@ static void R_StudioLoadTextureFromDisk(model_t* mod, studiohdr_t* phdr, mstudio
 	// Colour remapping is not supported for disk-loaded textures since the texture name is used to
 	// provide properties about the remap, so cannot refer to a file name.
 
-	const int32_t textureIndex = GL_LoadTexture(ptexture->name, NULL, 0, flags);
+	textureIndex = GL_LoadTexture(ptexture->name, NULL, 0, flags);
 
 	if ( textureIndex > 0 )
 	{
-		ptexture->index = textureIndex;
+		image_t* tex = R_GetTexture(textureIndex);
 
-		image_t* const tex = R_GetTexture(textureIndex);
+		ptexture->index = textureIndex;
 		ptexture->width = tex->srcWidth;
 		ptexture->height = tex->srcHeight;
 	}
