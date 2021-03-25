@@ -2255,26 +2255,16 @@ static void SequenceAnimatedTextures(uint32_t base)
 
 static qboolean LoadPNGTextureData(const dpngtexturepath_t* in, texture_t** out, const char* texName)
 {
-	byte* pngData = NULL;
 	qboolean success = false;
 
 	do
 	{
-		fs_offset_t pngDataSize = 0;
 		int textureNum = 0;
-
-		pngData = FS_LoadFile(texName, &pngDataSize, false);
-
-		if ( !pngData || pngDataSize < 1 )
-		{
-			Con_Printf(S_ERROR "LoadPngTexture: Map '%s' texture '%s' not found.\n", loadmodel->name, texName);
-			break;
-		}
 
 #if !XASH_DEDICATED
 		if( !Host_IsDedicated() )
 		{
-			textureNum = ref.dllFuncs.GL_LoadTexture(texName, pngData, pngDataSize, TF_MAKELUMA);
+			textureNum = ref.dllFuncs.GL_LoadTexture(texName, NULL, 0, 0);
 
 			if ( textureNum <= 0 )
 			{
@@ -2299,11 +2289,6 @@ static qboolean LoadPNGTextureData(const dpngtexturepath_t* in, texture_t** out,
 		success = true;
 	}
 	while ( false );
-
-	if ( pngData )
-	{
-		Mem_Free(pngData);
-	}
 
 	if ( !success )
 	{
@@ -2382,13 +2367,6 @@ static void LoadPNGTexture(const dpngtexturepath_t* in, texture_t** out)
 	}
 
 	Q_snprintf(nameBuffer, sizeof(nameBuffer), "%s.png", in->path);
-
-	if ( !FS_FileExists(nameBuffer, false) )
-	{
-		Con_Printf(S_ERROR "LoadPngTexture: Map '%s' texture '%s' not found.\n", loadmodel->name, nameBuffer);
-		CreateDefaultTexture(out);
-		return;
-	}
 
 	if ( !LoadPNGTextureData(in, out, nameBuffer) )
 	{

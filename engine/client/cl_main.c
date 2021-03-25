@@ -258,7 +258,7 @@ static msurface_t* GetSurfaceByPoint(const float* worldPos)
 	return NULL;
 }
 
-msurface_t* CL_GetSurfaceUnderCrosshair(void)
+static msurface_t* CL_GetSurfaceUnderCrosshair(void)
 {
 	vec3_t dir;
 	vec3_t startPos;
@@ -309,7 +309,7 @@ static void PrintAllDumpModelArgs(void)
 	}
 }
 
-void CL_Debug_DumpWorldModel(void)
+static void CL_Debug_DumpWorldModel(void)
 {
 	string fileName;
 	unsigned int flags = 0;
@@ -362,7 +362,7 @@ void CL_Debug_DumpWorldModel(void)
 	DumpModelData(fileName, cl.worldmodel, flags);
 }
 
-void CL_Debug_DumpSurface(void)
+static void CL_Debug_DumpSurface(void)
 {
 	string fileName;
 	int argc = 0;
@@ -459,7 +459,7 @@ static mleaf_t* FindLeafForPointRecursive(mnode_t* node, const float* point)
 	return NULL;
 }
 
-void CL_Debug_DumpLeafBounds(void)
+static void CL_Debug_DumpLeafBounds(void)
 {
 	string fileName;
 	int argc = 0;
@@ -508,7 +508,7 @@ void CL_Debug_DumpLeafBounds(void)
 	DumpLeafBoundsAsWavefrontObj(fileName, cl.worldmodel, leaf, true);
 }
 
-void CL_Debug_SurfaceInfo(void)
+static void CL_Debug_SurfaceInfo(void)
 {
 	int argc = 0;
 	msurface_t* targetSurface = NULL;
@@ -598,7 +598,7 @@ static void FindSurfaceInTreeRecursive(mnode_t* node, uint16_t surfaceIndex)
 	}
 }
 
-void CL_Debug_SearchTreeForFace(void)
+static void CL_Debug_SearchTreeForFace(void)
 {
 	int argc = 0;
 	int surfaceIndex = -1;
@@ -645,7 +645,7 @@ static void PrintLeafInfo(const mleaf_t* leaf)
 	}
 }
 
-void CL_Debug_LeafInfo(void)
+static void CL_Debug_LeafInfo(void)
 {
 	int argc = 0;
 	mleaf_t* leaf = NULL;
@@ -750,7 +750,7 @@ static void PrintLeafPVS(const mleaf_t* leaf)
 	Mem_Free(uncompressed);
 }
 
-void CL_Debug_LeafPVS(void)
+static void CL_Debug_LeafPVS(void)
 {
 	int argc = 0;
 	mleaf_t* leaf = NULL;

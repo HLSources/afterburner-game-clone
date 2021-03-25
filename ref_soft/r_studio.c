@@ -3517,6 +3517,47 @@ void R_DrawViewModel( void )
 	}
 }
 
+static void R_StudioLoadTextureFromDisk(model_t* mod, studiohdr_t* phdr, mstudiotexture_t* ptexture)
+{
+	int32_t flags = 0;
+
+	if ( FBitSet(ptexture->flags, STUDIO_NF_NORMALMAP) )
+	{
+		SetBits(flags, TF_NORMALMAP);
+	}
+
+	if( FBitSet(ptexture->flags, STUDIO_NF_NOMIPS) )
+	{
+		SetBits(flags, TF_NOMIPMAP);
+	}
+
+	if( FBitSet(ENGINE_GET_PARM(PARM_FEATURES), ENGINE_IMPROVED_LINETRACE) && FBitSet(ptexture->flags, STUDIO_NF_MASKED) )
+	{
+		// Paranoia2 texture alpha-tracing
+		SetBits(flags, TF_KEEP_SOURCE);
+	}
+
+	// Colour remapping is not supported for disk-loaded textures since the texture name is used to
+	// provide properties about the remap, so cannot refer to a file name.
+
+	const int32_t textureIndex = GL_LoadTexture(ptexture->name, NULL, 0, flags);
+
+	if ( textureIndex > 0 )
+	{
+		ptexture->index = textureIndex;
+
+		image_t* const tex = R_GetTexture(textureIndex);
+		ptexture->width = tex->srcWidth;
+		ptexture->height = tex->srcHeight;
+	}
+	else
+	{
+		ptexture->index = tr.defaultTexture;
+		ptexture->width = 16;
+		ptexture->height = 16;
+	}
+}
+
 /*
 ====================
 R_StudioLoadTexture
@@ -3629,7 +3670,16 @@ void GAME_EXPORT Mod_StudioLoadTextures( model_t *mod, void *data )
 	if( phdr->textureindex > 0 && phdr->numtextures <= MAXSTUDIOSKINS )
 	{
 		for( i = 0; i < phdr->numtextures; i++ )
-			R_StudioLoadTexture( mod, phdr, &ptexture[i] );
+		{
+			if ( phdr->flags & STUDIO_NO_EMBEDDED_TEXTURES )
+			{
+				R_StudioLoadTextureFromDisk(mod, phdr, &ptexture[i]);
+			}
+			else
+			{
+				R_StudioLoadTexture( mod, phdr, &ptexture[i] );
+			}
+		}
 	}
 }
 

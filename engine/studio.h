@@ -59,6 +59,7 @@ Studio models are position independent, so the cache manager can move them.
 #define STUDIO_AMBIENT_LIGHT		(1U<<8)	// force to use ambient shading
 #define STUDIO_TRACE_HITBOX		(1U<<9)	// always use hitbox trace instead of bbox
 #define STUDIO_FORCE_SKYLIGHT		(1U<<10)	// always grab lightvalues from the sky settings (even if sky is invisible)
+#define STUDIO_NO_EMBEDDED_TEXTURES (1U<<11) // Uses PNG textures from disk, not embedded in model.
 
 #define STUDIO_HAS_BUMP			(1U<<16)	// loadtime set
 #define STUDIO_STATIC_PROP		(1U<<29)	// hint for engine

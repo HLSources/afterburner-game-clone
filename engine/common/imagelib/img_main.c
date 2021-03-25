@@ -247,7 +247,7 @@ rgbdata_t *FS_LoadImage( const char *filename, const byte *buffer, size_t size )
 	{
 		if( anyformat || !Q_stricmp( ext, format->ext ))
 		{
-			Q_sprintf( path, format->formatstring, loadname, "", format->ext );
+			Q_sprintf( path, format->formatstring, loadname, "", (ext && *ext) ? ext : format->ext );
 			image.hint = format->hint;
 			f = FS_LoadFile( path, &filesize, false );
 
@@ -274,7 +274,7 @@ rgbdata_t *FS_LoadImage( const char *filename, const byte *buffer, size_t size )
 			{
 				if( anyformat || !Q_stricmp( ext, format->ext ))
 				{
-					Q_sprintf( path, format->formatstring, loadname, cmap->type[i].suf, format->ext );
+					Q_sprintf( path, format->formatstring, loadname, cmap->type[i].suf, (ext && *ext) ? ext : format->ext );
 					image.hint = (image_hint_t)cmap->type[i].hint; // side hint
 
 					f = FS_LoadFile( path, &filesize, false );
@@ -283,7 +283,7 @@ rgbdata_t *FS_LoadImage( const char *filename, const byte *buffer, size_t size )
 						// this name will be used only for tell user about problems
 						if( format->loadfunc( path, f, filesize ))
 						{
-							Q_snprintf( sidename, sizeof( sidename ), "%s%s.%s", loadname, cmap->type[i].suf, format->ext );
+							Q_snprintf( sidename, sizeof( sidename ), "%s%s.%s", loadname, cmap->type[i].suf, (ext && *ext) ? ext : format->ext );
 							if( FS_AddSideToPack( sidename, cmap->type[i].flags )) // process flags to flip some sides
 							{
 								Mem_Free( f );
