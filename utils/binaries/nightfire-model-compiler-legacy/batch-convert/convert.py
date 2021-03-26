@@ -197,7 +197,11 @@ class FileProcessor:
 			outputPath = os.path.join(outputDir, textureFileNameOnDisk)
 
 			self.logMsg("Copying texture", relPath(inputPath), "to", relPath(outputPath), file="CopyTextures")
-			shutil.copy2(inputPath, outputPath)
+
+			try:
+				shutil.copy2(inputPath, outputPath)
+			except Exception as ex:
+				raise RuntimeError(f"Encountered error when copying texture {relPath(inputPath)} to {relPath(outputPath)}. {str(ex)}")
 
 	def compileQc(self, qcPath:str):
 		baseName = os.path.basename(qcPath)
@@ -219,7 +223,12 @@ class FileProcessor:
 
 	def copyMdlToOutput(self, source:str, dest:str):
 		self.logMsg("Copying", relPath(source), "to", relPath(dest), file="CopyMdlToOutput")
-		shutil.copy2(source, dest)
+
+		try:
+			os.makedirs(os.path.dirname(dest), exist_ok=True)
+			shutil.copy2(source, dest)
+		except Exception as ex:
+				raise RuntimeError(f"Encountered error when copying MDL file {relPath(source)} to {relPath(dest)}. {str(ex)}")
 
 	def runCommand(self, args, output=""):
 		self.logMsg("*** Running command:", *args, file=(output if output else None))
@@ -283,6 +292,8 @@ def buildTextureLookup(textureDir:str):
 		TextureLookup[texFile.lower()] = texFile
 
 def cleanScratchDir():
+	print("Cleaning", SCRATCH_DIR)
+
 	if os.path.isfile(SCRATCH_DIR):
 		os.remove(SCRATCH_DIR)
 	elif os.path.isdir(SCRATCH_DIR):
@@ -338,6 +349,8 @@ def main():
 		executor.map(lambda args: threadTask(*args), threadWork)
 
 	filesProcessed = 0
+
+	print("Writing error summary...")
 
 	with open(ERROR_SUMMARY_PATH, "w") as errorLogFile:
 		for filePath in filesMap:
