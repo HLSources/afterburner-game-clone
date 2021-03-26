@@ -8,9 +8,8 @@ import inspect
 import math
 
 from concurrent.futures.thread import ThreadPoolExecutor
-from PIL import Image
 
-NUM_THREADS = 1
+NUM_THREADS = 4
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(sys.argv[0]))
 INPUT_DIR = os.path.join(SCRIPT_DIR, "v14")
@@ -21,6 +20,7 @@ TEXTURE_DIR_NAME = "mdl"
 
 MDLCONVERT_PATH = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "mdlconvert.exe"))
 STUDIOMDL_PATH = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "abstudiomdl.exe"))
+ERROR_SUMMARY_PATH = os.path.join(SCRIPT_DIR, "errors.log")
 
 MDL_HEADER_FORMAT = "II64sIfffffffffffffffIIIIIIIIIIIIIIIIIIIIIIIIIII"
 MDL_TEXTURE_FORMAT = "64sIIII"
@@ -42,9 +42,6 @@ STUDIO_NO_EMBEDDED_TEXTURES = 0x800
 # This is needed to properly update texture names in the
 # MDL file, or the engine won't be able to find the textures.
 TextureLookup = {}
-
-# This is indexed by disk name (ie. by the name stored in TextureLookup)
-TextureDims = {}
 
 def relPath(path:str):
 	return os.path.relpath(path, SCRIPT_DIR)
@@ -285,9 +282,6 @@ def buildTextureLookup(textureDir:str):
 
 		TextureLookup[texFile.lower()] = texFile
 
-		with Image.open(os.path.join(textureDir, texFile)) as img:
-			TextureDims[texFile] = (img.width, img.height)
-
 def cleanScratchDir():
 	if os.path.isfile(SCRATCH_DIR):
 		os.remove(SCRATCH_DIR)
@@ -296,24 +290,17 @@ def cleanScratchDir():
 
 	os.makedirs(SCRATCH_DIR, exist_ok=True)
 
-def threadTask(files:dict, base:int, stride:int):
-	keys = list(files.keys())
-
-	for index in range(base, len(keys), stride):
-		filePath = keys[index]
-		files[filePath] = False
-
-		try:
-			print("Thread", base, "processing file:", relPath(filePath))
-			FileProcessor(filePath).processInputFile()
-			files[filePath] = True
-		except Exception as ex:
-			details = inspect.trace()[-1]
-			print(f"*** Exception from {details.filename}:{details.lineno}:", str(ex), file=sys.stderr)
-			print("*** An error occurred, skipping file", relPath(filePath), file=sys.stderr)
-		finally:
-			# REMOVE ME
-			break
+def threadTask(files:dict, filePath:str):
+	try:
+		print("Processing file:", relPath(filePath))
+		FileProcessor(filePath).processInputFile()
+		files[filePath] = None
+	except Exception as ex:
+		details = inspect.trace()[-1]
+		errorString = f"Exception from {details.filename}:{details.lineno}: {str(ex)}"
+		files[filePath] = errorString
+		print("***", errorString, file=sys.stderr)
+		print("*** An error occurred, skipping file", relPath(filePath), file=sys.stderr)
 
 def getInputFiles(rootDir:str):
 	filesFound = []
@@ -342,20 +329,25 @@ def main():
 	filesToProcess = getInputFiles(INPUT_DIR)
 	print("Found", len(filesToProcess), "input files")
 
-	filesMap = {filePath: False for filePath in filesToProcess}
-	threadAttributes = [(filesMap, index, NUM_THREADS) for index in range(0, NUM_THREADS)]
+	filesMap = {filePath: f"{filePath} has not yet been processed." for filePath in filesToProcess}
+	threadWork = [(filesMap, filePath) for filePath in filesMap.keys()]
 
 	print("Starting thread pool with", NUM_THREADS, "threads")
 
 	with ThreadPoolExecutor(max_workers=NUM_THREADS) as executor:
-		executor.map(lambda args: threadTask(*args), threadAttributes)
+		executor.map(lambda args: threadTask(*args), threadWork)
 
 	filesProcessed = 0
-	for filePath in filesMap:
-		if filesMap[filePath]:
-			filesProcessed += 1
+
+	with open(ERROR_SUMMARY_PATH, "w") as errorLogFile:
+		for filePath in filesMap:
+			if filesMap[filePath] is None:
+				filesProcessed += 1
+			else:
+				errorLogFile.write(filesMap[filePath] + "\n")
 
 	print("Processed", filesProcessed, "of", len(filesToProcess), "files.")
+	print("Any processing errors have been logged to", ERROR_SUMMARY_PATH)
 
 if __name__ == "__main__":
 	main()
