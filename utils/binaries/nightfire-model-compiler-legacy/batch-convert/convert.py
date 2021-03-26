@@ -6,6 +6,7 @@ import struct
 import threading
 import inspect
 import math
+import signal
 
 from concurrent.futures.thread import ThreadPoolExecutor
 
@@ -43,6 +44,12 @@ STUDIO_NO_EMBEDDED_TEXTURES = 0x800
 # MDL file, or the engine won't be able to find the textures.
 TextureLookup = {}
 
+Aborted = False
+
+def sigintHandler(signal, frame):
+	global Aborted
+	Aborted = True
+
 def relPath(path:str):
 	return os.path.relpath(path, SCRIPT_DIR)
 
@@ -53,6 +60,7 @@ class FileProcessor:
 		self.referencedTextures = {}
 		self.referenceSmds = []
 		self.boundsForTexture = {}
+		self.qcModelName = ""
 
 	def processInputFile(self):
 		inputMdlRelPath = os.path.relpath(self.filePath, INPUT_DIR)
@@ -63,6 +71,9 @@ class FileProcessor:
 
 		# Dump the selected model to the scratch dir.
 		qcPath = self.dumpToQc(self.filePath, self.fileScratchDir)
+
+		# Get the target model name from the QC.
+		modelName = self.readQcModelName(qcPath)
 
 		# Determine which reference SMDs we have.
 		self.referenceSmds = self.findReferenceSmds(qcPath)
@@ -78,8 +89,7 @@ class FileProcessor:
 		self.compileQc(qcPath)
 
 		# Copy the compiler model to the target directory.
-		mdlPath = os.path.splitext(qcPath)[0] + ".mdl"
-		self.copyMdlToOutput(mdlPath, os.path.join(OUTPUT_DIR, inputMdlRelPath))
+		self.copyMdlToOutput(os.path.join(self.fileScratchDir, modelName), os.path.join(OUTPUT_DIR, inputMdlRelPath))
 
 	def dumpToQc(self, inputFile:str, outputDir:str):
 		fileName = os.path.splitext(os.path.basename(inputFile))[0]
@@ -95,6 +105,25 @@ class FileProcessor:
 
 		self.runCommand(args, output="DumpToQC")
 		return outputPath
+
+	def readQcModelName(self, qcPath:str):
+		lines = []
+
+		with open(qcPath, "r") as inFile:
+			lines = [line.strip() for line in inFile.readlines()]
+
+		modelName = ""
+
+		for line in lines:
+			segments = line.split()
+			if len(segments) == 2 and segments[0] == "$modelname":
+				modelName = segments[1].strip('"')
+				break
+
+		if not modelName:
+			raise RuntimeError(f"Could not real model name from {relPath(qcPath)}")
+
+		return modelName
 
 	def findReferenceSmds(self, qcPath:str):
 		lines = []
@@ -302,6 +331,11 @@ def cleanScratchDir():
 	os.makedirs(SCRATCH_DIR, exist_ok=True)
 
 def threadTask(files:dict, filePath:str):
+	global Aborted
+
+	if Aborted:
+		return
+
 	try:
 		print("Processing file:", relPath(filePath))
 		FileProcessor(filePath).processInputFile()
@@ -344,6 +378,8 @@ def main():
 	threadWork = [(filesMap, filePath) for filePath in filesMap.keys()]
 
 	print("Starting thread pool with", NUM_THREADS, "threads")
+
+	signal.signal(signal.SIGINT, sigintHandler)
 
 	with ThreadPoolExecutor(max_workers=NUM_THREADS) as executor:
 		executor.map(lambda args: threadTask(*args), threadWork)
