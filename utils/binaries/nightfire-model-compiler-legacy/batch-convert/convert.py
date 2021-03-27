@@ -49,6 +49,7 @@ class FileProcessor:
 	def processInputFile(self):
 		inputMdlRelPath = os.path.relpath(self.filePath, INPUT_DIR)
 		inputMdlRelPathNoExt = os.path.splitext(inputMdlRelPath)[0]
+		inputMdlName = os.path.basename(inputMdlRelPath)
 
 		if self.args.skip_existing and os.path.isfile(os.path.join(OUTPUT_DIR, inputMdlRelPath)):
 			return
@@ -59,18 +60,15 @@ class FileProcessor:
 		# Dump the selected model to the scratch dir.
 		qcPath = self.dumpToQc(self.filePath, self.fileScratchDir)
 
-		# Get the target model name from the QC.
-		mdlName = self.readQcModelName(qcPath)
-
-		# Make sure this matches the name of the MDL we decompiled.
-		# TODO: Fix this later in the QC if it doesn't. We don't want to
-		# go around renaming model files to names that maps etc. would
-		# then no longer be able to find.
-		if mdlName != os.path.basename(inputMdlRelPath):
-			raise RuntimeError(f"{relPath(self.filePath)} had mismatching embedded name {mdlName}")
+		# Make sure the QC model name matches the model we decompiled.
+		# Sometimes the name embedded in the model is different, but we
+		# want to make sure the output MDL is named the same as the
+		# input MDL. If this is not the case, maps which reference the
+		# MDL by name may not be able to load it.
+		self.setQcModelName(qcPath, inputMdlName)
 
 		mdlRelDirname = os.path.dirname(inputMdlRelPath)
-		mdlDestPath = os.path.join(OUTPUT_DIR, mdlRelDirname, mdlName)
+		mdlDestPath = os.path.join(OUTPUT_DIR, mdlRelDirname, inputMdlName)
 
 		if self.args.skip_existing and os.path.isfile(mdlDestPath):
 			return
@@ -89,7 +87,7 @@ class FileProcessor:
 		self.compileQc(qcPath)
 
 		# Copy the compiled model to the target directory.
-		self.copyMdlToOutput(os.path.join(self.fileScratchDir, mdlName), mdlDestPath)
+		self.copyMdlToOutput(os.path.join(self.fileScratchDir, inputMdlName), mdlDestPath)
 
 	def dumpToQc(self, inputFile:str, outputDir:str):
 		fileName = os.path.splitext(os.path.basename(inputFile))[0]
@@ -106,24 +104,28 @@ class FileProcessor:
 		self.runCommand(args, output="DumpToQC")
 		return outputPath
 
-	def readQcModelName(self, qcPath:str):
+	def setQcModelName(self, qcPath:str, modelName:str):
 		lines = []
 
 		with open(qcPath, "r") as inFile:
-			lines = [line.strip() for line in inFile.readlines()]
+			lines = [line.rstrip() for line in inFile.readlines()]
 
-		modelName = ""
+		modelNameReplaced = False
 
-		for line in lines:
+		for index in range(0, len(lines)):
+			line = lines[index].lstrip()
 			segments = line.split()
+
 			if len(segments) == 2 and segments[0] == "$modelname":
-				modelName = segments[1].strip('"')
-				break
+				lines[index] = f'{segments[0]} "{modelName}"'
+				modelNameReplaced = True
 
-		if not modelName:
-			raise RuntimeError(f"Could not real model name from {relPath(qcPath)}")
+		if not modelNameReplaced:
+			raise RuntimeError(f"Could not find $modelname in {relPath(qcPath)}")
 
-		return modelName
+		with open(qcPath, "w") as outFile:
+			# The final \n is added for safety, as StudioMDL might require it
+			outFile.write("\n".join(lines) + "\n")
 
 	def findReferenceSmds(self, qcPath:str):
 		lines = []

@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -73,11 +73,11 @@ _A(	ACT_GLIDE ),
 _A(	ACT_FLY_LEFT ),
 _A(	ACT_FLY_RIGHT ),
 _A(	ACT_DETECT_SCENT ),
-_A(	ACT_SNIFF ),		
-_A(	ACT_BITE ),		
+_A(	ACT_SNIFF ),
+_A(	ACT_BITE ),
 _A(	ACT_THREAT_DISPLAY ),
 _A(	ACT_FEAR_DISPLAY ),
-_A(	ACT_EXCITED ),	
+_A(	ACT_EXCITED ),
 _A( ACT_SPECIAL_ATTACK1 ),
 _A( ACT_SPECIAL_ATTACK2 ),
 _A( ACT_COMBAT_IDLE		),
@@ -95,6 +95,7 @@ _A(	ACT_FLINCH_LEFTARM ),
 _A(	ACT_FLINCH_RIGHTARM ),
 _A(	ACT_FLINCH_LEFTLEG ),
 _A(	ACT_FLINCH_RIGHTLEG ),
+_A(	ACT_INVALID ),
 { 0, NULL }
 };
 #endif // ACTIVITYMAP_H
