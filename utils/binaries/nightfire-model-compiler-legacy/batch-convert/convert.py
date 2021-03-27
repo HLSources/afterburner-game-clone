@@ -7,10 +7,9 @@ import threading
 import inspect
 import math
 import signal
+import argparse
 
 from concurrent.futures.thread import ThreadPoolExecutor
-
-NUM_THREADS = 4
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(sys.argv[0]))
 INPUT_DIR = os.path.join(SCRIPT_DIR, "v14")
@@ -22,22 +21,6 @@ TEXTURE_DIR_NAME = "mdl"
 MDLCONVERT_PATH = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "mdlconvert.exe"))
 STUDIOMDL_PATH = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "abstudiomdl.exe"))
 ERROR_SUMMARY_PATH = os.path.join(SCRIPT_DIR, "errors.log")
-
-MDL_HEADER_FORMAT = "II64sIfffffffffffffffIIIIIIIIIIIIIIIIIIIIIIIIIII"
-MDL_TEXTURE_FORMAT = "64sIIII"
-MDL_TEXTURE_STRUCT_SIZE = struct.calcsize(MDL_TEXTURE_FORMAT)
-MDL_BODYPART_FORMAT = "64sIII"
-MDL_BODYPART_STRUCT_SIZE = struct.calcsize(MDL_BODYPART_FORMAT)
-MDL_MODEL_FORMAT = "64sIfIIIIIIIIII"
-MDL_MODEL_STRUCT_SIZE = struct.calcsize(MDL_MODEL_FORMAT)
-MDL_MESH_FORMAT = "IIIII"
-MDL_MESH_STRUCT_SIZE = struct.calcsize(MDL_MESH_FORMAT)
-MDL_SHORT_FORMAT = "h"
-MDL_SHORT_STRUCT_SIZE = struct.calcsize(MDL_SHORT_FORMAT)
-MDL_TRICMD_FORMAT = "hhhh"
-MDL_TRICMD_STRUCT_SIZE = struct.calcsize(MDL_TRICMD_FORMAT)
-
-STUDIO_NO_EMBEDDED_TEXTURES = 0x800
 
 # Map from all-lowercase texture names to actual names.
 # This is needed to properly update texture names in the
@@ -54,7 +37,8 @@ def relPath(path:str):
 	return os.path.relpath(path, SCRIPT_DIR)
 
 class FileProcessor:
-	def __init__(self, filePath):
+	def __init__(self, args, filePath):
+		self.args = args
 		self.filePath = filePath
 		self.fileScratchDir = ""
 		self.referencedTextures = {}
@@ -66,6 +50,9 @@ class FileProcessor:
 		inputMdlRelPath = os.path.relpath(self.filePath, INPUT_DIR)
 		inputMdlRelPathNoExt = os.path.splitext(inputMdlRelPath)[0]
 
+		if self.args.skip_existing and os.path.isfile(os.path.join(OUTPUT_DIR, inputMdlRelPath)):
+			return
+
 		self.fileScratchDir = os.path.join(SCRATCH_DIR, inputMdlRelPathNoExt)
 		os.makedirs(self.fileScratchDir, exist_ok=True)
 
@@ -73,7 +60,20 @@ class FileProcessor:
 		qcPath = self.dumpToQc(self.filePath, self.fileScratchDir)
 
 		# Get the target model name from the QC.
-		modelName = self.readQcModelName(qcPath)
+		mdlName = self.readQcModelName(qcPath)
+
+		# Make sure this matches the name of the MDL we decompiled.
+		# TODO: Fix this later in the QC if it doesn't. We don't want to
+		# go around renaming model files to names that maps etc. would
+		# then no longer be able to find.
+		if mdlName != os.path.basename(inputMdlRelPath):
+			raise RuntimeError(f"{relPath(self.filePath)} had mismatching embedded name {mdlName}")
+
+		mdlRelDirname = os.path.dirname(inputMdlRelPath)
+		mdlDestPath = os.path.join(OUTPUT_DIR, mdlRelDirname, mdlName)
+
+		if self.args.skip_existing and os.path.isfile(mdlDestPath):
+			return
 
 		# Determine which reference SMDs we have.
 		self.referenceSmds = self.findReferenceSmds(qcPath)
@@ -82,14 +82,14 @@ class FileProcessor:
 		self.fixSmdFiles(self.fileScratchDir)
 		textures = list(self.referencedTextures.keys())
 
-		# Create fake textures somewhere that StudioMDL can see them.
+		# Copy textures somewhere that StudioMDL can see them.
 		self.copyTextures(textures, INPUT_TEXTURE_DIR, os.path.join(self.fileScratchDir, TEXTURE_DIR_NAME))
 
 		# Compile the QC file.
 		self.compileQc(qcPath)
 
-		# Copy the compiler model to the target directory.
-		self.copyMdlToOutput(os.path.join(self.fileScratchDir, modelName), os.path.join(OUTPUT_DIR, inputMdlRelPath))
+		# Copy the compiled model to the target directory.
+		self.copyMdlToOutput(os.path.join(self.fileScratchDir, mdlName), mdlDestPath)
 
 	def dumpToQc(self, inputFile:str, outputDir:str):
 		fileName = os.path.splitext(os.path.basename(inputFile))[0]
@@ -330,7 +330,7 @@ def cleanScratchDir():
 
 	os.makedirs(SCRATCH_DIR, exist_ok=True)
 
-def threadTask(files:dict, filePath:str):
+def threadTask(args, files:dict, filePath:str):
 	global Aborted
 
 	if Aborted:
@@ -338,7 +338,7 @@ def threadTask(files:dict, filePath:str):
 
 	try:
 		print("Processing file:", relPath(filePath))
-		FileProcessor(filePath).processInputFile()
+		FileProcessor(args, filePath).processInputFile()
 		files[filePath] = None
 	except Exception as ex:
 		details = inspect.trace()[-1]
@@ -366,7 +366,29 @@ def getInputFiles(rootDir:str):
 
 	return filesFound
 
+def parseArgs():
+	parser = argparse.ArgumentParser(description="Batch convert Nightfire models.")
+
+	parser.add_argument("-t", "--threads",
+						help="Number of threads to use",
+						type=int,
+						default=4)
+
+	parser.add_argument("-s", "--skip-existing",
+						help="If set, skips converting models whose output MDL already exists.",
+						action="store_true")
+
+	return parser.parse_args()
+
+def validateArgs(args):
+	if args.threads < 1:
+		print("Invalid thread count of", args.threads, "specified.", file=sys.stderr)
+		sys.exit(1)
+
 def main():
+	args = parseArgs()
+	validateArgs(args)
+
 	validateDirs()
 	buildTextureLookup(INPUT_TEXTURE_DIR)
 	cleanScratchDir()
@@ -375,13 +397,13 @@ def main():
 	print("Found", len(filesToProcess), "input files")
 
 	filesMap = {filePath: f"{filePath} has not yet been processed." for filePath in filesToProcess}
-	threadWork = [(filesMap, filePath) for filePath in filesMap.keys()]
+	threadWork = [(args, filesMap, filePath) for filePath in filesMap.keys()]
 
-	print("Starting thread pool with", NUM_THREADS, "threads")
+	print("Starting thread pool with", args.threads, "threads")
 
 	signal.signal(signal.SIGINT, sigintHandler)
 
-	with ThreadPoolExecutor(max_workers=NUM_THREADS) as executor:
+	with ThreadPoolExecutor(max_workers=args.threads) as executor:
 		executor.map(lambda args: threadTask(*args), threadWork)
 
 	filesProcessed = 0
