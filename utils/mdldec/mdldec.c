@@ -128,7 +128,7 @@ static qboolean LoadMDL( const char *modelname )
 
 	if( Q_strcmp( ext, "mdl" ) )
 	{
-		fprintf( stderr, "ERROR: Only .mdl-files is supported.\n" );
+		fprintf( stderr, "ERROR: Only .mdl files are supported.\n" );
 		return false;
 	}
 
@@ -300,4 +300,3 @@ end:
 
 	return 0;
 }
-
