@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cstdint>
+#include <stdint.h>
 
 #define MDLV44_VERSION 44
 static const char MDLV44_IDENT[4] = { 'M', 'D', 'L', 'Z' };
@@ -40,7 +40,7 @@ typedef struct
 	int32_t textureInfoOffset;
 	int32_t skinReferences;
 	int32_t skinFamilies;
-	int32_t skinsOffset;					// uint16_t
+	int32_t skinsOffset;					// int16_t
 	mdlv44_count_offset_t bodyGroups;		// mstudiobodyparts_t
 	mdlv44_count_offset_t attachments;		// mstudioattachment_t
 	mdlv44_count_offset_t soundGroups;		// mdlv44_soundgroup_t

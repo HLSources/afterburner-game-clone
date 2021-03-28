@@ -17,6 +17,7 @@ def build(bld):
 		return
 
 	source = bld.path.ant_glob('*.c')
+	source += bld.path.ant_glob('nightfire/*.c')
 	includes = '. ../../common ../../engine ../../engine/common ../../engine/common/imagelib ../../public'
 	libs = [ 'public', 'M' ]
 
