@@ -25,12 +25,15 @@ GNU General Public License for more details.
 #include "texture.h"
 #include "utils.h"
 #include "version.h"
+#include "nightfire/mdlv44.h"
+#include "nightfire/processmodel.h"
 
 char		  destdir[MAX_SYSPATH];
 char		  modelfile[MAX_SYSPATH];
 studiohdr_t	 *model_hdr;
 studiohdr_t	 *texture_hdr;
 studiohdr_t	**anim_hdr;
+int isNightfireModel = 0;
 
 /*
 ============
@@ -140,17 +143,25 @@ static qboolean LoadMDL( const char *modelname )
 		return false;
 	}
 
-	if( memcmp( &model_hdr->ident, id_mdlhdr, sizeof( id_mdlhdr ) ) )
+	if ( memcmp(&model_hdr->ident, MDLV44_IDENT, sizeof(MDLV44_IDENT)) == 0 )
+	{
+		isNightfireModel = 1;
+	}
+	else if ( memcmp( &model_hdr->ident, id_mdlhdr, sizeof( id_mdlhdr ) ) )
 	{
 		if( !memcmp( &model_hdr->ident, id_seqhdr, sizeof( id_seqhdr ) ) )
+		{
 			fprintf( stderr, "ERROR: %s is not a main HL model file.\n", modelname );
+		}
 		else
+		{
 			fprintf( stderr, "ERROR: %s is not a valid HL model file.\n", modelname );
+		}
 
 		return false;
 	}
 
-	if( model_hdr->version != STUDIO_VERSION )
+	if( model_hdr->version != STUDIO_VERSION || (isNightfireModel && model_hdr->version != MDLV44_VERSION) )
 	{
 		fprintf( stderr, "ERROR: %s has unknown Studio MDL format version.\n", modelname );
 		return false;
@@ -173,7 +184,9 @@ static qboolean LoadMDL( const char *modelname )
 		COM_PathSlashFix( destdir );
 	}
 	else
+	{
 		COM_ExtractFilePath( modelname, destdir );
+	}
 
 	len -= 4; // path length without extension
 
@@ -208,7 +221,9 @@ static qboolean LoadMDL( const char *modelname )
 		}
 	}
 	else
+	{
 		texture_hdr = model_hdr;
+	}
 
 	anim_hdr = malloc( sizeof( studiohdr_t* ) * model_hdr->numseqgroups );
 
@@ -273,30 +288,36 @@ int main( int argc, char *argv[] )
 	if( argc == 1 )
 	{
 		ShowHelp( argv[0] );
-		goto end;
+		puts( "--------------------------------------------------" );
+		return 1;
 	}
 	else if( argc == 3 )
 	{
 		if( Q_strlen( argv[2] ) > MAX_SYSPATH - 2 )
 		{
 			fputs( "ERROR: Destination path is too long.\n", stderr );
-			goto end;
+			puts( "--------------------------------------------------" );
+			return 1;
 		}
 
 		Q_strcpy( destdir, argv[2] );
 	}
 
-	if( !LoadActivityList( argv[0] ) || !LoadMDL( argv[1] ) )
-		goto end;
+	if( LoadActivityList( argv[0] ) && LoadMDL( argv[1] ) )
+	{
+		if ( isNightfireModel )
+		{
+			NF_ProcessModel();
+		}
+		else
+		{
+			WriteQCScript();
+			WriteSMD();
+			WriteTextures();
+		}
 
-	WriteQCScript();
-	WriteSMD();
-	WriteTextures();
-
-	puts( "Done." );
-
-end:
-	puts( "--------------------------------------------------" );
+		puts( "Done." );
+	}
 
 	return 0;
 }

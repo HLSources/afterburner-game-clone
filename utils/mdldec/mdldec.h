@@ -21,6 +21,6 @@ extern char		  modelfile[MAX_SYSPATH];
 extern studiohdr_t	 *model_hdr;
 extern studiohdr_t	 *texture_hdr;
 extern studiohdr_t	**anim_hdr;
+extern int isNightfireModel;
 
 #endif // MDLDEC_H
-
