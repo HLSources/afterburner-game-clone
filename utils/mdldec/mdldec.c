@@ -25,7 +25,7 @@ GNU General Public License for more details.
 #include "texture.h"
 #include "utils.h"
 #include "version.h"
-#include "nightfire/mdlv44.h"
+#include "nightfire/mdlv14.h"
 #include "nightfire/processmodel.h"
 
 char		  destdir[MAX_SYSPATH];
@@ -33,7 +33,7 @@ char		  modelfile[MAX_SYSPATH];
 studiohdr_t	 *model_hdr;
 studiohdr_t	 *texture_hdr;
 studiohdr_t	**anim_hdr;
-int isNightfireModel = 0;
+mdlv14_header_t* nightfireHeader = NULL;
 
 /*
 ============
@@ -110,6 +110,7 @@ static qboolean LoadMDL( const char *modelname )
 	const char	*ext;
 	const char	 id_mdlhdr[] = {'I', 'D', 'S', 'T'};
 	const char	 id_seqhdr[] = {'I', 'D', 'S', 'Q'};
+	int32_t mdlVersion = 0;
 
 	printf( "MDL: %s\n", modelname );
 
@@ -145,7 +146,7 @@ static qboolean LoadMDL( const char *modelname )
 
 	if ( memcmp(&model_hdr->ident, MDLV44_IDENT, sizeof(MDLV44_IDENT)) == 0 )
 	{
-		isNightfireModel = 1;
+		nightfireHeader = (mdlv14_header_t*)model_hdr;
 	}
 	else if ( memcmp( &model_hdr->ident, id_mdlhdr, sizeof( id_mdlhdr ) ) )
 	{
@@ -161,9 +162,11 @@ static qboolean LoadMDL( const char *modelname )
 		return false;
 	}
 
-	if( model_hdr->version != STUDIO_VERSION || (isNightfireModel && model_hdr->version != MDLV44_VERSION) )
+	mdlVersion = model_hdr->version;
+
+	if( mdlVersion != STUDIO_VERSION && (!nightfireHeader || mdlVersion != MDLV14_VERSION) )
 	{
-		fprintf( stderr, "ERROR: %s has unknown Studio MDL format version.\n", modelname );
+		fprintf( stderr, "ERROR: %s has unknown Studio MDL format version %d.\n", modelname, mdlVersion );
 		return false;
 	}
 
@@ -188,82 +191,92 @@ static qboolean LoadMDL( const char *modelname )
 		COM_ExtractFilePath( modelname, destdir );
 	}
 
-	len -= 4; // path length without extension
-
-	if( !model_hdr->numtextures )
+	if ( !nightfireHeader )
 	{
-		Q_strcpy( texturename, modelname );
-		Q_strcpy( &texturename[len], "t.mdl" );
+		len -= 4; // path length without extension
 
-		texture_hdr = (studiohdr_t *)LoadFile( texturename );
-
-		if( !texture_hdr )
+		if( !model_hdr->numtextures )
 		{
-#if !XASH_WIN32
-			// dirty hack for casesensetive filesystems
-			texturename[len] = 'T';
+			Q_strcpy( texturename, modelname );
+			Q_strcpy( &texturename[len], "t.mdl" );
 
 			texture_hdr = (studiohdr_t *)LoadFile( texturename );
 
 			if( !texture_hdr )
-#endif
 			{
-				fprintf( stderr, "ERROR: Can't open external textures file %s\n", texturename );
+#if !XASH_WIN32
+				// dirty hack for casesensetive filesystems
+				texturename[len] = 'T';
+
+				texture_hdr = (studiohdr_t *)LoadFile( texturename );
+
+				if( !texture_hdr )
+#endif
+				{
+					fprintf( stderr, "ERROR: Can't open external textures file %s\n", texturename );
+					return false;
+				}
+			}
+
+			if( memcmp( &texture_hdr->ident, id_mdlhdr, sizeof( id_mdlhdr ) )
+				|| !texture_hdr->numtextures )
+			{
+				fprintf( stderr, "ERROR: %s is not a valid external textures file.\n", texturename );
 				return false;
 			}
 		}
-
-		if( memcmp( &texture_hdr->ident, id_mdlhdr, sizeof( id_mdlhdr ) )
-		    || !texture_hdr->numtextures )
+		else
 		{
-			fprintf( stderr, "ERROR: %s is not a valid external textures file.\n", texturename );
+			texture_hdr = model_hdr;
+		}
+
+		anim_hdr = malloc( sizeof( studiohdr_t* ) * model_hdr->numseqgroups );
+
+		if( !anim_hdr )
+		{
+			fputs( "ERROR: Couldn't allocate memory for sequences.\n", stderr );
 			return false;
 		}
-	}
-	else
-	{
-		texture_hdr = model_hdr;
-	}
 
-	anim_hdr = malloc( sizeof( studiohdr_t* ) * model_hdr->numseqgroups );
+		anim_hdr[0] = model_hdr;
 
-	if( !anim_hdr )
-	{
-		fputs( "ERROR: Couldn't allocate memory for sequences.\n", stderr );
-		return false;
-	}
-
-	anim_hdr[0] = model_hdr;
-
-	if( model_hdr->numseqgroups > 1 )
-	{
-		Q_strcpy( seqgroupname, modelname );
-
-		for( i = 1; i < model_hdr->numseqgroups; i++ )
+		if( model_hdr->numseqgroups > 1 )
 		{
-			Q_sprintf( &seqgroupname[len], "%02d.mdl", i );
+			Q_strcpy( seqgroupname, modelname );
 
-			anim_hdr[i] = (studiohdr_t *)LoadFile( seqgroupname );
-
-			if( !anim_hdr[i] )
+			for( i = 1; i < model_hdr->numseqgroups; i++ )
 			{
-				fprintf( stderr, "ERROR: Can't open sequence file %s\n", seqgroupname );
-				return false;
-			}
+				Q_sprintf( &seqgroupname[len], "%02d.mdl", i );
 
-			if( memcmp( &anim_hdr[i]->ident, id_seqhdr, sizeof( id_seqhdr ) ) )
-			{
-				fprintf( stderr, "ERROR: %s is not a valid sequence file.\n", seqgroupname );
-				return false;
+				anim_hdr[i] = (studiohdr_t *)LoadFile( seqgroupname );
+
+				if( !anim_hdr[i] )
+				{
+					fprintf( stderr, "ERROR: Can't open sequence file %s\n", seqgroupname );
+					return false;
+				}
+
+				if( memcmp( &anim_hdr[i]->ident, id_seqhdr, sizeof( id_seqhdr ) ) )
+				{
+					fprintf( stderr, "ERROR: %s is not a valid sequence file.\n", seqgroupname );
+					return false;
+				}
 			}
 		}
 	}
 
 	COM_FileBase( modelname, modelfile );
 
-	SequenceNameFix();
+	if ( !nightfireHeader )
+	{
+		SequenceNameFix();
+		BoneNameFix();
+	}
 
-	BoneNameFix();
+	if ( nightfireHeader )
+	{
+		model_hdr = NULL;
+	}
 
 	return true;
 }
@@ -305,7 +318,7 @@ int main( int argc, char *argv[] )
 
 	if( LoadActivityList( argv[0] ) && LoadMDL( argv[1] ) )
 	{
-		if ( isNightfireModel )
+		if ( nightfireHeader )
 		{
 			NF_ProcessModel();
 		}

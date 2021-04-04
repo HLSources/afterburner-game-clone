@@ -1,9 +1,9 @@
 #pragma once
 
-#include "nightfire/mdlv44.h"
+#include "nightfire/mdlv14.h"
 
 typedef struct
 {
-	mdlv44_soundgroup_t mdlSoundGroup;
-	mdlv44_sound_t mdlSound;
+	mdlv14_soundgroup_t mdlSoundGroup;
+	mdlv14_sound_t mdlSound;
 } nfsoundgroup_t;

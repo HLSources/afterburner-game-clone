@@ -21,5 +21,7 @@ GNU General Public License for more details.
 qboolean	LoadActivityList( const char *appname );
 void		WriteQCScript( void );
 
-#endif // QC_H
+void GetMotionTypeString(int type, char *str, qboolean is_composite);
+const char* FindActivityName(int type);
 
+#endif // QC_H

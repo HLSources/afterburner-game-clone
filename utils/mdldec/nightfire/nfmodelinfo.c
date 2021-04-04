@@ -47,7 +47,7 @@ size_t NF_ModelInfo_GetMeshCount(nfmodelinfo_t* modelInfo)
 	return modelInfo ? modelInfo->meshCount : 0;
 }
 
-mdlv44_mesh_t* NF_ModelInfo_GetMesh(nfmodelinfo_t* modelInfo, size_t index)
+mdlv14_mesh_t* NF_ModelInfo_GetMesh(nfmodelinfo_t* modelInfo, size_t index)
 {
 	return (modelInfo && index < modelInfo->meshCount)
 		? &modelInfo->meshes[index]

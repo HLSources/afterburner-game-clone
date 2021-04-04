@@ -113,9 +113,9 @@ const uint8_t* NF_ModelFile_GetData(nfmodelfile_t* modelFile)
 	return modelFile ? modelFile->data : NULL;
 }
 
-const mdlv44_header_t* NF_ModelFile_GetHeader(nfmodelfile_t* modelFile)
+const mdlv14_header_t* NF_ModelFile_GetHeader(nfmodelfile_t* modelFile)
 {
-	return (const mdlv44_header_t*)NF_ModelFile_GetData(modelFile);
+	return (const mdlv14_header_t*)NF_ModelFile_GetData(modelFile);
 }
 
 void NF_ModelFile_AllocateBones(nfmodelfile_t* modelFile, size_t boneCount, qboolean setToZero)
@@ -268,7 +268,7 @@ size_t NF_ModelFile_GetTextureCount(nfmodelfile_t* modelFile)
 	return modelFile ? modelFile->textureCount : 0;
 }
 
-mdlv44_texture_t* NF_ModelFile_GetTexture(nfmodelfile_t* modelFile, size_t index)
+mdlv14_texture_t* NF_ModelFile_GetTexture(nfmodelfile_t* modelFile, size_t index)
 {
 	return (modelFile && index < modelFile->textureCount)
 		? &modelFile->textures[index]
@@ -377,7 +377,7 @@ size_t NF_ModelFile_GetTriangleMapCount(nfmodelfile_t* modelFile)
 	return modelFile ? modelFile->triangleMapCount : 0;
 }
 
-mdlv44_trianglemap_t* NF_ModelFile_GetTriangleMap(nfmodelfile_t* modelFile, size_t index)
+mdlv14_trianglemap_t* NF_ModelFile_GetTriangleMap(nfmodelfile_t* modelFile, size_t index)
 {
 	return (modelFile && index < modelFile->triangleMapCount)
 		? &modelFile->triangleMaps[index]
@@ -403,7 +403,7 @@ size_t NF_ModelFile_GetVertexCount(nfmodelfile_t* modelFile)
 	return modelFile ? modelFile->vertexCount : 0;
 }
 
-mdlv44_pos_scale_t* NF_ModelFile_GetVertex(nfmodelfile_t* modelFile, size_t index)
+mdlv14_pos_scale_t* NF_ModelFile_GetVertex(nfmodelfile_t* modelFile, size_t index)
 {
 	return (modelFile && index < modelFile->vertexCount)
 		? &modelFile->vertices[index]
@@ -429,7 +429,7 @@ size_t NF_ModelFile_GetNormalCount(nfmodelfile_t* modelFile)
 	return modelFile ? modelFile->normalCount : 0;
 }
 
-mdlv44_pos_scale_t* NF_ModelFile_GetNormal(nfmodelfile_t* modelFile, size_t index)
+mdlv14_pos_scale_t* NF_ModelFile_GetNormal(nfmodelfile_t* modelFile, size_t index)
 {
 	return (modelFile && index < modelFile->normalCount)
 		? &modelFile->normals[index]
@@ -455,7 +455,7 @@ size_t NF_ModelFile_GetTexCoOrdCount(nfmodelfile_t* modelFile)
 	return modelFile ? modelFile->texCoOrdCount : 0;
 }
 
-mdlv44_texcoord_t* NF_ModelFile_GetTexCoOrd(nfmodelfile_t* modelFile, size_t index)
+mdlv14_texcoord_t* NF_ModelFile_GetTexCoOrd(nfmodelfile_t* modelFile, size_t index)
 {
 	return (modelFile && index < modelFile->texCoOrdCount)
 		? &modelFile->texCoOrds[index]
@@ -481,7 +481,7 @@ size_t NF_ModelFile_GetBlendingScaleCount(nfmodelfile_t* modelFile)
 	return modelFile ? modelFile->blendingScaleCount : 0;
 }
 
-mdlv44_blendingscale_t* NF_ModelFile_GetBlendingScale(nfmodelfile_t* modelFile, size_t index)
+mdlv14_blendingscale_t* NF_ModelFile_GetBlendingScale(nfmodelfile_t* modelFile, size_t index)
 {
 	return (modelFile && index < modelFile->blendingScaleCount)
 		? &modelFile->blendingScales[index]
@@ -507,7 +507,7 @@ size_t NF_ModelFile_GetBlendCount(nfmodelfile_t* modelFile)
 	return modelFile ? modelFile->blendCount : 0;
 }
 
-mdlv44_blending_t* NF_ModelFile_GetBlend(nfmodelfile_t* modelFile, size_t index)
+mdlv14_blending_t* NF_ModelFile_GetBlend(nfmodelfile_t* modelFile, size_t index)
 {
 	return (modelFile && index < modelFile->blendCount)
 		? &modelFile->blends[index]

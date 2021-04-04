@@ -1,12 +1,12 @@
 #pragma once
 
 #include <stddef.h>
-#include "nightfire/mdlv44.h"
+#include "nightfire/mdlv14.h"
 #include "nightfire/nfmodelinfo.h"
 
 typedef struct
 {
-	mdlv44_model_t mdlElement;
+	mdlv14_model_t mdlElement;
 
 	size_t modelInfoCount;
 	nfmodelinfo_t* modelInfos;

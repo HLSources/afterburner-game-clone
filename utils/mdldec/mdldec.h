@@ -16,11 +16,13 @@ GNU General Public License for more details.
 #ifndef MDLDEC_H
 #define MDLDEC_H
 
+typedef struct mdlv14_header_s mdlv14_header_t;
+
 extern char		  destdir[MAX_SYSPATH];
 extern char		  modelfile[MAX_SYSPATH];
 extern studiohdr_t	 *model_hdr;
 extern studiohdr_t	 *texture_hdr;
 extern studiohdr_t	**anim_hdr;
-extern int isNightfireModel;
+extern mdlv14_header_t* nightfireHeader;
 
 #endif // MDLDEC_H

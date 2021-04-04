@@ -72,14 +72,14 @@ size_t NF_Sequence_GetPivotCount(nfsequence_t* sequence)
 	return sequence ? sequence->pivotCount : 0;
 }
 
-mdlv44_pivot_t* NF_Sequence_GetPivot(nfsequence_t* sequence, size_t index)
+mdlv14_pivot_t* NF_Sequence_GetPivot(nfsequence_t* sequence, size_t index)
 {
 	return (sequence && index < sequence->pivotCount)
 		? &sequence->pivots[index]
 		: NULL;
 }
 
-mdlv44_sequence_t* NF_Sequence_GetMDLSequence(nfsequence_t* sequence)
+mdlv14_sequence_t* NF_Sequence_GetMDLSequence(nfsequence_t* sequence)
 {
 	return sequence ? &sequence->mdlSequence : NULL;
 }

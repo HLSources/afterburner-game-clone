@@ -97,10 +97,12 @@ qboolean LoadActivityList( const char *appname )
 FindActivityName
 ============
 */
-static const char *FindActivityName( int type )
+const char* FindActivityName(int type)
 {
-	if( type >= 0 && type < activity_count )
+	if ( type >= 0 && type < activity_count )
+	{
 		return activity_names[type];
+	}
 
 	return NULL;
 }
@@ -110,7 +112,7 @@ static const char *FindActivityName( int type )
 GetMotionTypeString
 ============
 */
-static void GetMotionTypeString( int type, char *str, qboolean is_composite )
+void GetMotionTypeString( int type, char *str, qboolean is_composite )
 {
 	const char	*p = NULL;
 
@@ -638,4 +640,3 @@ void WriteQCScript( void )
 
 	printf( "QC Script: %s\n", filename );
 }
-
