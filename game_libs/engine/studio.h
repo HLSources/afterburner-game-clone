@@ -40,7 +40,7 @@ Studio models are position independent, so the cache manager can move them.
 #define MAXSTUDIOMODELS		48	// sub-models per model
 #define MAXSTUDIOBODYPARTS		32	// body parts per submodel
 #define MAXSTUDIOGROUPS		16	// sequence groups (e.g. barney01.mdl, barney02.mdl, e.t.c)
-#define MAXSTUDIOANIMATIONS		2048	// max frames per sequence
+#define MAXSTUDIOANIMATIONS		768	// max frames per sequence
 #define MAXSTUDIOMESHES		256	// max textures per model
 #define MAXSTUDIOEVENTS		1024	// events per model
 #define MAXSTUDIOPIVOTS		256	// pivot points
