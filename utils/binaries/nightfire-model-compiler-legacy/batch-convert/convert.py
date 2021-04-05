@@ -155,6 +155,9 @@ class FileProcessor:
 						self.logMsg("Found SMD:", smdPath, file="FindReferenceSmds")
 						referencedSmds.append(smdPath)
 
+		if len(referencedSmds) < 1:
+			raise RuntimeError(f"No bodygroups found in {relPath(qcPath)}")
+
 		return referencedSmds
 
 	def fixSmdFiles(self, dirPath:str):

@@ -36,7 +36,7 @@ Studio models are position independent, so the cache manager can move them.
 #define MAXSTUDIOSKINS		256	// total textures
 #define MAXSTUDIOSRCBONES		512	// bones allowed at source movement
 #define MAXSTUDIOBONES		128	// total bones actually used
-#define MAXSTUDIOMODELS		32	// sub-models per model
+#define MAXSTUDIOMODELS		48	// sub-models per model
 #define MAXSTUDIOBODYPARTS		32	// body parts per submodel
 #define MAXSTUDIOGROUPS		16	// sequence groups (e.g. barney01.mdl, barney02.mdl, e.t.c)
 #define MAXSTUDIOMESHES		256	// max textures per model
