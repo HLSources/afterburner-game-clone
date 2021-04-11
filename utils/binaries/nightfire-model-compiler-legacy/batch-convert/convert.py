@@ -117,6 +117,10 @@ class FileProcessor:
 			segments = line.split()
 
 			if len(segments) == 2 and segments[0] == "$modelname":
+				internalName = segments[1].strip('"')
+				if internalName != modelName:
+					self.logMsg(f"Model's internal name was {internalName}, changing to {modelName}", relPath(qcPath), file="SetQcModelName")
+
 				lines[index] = f'{segments[0]} "{modelName}"'
 				modelNameReplaced = True
 
