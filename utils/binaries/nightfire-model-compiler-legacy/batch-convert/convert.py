@@ -18,7 +18,6 @@ OUTPUT_DIR = os.path.join(SCRIPT_DIR, "v10")
 SCRATCH_DIR = os.path.join(SCRIPT_DIR, "scratch")
 TEXTURE_DIR_NAME = "mdl"
 
-MDLCONVERT_PATH = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "mdlconvert.exe"))
 STUDIOMDL_PATH = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "abstudiomdl.exe"))
 ERROR_SUMMARY_PATH = os.path.join(SCRIPT_DIR, "errors.log")
 
@@ -46,35 +45,45 @@ class FileProcessor:
 		self.boundsForTexture = {}
 		self.qcModelName = ""
 
-	def processInputFile(self):
-		inputMdlRelPath = os.path.relpath(self.filePath, INPUT_DIR)
-		inputMdlRelPathNoExt = os.path.splitext(inputMdlRelPath)[0]
-		inputMdlName = os.path.basename(inputMdlRelPath)
+	def processInputFile2(self):
+		inputQcRelPath = os.path.relpath(self.filePath, INPUT_DIR)
+		inputQcTidyRelDirName = os.path.dirname(inputQcRelPath)
+		inputQcName = os.path.basename(inputQcRelPath)
+		inputMdlNameNoExt = os.path.splitext(inputQcName)[0]
+		inputMdlName = inputMdlNameNoExt + ".mdl"
 
-		if self.args.skip_existing and os.path.isfile(os.path.join(OUTPUT_DIR, inputMdlRelPath)):
-			return
+		# Ford/Ulti's batch decompiler puts decompiled files within subdirectories named
+		# after the model. We don't want to duplicate this in the scratch directory.
+		relDirNameSegments = inputQcTidyRelDirName.split(os.path.sep)
+		if len(relDirNameSegments) > 0 and relDirNameSegments[-1] == inputMdlNameNoExt:
+			inputQcTidyRelDirName = os.path.sep.join(relDirNameSegments[:-1])
 
-		self.fileScratchDir = os.path.join(SCRATCH_DIR, inputMdlRelPathNoExt)
-		os.makedirs(self.fileScratchDir, exist_ok=True)
-
-		# Dump the selected model to the scratch dir.
-		qcPath = self.dumpToQc(self.filePath, self.fileScratchDir)
-
-		# Make sure the QC model name matches the model we decompiled.
-		# Sometimes the name embedded in the model is different, but we
-		# want to make sure the output MDL is named the same as the
-		# input MDL. If this is not the case, maps which reference the
-		# MDL by name may not be able to load it.
-		self.setQcModelName(qcPath, inputMdlName)
-
-		mdlRelDirname = os.path.dirname(inputMdlRelPath)
-		mdlDestPath = os.path.join(OUTPUT_DIR, mdlRelDirname, inputMdlName)
+		mdlDestPath = os.path.join(OUTPUT_DIR, inputQcTidyRelDirName, inputMdlName)
 
 		if self.args.skip_existing and os.path.isfile(mdlDestPath):
 			return
 
+		self.fileScratchDir = os.path.join(SCRATCH_DIR, inputQcTidyRelDirName, inputMdlNameNoExt)
+		os.makedirs(self.fileScratchDir, exist_ok=True)
+
+		# print("Input path:", self.filePath)
+		# print("Input QC rel path:", inputQcRelPath)
+		# print("Input QC tidy rel dir name:", inputQcTidyRelDirName)
+		# print("Input QC name:", inputQcName)
+		# print("Input MDL name no ext:", inputMdlNameNoExt)
+		# print("Input MDL name:", inputMdlName)
+		# print("Scratch file dir:", self.fileScratchDir)
+
+		# Copy relevant files from the input directory.
+		self.copyInputFilesToScratchDir(os.path.dirname(self.filePath), self.fileScratchDir)
+
+		scratchQcPath = os.path.join(self.fileScratchDir, inputQcName)
+
+		# Fix various attributes in the QC file.
+		self.fixQcAttributes(scratchQcPath, inputMdlName)
+
 		# Determine which reference SMDs we have.
-		self.referenceSmds = self.findReferenceSmds(qcPath)
+		self.referenceSmds = self.findReferenceSmds(scratchQcPath)
 
 		# Fix all texture paths in all SMDs.
 		self.fixSmdFiles(self.fileScratchDir)
@@ -84,27 +93,20 @@ class FileProcessor:
 		self.copyTextures(textures, INPUT_TEXTURE_DIR, os.path.join(self.fileScratchDir, TEXTURE_DIR_NAME))
 
 		# Compile the QC file.
-		self.compileQc(qcPath)
+		self.compileQc(scratchQcPath)
 
 		# Copy the compiled model to the target directory.
 		self.copyMdlToOutput(os.path.join(self.fileScratchDir, inputMdlName), mdlDestPath)
 
-	def dumpToQc(self, inputFile:str, outputDir:str):
-		fileName = os.path.splitext(os.path.basename(inputFile))[0]
-		outputPath = os.path.join(outputDir, f"{fileName}.qc")
+	def copyInputFilesToScratchDir(self, inDir:str, outDir:str):
+		for entry in os.listdir(inDir):
+			fullEntryPath = os.path.join(inDir, entry)
+			if os.path.isfile(fullEntryPath):
+				fullOutputPath = os.path.join(outDir, entry)
+				self.logMsg("Copying", relPath(fullEntryPath), "to", relPath(fullOutputPath), file="CopyInputFilesToScratchDir")
+				shutil.copy2(fullEntryPath, fullOutputPath)
 
-		args = \
-		[
-			MDLCONVERT_PATH,
-			"-dumpv14tov10",
-			inputFile,
-			outputPath
-		]
-
-		self.runCommand(args, output="DumpToQC")
-		return outputPath
-
-	def setQcModelName(self, qcPath:str, modelName:str):
+	def fixQcAttributes(self, qcPath:str, modelName:str):
 		lines = []
 
 		with open(qcPath, "r") as inFile:
@@ -116,13 +118,24 @@ class FileProcessor:
 			line = lines[index].lstrip()
 			segments = line.split()
 
-			if len(segments) == 2 and segments[0] == "$modelname":
-				internalName = segments[1].strip('"')
-				if internalName != modelName:
-					self.logMsg(f"Model's internal name was {internalName}, changing to {modelName}", relPath(qcPath), file="SetQcModelName")
+			if len(segments) >= 2:
+				if segments[0] == "$modelname":
+					# Make sure the QC model name matches the model we decompiled.
+					# Sometimes the name embedded in the model is different, but we
+					# want to make sure the output MDL is named the same as the
+					# input MDL. If this is not the case, maps which reference the
+					# MDL by name may not be able to load it.
 
-				lines[index] = f'{segments[0]} "{modelName}"'
-				modelNameReplaced = True
+					# Only log if we change the name
+					internalName = segments[1].strip('"')
+					if internalName != modelName:
+						self.logMsg(f"Model's internal name was {internalName}, changing to {modelName}", relPath(qcPath), file="SetQcModelName")
+
+					lines[index] = f'{segments[0]} "{modelName}"'
+					modelNameReplaced = True
+				elif segments[0] == "$cd":
+					# Ensure that the directory StudioMDL works from is correct
+					lines[index] = f'{segments[0]} {os.path.abspath(os.path.dirname(qcPath))}'
 
 		if not modelNameReplaced:
 			raise RuntimeError(f"Could not find $modelname in {relPath(qcPath)}")
@@ -297,10 +310,6 @@ def validateDirs():
 		print("Input directory", INPUT_DIR, "does not exist.", file=sys.stderr)
 		sys.exit(1)
 
-	if not os.path.isfile(MDLCONVERT_PATH):
-		print("MDL converter", MDLCONVERT_PATH, "does not exist.", file=sys.stderr)
-		sys.exit(1)
-
 	if not os.path.isfile(STUDIOMDL_PATH):
 		print("StudioMDL compiler", STUDIOMDL_PATH, "does not exist.", file=sys.stderr)
 		sys.exit(1)
@@ -347,7 +356,7 @@ def threadTask(args, files:dict, filePath:str):
 
 	try:
 		print("Processing file:", relPath(filePath))
-		FileProcessor(args, filePath).processInputFile()
+		FileProcessor(args, filePath).processInputFile2()
 		files[filePath] = None
 	except Exception as ex:
 		details = inspect.trace()[-1]
@@ -368,7 +377,7 @@ def getInputFiles(rootDir:str):
 
 		fileExt = os.path.splitext(fileEntry)[1].lower()
 
-		if fileExt != ".mdl":
+		if fileExt != ".qc":
 			continue
 
 		filesFound.append(fullPath)
@@ -387,6 +396,10 @@ def parseArgs():
 						help="If set, skips converting models whose output MDL already exists.",
 						action="store_true")
 
+	parser.add_argument("--run-once",
+						help="Limits processing to one single input file, for debugging.",
+						action="store_true")
+
 	return parser.parse_args()
 
 def validateArgs(args):
@@ -403,6 +416,14 @@ def main():
 	cleanScratchDir()
 
 	filesToProcess = getInputFiles(INPUT_DIR)
+
+	if len(filesToProcess) < 1:
+		print("Could not find any files to process.")
+		sys.exit(0)
+
+	if args.run_once:
+		filesToProcess = [filesToProcess[0]]
+
 	print("Found", len(filesToProcess), "input files")
 
 	filesMap = {filePath: f"{filePath} has not yet been processed." for filePath in filesToProcess}
