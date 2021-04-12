@@ -5,7 +5,7 @@ import subprocess
 import shutil
 
 SCRIPT_DIR = os.path.abspath(os.path.dirname(__file__))
-STUDIOMDL_PATH = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "studiomdl.exe"))
+STUDIOMDL_PATH = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "abstudiomdl.exe"))
 MODEL_OUTPUT_ROOT_PATH = os.path.abspath(os.path.join("..", "..", "..", "afterburner", "models"))
 
 QC_COMMAND_MODELNAME = "$modelname"
