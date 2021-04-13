@@ -264,14 +264,12 @@ static void WriteSequenceInfo(FILE* fp)
 
 		if ( sequence->activity )
 		{
-			if ( Q_strncmp(sequence->activity, "ACT_", sizeof("ACT_") - 1) != 0 )
+			activity = FindActivityName(sequence->activity);
+
+			if ( activity && Q_strncmp(activity, "ACT_", sizeof("ACT_") - 1) != 0 )
 			{
 				// This is a custom activity - map to ACT_INVALID
 				activity = "ACT_INVALID";
-			}
-			else
-			{
-				activity = FindActivityName(sequence->activity);
 			}
 
 			if( activity )
