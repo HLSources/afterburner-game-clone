@@ -45,7 +45,7 @@ class FileProcessor:
 		self.boundsForTexture = {}
 		self.qcModelName = ""
 
-	def processInputFile2(self):
+	def processInputFile(self):
 		inputQcRelPath = os.path.relpath(self.filePath, INPUT_DIR)
 		inputQcTidyRelDirName = os.path.dirname(inputQcRelPath)
 		inputQcName = os.path.basename(inputQcRelPath)
@@ -65,14 +65,6 @@ class FileProcessor:
 
 		self.fileScratchDir = os.path.join(SCRATCH_DIR, inputQcTidyRelDirName, inputMdlNameNoExt)
 		os.makedirs(self.fileScratchDir, exist_ok=True)
-
-		# print("Input path:", self.filePath)
-		# print("Input QC rel path:", inputQcRelPath)
-		# print("Input QC tidy rel dir name:", inputQcTidyRelDirName)
-		# print("Input QC name:", inputQcName)
-		# print("Input MDL name no ext:", inputMdlNameNoExt)
-		# print("Input MDL name:", inputMdlName)
-		# print("Scratch file dir:", self.fileScratchDir)
 
 		# Copy relevant files from the input directory.
 		self.copyInputFilesToScratchDir(os.path.dirname(self.filePath), self.fileScratchDir)
@@ -356,7 +348,7 @@ def threadTask(args, files:dict, filePath:str):
 
 	try:
 		print("Processing file:", relPath(filePath))
-		FileProcessor(args, filePath).processInputFile2()
+		FileProcessor(args, filePath).processInputFile()
 		files[filePath] = None
 	except Exception as ex:
 		details = inspect.trace()[-1]
