@@ -36,6 +36,12 @@ class FileProcessor():
 		self.inputQcDir = os.path.dirname(self.inputQc)
 		self.inputModelName = os.path.splitext(os.path.basename(self.inputQc))[0] + ".mdl"
 
+		# For eventual copying:
+		self.srcMdlPath = os.path.join(self.inputQcDir, self.inputModelName)
+		srcQcDirRelPath = os.path.relpath(self.inputQcDir, SCRIPT_DIR)
+		destRelDir = os.path.dirname(srcQcDirRelPath)
+		self.destMdlPath = os.path.join(MDL_OUTPUT_DIR, destRelDir, self.inputModelName)
+
 		self.currentLog = ""
 
 	def processInputFile(self):
@@ -166,13 +172,8 @@ class FileProcessor():
 	def copyMdlToOutput(self):
 		self.prepareLog("CopyMDLToOutput")
 
-		srcMdlPath = os.path.join(self.inputQcDir, self.inputModelName)
-		srcQcDirRelPath = os.path.relpath(self.inputQcDir, SCRIPT_DIR)
-		destRelDir = os.path.dirname(srcQcDirRelPath)
-		destPath = os.path.join(MDL_OUTPUT_DIR, destRelDir, self.inputModelName)
-
-		self.logMsg("Copying", srcMdlPath, "to", destPath)
-		shutil.copy2(srcMdlPath, destPath)
+		self.logMsg("Copying", self.srcMdlPath, "to", self.destMdlPath)
+		shutil.copy2(self.srcMdlPath, self.destMdlPath)
 
 	def runCommand(self, args, cwd):
 		self.logMsg("*** Running command:", *args)
@@ -231,10 +232,21 @@ def getInputFilesRecursive(path:str):
 		entryPath = os.path.join(path, entry)
 
 		if os.path.isdir(entryPath):
-			entries += getInputFilesRecursive(entryPath)
+			# Ignore player models, since they're tweaked and compiled manually.
+			if entry != "player":
+				entries += getInputFilesRecursive(entryPath)
 
-		if os.path.splitext(entry)[1] == ".qc":
-			entries.append(entryPath)
+		(fileName, fileExt) = os.path.splitext(entry)
+
+		if fileExt == ".qc":
+
+			# Ignore these special files, which are just kept here until
+			# we go through and tweak/compile them manually.
+			if  not fileName.lower().startswith("p_") and \
+				not fileName.lower().startswith("v_") and \
+				not fileName.lower().startswith("w_") and \
+				fileName != "player":
+				entries.append(entryPath)
 
 	return entries
 
