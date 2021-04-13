@@ -1,9 +1,12 @@
-$cd "."
+$cd .
+$cdtexture "../../../../../afterburner/textures"
 $modelname "w_l96a1.mdl"
 
 $root "Stock"
 
-$flags 0
+// No embedded textures
+$flags 2048
+
 $origin 0.000000 0.000000 0.000000
 $eyeposition 0.000000 0.000000 0.000000
 $bbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
@@ -13,7 +16,7 @@ $cbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
 
 $bodygroup "body"
 {
-	studio "W_l96_reference_ref"
+	studio "w_l96a1_reference_ref"
 }
 
 
