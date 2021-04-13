@@ -1,9 +1,10 @@
-$cd "C:\Users\Vesper\Desktop\v14\player\MP_xenia\MP_xenia"
+$cdtexture "../../../../../../afterburner/textures"
+$cd "."
 $modelname "MP_xenia.mdl"
 
 $root "Bip01"
 
-$flags 8192 
+$flags 10240
 $origin 0.000000 0.000000 0.000000
 $eyeposition 0.000000 0.000000 0.000000
 $bbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000

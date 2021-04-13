@@ -1,9 +1,10 @@
-$cd "C:\Users\Vesper\Desktop\v14\austria_exterior_light"
+$cdtexture "../../../../afterburner/textures"
+$cd "."
 $modelname "austria_exterior_light.mdl"
 
 $root "Object01"
 
-$flags 0 
+$flags 2048
 $origin 0.000000 0.000000 0.000000
 $eyeposition 0.000000 0.000000 0.000000
 $bbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000

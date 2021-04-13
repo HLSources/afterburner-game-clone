@@ -1,9 +1,10 @@
-$cd "C:\Users\Vesper\Desktop\v14\pipes_sm"
+$cdtexture "../../../../afterburner/textures"
+$cd "."
 $modelname "pipes_sm.mdl"
 
 $root "pipe02"
 
-$flags 0 
+$flags 2048
 $origin 0.000000 0.000000 0.000000
 $eyeposition 0.000000 0.000000 0.000000
 $bbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000

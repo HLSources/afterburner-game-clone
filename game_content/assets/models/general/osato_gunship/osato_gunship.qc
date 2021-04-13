@@ -1,9 +1,10 @@
-$cd "C:\Users\Vesper\Desktop\v14\osato_gunship"
+$cdtexture "../../../../afterburner/textures"
+$cd "."
 $modelname "osato_gunship.mdl"
 
 $root "Master"
 
-$flags 512 
+$flags 2560
 $origin 0.000000 0.000000 0.000000
 $eyeposition 0.000000 0.000000 0.000000
 $bbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000

@@ -1,9 +1,10 @@
-$cd "C:\Users\Vesper\Desktop\v14\snow_guard_dead"
+$cdtexture "../../../../afterburner/textures"
+$cd "."
 $modelname "snow_guard_dead.mdl"
 
 $root "dead_body"
 
-$flags 0 
+$flags 2048
 $origin 0.000000 0.000000 0.000000
 $eyeposition 0.000000 0.000000 0.000000
 $bbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000

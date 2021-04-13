@@ -1,9 +1,10 @@
-$cd "C:\Users\Vesper\Desktop\v14\taser_tip"
+$cdtexture "../../../../afterburner/textures"
+$cd "."
 $modelname "taser_tip.mdl"
 
 $root "grapple_tip"
 
-$flags 0 
+$flags 2048
 $origin 0.000000 0.000000 0.000000
 $eyeposition 0.000000 0.000000 0.000000
 $bbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000

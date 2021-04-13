@@ -1,9 +1,10 @@
-$cd "C:\Users\Vesper\Desktop\v14\party_girl_03"
+$cdtexture "../../../../afterburner/textures"
+$cd "."
 $modelname "party_girl_03.mdl"
 
 $root "Bip01"
 
-$flags 16384 
+$flags 18432
 $origin 0.000000 0.000000 0.000000
 $eyeposition 0.000000 0.000000 65.000000
 $bbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000

@@ -1,9 +1,10 @@
-$cd "C:\Users\Vesper\Desktop\v14\vase_golden"
+$cdtexture "../../../../afterburner/textures"
+$cd "."
 $modelname "vase_golden.mdl"
 
 $root "Cylinder01"
 
-$flags 0 
+$flags 2048
 $origin 0.000000 0.000000 0.000000
 $eyeposition 0.000000 0.000000 0.000000
 $bbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000

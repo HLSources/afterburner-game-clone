@@ -1,9 +1,10 @@
-$cd "C:\Users\Vesper\Desktop\v14\player\MP_alura_combat\mp_alura_combat"
+$cdtexture "../../../../../../afterburner/textures"
+$cd "."
 $modelname "mp_alura_combat.mdl"
 
 $root "Bip01"
 
-$flags 8192 
+$flags 10240
 $origin 0.000000 0.000000 0.000000
 $eyeposition 0.000000 0.000000 0.000000
 $bbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000

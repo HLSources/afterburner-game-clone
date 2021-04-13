@@ -1,9 +1,10 @@
-$cd "C:\Users\Vesper\Desktop\v14\austrian_fountain_1"
+$cdtexture "../../../../afterburner/textures"
+$cd "."
 $modelname "austrian_fountain_1.mdl"
 
 $root "austrian_fountain"
 
-$flags 0 
+$flags 2048
 $origin 0.000000 0.000000 0.000000
 $eyeposition 0.000000 0.000000 0.000000
 $bbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000

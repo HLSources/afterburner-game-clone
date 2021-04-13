@@ -1,9 +1,10 @@
-$cd "C:\Users\Vesper\Desktop\v14\player\MP_Zoe\mp_zoe"
+$cdtexture "../../../../../../afterburner/textures"
+$cd "."
 $modelname "mp_zoe.mdl"
 
 $root "Bip01"
 
-$flags 8192 
+$flags 10240
 $origin 0.000000 0.000000 0.000000
 $eyeposition 0.000000 0.000000 0.000000
 $bbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000

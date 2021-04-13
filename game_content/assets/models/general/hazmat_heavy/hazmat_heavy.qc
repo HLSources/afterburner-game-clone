@@ -1,9 +1,10 @@
-$cd "C:\Users\Vesper\Desktop\v14\hazmat_heavy"
+$cdtexture "../../../../afterburner/textures"
+$cd "."
 $modelname "hazmat_heavy.mdl"
 
 $root "Bip01"
 
-$flags 0 
+$flags 2048
 $origin 0.000000 0.000000 0.000000
 $eyeposition 0.000000 0.000000 70.000000
 $bbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000

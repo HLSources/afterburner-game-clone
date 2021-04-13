@@ -1,9 +1,10 @@
-$cd "C:\Users\Vesper\Desktop\v14\terrain_austria04"
+$cdtexture "../../../../afterburner/textures"
+$cd "."
 $modelname "terrain_austria04.mdl"
 
 $root "Plane01"
 
-$flags 0 
+$flags 2048
 $origin 0.000000 0.000000 0.000000
 $eyeposition 0.000000 0.000000 0.000000
 $bbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000

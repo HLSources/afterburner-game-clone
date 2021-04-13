@@ -1,9 +1,10 @@
-$cd "C:\Users\Vesper\Desktop\v14\Sm_light_hanging_cord"
+$cdtexture "../../../../afterburner/textures"
+$cd "."
 $modelname "Sm_light_hanging_cord.mdl"
 
 $root "Object01"
 
-$flags 0 
+$flags 2048
 $origin 0.000000 0.000000 0.000000
 $eyeposition 0.000000 0.000000 0.000000
 $bbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000

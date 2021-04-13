@@ -1,9 +1,10 @@
-$cd "C:\Users\Vesper\Desktop\v14\o2tank"
+$cdtexture "../../../../afterburner/textures"
+$cd "."
 $modelname "o2tank.mdl"
 
 $root "tank"
 
-$flags 0 
+$flags 2048
 $origin 0.000000 0.000000 0.000000
 $eyeposition 0.000000 0.000000 0.000000
 $bbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000

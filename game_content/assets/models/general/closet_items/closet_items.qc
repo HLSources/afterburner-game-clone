@@ -1,9 +1,10 @@
-$cd "C:\Users\Vesper\Desktop\v14\closet_items"
+$cdtexture "../../../../afterburner/textures"
+$cd "."
 $modelname "closet_items.mdl"
 
 $root "STUFF"
 
-$flags 0 
+$flags 2048
 $origin 0.000000 0.000000 0.000000
 $eyeposition 0.000000 0.000000 0.000000
 $bbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
