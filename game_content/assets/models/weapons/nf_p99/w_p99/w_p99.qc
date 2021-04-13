@@ -1,10 +1,12 @@
-$cd "."
+$cd .
+$cdtexture "../../../../../afterburner/textures"
 $modelname "w_p99.mdl"
 
 $root "gun"
-$scale 1.0
 
-$flags 0 
+// No embedded textures
+$flags 2048
+
 $origin 0.000000 0.000000 0.000000
 $eyeposition 0.000000 0.000000 0.000000
 $bbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
@@ -12,7 +14,7 @@ $cbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
 
 
 
-$bodygroup "studio"
+$bodygroup "body"
 {
 	studio "w_p99_reference_ref"
 }
@@ -21,7 +23,4 @@ $bodygroup "studio"
 
 $hbox 0 "gun" -4.600000 -3.670000 0.000000 4.800000 2.890000 1.290000
 
-$sequence "idle" {
-	"idle1_ani"
-	fps 1
-}
+$sequence "idle1" "idle1_ani" fps 1
