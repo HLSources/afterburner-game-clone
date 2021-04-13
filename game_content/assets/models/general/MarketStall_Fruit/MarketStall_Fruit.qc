@@ -1,0 +1,23 @@
+$cd "C:\Users\Vesper\Desktop\v14\MarketStall_Fruit"
+$modelname "MarketStall_Fruit.mdl"
+
+$root "polySurfaceShape5"
+
+$flags 0 
+$origin 0.000000 0.000000 0.000000
+$eyeposition 0.000000 0.000000 0.000000
+$bbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
+$cbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
+
+
+
+$bodygroup "studio"
+{
+	studio "MarketStall_Fruit_ref"
+}
+
+
+
+$hbox 0 "polySurfaceShape5" -2.280000 -1.840000 -1.340000 2.280000 1.840000 1.340000
+
+$sequence "idle1" "idle1_ani"

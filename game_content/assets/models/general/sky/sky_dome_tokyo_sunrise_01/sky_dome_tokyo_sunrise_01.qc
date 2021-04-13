@@ -1,0 +1,23 @@
+$cd "C:\Users\Vesper\Desktop\v14\sky\sky_dome_tokyo_sunrise_01"
+$modelname "sky_dome_tokyo_sunrise_01.mdl"
+
+$root "Cylinder01"
+
+$flags 0 
+$origin 0.000000 0.000000 0.000000
+$eyeposition 0.000000 0.000000 0.000000
+$bbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
+$cbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
+
+
+
+$bodygroup "studio"
+{
+	studio "sky_dome_tokyo_sunrise_01_ref"
+}
+
+
+
+$hbox 0 "Cylinder01" -1329.200000 -1309.010000 -952.630000 1329.200000 1309.010000 641.650000
+
+$sequence "idle1" "idle1_ani"

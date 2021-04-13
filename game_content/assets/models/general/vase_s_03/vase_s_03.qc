@@ -1,0 +1,23 @@
+$cd "C:\Users\Vesper\Desktop\v14\vase_s_03"
+$modelname "vase_s_03.mdl"
+
+$root "gib"
+
+$flags 0 
+$origin 0.000000 0.000000 0.000000
+$eyeposition 0.000000 0.000000 0.000000
+$bbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
+$cbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
+
+
+
+$bodygroup "parts"
+{
+	studio "vase_s_03_ref_ref"
+}
+
+
+
+$hbox 0 "gib" -5.300000 -5.310000 0.000000 5.300000 5.300000 18.050000
+
+$sequence "idle1" "idle1_ani"

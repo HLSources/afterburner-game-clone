@@ -1,0 +1,23 @@
+$cd "C:\Users\Vesper\Desktop\v14\sky\sky_dome_austria"
+$modelname "sky_dome_austria.mdl"
+
+$root "dome"
+
+$flags 0 
+$origin 0.000000 0.000000 0.000000
+$eyeposition 0.000000 0.000000 0.000000
+$bbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
+$cbox 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
+
+
+
+$bodygroup "studio"
+{
+	studio "sky_dome_austria_ref"
+}
+
+
+
+$hbox 0 "dome" -1004.680000 -999.710000 -291.450000 1004.680000 1009.650000 492.450000
+
+$sequence "idle1" "idle1_ani"
