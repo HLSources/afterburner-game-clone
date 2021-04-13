@@ -28,7 +28,7 @@ f"""studio \"..\\{name}\\{name}_ref\"
 
 def __batContents(name):
 	return f"""@echo off
-..\..\studiomdl.exe "{name}.qc"
+..\\..\\abstudiomdl.exe "{name}.qc"
 pause"""
 
 def __create(name):
