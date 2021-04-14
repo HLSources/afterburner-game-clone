@@ -1,15 +1,19 @@
-// QC file for: mp_mi6_stealth
+$cd "../common_anims"
+$cdtexture "../../../../afterburner/textures"
+
 $modelname mp_mi6_stealth.mdl
-$cd "..\common_anims"
-$cdtexture .
 $cliptotextures
+
+// No embedded textures
+$flags 2048
 
 $scale 1.0
 $origin 0 0 36
 
-// whole body
 $bodygroup body
 {
-studio "..\mp_mi6_stealth\mp_mi6_stealth_ref"
+	// Relative to common_anims
+	studio "../mp_mi6_stealth/mp_mi6_stealth_ref"
 }
-$include "..\common_anims\player_shared.qc"
+
+$include "../common_anims/player_shared.qc"
