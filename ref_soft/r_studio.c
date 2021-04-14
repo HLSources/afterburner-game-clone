@@ -1308,7 +1308,7 @@ static void R_StudioCalcAttachments( void )
 	// calculate attachment points
 	pAtt = (mstudioattachment_t *)((byte *)m_pStudioHeader + m_pStudioHeader->attachmentindex);
 
-	for( i = 0; i < Q_min( MAXSTUDIOATTACHMENTS, m_pStudioHeader->numattachments ); i++ )
+	for( i = 0; i < Q_min( CL_ENTITY_MAX_ATTACHMENTS, m_pStudioHeader->numattachments ); i++ )
 	{
 		Matrix3x4_VectorTransform( g_studio.lighttransform[pAtt[i].bone], pAtt[i].org, RI.currententity->attachment[i] );
 		VectorSubtract( RI.currententity->attachment[i], RI.currententity->origin, localOrg );
@@ -1579,8 +1579,14 @@ void R_StudioEntityLight( alight_t *lightinfo )
 		{
 			int	att = (el->key >> 12) & 0xF;
 
-			if( att ) VectorCopy( ent->attachment[att], el->origin );
-			else VectorCopy( ent->origin, el->origin );
+			if( att > 0 && att <= CL_ENTITY_MAX_ATTACHMENTS )
+			{
+				VectorCopy( ent->attachment[att], el->origin );
+			}
+			else
+			{
+				VectorCopy( ent->origin, el->origin );
+			}
 		}
 
 		VectorCopy( el->origin, pos );
@@ -2559,10 +2565,12 @@ static void R_StudioClientEvents( void )
 	// fill attachments with interpolated origin
 	if( m_pStudioHeader->numattachments <= 0 )
 	{
-		Matrix3x4_OriginFromMatrix( g_studio.rotationmatrix, e->attachment[0] );
-		Matrix3x4_OriginFromMatrix( g_studio.rotationmatrix, e->attachment[1] );
-		Matrix3x4_OriginFromMatrix( g_studio.rotationmatrix, e->attachment[2] );
-		Matrix3x4_OriginFromMatrix( g_studio.rotationmatrix, e->attachment[3] );
+		int i = 0;
+		for ( i = 0; i < CL_ENTITY_MAX_ATTACHMENTS; ++i )
+		{
+			Matrix3x4_OriginFromMatrix( g_studio.rotationmatrix, e->attachment[i] );
+
+		}
 	}
 
 	if( FBitSet( e->curstate.effects, EF_MUZZLEFLASH ))
@@ -3188,7 +3196,7 @@ static int R_StudioDrawPlayer( int flags, entity_state_t *pplayer )
 		if( RI.currententity->index > 0 )
 		{
 			cl_entity_t *ent = gEngfuncs.GetEntityByIndex( RI.currententity->index );
-			memcpy( ent->attachment, RI.currententity->attachment, sizeof( vec3_t ) * 4 );
+			memcpy( ent->attachment, RI.currententity->attachment, sizeof(ent->attachment) );
 		}
 	}
 
@@ -3317,7 +3325,7 @@ static int R_StudioDrawModel( int flags )
 		if( RI.currententity->index > 0 )
 		{
 			cl_entity_t *ent = gEngfuncs.GetEntityByIndex( RI.currententity->index );
-			memcpy( ent->attachment, RI.currententity->attachment, sizeof( vec3_t ) * 4 );
+			memcpy( ent->attachment, RI.currententity->attachment, sizeof(ent->attachment) );
 		}
 	}
 
@@ -3429,8 +3437,10 @@ void R_RunViewmodelEvents( void )
 	R_StudioSetupTimings();
 
 	gEngfuncs.GetPredictedOrigin( simorg );
-	for( i = 0; i < 4; i++ )
+	for( i = 0; i < CL_ENTITY_MAX_ATTACHMENTS; i++ )
+	{
 		VectorCopy( simorg, RI.currententity->attachment[i] );
+	}
 	RI.currentmodel = RI.currententity->model;
 
 	R_StudioDrawModelInternal( RI.currententity, STUDIO_EVENTS );

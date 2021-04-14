@@ -300,6 +300,7 @@ apply changes since new frame received
 void CL_ProcessEntityUpdate( cl_entity_t *ent )
 {
 	qboolean	parametric;
+	int i = 0;
 
 	ent->model = CL_ModelHandle( ent->curstate.modelindex );
 	ent->index = ent->curstate.number;
@@ -330,10 +331,10 @@ void CL_ProcessEntityUpdate( cl_entity_t *ent )
 	VectorCopy( ent->curstate.angles, ent->angles );
 
 	// initialize attachments for now
-	VectorCopy( ent->origin, ent->attachment[0] );
-	VectorCopy( ent->origin, ent->attachment[1] );
-	VectorCopy( ent->origin, ent->attachment[2] );
-	VectorCopy( ent->origin, ent->attachment[3] );
+	for ( i = 0; i < CL_ENTITY_MAX_ATTACHMENTS; ++i )
+	{
+		VectorCopy(ent->origin, ent->attachment[i]);
+	}
 }
 
 /*
@@ -1045,6 +1046,8 @@ void CL_LinkPlayers( frame_t *frame )
 	// check all the clients but add only visible
 	for( i = 0, state = frame->playerstate; i < MAX_CLIENTS; i++, state++ )
 	{
+		int j = 0;
+
 		if( state->messagenum != cl.parsecount )
 			continue;	// not present this frame
 
@@ -1092,10 +1095,10 @@ void CL_LinkPlayers( frame_t *frame )
 			CL_ComputePlayerOrigin( ent );
 		}
 
-		VectorCopy( ent->origin, ent->attachment[0] );
-		VectorCopy( ent->origin, ent->attachment[1] );
-		VectorCopy( ent->origin, ent->attachment[2] );
-		VectorCopy( ent->origin, ent->attachment[3] );
+		for ( j = 0; j < CL_ENTITY_MAX_ATTACHMENTS; ++j )
+		{
+			VectorCopy(ent->origin, ent->attachment[j]);
+		}
 
 		CL_AddVisibleEntity( ent, ET_PLAYER );
 	}
@@ -1120,6 +1123,7 @@ void CL_LinkPacketEntities( frame_t *frame )
 
 	for( i = 0; i < frame->num_entities; i++ )
 	{
+		int j = 0;
 		state = &cls.packet_entities[(frame->first_entity + i) % cls.num_client_entities];
 
 		// clients are should be done in CL_LinkPlayers
@@ -1259,10 +1263,10 @@ void CL_LinkPacketEntities( frame_t *frame )
 			CL_ResetPositions( ent );
 		}
 
-		VectorCopy( ent->origin, ent->attachment[0] );
-		VectorCopy( ent->origin, ent->attachment[1] );
-		VectorCopy( ent->origin, ent->attachment[2] );
-		VectorCopy( ent->origin, ent->attachment[3] );
+		for ( j = 0; j < CL_ENTITY_MAX_ATTACHMENTS; ++j )
+		{
+			VectorCopy(ent->origin, ent->attachment[j]);
+		}
 
 		CL_AddVisibleEntity( ent, ET_NORMAL );
 	}

@@ -1151,7 +1151,7 @@ int CStudioModelRenderer::StudioDrawModel( int flags )
 		{
 			cl_entity_t *ent = gEngfuncs.GetEntityByIndex( m_pCurrentEntity->index );
 
-			memcpy( ent->attachment, m_pCurrentEntity->attachment, sizeof(vec3_t) * 4 );
+			memcpy( ent->attachment, m_pCurrentEntity->attachment, sizeof(ent->attachment) );
 		}
 	}
 
@@ -1442,7 +1442,7 @@ int CStudioModelRenderer::StudioDrawPlayer( int flags, entity_state_t *pplayer )
 		{
 			cl_entity_t *ent = gEngfuncs.GetEntityByIndex( m_pCurrentEntity->index );
 
-			memcpy( ent->attachment, m_pCurrentEntity->attachment, sizeof(vec3_t) * 4 );
+			memcpy( ent->attachment, m_pCurrentEntity->attachment, sizeof(ent->attachment) );
 		}
 	}
 
@@ -1521,10 +1521,16 @@ void CStudioModelRenderer::StudioCalcAttachments( void )
 	int i;
 	mstudioattachment_t *pattachment;
 
-	if( m_pStudioHeader->numattachments > 4 )
+	if( m_pStudioHeader->numattachments > CL_ENTITY_MAX_ATTACHMENTS )
 	{
 		gEngfuncs.Con_DPrintf( "Too many attachments on %s\n", m_pCurrentEntity->model->name );
-		exit( -1 );
+
+		for ( i = 0; i < CL_ENTITY_MAX_ATTACHMENTS; ++i )
+		{
+			VectorCopy(m_pCurrentEntity->origin, m_pCurrentEntity->attachment[i]);
+		}
+
+		return;
 	}
 
 	// calculate attachment points

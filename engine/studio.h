@@ -41,7 +41,7 @@ Studio models are position independent, so the cache manager can move them.
 #define MAXSTUDIOGROUPS		16	// sequence groups (e.g. barney01.mdl, barney02.mdl, e.t.c)
 #define MAXSTUDIOMESHES		256	// max textures per model
 #define MAXSTUDIOCONTROLLERS		32	// max controllers per model
-#define MAXSTUDIOATTACHMENTS		64	// max attachments per model
+#define MAXSTUDIOATTACHMENTS		8	// max attachments per model
 #define MAXSTUDIOBONEWEIGHTS		4	// absolute hardware limit!
 #define MAXSTUDIONAME		32	// a part of specs
 #define MAXSTUDIOPOSEPARAM		24

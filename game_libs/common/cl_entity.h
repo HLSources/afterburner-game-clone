@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -33,7 +33,7 @@ typedef struct
 
 typedef struct
 {
-	float		prevanimtime;  
+	float		prevanimtime;
 	float		sequencetime;
 	byte		prevseqblending[2];
 	vec3_t		prevorigin;
@@ -63,6 +63,8 @@ typedef struct cl_entity_s cl_entity_t;
 #include "entity_state.h"
 #include "event_args.h"
 
+#define CL_ENTITY_MAX_ATTACHMENTS 8
+
 struct cl_entity_s
 {
 	int		index;      	// Index into cl_entities ( should match actual slot, but not necessarily )
@@ -88,7 +90,7 @@ struct cl_entity_s
 	vec3_t		angles;
 
 	// Attachment points
-	vec3_t		attachment[4];
+	vec3_t		attachment[CL_ENTITY_MAX_ATTACHMENTS];
 
 	// Other entity local information
 	int		trivial_accept;
