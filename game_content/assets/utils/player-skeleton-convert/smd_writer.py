@@ -1,3 +1,6 @@
+def __indent(val:int):
+	return "  " if val < 10 else " "
+
 def __writeLine(outFile, line):
 	outFile.write(line + "\n")
 
@@ -5,13 +8,14 @@ def __writeBones(outFile, bones):
 	__writeLine(outFile, "nodes")
 
 	for bone in bones.list():
-		__writeLine(outFile, f" {bone.index()} \"{bone.name()}\"  {bone.parent().index() if bone.parent() is not None else -1}")
+		__writeLine(outFile, f"{__indent(bone.index())}{bone.index()} \"{bone.name()}\"  {bone.parent().index() if bone.parent() is not None else -1}")
 
 	__writeLine(outFile, "end")
 
 def __writeSkeletonFrameBones(outFile, frame):
-	for bone in frame:
-		outString = " "
+	for index in range(0, len(frame)):
+		bone = frame[index]
+		outString = __indent(index)
 
 		for index in range(0, len(bone)):
 			if index == 0:
@@ -40,7 +44,7 @@ def __writeTriangles(outFile, triangles):
 		__writeLine(outFile, triangle[0])
 
 		for index in range(1, len(triangle)):
-			__writeLine(outFile, " " + (" ".join([str(item) for item in triangle[index]])))
+			__writeLine(outFile, f"{__indent(index)}" + (" ".join([str(item) for item in triangle[index]])))
 
 	__writeLine(outFile, "end")
 
