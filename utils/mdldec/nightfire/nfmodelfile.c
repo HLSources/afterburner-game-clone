@@ -203,7 +203,7 @@ void NF_ModelFile_AllocateSequences(nfmodelfile_t* modelFile, size_t sequenceCou
 		return;
 	}
 
-	NF_AllocUtils_AllocateComplexItems(&modelFile->sequences,
+	NF_AllocUtils_AllocateComplexItems((void**)&modelFile->sequences,
 									   &modelFile->sequenceCount,
 									   sequenceCount,
 									   sizeof(*modelFile->sequences),
@@ -540,7 +540,7 @@ void NF_ModelFile_AllocateModels(nfmodelfile_t* modelFile, size_t modelCount)
 		return;
 	}
 
-	NF_AllocUtils_AllocateComplexItems(&modelFile->models,
+	NF_AllocUtils_AllocateComplexItems((void**)&modelFile->models,
 									   &modelFile->modelCount,
 									   modelCount,
 									   sizeof(*modelFile->models),

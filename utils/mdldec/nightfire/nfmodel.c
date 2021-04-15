@@ -31,7 +31,7 @@ void NF_Model_AllocateModelInfos(nfmodel_t* model, size_t modelInfoCount)
 		return;
 	}
 
-	NF_AllocUtils_AllocateComplexItems(&model->modelInfos,
+	NF_AllocUtils_AllocateComplexItems((void**)&model->modelInfos,
 									   &model->modelInfoCount,
 									   modelInfoCount,
 									   sizeof(*model->modelInfos),
