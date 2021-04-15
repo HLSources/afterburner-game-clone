@@ -125,7 +125,7 @@ void NF_ModelFile_AllocateBones(nfmodelfile_t* modelFile, size_t boneCount, qboo
 		return;
 	}
 
-	NF_AllocUtils_AllocateItems(&modelFile->bones,
+	NF_AllocUtils_AllocateItems((void**)&modelFile->bones,
 								&modelFile->boneCount,
 								boneCount,
 								sizeof(*modelFile->bones),
@@ -151,7 +151,7 @@ void NF_ModelFile_AllocateBoneControllers(nfmodelfile_t* modelFile, size_t boneC
 		return;
 	}
 
-	NF_AllocUtils_AllocateItems(&modelFile->boneControllers,
+	NF_AllocUtils_AllocateItems((void**)&modelFile->boneControllers,
 								&modelFile->boneControllerCount,
 								boneControllerCount,
 								sizeof(*modelFile->boneControllers),
@@ -177,7 +177,7 @@ void NF_ModelFile_AllocateHitboxes(nfmodelfile_t* modelFile, size_t hitboxCount,
 		return;
 	}
 
-	NF_AllocUtils_AllocateItems(&modelFile->hitboxes,
+	NF_AllocUtils_AllocateItems((void**)&modelFile->hitboxes,
 								&modelFile->hitboxCount,
 								hitboxCount,
 								sizeof(*modelFile->hitboxes),
@@ -230,7 +230,7 @@ void NF_ModelFile_AllocateSequenceGroups(nfmodelfile_t* modelFile, size_t sequen
 		return;
 	}
 
-	NF_AllocUtils_AllocateItems(&modelFile->sequenceGroups,
+	NF_AllocUtils_AllocateItems((void**)&modelFile->sequenceGroups,
 								&modelFile->sequenceGroupCount,
 								sequenceGroupCount,
 								sizeof(*modelFile->sequenceGroups),
@@ -256,7 +256,7 @@ void NF_ModelFile_AllocateTextures(nfmodelfile_t* modelFile, size_t textureCount
 		return;
 	}
 
-	NF_AllocUtils_AllocateItems(&modelFile->textures,
+	NF_AllocUtils_AllocateItems((void**)&modelFile->textures,
 								&modelFile->textureCount,
 								textureCount,
 								sizeof(*modelFile->textures),
@@ -287,7 +287,7 @@ void NF_ModelFile_AllocateBodyGroups(nfmodelfile_t* modelFile, size_t bodyGroupC
 		return;
 	}
 
-	NF_AllocUtils_AllocateItems(&modelFile->bodyGroups,
+	NF_AllocUtils_AllocateItems((void**)&modelFile->bodyGroups,
 								&modelFile->bodyGroupCount,
 								bodyGroupCount,
 								sizeof(*modelFile->bodyGroups),
@@ -313,7 +313,7 @@ void NF_ModelFile_AllocateAttachments(nfmodelfile_t* modelFile, size_t attachmen
 		return;
 	}
 
-	NF_AllocUtils_AllocateItems(&modelFile->attachments,
+	NF_AllocUtils_AllocateItems((void**)&modelFile->attachments,
 								&modelFile->attachmentCount,
 								attachmentCount,
 								sizeof(*modelFile->attachments),
@@ -339,7 +339,7 @@ void NF_ModelFile_AllocateSoundGroups(nfmodelfile_t* modelFile, size_t soundGrou
 		return;
 	}
 
-	NF_AllocUtils_AllocateItems(&modelFile->soundGroups,
+	NF_AllocUtils_AllocateItems((void**)&modelFile->soundGroups,
 								&modelFile->soundGroupCount,
 								soundGroupCount,
 								sizeof(*modelFile->soundGroups),
@@ -365,7 +365,7 @@ void NF_ModelFile_AllocateTriangleMaps(nfmodelfile_t* modelFile, size_t triangle
 		return;
 	}
 
-	NF_AllocUtils_AllocateItems(&modelFile->triangleMaps,
+	NF_AllocUtils_AllocateItems((void**)&modelFile->triangleMaps,
 								&modelFile->triangleMapCount,
 								triangleMapCount,
 								sizeof(*modelFile->triangleMaps),
@@ -391,7 +391,7 @@ void NF_ModelFile_AllocateVertices(nfmodelfile_t* modelFile, size_t vertexCount,
 		return;
 	}
 
-	NF_AllocUtils_AllocateItems(&modelFile->vertices,
+	NF_AllocUtils_AllocateItems((void**)&modelFile->vertices,
 								&modelFile->vertexCount,
 								vertexCount,
 								sizeof(*modelFile->vertices),
@@ -417,7 +417,7 @@ void NF_ModelFile_AllocateNormals(nfmodelfile_t* modelFile, size_t normalCount, 
 		return;
 	}
 
-	NF_AllocUtils_AllocateItems(&modelFile->normals,
+	NF_AllocUtils_AllocateItems((void**)&modelFile->normals,
 								&modelFile->normalCount,
 								normalCount,
 								sizeof(*modelFile->normals),
@@ -443,7 +443,7 @@ void NF_ModelFile_AllocateTexCoOrds(nfmodelfile_t* modelFile, size_t texCoOrdCou
 		return;
 	}
 
-	NF_AllocUtils_AllocateItems(&modelFile->texCoOrds,
+	NF_AllocUtils_AllocateItems((void**)&modelFile->texCoOrds,
 								&modelFile->texCoOrdCount,
 								texCoOrdCount,
 								sizeof(*modelFile->texCoOrds),
@@ -469,7 +469,7 @@ void NF_ModelFile_AllocateBlendingScales(nfmodelfile_t* modelFile, size_t blendi
 		return;
 	}
 
-	NF_AllocUtils_AllocateItems(&modelFile->blendingScales,
+	NF_AllocUtils_AllocateItems((void**)&modelFile->blendingScales,
 								&modelFile->blendingScaleCount,
 								blendingScaleCount,
 								sizeof(*modelFile->blendingScales),
@@ -495,7 +495,7 @@ void NF_ModelFile_AllocateBlends(nfmodelfile_t* modelFile, size_t blendCount, qb
 		return;
 	}
 
-	NF_AllocUtils_AllocateItems(&modelFile->blends,
+	NF_AllocUtils_AllocateItems((void**)&modelFile->blends,
 								&modelFile->blendCount,
 								blendCount,
 								sizeof(*modelFile->blends),
@@ -521,7 +521,7 @@ void NF_ModelFile_AllocateBoneFixUps(nfmodelfile_t* modelFile, size_t boneFixUpC
 		return;
 	}
 
-	NF_AllocUtils_AllocateItems(&modelFile->boneFixUps,
+	NF_AllocUtils_AllocateItems((void**)&modelFile->boneFixUps,
 								&modelFile->boneFixUpCount,
 								boneFixUpCount,
 								sizeof(*modelFile->boneFixUps),

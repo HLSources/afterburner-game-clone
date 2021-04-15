@@ -35,7 +35,7 @@ void NF_ModelInfo_AllocateMeshes(nfmodelinfo_t* modelInfo, size_t meshCount, qbo
 		return;
 	}
 
-	NF_AllocUtils_AllocateItems(&modelInfo->meshes,
+	NF_AllocUtils_AllocateItems((void**)&modelInfo->meshes,
 								&modelInfo->meshCount,
 								meshCount,
 								sizeof(*modelInfo->meshes),

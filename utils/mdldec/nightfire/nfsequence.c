@@ -34,7 +34,7 @@ void NF_Sequence_AllocateEvents(nfsequence_t* sequence, size_t eventCount, qbool
 		return;
 	}
 
-	NF_AllocUtils_AllocateItems(&sequence->events,
+	NF_AllocUtils_AllocateItems((void**)&sequence->events,
 								&sequence->eventCount,
 								eventCount,
 								sizeof(*sequence->events),
@@ -60,7 +60,7 @@ void NF_Sequence_AllocatePivots(nfsequence_t* sequence, size_t pivotCount, qbool
 		return;
 	}
 
-	NF_AllocUtils_AllocateItems(&sequence->pivots,
+	NF_AllocUtils_AllocateItems((void**)&sequence->pivots,
 								&sequence->pivotCount,
 								pivotCount,
 								sizeof(*sequence->pivots),
