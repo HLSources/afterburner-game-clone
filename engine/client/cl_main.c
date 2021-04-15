@@ -794,13 +794,21 @@ static void CL_Debug_LeafPVS(void)
 
 static void CL_ModelTextureInfo(void)
 {
+	int argc = 0;
+	const char* name = NULL;
+	int index = 0;
+	model_t* model = NULL;
+	studiohdr_t* header = NULL;
+	mstudiotexture_t* textures = NULL;
+	uint32_t texIndex = 0;
+
 	if ( !Cvar_VariableInteger("sv_cheats") )
 	{
 		Msg("Requires sv_cheats to be 1.\n");
 		return;
 	}
 
-	int argc = Cmd_Argc();
+	argc = Cmd_Argc();
 
 	if ( argc < 2 )
 	{
@@ -808,8 +816,8 @@ static void CL_ModelTextureInfo(void)
 		return;
 	}
 
-	const char* name = Cmd_Argv(1);
-	int index = CL_FindModelIndex(name);
+	name = Cmd_Argv(1);
+	index = CL_FindModelIndex(name);
 
 	if ( index < 1 )
 	{
@@ -817,7 +825,7 @@ static void CL_ModelTextureInfo(void)
 		return;
 	}
 
-	model_t* model = CL_ModelHandle(index);
+	model = CL_ModelHandle(index);
 
 	if ( !model )
 	{
@@ -825,7 +833,7 @@ static void CL_ModelTextureInfo(void)
 		return;
 	}
 
-	studiohdr_t* header = (studiohdr_t*)model->cache.data;
+	header = (studiohdr_t*)model->cache.data;
 
 	if ( !header )
 	{
@@ -833,11 +841,11 @@ static void CL_ModelTextureInfo(void)
 		return;
 	}
 
-	mstudiotexture_t* textures = (mstudiotexture_t*)((byte*)header + header->textureindex);
+	textures = (mstudiotexture_t*)((byte*)header + header->textureindex);
 
 	Msg("Model %s has %u textures:\n", name, header->numtextures);
 
-	for ( uint32_t texIndex = 0; texIndex < header->numtextures; ++texIndex )
+	for ( texIndex = 0; texIndex < header->numtextures; ++texIndex )
 	{
 		mstudiotexture_t* texture = &textures[texIndex];
 

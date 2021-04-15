@@ -31,7 +31,7 @@ jobs:
         sudo apt-get install gcc-multilib g++-multilib libsdl2-dev:i386 libfontconfig-dev:i386 libfreetype6-dev:i386
     # Runs a set of commands using the runners shell
     - name: Configure for release
-      run: python3 waf configure --disable-vgui --win-style-install --build-type=release --prefix="${{runner.temp}}/${{env.artifactName}}"
+      run: python3 waf configure --disable-vgui --win-style-install --build-type=release --enable-utils --prefix="${{runner.temp}}/${{env.artifactName}}"
     - name: Clean
       run: python3 waf clean
     - name: Build
@@ -109,7 +109,7 @@ jobs:
         with:
           submodules: recursive
       - name: Configure for release
-        run: python waf configure --disable-vgui --win-style-install --build-type=release --prefix="${{runner.temp}}\${{env.artifactName}}" --sdl2="${{runner.temp}}\SDL2\SDL2-2.0.14"
+        run: python waf configure --disable-vgui --win-style-install --build-type=release --enable-utils --prefix="${{runner.temp}}\${{env.artifactName}}" --sdl2="${{runner.temp}}\SDL2\SDL2-2.0.14"
       - name: Clean
         run: python waf clean
       - name: Build
