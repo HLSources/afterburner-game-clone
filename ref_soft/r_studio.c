@@ -3682,7 +3682,7 @@ void GAME_EXPORT Mod_StudioLoadTextures( model_t *mod, void *data )
 	{
 		for( i = 0; i < phdr->numtextures; i++ )
 		{
-			if ( phdr->flags & STUDIO_NO_EMBEDDED_TEXTURES )
+			if ( phdr->ident == AFTERBURNER_HEADER && phdr->flags & STUDIO_NO_EMBEDDED_TEXTURES )
 			{
 				R_StudioLoadTextureFromDisk(mod, phdr, &ptexture[i]);
 			}

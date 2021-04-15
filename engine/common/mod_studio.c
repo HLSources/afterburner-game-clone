@@ -1119,7 +1119,7 @@ qboolean Mod_GetStudioBounds( const char *name, vec3_t mins, vec3_t maxs )
 	f = FS_LoadFile( name, NULL, false );
 	if( !f ) return false;
 
-	if( *(uint *)f == IDSTUDIOHEADER )
+	if( *(uint *)f == IDSTUDIOHEADER || *(uint *)f == AFTERBURNER_HEADER )
 	{
 		VectorClear( mins );
 		VectorClear( maxs );
