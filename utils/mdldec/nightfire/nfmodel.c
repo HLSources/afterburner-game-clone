@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "nightfire/nfmodel.h"
+#include "nightfire/allocutils.h"
 
 void NF_Model_Init(nfmodel_t* model)
 {
