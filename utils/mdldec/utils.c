@@ -65,6 +65,7 @@ byte *LoadFile( const char *filename )
 	FILE	*fp;
 	byte	*buf;
 	off_t	 size;
+	size_t bytesRead = 0;
 
 	fp = fopen( filename, "rb" );
 
@@ -78,9 +79,8 @@ byte *LoadFile( const char *filename )
 	if( !buf )
 		return NULL;
 
-	fread( buf, size, 1, fp );
+	bytesRead = fread( buf, size, 1, fp );
 	fclose( fp );
 
 	return buf;
 }
-
