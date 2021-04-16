@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 #include "nightfire/allocutils.h"
 
 void NF_AllocUtils_AllocateItems(void** outArray,

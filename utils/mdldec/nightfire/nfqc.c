@@ -364,7 +364,7 @@ void NF_WriteQCScript(void)
 
 	if ( !nightfireHeader )
 	{
-		fprintf(stderr, "INTERNAL ERROR: Missing model header pointer\n", modelfile);
+		fprintf(stderr, "INTERNAL ERROR: Missing model header pointer\n");
 		return;
 	}
 

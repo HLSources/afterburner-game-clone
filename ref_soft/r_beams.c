@@ -401,6 +401,11 @@ void R_DrawTorus( vec3_t source, vec3_t delta, float width, float scale, float f
 	noiseStep = (int)((float)( NOISE_DIVISIONS - 1 ) * div * 65536.0f );
 	noiseIndex = 0;
 
+	// Silence warnings
+	screenLast[0] = 0;
+	screenLast[1] = 0;
+	screenLast[2] = 0;
+
 	for( i = 0; i < segments; i++ )
 	{
 		float	s, c;
