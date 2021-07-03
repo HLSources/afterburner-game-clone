@@ -101,7 +101,7 @@ struct wfile_s
 	string		filename;
 	int		infotableofs;
 	int		numlumps;
-	byte		*mempool;			// W_ReadLump temp buffers
+	poolhandle_t mempool;			// W_ReadLump temp buffers
 	file_t		*handle;
 	dlumpinfo_t	*lumps;
 	time_t		filetime;
@@ -154,7 +154,7 @@ typedef struct searchpath_s
 	struct searchpath_s *next;
 } searchpath_t;
 
-static byte			*fs_mempool;
+static poolhandle_t     fs_mempool;
 static searchpath_t		*fs_searchpaths = NULL;	// chain
 static searchpath_t		fs_directpath;		// static direct path
 static char			fs_basedir[MAX_SYSPATH];	// base game directory
@@ -2523,7 +2523,10 @@ file_t *FS_OpenZipFile( zip_t *zip, int pack_ind )
 
 	// compressed files handled in Zip_LoadFile
 	if( pfile->flags != ZIP_COMPRESSION_NO_COMPRESSION )
+	{
+		Con_Printf( S_ERROR "%s: can't open compressed file %s\n", __FUNCTION__, pfile->name );
 		return NULL;
+	}
 
 	return FS_OpenHandle( zip->filename, zip->handle, pfile->offset, pfile->size );
 }
@@ -2722,6 +2725,7 @@ static searchpath_t *FS_FindFile( const char *name, int *index, qboolean gamedir
 				if( diff > 0 )
 					right = middle - 1;
 				else left = middle + 1;
+<<<<<<< HEAD
 			}
 		}
 		else if (search->texDir)
@@ -2764,6 +2768,8 @@ static searchpath_t *FS_FindFile( const char *name, int *index, qboolean gamedir
 				}
 
 				return search;
+=======
+>>>>>>> upstream-master
 			}
 		}
 		else
@@ -3561,7 +3567,23 @@ dll_user_t *FS_FindLibrary( const char *dllname, qboolean directpath )
 	{
 		// NOTE: if search is NULL let the OS found library himself
 		Q_strncpy( hInst->fullPath, dllpath, sizeof( hInst->fullPath ));
-		hInst->custom_loader = (search) ? true : false;
+
+		if( search && ( search->wad || search->pack || search->zip ) )
+		{
+#if XASH_WIN32 && XASH_X86 // a1ba: custom loader is non-portable (I just don't want to touch it)
+			Con_Printf( S_WARN "%s: loading libraries from packs is deprecated "
+				"and will be removed in the future\n", __FUNCTION__ );
+			hInst->custom_loader = true;
+#else
+			Con_Printf( S_WARN "%s: loading libraries from packs is unsupported on "
+				"this platform\n", __FUNCTION__ );
+			hInst->custom_loader = false;
+#endif
+		}
+		else
+		{
+			hInst->custom_loader = false;
+		}
 	}
 	fs_ext_path = false; // always reset direct paths
 

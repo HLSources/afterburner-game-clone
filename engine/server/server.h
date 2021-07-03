@@ -206,7 +206,7 @@ typedef struct sv_client_s
 	cl_state_t	state;
 	cl_upload_t	upstate;			// uploading state
 	char		name[32];			// extracted from userinfo, color string allowed
-	int		flags;			// client flags, some info
+	uint		flags;			// client flags, some info
 	CRC32_t		crcValue;
 
 	char		userinfo[MAX_INFO_STRING];	// name, etc (received from client)
@@ -345,8 +345,8 @@ typedef struct
 	NEW_DLL_FUNCTIONS	dllFuncs2;		// new dll exported funcs (may be NULL)
 	physics_interface_t	physFuncs;		// physics interface functions (Xash3D extension)
 
-	byte		*mempool;			// server premamnent pool: edicts etc
-	byte		*stringspool;		// for engine strings
+	poolhandle_t mempool;			// server premamnent pool: edicts etc
+	poolhandle_t stringspool;		// for engine strings
 } svgame_static_t;
 
 typedef struct
@@ -395,6 +395,8 @@ extern convar_t		sv_instancedbaseline;
 extern convar_t		sv_background_freeze;
 extern convar_t		sv_minupdaterate;
 extern convar_t		sv_maxupdaterate;
+extern convar_t		sv_minrate;
+extern convar_t		sv_maxrate;
 extern convar_t		sv_downloadurl;
 extern convar_t		sv_newunit;
 extern convar_t		sv_clienttrace;

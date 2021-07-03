@@ -16,7 +16,7 @@ GNU General Public License for more details.
 #ifndef SOUND_H
 #define SOUND_H
 
-extern byte *sndpool;
+extern poolhandle_t sndpool;
 
 #include "xash3d_mathlib.h"
 
@@ -138,7 +138,6 @@ typedef struct rawchan_s
 	int			rightvol;		// 0-255 right volume
 	float			dist_mult;	// distance multiplier (attenuation/clipK)
 	vec3_t			origin;		// only use if fixed_origin is set
-	float			radius;		// radius of this sound effect
 	volatile uint		s_rawend;
 	wavdata_t			sound_info;	// advance play position
 	float			oldtime;		// catch time jumps

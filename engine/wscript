@@ -46,6 +46,9 @@ def options(opt):
 	grp.add_option('--enable-static-binary', action = 'store_true', dest = 'STATIC', default = False,
 		help = 'build static binary(not recommended, --single-binary required) [default: %default]')
 
+	grp.add_option('--enable-engine-tests', action = 'store_true', dest = 'ENGINE_TESTS', default = False,
+		help = 'embed tests into the engine, jump into them by -runtests command line switch [default: %default]')
+
 	opt.load('sdl2')
 
 def configure(conf):
@@ -79,6 +82,10 @@ def configure(conf):
 			conf.fatal('SDL2 not availiable! If you want to build dedicated server, specify --dedicated')
 		conf.define('XASH_SDL', 2)
 
+	if conf.env.DEST_OS == 'haiku':
+		conf.env.LIB_HAIKU = ['network']
+		conf.env.LIBPATH_HAIKU = ['/boot/system/lib']
+
 	if conf.options.USE_SELECT == None:
 		conf.options.USE_SELECT = conf.options.DEDICATED
 
@@ -92,6 +99,12 @@ def configure(conf):
 	if hasattr(conf.options, 'DLLEMU'):
 		conf.define_cond('XASH_DLL_LOADER', conf.options.DLLEMU)
 
+	if conf.env.MAGX:
+		conf.define('XASH_CRASHHANDLER', 0)
+
+	conf.env.ENGINE_TESTS = conf.options.ENGINE_TESTS
+
+	conf.define_cond('XASH_ENGINE_TESTS', conf.env.ENGINE_TESTS)
 	conf.define_cond('XASH_STATIC_LIBS', conf.env.STATIC_LINKING)
 	conf.define_cond('XASH_CUSTOM_SWAP', conf.options.CUSTOM_SWAP)
 	conf.define_cond('SINGLE_BINARY', conf.env.SINGLE_BINARY)
@@ -108,6 +121,8 @@ def build(bld):
 
 	is_cxx_link = False
 	libs = [ 'public', 'dllemu' ]
+
+	# basic build: dedicated only
 	source = bld.path.ant_glob([
 		'common/*.c',
 		'common/imagelib/*.c',
@@ -116,7 +131,9 @@ def build(bld):
 		'common/bsp/generic/*.c',
 		'server/*.c'])
 
-	# basic build: dedicated only, no dependencies
+	if bld.env.ENGINE_TESTS:
+		source += bld.path.ant_glob(['tests/*.c'])
+
 	if bld.env.DEST_OS == 'win32':
 		libs += ['USER32', 'SHELL32', 'GDI32', 'ADVAPI32', 'DBGHELP', 'PSAPI', 'WS2_32' ]
 		source += bld.path.ant_glob(['platform/win32/*.c'])
@@ -133,6 +150,8 @@ def build(bld):
 		source += bld.path.ant_glob(['platform/dos/*.c'])
 		source += bld.path.ant_glob(['platform/stub/s_stub.c'])
 
+	if bld.env.DEST_OS == 'haiku':
+		libs.append('HAIKU')
 
 	if bld.get_define('XASH_CUSTOM_SWAP'):
 		source += bld.path.ant_glob(['platform/misc/kmalloc.c', 'platform/misc/sbrk.c'])
@@ -165,10 +184,11 @@ def build(bld):
 	[
 		'common',
 		'common/bsp/generic',
-		"common/imagelib",
+		'common/imagelib',
 		'server',
 		'client',
 		'client/vgui',
+		'tests',
 		'.',
 		'../public',
 		'../common',

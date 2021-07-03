@@ -1066,7 +1066,6 @@ qboolean Delta_CompareField( delta_t *pField, void *from, void *to, float timeba
 #if defined __GNUC__ && __GNUC_MAJOR < 9 && !defined __clang__
 #pragma GCC diagnostic pop
 #endif
-
 		fromF = Delta_ClampIntegerField( pField, fromF, bSigned, pField->bits );
 		toF = Delta_ClampIntegerField( pField, toF, bSigned, pField->bits );
 		if( pField->multiplier != 1.0f ) fromF *= pField->multiplier;
@@ -1223,10 +1222,17 @@ qboolean Delta_WriteField( sizebuf_t *msg, delta_t *pField, void *from, void *to
 	}
 	else if( pField->flags & DT_INTEGER )
 	{
+#if defined __GNUC__ && __GNUC_MAJOR < 9 && !defined __clang__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wduplicated-branches"
+#endif
 		if( bSigned )
 			iValue = *(int32_t *)((int8_t *)to + pField->offset );
 		else
 			iValue = *(uint32_t *)((int8_t *)to + pField->offset );
+#if defined __GNUC__ && __GNUC_MAJOR < 9 && !defined __clang__
+#pragma GCC diagnostic pop
+#endif
 		iValue = Delta_ClampIntegerField( pField, iValue, bSigned, pField->bits );
 		if( pField->multiplier != 1.0f ) iValue *= pField->multiplier;
 		MSG_WriteBitLong( msg, iValue, pField->bits, bSigned );
@@ -1248,17 +1254,17 @@ qboolean Delta_WriteField( sizebuf_t *msg, delta_t *pField, void *from, void *to
 	}
 	else if( pField->flags & DT_TIMEWINDOW_8 )
 	{
+		bSigned = true; // timewindow is always signed
 		flValue = *(float *)((byte *)to + pField->offset );
-		flTime = Q_rint( timebase * 100.0f ) - Q_rint( flValue * 100.0f );
-		iValue = (uint)abs( flTime );
+		iValue = (int)Q_rint( timebase * 100.0f ) - (int)Q_rint( flValue * 100.0f );
 		iValue = Delta_ClampIntegerField( pField, iValue, bSigned, pField->bits );
 		MSG_WriteBitLong( msg, iValue, pField->bits, bSigned );
 	}
 	else if( pField->flags & DT_TIMEWINDOW_BIG )
 	{
+		bSigned = true; // timewindow is always signed
 		flValue = *(float *)((byte *)to + pField->offset );
-		flTime = Q_rint( timebase * pField->multiplier ) - Q_rint( flValue * pField->multiplier );
-		iValue = (uint)abs( flTime );
+		iValue = (int)Q_rint( timebase * pField->multiplier ) - (int)Q_rint( flValue * pField->multiplier );
 		iValue = Delta_ClampIntegerField( pField, iValue, bSigned, pField->bits );
 		MSG_WriteBitLong( msg, iValue, pField->bits, bSigned );
 	}
@@ -1331,6 +1337,10 @@ qboolean Delta_ReadField( sizebuf_t *msg, delta_t *pField, void *from, void *to,
 	}
 	else if( pField->flags & DT_INTEGER )
 	{
+#if defined __GNUC__ && __GNUC_MAJOR < 9 && !defined __clang__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wduplicated-branches"
+#endif
 		if( bChanged )
 		{
 			iValue = MSG_ReadBitLong( msg, pField->bits, bSigned );
@@ -1347,6 +1357,9 @@ qboolean Delta_ReadField( sizebuf_t *msg, delta_t *pField, void *from, void *to,
 			*(int32_t *)((uint8_t *)to + pField->offset ) = iValue;
 		else
 			*(uint32_t *)((uint8_t *)to + pField->offset ) = iValue;
+#if defined __GNUC__ && __GNUC_MAJOR < 9 && !defined __clang__
+#pragma GCC diagnostic pop
+#endif
 	}
 	else if( pField->flags & DT_FLOAT )
 	{
@@ -1378,9 +1391,9 @@ qboolean Delta_ReadField( sizebuf_t *msg, delta_t *pField, void *from, void *to,
 	{
 		if( bChanged )
 		{
+			bSigned = true; // timewindow is always signed
 			iValue = MSG_ReadBitLong( msg, pField->bits, bSigned );
-			flValue = (float)((int)(iValue * 0.01f ));
-			flTime = timebase + flValue;
+			flTime = ((timebase * 100.0f) - iValue ) / 100.0f;
 		}
 		else
 		{
@@ -1392,9 +1405,12 @@ qboolean Delta_ReadField( sizebuf_t *msg, delta_t *pField, void *from, void *to,
 	{
 		if( bChanged )
 		{
+			bSigned = true; // timewindow is always signed
 			iValue = MSG_ReadBitLong( msg, pField->bits, bSigned );
-			flValue = (float)((int)iValue) * ( 1.0f / pField->multiplier );
-			flTime = timebase + flValue;
+			flTime = ((timebase * pField->multiplier) - iValue );
+
+			if( pField->multiplier != 1.0f )
+				flTime /= pField->multiplier;
 		}
 		else
 		{
@@ -1979,7 +1995,7 @@ qboolean MSG_ReadDeltaEntity( sizebuf_t *msg, entity_state_t *from, entity_state
 			}
 			else
 			{
-				baseline_offset = abs( baseline_offset );
+				baseline_offset = abs( baseline_offset + 1 );
 				if( baseline_offset < cl.instanced_baseline_count )
 					from = &cl.instanced_baseline[baseline_offset];
 			}

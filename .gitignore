@@ -216,7 +216,7 @@ publish/
 # Publish Web Output
 *.[Pp]ublish.xml
 *.azurePubxml
-# TODO: Comment the next line if you want to checkin your web deploy settings
+# TODO: Comment the next line if you want to checkin your web deploy settings 
 # but database connection strings (with potential passwords) will be unencrypted
 *.pubxml
 *.publishproj
@@ -326,7 +326,12 @@ __pycache__
 *.vcproj
 *.sln
 *.vcxproj
+
+# Visual Studio Code
 .vscode/*
+*.code-workspace
+.history/*
+.cache/*
 
 # I always thought these were Mercurial files, but it turns out Meld creates them.
 *.orig

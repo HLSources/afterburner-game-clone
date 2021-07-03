@@ -20,7 +20,7 @@ GNU General Public License for more details.
 #include <stdlib.h>
 #include <stdarg.h>
 
-#if defined(__APPLE__) || defined(__unix__)
+#if defined(__APPLE__) || defined(__unix__) || defined(__HAIKU__)
 	#define XASHLIB    "libxash." OS_LIB_EXT
 #elif _WIN32
 	#if !__MINGW32__ && _MSC_VER >= 1200
@@ -42,6 +42,7 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 }
 #endif
 
+#define E_GAME	"AFTERBURNER_GAME" // default env dir to start from
 #define GAME_PATH	"afterburner"	// default dir to start from
 
 typedef void (*pfnChangeGame)( const char *progname );
@@ -138,7 +139,14 @@ _inline int Sys_Start( void )
 		changeGame = Sys_ChangeGame;
 #endif
 
-	ret = Xash_Main( szArgc, szArgv, GAME_PATH, 0, changeGame );
+	const char *game = getenv( E_GAME  );
+	if( !game  )
+	{
+		game = GAME_PATH;
+	}
+
+	ret = Xash_Main( szArgc, szArgv, game, 0, changeGame );
+
 	Sys_UnloadEngine();
 
 	return ret;

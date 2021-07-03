@@ -131,6 +131,9 @@ some ents will be ignore lerping
 */
 qboolean CL_EntityIgnoreLerp( cl_entity_t *e )
 {
+	if( cl_nointerp->value > 0.f )
+		return true;
+
 	if( e->model && e->model->type == mod_alias )
 		return false;
 
@@ -529,6 +532,13 @@ void CL_ComputePlayerOrigin( cl_entity_t *ent )
 
 	if( !ent->player || ent->index == ( cl.playernum + 1 ))
 		return;
+
+	if( cl_nointerp->value > 0.f )
+	{
+		VectorCopy( ent->curstate.angles, ent->angles );
+		VectorCopy( ent->curstate.origin, ent->origin );
+		return;
+	}
 
 	if( cls.demoplayback == DEMO_QUAKE1 )
 	{
@@ -1372,17 +1382,19 @@ qboolean CL_GetEntitySpatialization( channel_t *ch )
 	ent = CL_GetEntityByIndex( ch->entnum );
 
 	// entity is not present on the client but has valid origin
-	if( !ent || !ent->index || ent->curstate.messagenum == 0 )
+	if( !ent || !ent->model || ent->curstate.messagenum != cl.parsecount )
 		return valid_origin;
 
-#if 0
-	// uncomment this if you want enable additional check by PVS
-	if( ent->curstate.messagenum != cl.parsecount )
-		return valid_origin;
-#endif
 	// setup origin
-	VectorAverage( ent->curstate.mins, ent->curstate.maxs, ch->origin );
-	VectorAdd( ch->origin, ent->curstate.origin, ch->origin );
+	if( ent->model->type == mod_brush )
+	{
+		VectorAverage( ent->model->mins, ent->model->maxs, ch->origin );
+		VectorAdd( ent->origin, ch->origin, ch->origin );
+	}
+	else
+	{
+		VectorCopy( ent->origin, ch->origin );
+	}
 
 	return true;
 }
@@ -1400,12 +1412,15 @@ qboolean CL_GetMovieSpatialization( rawchan_t *ch )
 		return valid_origin;
 
 	// setup origin
-	VectorAverage( ent->curstate.mins, ent->curstate.maxs, ch->origin );
-	VectorAdd( ch->origin, ent->curstate.origin, ch->origin );
-
-	// setup radius
-	if( ent->model != NULL && ent->model->radius ) ch->radius = ent->model->radius;
-	else ch->radius = RadiusFromBounds( ent->curstate.mins, ent->curstate.maxs );
+	if( ent->model->type == mod_brush )
+	{
+		VectorAverage( ent->model->mins, ent->model->maxs, ch->origin );
+		VectorAdd( ent->origin, ch->origin, ch->origin );
+	}
+	else
+	{
+		VectorCopy( ent->origin, ch->origin );
+	}
 
 	return true;
 }

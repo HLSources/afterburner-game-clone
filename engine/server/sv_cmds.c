@@ -233,6 +233,43 @@ void SV_Map_f( void )
 
 /*
 ==================
+SV_Maps_f
+
+Lists maps according to given substring.
+
+TODO: Make it more convenient. (Timestamp check, temporary file, ...)
+==================
+*/
+void SV_Maps_f( void )
+{
+	const char *separator = "-------------------";
+	const char *argStr = Cmd_Argv( 1 ); // Substr
+	int nummaps;
+	search_t *mapList;
+
+	if( Cmd_Argc() != 2 )
+	{
+		Msg( "Usage: maps <substring>\nmaps * for full listing\n" );
+		return;
+	}
+
+	mapList = FS_Search( va( "maps/*%s*.bsp", argStr ), true, true );
+
+	if( !mapList )
+	{
+		Msg( "No related map found in \"%s/maps\"\n", GI->gamefolder );
+		return;
+	}
+
+	nummaps = Cmd_ListMaps( mapList, NULL, 0 );
+
+	Mem_Free( mapList );
+
+	Msg( "%s\nDirectory: \"%s/maps\" - Maps listed: %d\n", separator, GI->basedir, nummaps );
+}
+
+/*
+==================
 SV_MapBackground_f
 
 Set background map (enable physics in menu)
@@ -932,6 +969,30 @@ void SV_EntityInfo_f( void )
 }
 
 /*
+================
+Rcon_Redirect_f
+
+Force redirect N lines of console output to client
+================
+*/
+void Rcon_Redirect_f( void )
+{
+	int lines = 2000;
+
+	if( !host.rd.target )
+	{
+		Msg( "redirect is only valid from rcon\n" );
+		return;
+	}
+
+	if( Cmd_Argc() == 2 )
+		lines = Q_atoi( Cmd_Argv( 1 ) );
+
+	host.rd.lines = lines;
+	Msg( "Redirection enabled for next %d lines\n", lines );
+}
+
+/*
 ==================
 SV_InitHostCommands
 
@@ -942,6 +1003,7 @@ is available always
 void SV_InitHostCommands( void )
 {
 	Cmd_AddCommand( "map", SV_Map_f, "start new level" );
+	Cmd_AddCommand( "maps", SV_Maps_f, "list maps" );
 
 	if( host.type == HOST_NORMAL )
 	{
@@ -978,6 +1040,7 @@ void SV_InitOperatorCommands( void )
 	Cmd_AddCommand( "shutdownserver", SV_KillServer_f, "shutdown current server" );
 	Cmd_AddCommand( "changelevel", SV_ChangeLevel_f, "change level" );
 	Cmd_AddCommand( "changelevel2", SV_ChangeLevel2_f, "smooth change level" );
+	Cmd_AddCommand( "redirect", Rcon_Redirect_f, "force enable rcon redirection" );
 
 	if( host.type == HOST_NORMAL )
 	{

@@ -126,7 +126,7 @@ typedef struct
 
 #ifndef REF_DLL
 extern world_static_t	world;
-extern byte		*com_studiocache;
+extern poolhandle_t     com_studiocache;
 extern model_t		*loadmodel;
 extern convar_t		*mod_studiocache;
 extern convar_t		*r_wadtextures;
