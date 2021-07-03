@@ -2725,7 +2725,6 @@ static searchpath_t *FS_FindFile( const char *name, int *index, qboolean gamedir
 				if( diff > 0 )
 					right = middle - 1;
 				else left = middle + 1;
-<<<<<<< HEAD
 			}
 		}
 		else if (search->texDir)
@@ -2768,8 +2767,6 @@ static searchpath_t *FS_FindFile( const char *name, int *index, qboolean gamedir
 				}
 
 				return search;
-=======
->>>>>>> upstream-master
 			}
 		}
 		else

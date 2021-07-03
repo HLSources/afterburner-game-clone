@@ -74,6 +74,13 @@ SUBDIRS = [
 	Subproject('utils/mdldec', utility=True)
 ]
 
+# This is needed for the client and server libraries to link properly.
+@Configure.conf
+def get_taskgen_count(self):
+	try: idx = self.tg_idx_count
+	except: idx = 0 # don't set tg_idx_count to not increase counter
+	return idx
+
 def subdirs():
 	return map(lambda x: x.name, SUBDIRS)
 
@@ -225,7 +232,8 @@ def configure(conf):
 		'-Werror=jump-misses-init',
 		'-Werror=strict-prototypes',
 #		'-Werror=nested-externs',
-		'-fnonconst-initializers' # owcc
+		'-fnonconst-initializers', # owcc
+		'-Wno-discarded-qualifiers' # Unfortunately non-const char pointers are too embedded to change now
 	]
 
 	cflags, linkflags = conf.get_optimization_flags()

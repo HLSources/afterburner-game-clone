@@ -352,10 +352,10 @@ static void DumpGeneralModelData(const model_t* model)
 	WRITELF("Needs load: %s", BoolString(model->needload));
 	WRITELF("Type: " FMT_ENUM, ARG_ENUM(String_modtype_t, model->type));
 	WRITELF("Num frames: %d", model->numframes);
-	WRITELF("Valid mempool: %s", BoolString(model->mempool != NULL));
+	WRITELF("Valid mempool: %s", BoolString(model->mempool));
 	WRITELF("Flags: " FMT_HEX_INT, model->flags);
 	WRITELF("Bounds: " FMT_BOUNDS, ARG_BOUNDS(model->mins, model->maxs));
-	WRITELF("Radius: %f", model->radius);
+WRITELF("Radius: %f", model->radius);
 	WRITELF("First model surface: %d", model->firstmodelsurface);
 	WRITELF("Num model surfaces: %d", model->nummodelsurfaces);
 	WRITEL("");

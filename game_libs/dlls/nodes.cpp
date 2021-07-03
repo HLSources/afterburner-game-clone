@@ -2372,6 +2372,7 @@ int CGraph::FLoadGraph( const char *szMapName )
 	int length;
 	byte *aMemFile;
 	byte *pMemFile;
+	bool graphVersionValid = false;
 
 	// make sure the directories have been made
 	char szDirName[MAX_PATH];
@@ -2398,7 +2399,13 @@ int CGraph::FLoadGraph( const char *szMapName )
 	iVersion = *(int *) pMemFile;
 	pMemFile += sizeof(int);
 
-	if( iVersion == GRAPH_VERSION || iVersion == GRAPH_VERSION_RETAIL )
+	// These values might or might not be the same, so to avoid
+	// a GCC logical-op warning for an identical "or" comparison,
+	// we split the check into two.
+	graphVersionValid = iVersion == GRAPH_VERSION;
+	graphVersionValid = graphVersionValid || iVersion == GRAPH_VERSION_RETAIL;
+
+	if( graphVersionValid )
 	{
 		// Read the graph class
 		//
