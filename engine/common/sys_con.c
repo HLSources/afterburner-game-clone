@@ -25,7 +25,7 @@ GNU General Public License for more details.
 // #define XASH_USE_SELECT 1
 #endif
 
-#if XASH_USE_SELECT
+#if !XASH_WIN32 && XASH_USE_SELECT
 // non-blocking console input
 #include <sys/select.h>
 #endif
