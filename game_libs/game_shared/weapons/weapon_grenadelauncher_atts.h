@@ -95,6 +95,8 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 
 	priAttack->ViewModelAnimList_Attack << GRENADELAUNCHER_FIRE;
 
+	priAttack->AttackSounds.MinVolume = 0.9f;
+	priAttack->AttackSounds.MaxVolume = 0.9f;
 	priAttack->AttackSounds.MinPitch = 96;
 	priAttack->AttackSounds.MaxPitch = 100;
 	priAttack->AttackSounds.SoundNames << "weapons/weapon_grenadelauncher/grenade_launcher_fire.wav";

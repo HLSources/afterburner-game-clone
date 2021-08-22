@@ -109,8 +109,8 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	priAttack->ViewModelAnimList_AttackEmpty << P99_SHOOT_EMPTY;
 	priAttack->ViewModelBodyOverride = P99BODY_UNSILENCED;
 
-	priAttack->AttackSounds.MinVolume = 0.92f;
-	priAttack->AttackSounds.MaxVolume = 1.0f;
+	priAttack->AttackSounds.MinVolume = 0.82f;
+	priAttack->AttackSounds.MaxVolume = 0.9f;
 	priAttack->AttackSounds.MinPitch = 98;
 	priAttack->AttackSounds.MaxPitch = 104;
 	priAttack->AttackSounds.SoundNames << "weapons/weapon_p99/p99_fire1.wav";
@@ -133,8 +133,8 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 
 	secAttack->ViewModelBodyOverride = P99BODY_SILENCED;
 
-	secAttack->AttackSounds.MinVolume = 0.86;
-	secAttack->AttackSounds.MaxVolume = 0.9;
+	secAttack->AttackSounds.MinVolume = 0.76;
+	secAttack->AttackSounds.MaxVolume = 0.8;
 	secAttack->AttackSounds.SoundNames.Clear();
 	secAttack->AttackSounds.SoundNames << "weapons/weapon_p99/p99_fire_sil1.wav";
 });

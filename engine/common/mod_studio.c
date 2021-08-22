@@ -360,6 +360,52 @@ void Mod_StudioPlayerBlend( mstudioseqdesc_t *pseqdesc, int *pBlend, float *pPit
 	}
 }
 
+void Mod_PrecacheEventSounds(model_t* model)
+{
+	studiohdr_t* header = NULL;
+	mstudioseqdesc_t* sequences = NULL;
+	int sequenceIndex;
+
+	if ( !model )
+	{
+		return;
+	}
+
+	header = Mod_StudioExtradata(model);
+
+	if ( !header || header->numseq < 1 )
+	{
+		return;
+	}
+
+	sequences = (mstudioseqdesc_t*)((byte*)header + header->seqindex);
+
+	for ( sequenceIndex = 0; sequenceIndex < header->numseq; ++sequenceIndex )
+	{
+		mstudioevent_t* events = NULL;
+		int eventIndex;
+
+		mstudioseqdesc_t* sequence = &sequences[sequenceIndex];
+
+		if ( sequence->numevents < 1 )
+		{
+			continue;
+		}
+
+		events = (mstudioevent_t*)((byte*)header + sequence->eventindex);
+
+		for ( eventIndex = 0; eventIndex < sequence->numevents; ++eventIndex )
+		{
+			mstudioevent_t* event = &events[eventIndex];
+
+			if ( event->event == MDLEVENT_SOUND0 || event->event == MDLEVENT_SOUND_AMBIENT )
+			{
+				SV_SoundIndex((const char*)event->options);
+			}
+		}
+	}
+}
+
 static void SetUpBones(const edict_t* edict, model_t* mod)
 {
 	studiohdr_t* pstudio;

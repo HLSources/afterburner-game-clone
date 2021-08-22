@@ -6,6 +6,7 @@ enum class WeaponSoundId
 {
 	BulletRicochet = 0,
 	GrenadeBounce,
+	Explosion,
 	Count
 };
 

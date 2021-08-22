@@ -187,7 +187,7 @@ void CWeaponFrinesi::PlayPumpSound()
 	EMIT_SOUND_DYN(ENT(m_pPlayer->pev),
 					   CHAN_ITEM,
 					   FRINESI_COCK_SOUND,
-					   1.0f,
+					   0.9f,
 					   ATTN_NORM,
 					   0,
 					   UTIL_SharedRandomLong(m_pPlayer->random_seed, 98, 101));

@@ -72,8 +72,8 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	vm.AnimList_Idle << FRINESI_IDLE1 << FRINESI_IDLE2 << FRINESI_IDLE3 << FRINESI_IDLE4;
 	vm.AnimList_Reload << FRINESI_START_RELOAD;
 
-	vm.ReloadSounds.MinVolume = 1.0f;
-	vm.ReloadSounds.MaxVolume = 1.0f;
+	vm.ReloadSounds.MinVolume = 0.9f;
+	vm.ReloadSounds.MaxVolume = 0.9f;
 	vm.ReloadSounds.MinPitch = 98;
 	vm.ReloadSounds.MaxPitch = 102;
 	vm.ReloadSounds.SoundNames << "weapons/weapon_frinesi/frinesi_reload1.wav"
@@ -137,8 +137,8 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 
 	priAttack->ViewModelAnimList_Attack << FRINESI_SHOOT;
 
-	priAttack->AttackSounds.MinVolume = 0.95f;
-	priAttack->AttackSounds.MaxVolume = 1.0f;
+	priAttack->AttackSounds.MinVolume = 0.85f;
+	priAttack->AttackSounds.MaxVolume = 0.9f;
 	priAttack->AttackSounds.MinPitch = 100;
 	priAttack->AttackSounds.MaxPitch = 102;
 	priAttack->AttackSounds.SoundNames << "weapons/weapon_frinesi/frinesi_fire1.wav";

@@ -774,4 +774,12 @@ typedef struct
 	int	hitgroup;		// 0 == generic, non zero is specific body part
 } trace_t;
 
+#define MDLEVENT_MUZZLEFLASH0 5001
+#define MDLEVENT_MUZZLEFLASH1 5011
+#define MDLEVENT_MUZZLEFLASH2 5021
+#define MDLEVENT_MUZZLEFLASH3 5031
+#define MDLEVENT_SPARK0 5002
+#define MDLEVENT_SOUND0 5004
+#define MDLEVENT_SOUND_AMBIENT 5005
+
 #endif//CONST_H

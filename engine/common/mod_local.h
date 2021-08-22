@@ -205,6 +205,7 @@ int Mod_HitgroupForStudioHull( int index );
 void Mod_ClearStudioCache( void );
 float Mod_StudioGetSequenceDuration( model_t* model, int anim);
 void Mod_StudioPlayerBlend( mstudioseqdesc_t *pseqdesc, int *pBlend, float *pPitch );
+void Mod_PrecacheEventSounds(model_t* model);
 
 //
 // mod_sprite.c

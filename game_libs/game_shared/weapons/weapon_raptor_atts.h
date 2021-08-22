@@ -101,8 +101,8 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	priAttack->ViewModelAnimList_Attack << RAPTOR_SHOOT;
 	priAttack->ViewModelAnimList_AttackEmpty << RAPTOR_SHOOT_LAST;
 
-	priAttack->AttackSounds.MinVolume = 0.97f;
-	priAttack->AttackSounds.MaxVolume = 1.0f;
+	priAttack->AttackSounds.MinVolume = 0.87f;
+	priAttack->AttackSounds.MaxVolume = 0.9f;
 	priAttack->AttackSounds.MinPitch = 95;
 	priAttack->AttackSounds.MaxPitch = 100;
 	priAttack->AttackSounds.SoundNames << "weapons/weapon_raptor/raptor_fire1.wav";

@@ -546,25 +546,25 @@ void DLLEXPORT HUD_StudioEvent( const struct mstudioevent_s *event, const struct
 {
 	switch( event->event )
 	{
-	case 5001:	// Muzzle flash from attachment 0
+	case MDLEVENT_MUZZLEFLASH0:	// Muzzle flash from attachment 0
 		gEngfuncs.pEfxAPI->R_MuzzleFlash( (float *)&entity->attachment[0], atoi( event->options ) );
 		break;
-	case 5011:	// Muzzle flash from attachment 1
+	case MDLEVENT_MUZZLEFLASH1:	// Muzzle flash from attachment 1
 		gEngfuncs.pEfxAPI->R_MuzzleFlash( (float *)&entity->attachment[1], atoi( event->options ) );
 		break;
-	case 5021:	// Muzzle flash from attachment 2
+	case MDLEVENT_MUZZLEFLASH2:	// Muzzle flash from attachment 2
 		gEngfuncs.pEfxAPI->R_MuzzleFlash( (float *)&entity->attachment[2], atoi( event->options ) );
 		break;
-	case 5031:	// Muzzle flash from attachment 3
+	case MDLEVENT_MUZZLEFLASH3:	// Muzzle flash from attachment 3
 		gEngfuncs.pEfxAPI->R_MuzzleFlash( (float *)&entity->attachment[3], atoi( event->options ) );
 		break;
-	case 5002:	// Spark from attachment 0
+	case MDLEVENT_SPARK0:	// Spark from attachment 0
 		gEngfuncs.pEfxAPI->R_SparkEffect( (float *)&entity->attachment[0], atoi( event->options ), -100, 100 );
 		break;
-	case 5004:	// Play a client-side sound at attachment 0 origin (note that the sound does not follow the model)
+	case MDLEVENT_SOUND0:	// Play a client-side sound at attachment 0 origin (note that the sound does not follow the model)
 		gEngfuncs.pfnPlaySoundByNameAtLocation( event->options, 1.0, (const float *)&entity->attachment[0] );
 		break;
-	case 5005:	// Play an ambient client-side sound
+	case MDLEVENT_SOUND_AMBIENT:	// Play an ambient client-side sound
 		gEngfuncs.pfnPlaySoundByName((char*)event->options, 1.0f);
 	default:
 		break;

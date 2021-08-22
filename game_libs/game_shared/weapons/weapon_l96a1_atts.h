@@ -95,14 +95,14 @@ static const WeaponAtts::WACollection StaticWeaponAttributes([](WeaponAtts::WACo
 	priAttack->ViewModelAnimList_Attack << L96A1_FIRE;
 	priAttack->ViewModelAnimList_AttackEmpty << L96A1_FIRE_LAST;
 
-	priAttack->AttackSounds.MinVolume = 0.97f;
-	priAttack->AttackSounds.MaxVolume = 1.0f;
+	priAttack->AttackSounds.MinVolume = 0.87f;
+	priAttack->AttackSounds.MaxVolume = 0.9f;
 	priAttack->AttackSounds.MinPitch = 95;
 	priAttack->AttackSounds.MaxPitch = 100;
 	priAttack->AttackSounds.SoundNames << "weapons/weapon_l96a1/l96a1_fire_distant.wav";
 
-	priAttack->ViewModelAttackSounds.MinVolume = 0.97f;
-	priAttack->ViewModelAttackSounds.MaxVolume = 1.0f;
+	priAttack->ViewModelAttackSounds.MinVolume = 0.87f;
+	priAttack->ViewModelAttackSounds.MaxVolume = 0.9f;
 	priAttack->ViewModelAttackSounds.MinPitch = 95;
 	priAttack->ViewModelAttackSounds.MaxPitch = 100;
 	priAttack->ViewModelAttackSounds.SoundNames << "weapons/weapon_l96a1/l96a1_fire.wav";

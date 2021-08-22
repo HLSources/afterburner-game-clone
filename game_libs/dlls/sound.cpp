@@ -1562,6 +1562,7 @@ void TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, int
 
 	CSoundInstance soundInst;
 	soundInst.SetPosition(ptr->vecEndPos);
+	float attenuation = ATTN_STATIC;
 
 	const CSurfaceAttributes::Attributes surfaceAtts = CSurfaceAttributes::StaticInstance().GetAttributes(static_cast<SurfaceProp>(texSurfaceProp));
 	SurfaceSoundId hitSoundId = surfaceAtts.hitSound;
@@ -1571,9 +1572,15 @@ void TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, int
 		hitSoundId = SurfaceSoundId::HitFleshCritical;
 	}
 
+	if ( hitSoundId == SurfaceSoundId::HitFlesh || hitSoundId == SurfaceSoundId::HitFleshCritical )
+	{
+		// Lower values are heard from further away
+		attenuation *= 0.8f;
+	}
+
 	soundInst.SetSoundPath(SoundResources::SurfaceSounds.RandomResourcePath(hitSoundId));
 	soundInst.SetPitch(96, 111);
-	soundInst.SetAttenuation(ATTN_NORM);
+	soundInst.SetAttenuation(attenuation);
 	soundInst.SetVolume(surfaceAtts.hitSoundVol);
 	soundInst.SetChannel(CHAN_STATIC);
 
