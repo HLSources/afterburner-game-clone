@@ -335,9 +335,9 @@ public:
 	static CBaseEntity *Create( const char *szName, const Vector &vecOrigin, const Vector &vecAngles, edict_t *pentOwner = NULL );
 
 	virtual BOOL FBecomeProne( void ) {return FALSE;};
-	edict_t *edict() { return ENT( pev ); };
-	EOFFSET eoffset() { return OFFSET( pev ); };
-	int entindex() { return ENTINDEX( edict() ); };
+	inline edict_t *edict() const { return ENT( pev ); };
+	inline EOFFSET eoffset() const { return OFFSET( pev ); };
+	inline int entindex() const { return ENTINDEX( edict() ); };
 
 	virtual Vector Center() { return ( pev->absmax + pev->absmin ) * 0.5; }; // center point of entity
 	virtual Vector EyePosition() { return pev->origin + pev->view_ofs; };			// position of eyes
