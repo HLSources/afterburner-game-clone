@@ -868,6 +868,14 @@ static void CL_ModelTextureInfo(void)
 	}
 }
 
+void CL_GetPos(void)
+{
+	Msg("getpos: %f %f %f\n",
+		cl.frames[cl.parsecountmod].clientdata.origin[0],
+		cl.frames[cl.parsecountmod].clientdata.origin[1],
+		cl.frames[cl.parsecountmod].clientdata.origin[2]);
+}
+
 char *CL_Userinfo( void )
 {
 	return cls.userinfo;
@@ -1014,7 +1022,7 @@ static float CL_LerpPoint( void )
 	else if( server_frametime > 0.001f )
 	{
 		// automatic lerp (classic mode)
-		frac = ( cl.time - cl.mtime[1] ) / server_frametime;  
+		frac = ( cl.time - cl.mtime[1] ) / server_frametime;
 	}
 #endif
 	return frac;
@@ -1079,7 +1087,7 @@ void CL_ComputeClientInterpolationAmount( usercmd_t *cmd )
 
 	min_interp = 1.0f / cl_updaterate->value;
 	interpolation_time = CL_LerpInterval( );
-	
+
 	if( (cl_interp->value + epsilon) < min_interp )
 	{
 		Con_Printf( "ex_interp forced up to %.1f msec\n", min_interp * 1000.f );
@@ -3637,6 +3645,8 @@ void CL_InitLocal( void )
 
 	Cmd_AddCommand ("rcon", CL_Rcon_f, "sends a command to the server console (rcon_password and rcon_address required)" );
 	Cmd_AddCommand ("precache", CL_LegacyPrecache_f, "legacy server compatibility" );
+
+	Cmd_AddCommand("getpos", CL_GetPos, "Prints the current position of the player.");
 
 	Cmd_AddCommand("debug_dumpworldmodel", CL_Debug_DumpWorldModel, "Dumps internal information about the currently loaded world to the specified file.");
 	Cmd_AddCommand("debug_dumpsurface", CL_Debug_DumpSurface, "Dumps a surface to the specified file, formatted as Wavefront OBJ.");
